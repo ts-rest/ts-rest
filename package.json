@@ -4,9 +4,10 @@
   "license": "MIT",
   "scripts": {
     "test": "nx run tscont:test",
-    "build": "nx run tscont:build"
+    "build": "nx run tscont:build",
+    "publish": "nx run tscont:publish"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "tslib": "^2.3.0"
   },
