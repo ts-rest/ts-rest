@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@tscont/tscont": ["packages/tscont/src/index.ts"]
+      "@tscont/tscont": ["packages/tscont/src/index.ts"],
+      "tscont": ["packages/tscont/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
