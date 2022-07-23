@@ -1,1 +1,1 @@
-export * from './lib/tscont';
+export * from './lib/dsl';
