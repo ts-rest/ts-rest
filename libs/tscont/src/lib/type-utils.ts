@@ -54,3 +54,11 @@ export function getValue<
 
   return value !== undefined ? value : (defaultValue as TDefault);
 }
+
+// https://stackoverflow.com/questions/63447660/typescript-remove-all-properties-with-particular-type
+// Nested solution also available ^
+type ExcludeKeysWithTypeOf<T, V> = {
+  [K in keyof T]: Exclude<T[K], undefined> extends V ? never : K;
+}[keyof T];
+
+export type Without<T, V> = Pick<T, ExcludeKeysWithTypeOf<T, V>>;

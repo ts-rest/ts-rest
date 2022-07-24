@@ -7,7 +7,7 @@ const s = initNestServer(router.posts);
 type ControllerShape = typeof s.controllerShape;
 
 @Controller()
-export class AppController implements ControllerShape {
+export class PostController implements ControllerShape {
   constructor(private readonly appService: AppService) {}
 
   @Get(s.paths.getPosts)

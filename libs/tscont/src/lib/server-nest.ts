@@ -1,13 +1,23 @@
 import { AppRoute, AppRouter, isAppRoute } from './dsl';
 import { getAppRoutePathRoute } from './server';
+import { Without } from './type-utils';
 
 type AppRouteShape<T extends AppRoute> = (
   params: Parameters<T['path']>[0]
 ) => Promise<T['response']>;
 
-export type NestControllerShapeFromAppRouter<T extends AppRouter> = {
-  [K in keyof T]: T[K] extends AppRoute ? AppRouteShape<T[K]> : never;
+type AppRouterControllerShape<T extends AppRouter> = {
+  [K in keyof T]: T[K] extends AppRouter
+    ? undefined
+    : T[K] extends AppRoute
+    ? AppRouteShape<T[K]>
+    : never;
 };
+
+export type NestControllerShapeFromAppRouter<T extends AppRouter> = Without<
+  AppRouterControllerShape<T>,
+  AppRouter
+>;
 
 type PathsProxyObj<T extends AppRouter> = {
   [K in keyof T]: T[K] extends { method: string } ? string : never;
