@@ -11,3 +11,56 @@ One example of this is with NX, in NX you can rebuild only "affected" packages, 
 ## Contract Abstraction
 
 ## Implementation - API
+
+Contract
+
+```typescript
+import { initTsCont } from 'tscont';
+
+const c = initTsCont();
+
+export type Post = {
+  id: number;
+  title: string;
+  body: string;
+};
+
+export const router = c.router({
+  posts: c.router({
+    getPost: c.query({
+      method: 'GET',
+      path: ({ id }: { id: string }) => `/posts/${id}`,
+      response: c.response<Post>(),
+    }),
+    getPosts: c.query({
+      method: 'GET',
+      path: () => '/posts',
+      response: c.response<Post[]>(),
+    }),
+  }),
+});
+```
+
+Client
+
+```typescript
+const client = initClient(router, {
+  api: fetchApi,
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {},
+});
+
+const { data } = await client.posts.getPosts();
+```
+
+Server
+
+```typescript
+const server = initServer(router, {
+  api: fetchApi,
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {},
+});
+
+// TRPC-like type-safe generation or just extract input/output types
+```

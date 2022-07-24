@@ -18,6 +18,7 @@
       "@tscont/example-contracts": ["libs/example-contracts/src/index.ts"],
       "@tscont/example-express": ["apps/example-express/src/index.ts"],
       "@tscont/example-react": ["apps/example-react/src/index.ts"],
+      "publish-test-123": ["libs/publish-test/src/index.ts"],
       "tscont": ["libs/tscont/src/index.ts"]
     }
   },

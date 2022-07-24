@@ -12,10 +12,8 @@ const fetchApi: ApiFetcher = async ({ path, method, headers }) => {
 
 const client = initClient(router, {
   api: fetchApi,
-  baseUrl: 'http://localhost:3000',
-  baseHeaders: {
-    Authorization: 'Bearer 123',
-  },
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {},
 });
 
 export function App() {
@@ -34,9 +32,16 @@ export function App() {
   return (
     <>
       <h1>Posts</h1>
-      {posts?.map((post) => (
-        <p key={post.id}>{post.title}</p>
-      ))}
+      <ul>
+        {posts?.map((post) => (
+          <li>
+            <h3 key={post.id}>
+              {post.id} {post.title}
+            </h3>
+            <p>{post.body}</p>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }

@@ -4,11 +4,24 @@
  */
 
 import * as express from 'express';
+import cors = require('cors');
+import { router } from '@tscont/example-contracts';
 
 const app = express();
 
+app.use(cors());
+
 app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to example-express!' });
+});
+
+app.get('/posts', (req, res) => {
+  const response: typeof router.posts.getPosts.response = [
+    { id: 1, title: 'Hello world', body: 'This is a test' },
+    { id: 2, title: 'Special Post', body: 'Another post' },
+  ];
+
+  res.send(response);
 });
 
 const port = process.env.port || 3333;
