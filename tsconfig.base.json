@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@tscont/tscont": ["packages/tscont/src/index.ts"],
-      "tscont": ["packages/tscont/src/index.ts"]
+      "tscont": ["packages/tscont/src/index.ts"],
+      "@tscont/example-express": ["packages/example-express/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

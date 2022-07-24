@@ -1,6 +1,6 @@
 import { initTsCont } from './dsl';
 
-type User = {
+export type User = {
   id: string;
   name: string;
 };
@@ -13,7 +13,7 @@ type Post = {
 
 const c = initTsCont();
 
-const router = c.router({
+export const router = c.router({
   user: c.router({
     getUser: c.query({
       method: 'GET',

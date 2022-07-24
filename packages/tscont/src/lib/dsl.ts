@@ -20,22 +20,73 @@ type RecursiveProxyObj<T extends AppRouter> = {
 type DataReturn<TRoute extends AppRoute> = Parameters<
   TRoute['path']
 >[0] extends undefined
-  ? () => { data: TRoute['response'] }
-  : (path: Parameters<TRoute['path']>[0]) => { data: TRoute['response'] };
+  ? () => Promise<{ data: TRoute['response']; status: number }>
+  : (
+      path: Parameters<TRoute['path']>[0]
+    ) => Promise<{ data: TRoute['response']; status: number }>;
 
-export const initClient = <T>(args: {
+const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
+  return (obj as AppRoute).method !== undefined;
+};
+
+const getRouteQuery = (route: AppRoute, args: ClientArgs) => {
+  return async (pathParams: Record<string, string>) => {
+    const path = route.path(pathParams);
+
+    const result = await args.api({
+      path: args.baseUrl + path,
+      method: route.method,
+      headers: args.baseHeaders,
+    });
+
+    return { data: result.data, status: result.status };
+  };
+};
+
+const createNewProxy = (router: AppRouter, args: ClientArgs) => {
+  return new Proxy(
+    {},
+    {
+      get: (target, propKey): any => {
+        if (typeof propKey === 'string' && propKey in router) {
+          const subRouter = router[propKey];
+
+          if (isAppRoute(subRouter)) {
+            return getRouteQuery(subRouter, args);
+          } else {
+            return createNewProxy(subRouter, args);
+          }
+        }
+
+        return createNewProxy(router, args);
+      },
+    }
+  );
+};
+
+type ClientArgs = {
   baseUrl: string;
   baseHeaders: Record<string, string>;
-}) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const proxyObj: RecursiveProxyObj<T> = {} as unknown;
+  api: ApiFetcher;
+};
 
-  return new Proxy(proxyObj, {
-    get: (target, propKey) => {
-      console.log('query', args, target, propKey);
-    },
-  });
+export type ApiFetcher = (args: {
+  path: string;
+  method: string;
+  headers: Record<string, string>;
+}) => Promise<{
+  status: number;
+  data: unknown;
+}>;
+
+export const initClient = <T extends AppRouter>(
+  router: T,
+  args: ClientArgs
+) => {
+  const proxy = createNewProxy(router, args);
+
+  // TODO: See if we can type proxy correctly
+  return proxy as RecursiveProxyObj<T>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,7 +121,7 @@ export const initTsCont = (): TsCont => {
     router: <T extends AppRouter>(args: T) => args,
     query: (args) => args,
     mutation: (args) => args,
-    response: <T>() => '' as T,
-    path: <T>() => '' as T,
+    response: <T>() => '' as unknown as T,
+    path: <T>() => '' as unknown as T,
   };
 };
