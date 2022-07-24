@@ -9,8 +9,7 @@
       "options": {
         "outputPath": "dist/apps/example-express",
         "main": "apps/example-express/src/main.ts",
-        "tsConfig": "apps/example-express/tsconfig.app.json",
-        "assets": ["apps/example-express/src/assets"]
+        "tsConfig": "apps/example-express/tsconfig.app.json"
       },
       "configurations": {
         "production": {

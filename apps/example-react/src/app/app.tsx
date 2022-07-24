@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { initClient, ApiFetcher } from '@tscont/tscont';
-import { router, Post } from '@tscont/example-express';
+import { router, Post } from '@tscont/example-contracts';
 
 const fetchApi: ApiFetcher = async ({ path, method, headers }) => {
   const result = await fetch(path, { method, headers }).then((res) =>
