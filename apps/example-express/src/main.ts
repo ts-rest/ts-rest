@@ -11,17 +11,17 @@ app.use(cors());
 const s = initServer();
 
 const postsRouter = s.router(router.posts, {
-  getPost: ({ id }) => {
+  getPost: async ({ id }) => {
     const post = database.findOne(id);
 
     return post ?? null;
   },
-  getPosts: () => {
+  getPosts: async () => {
     const posts = database.findAll();
 
     return posts;
   },
-  getPostComments: ({ id }) => {
+  getPostComments: async ({ id }) => {
     const comments = database.findPostComments(id);
 
     return comments;
@@ -30,7 +30,7 @@ const postsRouter = s.router(router.posts, {
 
 const completeRouter = s.router(router, {
   posts: postsRouter,
-  health: () => {
+  health: async () => {
     return {
       message: 'OK',
     };
