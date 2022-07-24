@@ -2,6 +2,7 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "example-contracts": "libs/example-contracts",
     "example-express": "apps/example-express",
     "example-react": "apps/example-react",
     "tscont": "libs/tscont"
