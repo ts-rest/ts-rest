@@ -1,13 +1,4 @@
-type AppRoute = {
-  method: string;
-  path: PathFunction;
-  response: unknown;
-};
-
-// AppRouter contains either { [string]: AppRouter | AppRoute}
-type AppRouter = {
-  [key: string]: AppRouter | AppRoute;
-};
+import { AppRoute, AppRouter, isAppRoute } from './dsl';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
@@ -25,9 +16,20 @@ type DataReturn<TRoute extends AppRoute> = Parameters<
       path: Parameters<TRoute['path']>[0]
     ) => Promise<{ data: TRoute['response']; status: number }>;
 
-const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
-  return (obj as AppRoute).method !== undefined;
+type ClientArgs = {
+  baseUrl: string;
+  baseHeaders: Record<string, string>;
+  api: ApiFetcher;
 };
+
+export type ApiFetcher = (args: {
+  path: string;
+  method: string;
+  headers: Record<string, string>;
+}) => Promise<{
+  status: number;
+  data: unknown;
+}>;
 
 const getRouteQuery = (route: AppRoute, args: ClientArgs) => {
   return async (pathParams: Record<string, string>) => {
@@ -64,21 +66,6 @@ const createNewProxy = (router: AppRouter, args: ClientArgs) => {
   );
 };
 
-type ClientArgs = {
-  baseUrl: string;
-  baseHeaders: Record<string, string>;
-  api: ApiFetcher;
-};
-
-export type ApiFetcher = (args: {
-  path: string;
-  method: string;
-  headers: Record<string, string>;
-}) => Promise<{
-  status: number;
-  data: unknown;
-}>;
-
 export const initClient = <T extends AppRouter>(
   router: T,
   args: ClientArgs
@@ -87,41 +74,4 @@ export const initClient = <T extends AppRouter>(
 
   // TODO: See if we can type proxy correctly
   return proxy as RecursiveProxyObj<T>;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PathFunction = (arg: any) => string;
-
-type TsCont = {
-  router: <T extends AppRouter>(endpoints: T) => T;
-  query: <
-    T extends {
-      method: 'GET' | 'DELETE';
-      path: P;
-      response: unknown;
-    },
-    P extends PathFunction
-  >(
-    query: T
-  ) => T;
-  mutation: <
-    T extends {
-      method: 'POST' | 'PUT';
-      path: string;
-    }
-  >(
-    mutation: T
-  ) => T;
-  response: <T>() => T;
-  path: <T>() => T;
-};
-
-export const initTsCont = (): TsCont => {
-  return {
-    router: <T extends AppRouter>(args: T) => args,
-    query: (args) => args,
-    mutation: (args) => args,
-    response: <T>() => '' as unknown as T,
-    path: <T>() => '' as unknown as T,
-  };
 };

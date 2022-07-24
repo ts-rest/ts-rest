@@ -1,28 +1,43 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import * as express from 'express';
 import cors = require('cors');
 import { router } from '@tscont/example-contracts';
+import { createExpressEndpoints, initServer } from 'tscont';
+import { database } from './database';
 
 const app = express();
 
 app.use(cors());
 
-app.get('/api', (req, res) => {
-  res.send({ message: 'Welcome to example-express!' });
+const s = initServer();
+
+const postsRouter = s.router(router.posts, {
+  getPost: ({ id }) => {
+    const post = database.findOne(id);
+
+    return post ?? null;
+  },
+  getPosts: () => {
+    const posts = database.findAll();
+
+    return posts;
+  },
+  getPostComments: ({ id }) => {
+    const comments = database.findPostComments(id);
+
+    return comments;
+  },
 });
 
-app.get('/posts', (req, res) => {
-  const response: typeof router.posts.getPosts.response = [
-    { id: 1, title: 'Hello world', body: 'This is a test' },
-    { id: 2, title: 'Special Post', body: 'Another post' },
-  ];
-
-  res.send(response);
+const completeRouter = s.router(router, {
+  posts: postsRouter,
+  health: () => {
+    return {
+      message: 'OK',
+    };
+  },
 });
+
+createExpressEndpoints(router, completeRouter, app);
 
 const port = process.env.port || 3333;
 const server = app.listen(port, () => {

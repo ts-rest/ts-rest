@@ -10,6 +10,12 @@ One example of this is with NX, in NX you can rebuild only "affected" packages, 
 
 ## Contract Abstraction
 
+Unlike tRPC, tscont aims to separate the contract from the server-side implementation, this adds another "jump" to go client->contract->server, however, this additional step provides a much better dev experience in Monorepos with NX.
+
+- Contracts should have no knowledge of the implementation
+- Contracts should exist within their own package, or within a shared library within a monorepo
+- Contracts should define all the types to be shared with the consumers
+
 ## Implementation - API
 
 Contract

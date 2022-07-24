@@ -1,5 +1,6 @@
 {
   "name": "tscont",
-  "version": "0.0.5",
-  "type": "commonjs"
+  "version": "0.0.8",
+  "type": "commonjs",
+  "license": "MIT"
 }
