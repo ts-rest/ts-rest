@@ -1,4 +1,4 @@
-import { initTsCont } from '@tscont/tscont';
+import { initTsCont } from 'libs/tscont/src';
 
 const c = initTsCont();
 

@@ -1,16 +1,16 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/example-express/src",
+  "sourceRoot": "apps/example-express/src",
   "projectType": "application",
   "targets": {
     "build": {
       "executor": "@nrwl/node:webpack",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/example-express",
-        "main": "packages/example-express/src/main.ts",
-        "tsConfig": "packages/example-express/tsconfig.app.json",
-        "assets": ["packages/example-express/src/assets"]
+        "outputPath": "dist/apps/example-express",
+        "main": "apps/example-express/src/main.ts",
+        "tsConfig": "apps/example-express/tsconfig.app.json",
+        "assets": ["apps/example-express/src/assets"]
       },
       "configurations": {
         "production": {
@@ -19,8 +19,8 @@
           "inspect": false,
           "fileReplacements": [
             {
-              "replace": "packages/example-express/src/environments/environment.ts",
-              "with": "packages/example-express/src/environments/environment.prod.ts"
+              "replace": "apps/example-express/src/environments/environment.ts",
+              "with": "apps/example-express/src/environments/environment.prod.ts"
             }
           ]
         }
@@ -41,14 +41,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/example-express/**/*.ts"]
+        "lintFilePatterns": ["apps/example-express/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/example-express"],
+      "outputs": ["coverage/apps/example-express"],
       "options": {
-        "jestConfig": "packages/example-express/jest.config.ts",
+        "jestConfig": "apps/example-express/jest.config.ts",
         "passWithNoTests": true
       }
     }

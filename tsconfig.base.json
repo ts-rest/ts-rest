@@ -15,9 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@tscont/tscont": ["packages/tscont/src/index.ts"],
-      "tscont": ["packages/tscont/src/index.ts"],
-      "@tscont/example-express": ["packages/example-express/src/index.ts"]
+      "@tscont/tscont": ["libs/tscont/src/index.ts"],
+      "tscont": ["libs/tscont/src/index.ts"],
+      "@tscont/example-express": ["apps/example-express/src/index.ts"],
+      "@tscont/example-react": ["apps/example-react/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/example-react/src",
+  "sourceRoot": "apps/example-react/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -9,15 +9,15 @@
       "defaultConfiguration": "production",
       "options": {
         "compiler": "babel",
-        "outputPath": "dist/packages/example-react",
-        "index": "packages/example-react/src/index.html",
+        "outputPath": "dist/apps/example-react",
+        "index": "apps/example-react/src/index.html",
         "baseHref": "/",
-        "main": "packages/example-react/src/main.tsx",
-        "polyfills": "packages/example-react/src/polyfills.ts",
-        "tsConfig": "packages/example-react/tsconfig.app.json",
+        "main": "apps/example-react/src/main.tsx",
+        "polyfills": "apps/example-react/src/polyfills.ts",
+        "tsConfig": "apps/example-react/tsconfig.app.json",
         "assets": [
-          "packages/example-react/src/favicon.ico",
-          "packages/example-react/src/assets"
+          "apps/example-react/src/favicon.ico",
+          "apps/example-react/src/assets"
         ],
         "styles": [],
         "scripts": [],
@@ -33,8 +33,8 @@
         "production": {
           "fileReplacements": [
             {
-              "replace": "packages/example-react/src/environments/environment.ts",
-              "with": "packages/example-react/src/environments/environment.prod.ts"
+              "replace": "apps/example-react/src/environments/environment.ts",
+              "with": "apps/example-react/src/environments/environment.prod.ts"
             }
           ],
           "optimization": true,
@@ -67,14 +67,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/example-react/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["apps/example-react/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/example-react"],
+      "outputs": ["coverage/apps/example-react"],
       "options": {
-        "jestConfig": "packages/example-react/jest.config.ts",
+        "jestConfig": "apps/example-react/jest.config.ts",
         "passWithNoTests": true
       }
     }
