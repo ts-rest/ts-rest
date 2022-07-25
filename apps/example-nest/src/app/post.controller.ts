@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { router } from '@tscont/example-contracts';
-import { initNestServer } from 'tscont';
+import { initNestServer } from '@tscont/ts-rest-core';
 
 const s = initNestServer(router.posts);
 type ControllerShape = typeof s.controllerShape;

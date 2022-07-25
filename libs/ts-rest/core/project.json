@@ -1,22 +1,22 @@
 {
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/tscont/src",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ts-rest/core/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/tscont",
-        "main": "libs/tscont/src/index.ts",
-        "tsConfig": "libs/tscont/tsconfig.lib.json",
-        "assets": ["libs/tscont/*.md"]
+        "outputPath": "dist/libs/ts-rest/core",
+        "main": "libs/ts-rest/core/src/index.ts",
+        "tsConfig": "libs/ts-rest/core/tsconfig.lib.json",
+        "assets": ["libs/ts-rest/core/*.md"]
       }
     },
     "publish": {
       "executor": "@nrwl/workspace:run-commands",
       "options": {
-        "command": "node tools/scripts/publish.mjs tscont {args.ver} {args.tag}"
+        "command": "node tools/scripts/publish.mjs ts-rest-core {args.ver} {args.tag}"
       },
       "dependsOn": [
         {
@@ -29,14 +29,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/tscont/**/*.ts"]
+        "lintFilePatterns": ["libs/ts-rest/core/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/tscont"],
+      "outputs": ["coverage/libs/ts-rest/core"],
       "options": {
-        "jestConfig": "libs/tscont/jest.config.ts",
+        "jestConfig": "libs/ts-rest/core/jest.config.ts",
         "passWithNoTests": true
       }
     }

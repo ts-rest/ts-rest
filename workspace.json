@@ -6,6 +6,6 @@
     "example-express": "apps/example-express",
     "example-nest": "apps/example-nest",
     "example-react": "apps/example-react",
-    "tscont": "libs/tscont"
+    "ts-rest-core": "libs/ts-rest/core"
   }
 }

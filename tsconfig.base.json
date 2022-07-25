@@ -19,8 +19,8 @@
       "@tscont/example-express": ["apps/example-express/src/index.ts"],
       "@tscont/example-nest": ["libs/example-nest/src/index.ts"],
       "@tscont/example-react": ["apps/example-react/src/index.ts"],
-      "publish-test-123": ["libs/publish-test/src/index.ts"],
-      "tscont": ["libs/tscont/src/index.ts"]
+      "@tscont/ts-rest-core": ["libs/ts-rest/core/src/index.ts"],
+      "publish-test-123": ["libs/publish-test/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
