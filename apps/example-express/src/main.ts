@@ -2,7 +2,7 @@ import * as express from 'express';
 import cors = require('cors');
 import { router } from '@tscont/example-contracts';
 import { createExpressEndpoints, initServer } from '@tscont/ts-rest-core';
-import { database } from './database';
+import { PrismaClient } from '@prisma/client';
 
 const app = express();
 
@@ -10,21 +10,38 @@ app.use(cors());
 
 const s = initServer();
 
+const prisma = new PrismaClient();
+
 const postsRouter = s.router(router.posts, {
-  getPost: async ({ id }) => {
-    const post = database.findOne(id);
+  getPost: async ({ params: { id } }) => {
+    const post = prisma.post.findUnique({ where: { id } });
 
     return post ?? null;
   },
   getPosts: async () => {
-    const posts = database.findAll();
+    const posts = await prisma.post.findMany();
 
     return posts;
   },
-  getPostComments: async ({ id }) => {
-    const comments = database.findPostComments(id);
+  createPost: async ({ body: { title, content, published } }) => {
+    const post = await prisma.post.create({
+      data: {
+        title,
+        content,
+        published,
+        authorId: '',
+      },
+    });
 
-    return comments;
+    return post;
+  },
+  deletePost: async ({ params: { id } }) => {
+    const result = await prisma.post
+      .delete({ where: { id } })
+      .then(() => true)
+      .catch(() => false);
+
+    return result;
   },
 });
 

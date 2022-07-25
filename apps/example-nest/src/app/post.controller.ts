@@ -1,54 +1,47 @@
 import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
-import { AppService } from './app.service';
 import { router } from '@tscont/example-contracts';
 import { initNestServer } from '@tscont/ts-rest-core';
+import { PrismaService } from './prisma.service';
 
 const s = initNestServer(router.posts);
 type ControllerShape = typeof s.controllerShape;
 
 @Controller()
 export class PostController implements ControllerShape {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get(s.paths.getPosts)
   async getPosts() {
-    const posts = this.appService.findAll();
+    const posts = await this.prisma.post.findMany({});
 
     return posts;
   }
 
   @Get(s.paths.getPost)
   async getPost(@Param() { id }: { id: string }) {
-    const post = this.appService.findOne(id);
+    const post = await this.prisma.post.findUnique({ where: { id } });
 
     return post ?? null;
   }
 
-  @Get(s.paths.getPostComments)
-  async getPostComments(@Param() { id }: { id: string }) {
-    const comments = this.appService.findPostComments(id);
-
-    return comments;
-  }
-
-  @Get(s.paths.getPostComment)
-  async getPostComment(
-    @Param() { id, commentId }: { id: string; commentId: string }
-  ) {
-    const allComments = this.appService.findPostComments(id);
-
-    const comment = allComments.find((c) => c.id === commentId);
-
-    return comment ?? null;
-  }
-
   @Post(s.paths.createPost)
   async createPost() {
-    return { id: '1', title: 'title', body: 'body' };
+    const post = await this.prisma.post.create({
+      data: {
+        title: 'Hello World',
+        content: 'This is a test post',
+        published: true,
+        authorId: '1',
+      },
+    });
+
+    return post;
   }
 
   @Delete(s.paths.deletePost)
   async deletePost(@Param() { id }: { id: string }) {
     console.log('deleting post ', id);
+
+    return true;
   }
 }

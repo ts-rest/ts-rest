@@ -1,11 +1,29 @@
 import { Express } from 'express';
-import { AppRoute, AppRouter, isAppRoute } from './dsl';
+import { z } from 'zod';
+import {
+  AppRoute,
+  AppRouteMutation,
+  AppRouteQuery,
+  AppRouter,
+  isAppRoute,
+} from './dsl';
 import { getAppRoutePathRoute } from './server';
 import { getValue } from './type-utils';
 
-type AppRouteImplementation<T extends AppRoute> = (
-  params: Parameters<T['path']>[0]
-) => Promise<T['response']>;
+type AppRouteQueryImplementation<T extends AppRouteQuery> = (input: {
+  params: Parameters<T['path']>[0];
+}) => Promise<T['response']>;
+
+type AppRouteMutationImplementation<T extends AppRouteMutation> = (input: {
+  params: Parameters<T['path']>[0];
+  body: T['body'] extends z.AnyZodObject ? z.infer<T['body']> : null;
+}) => Promise<T['response']>;
+
+type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
+  ? AppRouteMutationImplementation<T>
+  : T extends AppRouteQuery
+  ? AppRouteQueryImplementation<T>
+  : never;
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
@@ -40,26 +58,56 @@ const recursivelyApplyExpressRouter = (
   }
 };
 
-type ExpressRouteTransformer = (
-  route: AppRouteImplementation<any>,
-  schema: AppRoute,
+const transformAppRouteQueryImplementation = (
+  route: AppRouteQueryImplementation<any>,
+  schema: AppRouteQuery,
   app: Express
-) => void;
-
-const transformAppRouteImplementation: ExpressRouteTransformer = (
-  route,
-  schema,
-  app
 ) => {
   const path = getAppRoutePathRoute(schema);
 
   console.log(`[tscont] Initialized ${schema.method} ${path}`);
 
   app.get(path, async (req, res) => {
-    const result = await route(req.params);
-
-    return res.json(result);
+    return res.json(await route({ params: req.params }));
   });
+};
+
+const transformAppRouteMutationImplementation = (
+  route: AppRouteMutationImplementation<any>,
+  schema: AppRouteMutation,
+  app: Express
+) => {
+  const path = getAppRoutePathRoute(schema);
+
+  console.log(`[tscont] Initialized ${schema.method} ${path}`);
+
+  const method = schema.method;
+
+  switch (method) {
+    case 'DELETE':
+      app.delete(path, async (req, res) =>
+        res.json(await route({ params: req.params, body: req.body }))
+      );
+      break;
+    case 'POST':
+      app.post(path, async (req, res) =>
+        res.json(await route({ params: req.params, body: req.body }))
+      );
+      break;
+    case 'PUT':
+      app.put(path, async (req, res) =>
+        res.json(await route({ params: req.params, body: req.body }))
+      );
+      break;
+    case 'PATCH':
+      app.patch(path, async (req, res) =>
+        res.json(await route({ params: req.params, body: req.body }))
+      );
+      break;
+    default:
+      // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
+      const _exhaustiveCheck: never = method;
+  }
 };
 
 export const createExpressEndpoints = <
@@ -74,7 +122,15 @@ export const createExpressEndpoints = <
     const routerViaPath = getValue(schema, path.join('.'));
 
     if (isAppRoute(routerViaPath)) {
-      transformAppRouteImplementation(route, routerViaPath, app);
+      if (routerViaPath.__type === 'AppRouteMutation') {
+        transformAppRouteMutationImplementation(route, routerViaPath, app);
+      } else {
+        transformAppRouteQueryImplementation(
+          route as AppRouteQueryImplementation<any>,
+          routerViaPath,
+          app
+        );
+      }
     } else {
       throw new Error(
         'Could not find schema route implementation for ' + path.join('.')

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { initClient, ApiFetcher } from '@tscont/ts-rest-core';
 import { router, Post } from '@tscont/example-contracts';
+import { PostListItem } from './PostListItem';
 
 const fetchApi: ApiFetcher = async ({ path, method, headers }) => {
   const result = await fetch(path, { method, headers }).then((res) =>
@@ -35,10 +36,7 @@ export function App() {
       <ul>
         {posts?.map((post) => (
           <li>
-            <h3 key={post.id}>
-              {post.id} {post.title}
-            </h3>
-            <p>{post.body}</p>
+            <PostListItem post={post} />
           </li>
         ))}
       </ul>
