@@ -8,21 +8,11 @@ If you have non typescript consumers, a public API, or maybe want to add type sa
 
 ## tRPC Comparison
 
-I _love_ [tRPC](https://trpc.io/), [KATT (Alex Johansson](https://github.com/KATT) and all the [other maintainers](https://github.com/trpc/trpc/graphs/contributors) have done some amazing work, and for applications with a single Next.js app, or an express server only consumed by TRPC clients, I whole heartily recommend using tRPC! Also I have undoubtedly taken inspiration from tRPC for ts-rest.
+I _love_ [tRPC](https://trpc.io/), [KATT (Alex Johansson)](https://github.com/KATT) and all the [other maintainers](https://github.com/trpc/trpc/graphs/contributors) have done some amazing work, and for applications with a single Next.js app, or an express server only consumed by TRPC clients, I whole heartily recommend using tRPC! Also I have undoubtedly taken inspiration from tRPC for ts-rest.
 
 One of the biggest differences between tRPC and ts-rest is that tRPC defines your API implementation _as the contract_, for some use cases it is beneficial to have a separate contract to represent the API.
 
 One example of this is with NX, in NX you can rebuild only "affected" packages, however, if you export your contract (e.g. tRPC) from the backend, your front end will need to be rebuilt as well. ts-rest negates this issue by allowing (in NX) for a library for the API contract to be created, this then means the only case in which the front and backend need to be rebuilt is when the contract changes.
-
-## Contract Abstraction
-
-Unlike tRPC, ts-rest-core aims to separate the contract from the API implementation, this adds another "jump" to go client->contract->server, however, this additional step provides a much better experience in Monorepos with NX.
-
-- Contracts should have no knowledge of the implementation
-- Contracts should exist within their own package, or within a shared library within a monorepo
-- Contracts should define all the types to be shared with the consumers
-
-Aside, if you really want there is nothing stopping you from building the contract alongside the implementation as you would in tRPC.
 
 ## REST(ish) vs RPC
 
