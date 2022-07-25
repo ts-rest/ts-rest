@@ -20,7 +20,7 @@ type TsCont = {
   router: <T extends AppRouter>(endpoints: T) => T;
   query: <
     T extends {
-      method: 'GET' | 'DELETE';
+      method: 'GET';
       path: P;
       response: unknown;
     },
@@ -30,9 +30,10 @@ type TsCont = {
   ) => T;
   mutation: <
     T extends {
-      method: 'POST' | 'PUT';
-      path: string;
-    }
+      method: 'POST' | 'PUT' | 'DELETE';
+      path: P;
+    },
+    P extends PathFunction
   >(
     mutation: T
   ) => T;

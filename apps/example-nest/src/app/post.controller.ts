@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { router } from '@tscont/example-contracts';
 import { initNestServer } from 'tscont';
@@ -21,7 +21,7 @@ export class PostController implements ControllerShape {
   async getPost(@Param() { id }: { id: string }) {
     const post = this.appService.findOne(id);
 
-    return post;
+    return post ?? null;
   }
 
   @Get(s.paths.getPostComments)
@@ -29,5 +29,26 @@ export class PostController implements ControllerShape {
     const comments = this.appService.findPostComments(id);
 
     return comments;
+  }
+
+  @Get(s.paths.getPostComment)
+  async getPostComment(
+    @Param() { id, commentId }: { id: string; commentId: string }
+  ) {
+    const allComments = this.appService.findPostComments(id);
+
+    const comment = allComments.find((c) => c.id === commentId);
+
+    return comment ?? null;
+  }
+
+  @Post(s.paths.createPost)
+  async createPost() {
+    return { id: '1', title: 'title', body: 'body' };
+  }
+
+  @Delete(s.paths.deletePost)
+  async deletePost(@Param() { id }: { id: string }) {
+    console.log('deleting post ', id);
   }
 }
