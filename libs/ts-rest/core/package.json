@@ -3,5 +3,14 @@
   "version": "0.1.0",
   "description": "RPC-like experience over a regular REST API, with type safe server implementations 🪄",
   "type": "commonjs",
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": [
+    "rpc",
+    "rest",
+    "typescript",
+    "typescript-rest",
+    "http",
+    "api",
+    "type safe"
+  ]
 }
