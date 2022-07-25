@@ -24,6 +24,31 @@ tRPC structures your API as RPC calls such as `/trpc/getPosts` or `/trpc/getPost
 
 tRPC has many plugins to solve this issue by mapping the API implementation to a REST-like API, however, these approaches are often a bit clunky and reduce the safety of the system overall, ts-rest does this heavy lifting in the client and server implementations rather than requiring a second layer of abstraction and API endpoint(s) to be defined.
 
+| **Features**      | REST | tRPC | tREST     |
+| ----------------- | ---- | ---- | --------- |
+| E2E Type Safe     | No   | ✅   | ✅        |
+| Protocol          | REST | RPC  | REST      |
+| Public API        | ✅   | ❌   | ✅        |
+| Zod/Yup/Joi       | ❌   | ✅   | 🏗 For 1.0 |
+| WebSocket Support | ❌   | ✅   | ❌        |
+
+| **Client Libraries** | REST | tRPC            | tREST     |
+| -------------------- | ---- | --------------- | --------- |
+| fetch/custom         | ✅   | ✅              | ✅        |
+| react-query          | ✅   | ✅              | 🏗 For 1.0 |
+| swr                  | ✅   | ✅ (via plugin) | 🏗 For 1.0 |
+
+| **Server** | REST | tRPC | tREST     |
+| ---------- | ---- | ---- | --------- |
+| Express    | ✅   | ✅   | ✅        |
+| Nest       | ✅   | ❌   | ✅        |
+| Next       | ✅   | ✅   | 🏗 For 1.0 |
+
+| **Dev Experience** | REST | tRPC        | tREST |
+| ------------------ | ---- | ----------- | ----- |
+| Cmd+Click Access   | ❌   | ✅ (in v10) | ✅    |
+| Separate Contract  | ❌   | ❌          | ✅    |
+
 ## Implementation - API
 
 ### Contract
