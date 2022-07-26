@@ -39,6 +39,7 @@ type TsCont = {
       method: 'GET';
       path: P;
       response: unknown;
+      query: unknown;
     },
     P extends PathFunction
   >(
@@ -48,6 +49,8 @@ type TsCont = {
     T extends {
       method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
       path: P;
+      response: unknown;
+      body: unknown;
     },
     P extends PathFunction
   >(

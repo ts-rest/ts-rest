@@ -1,4 +1,4 @@
 {
-  "cSpell.words": ["TRPC", "tscont"],
+  "cSpell.words": ["tanstack", "TRPC", "tscont"],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

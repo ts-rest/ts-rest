@@ -25,13 +25,16 @@ const postsRouter = s.router(router.posts, {
 
     return posts;
   },
-  createPost: async ({ body: { title, content, published } }) => {
+  createPost: async ({
+    body: { title, content, published, authorId, description },
+  }) => {
     const post = await prisma.post.create({
       data: {
         title,
         content,
         published,
-        authorId: 'cl61gznu7000109la4ngq97zk',
+        authorId,
+        description,
       },
     });
 
@@ -39,7 +42,7 @@ const postsRouter = s.router(router.posts, {
   },
   updatePost: async ({
     params: { id },
-    body: { title, content, published },
+    body: { title, content, published, authorId, description },
   }) => {
     const post = await prisma.post.update({
       where: { id },
@@ -47,7 +50,8 @@ const postsRouter = s.router(router.posts, {
         title,
         content,
         published,
-        authorId: 'cl61gznu7000109la4ngq97zk',
+        authorId,
+        description,
       },
     });
 

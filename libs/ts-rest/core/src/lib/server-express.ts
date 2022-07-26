@@ -87,7 +87,8 @@ const transformAppRouteMutationImplementation = (
     try {
       const result = await route({ params: req.params, body: req.body });
       return res.json(result);
-    } catch {
+    } catch (e) {
+      console.error(`[tscont] Error on ${method} ${path}`, e);
       return res.status(500).send('Internal Server Error');
     }
   };

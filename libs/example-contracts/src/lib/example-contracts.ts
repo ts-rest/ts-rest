@@ -6,6 +6,7 @@ const c = initTsCont();
 export type Post = {
   id: string;
   title: string;
+  description: string | null;
   content: string | null;
   published: boolean;
   authorId: string;
@@ -43,6 +44,8 @@ export const router = c.router({
         title: z.string(),
         content: z.string(),
         published: z.boolean().optional(),
+        description: z.string().optional(),
+        authorId: z.string(),
       }),
     }),
     updatePost: c.mutation({
@@ -53,6 +56,8 @@ export const router = c.router({
         title: z.string(),
         content: z.string(),
         published: z.boolean().optional(),
+        description: z.string().optional(),
+        authorId: z.string(),
       }),
     }),
     deletePost: c.mutation({

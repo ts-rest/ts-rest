@@ -59,8 +59,6 @@ const getRouteQuery = <TAppRoute extends AppRoute>(
   return async (inputArgs: DataReturnArgs<any>) => {
     const path = route.path(inputArgs.params);
 
-    console.log(route, inputArgs);
-
     const queryString =
       typeof inputArgs.query === 'object'
         ? Object.keys(inputArgs.query)
@@ -121,12 +119,14 @@ const createNewProxy = (router: AppRouter, args: ClientArgs) => {
   );
 };
 
+export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
+
 export const initClient = <T extends AppRouter>(
   router: T,
   args: ClientArgs
-) => {
+): InitClientReturn<T> => {
   const proxy = createNewProxy(router, args);
 
   // TODO: See if we can type proxy correctly
-  return proxy as RecursiveProxyObj<T>;
+  return proxy as InitClientReturn<T>;
 };
