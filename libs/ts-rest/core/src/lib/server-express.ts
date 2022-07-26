@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import { Express, RequestHandler } from 'express';
 import { z } from 'zod';
 import {
   AppRoute,
@@ -83,26 +83,27 @@ const transformAppRouteMutationImplementation = (
 
   const method = schema.method;
 
+  const callback: RequestHandler = async (req, res) => {
+    try {
+      const result = await route({ params: req.params, body: req.body });
+      return res.json(result);
+    } catch {
+      return res.status(500).send('Internal Server Error');
+    }
+  };
+
   switch (method) {
     case 'DELETE':
-      app.delete(path, async (req, res) =>
-        res.json(await route({ params: req.params, body: req.body }))
-      );
+      app.delete(path, callback);
       break;
     case 'POST':
-      app.post(path, async (req, res) =>
-        res.json(await route({ params: req.params, body: req.body }))
-      );
+      app.post(path, callback);
       break;
     case 'PUT':
-      app.put(path, async (req, res) =>
-        res.json(await route({ params: req.params, body: req.body }))
-      );
+      app.put(path, callback);
       break;
     case 'PATCH':
-      app.patch(path, async (req, res) =>
-        res.json(await route({ params: req.params, body: req.body }))
-      );
+      app.patch(path, callback);
       break;
     default:
       // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars

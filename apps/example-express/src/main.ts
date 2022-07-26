@@ -3,10 +3,12 @@ import cors = require('cors');
 import { router } from '@tscont/example-contracts';
 import { createExpressEndpoints, initServer } from '@tscont/ts-rest-core';
 import { PrismaClient } from '@prisma/client';
-
+import * as bodyParser from 'body-parser';
 const app = express();
 
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 const s = initServer();
 
@@ -29,7 +31,23 @@ const postsRouter = s.router(router.posts, {
         title,
         content,
         published,
-        authorId: '',
+        authorId: 'cl61gznu7000109la4ngq97zk',
+      },
+    });
+
+    return post;
+  },
+  updatePost: async ({
+    params: { id },
+    body: { title, content, published },
+  }) => {
+    const post = await prisma.post.update({
+      where: { id },
+      data: {
+        title,
+        content,
+        published,
+        authorId: 'cl61gznu7000109la4ngq97zk',
       },
     });
 

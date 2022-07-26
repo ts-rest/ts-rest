@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { router } from '@tscont/example-contracts';
 import { initNestServer } from '@tscont/ts-rest-core';
 import { PrismaService } from './prisma.service';
@@ -27,6 +27,21 @@ export class PostController implements ControllerShape {
   @Post(s.paths.createPost)
   async createPost() {
     const post = await this.prisma.post.create({
+      data: {
+        title: 'Hello World',
+        content: 'This is a test post',
+        published: true,
+        authorId: '1',
+      },
+    });
+
+    return post;
+  }
+
+  @Put(s.paths.updatePost)
+  async updatePost() {
+    const post = await this.prisma.post.update({
+      where: { id: '1' },
       data: {
         title: 'Hello World',
         content: 'This is a test post',

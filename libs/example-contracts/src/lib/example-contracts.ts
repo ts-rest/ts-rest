@@ -22,13 +22,18 @@ export const router = c.router({
   posts: c.router({
     getPost: c.query({
       method: 'GET',
-      path: ({ id }) => `/posts/${id}`,
+      path: ({ id }: { id: string }) => `/posts/${id}`,
       response: c.response<Post | null>(),
+      query: null,
     }),
     getPosts: c.query({
       method: 'GET',
       path: () => '/posts',
       response: c.response<Post[]>(),
+      query: z.object({
+        take: z.number().optional(),
+        skip: z.number().optional(),
+      }),
     }),
     createPost: c.mutation({
       method: 'POST',
@@ -40,9 +45,19 @@ export const router = c.router({
         published: z.boolean().optional(),
       }),
     }),
+    updatePost: c.mutation({
+      method: 'PUT',
+      path: ({ id }: { id: string }) => `/posts/${id}`,
+      response: c.response<Post>(),
+      body: z.object({
+        title: z.string(),
+        content: z.string(),
+        published: z.boolean().optional(),
+      }),
+    }),
     deletePost: c.mutation({
       method: 'DELETE',
-      path: ({ id }) => `/posts/${id}`,
+      path: ({ id }: { id: string }) => `/posts/${id}`,
       response: c.response<boolean>(),
       body: null,
     }),
@@ -51,5 +66,6 @@ export const router = c.router({
     method: 'GET',
     path: () => '/health',
     response: c.response<{ message: string }>(),
+    query: null,
   }),
 });
