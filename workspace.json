@@ -5,7 +5,7 @@
     "example-contracts": "libs/example-contracts",
     "example-express": "apps/example-express",
     "example-nest": "apps/example-nest",
-    "example-react": "apps/example-react",
+    "example-next": "apps/example-next",
     "ts-rest-core": "libs/ts-rest/core"
   }
 }

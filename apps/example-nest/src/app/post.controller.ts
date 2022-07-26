@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { router } from '@tscont/example-contracts';
-import { initNestServer } from '@tscont/ts-rest-core';
+import { initNestServer } from '@ts-rest/core';
 import { PrismaService } from './prisma.service';
 
 const s = initNestServer(router.posts);
