@@ -1,6 +1,6 @@
 import { AppRoute, AppRouter, isAppRoute } from './dsl';
 import { getAppRoutePathRoute } from './server';
-import { Without } from '@tscont/ts-rest-utils';
+import { Without } from './type-utils';
 
 type AppRouteShape<T extends AppRoute> = (
   params: Parameters<T['path']>[0]

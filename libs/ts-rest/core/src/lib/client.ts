@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
-import { Without } from '@tscont/ts-rest-utils';
+import { Without } from './type-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
