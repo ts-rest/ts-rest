@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
+import {
+  AppRoute,
+  AppRouteMutation,
+  AppRouter,
+  isAppRoute,
+} from '@ts-rest/core';
 import { Without } from '@tscont/ts-rest-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
@@ -113,7 +118,7 @@ const createNewProxy = (router: AppRouter, args: ClientArgs) => {
 
 export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
-export const initClient = <T extends AppRouter>(
+export const initQueryClient = <T extends AppRouter>(
   router: T,
   args: ClientArgs
 ): InitClientReturn<T> => {

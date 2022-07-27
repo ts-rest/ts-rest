@@ -57,7 +57,6 @@ export const router = c.router({
         content: z.string(),
         published: z.boolean().optional(),
         description: z.string().optional(),
-        authorId: z.string(),
       }),
     }),
     deletePost: c.mutation({

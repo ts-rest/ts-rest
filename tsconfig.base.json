@@ -15,10 +15,12 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@ts-rest/client": ["libs/ts-rest/client/src/index.ts"],
       "@ts-rest/core": ["libs/ts-rest/core/src/index.ts"],
       "@tscont/example-contracts": ["libs/example-contracts/src/index.ts"],
       "@tscont/example-express": ["apps/example-express/src/index.ts"],
-      "@tscont/example-nest": ["libs/example-nest/src/index.ts"]
+      "@tscont/example-nest": ["libs/example-nest/src/index.ts"],
+      "@tscont/ts-rest-utils": ["libs/ts-rest/utils/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

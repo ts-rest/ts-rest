@@ -1,3 +1,4 @@
+import { initQueryClient } from '@ts-rest/client';
 import { initClient } from '@ts-rest/core';
 import { router } from '@tscont/example-contracts';
 
@@ -17,6 +18,12 @@ export const clientExpress = initClient(router, {
 
 export const clientNest = initClient(router, {
   baseUrl: 'http://localhost:3334',
+  baseHeaders: {},
+  api,
+});
+
+export const clientReactQuery = initQueryClient(router, {
+  baseUrl: 'http://localhost:3335',
   baseHeaders: {},
   api,
 });

@@ -3,7 +3,7 @@ export type AppRouteQuery = {
   method: 'GET';
   path: PathFunction;
   response: unknown;
-  query: unknown;
+  query?: unknown;
 };
 
 export type AppRouteMutation = {
@@ -12,6 +12,7 @@ export type AppRouteMutation = {
   path: PathFunction;
   response: unknown;
   body: unknown;
+  query?: unknown;
 };
 
 export type AppRoute = AppRouteQuery | AppRouteMutation;

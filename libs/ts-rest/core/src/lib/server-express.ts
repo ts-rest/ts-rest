@@ -8,7 +8,7 @@ import {
   isAppRoute,
 } from './dsl';
 import { getAppRoutePathRoute } from './server';
-import { getValue } from './type-utils';
+import { getValue } from '@tscont/ts-rest-utils';
 
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (input: {
   params: Parameters<T['path']>[0];

@@ -1,53 +1,61 @@
-import { Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { router } from '@tscont/example-contracts';
 import { initNestServer } from '@ts-rest/core';
-import { PrismaService } from './prisma.service';
+import { PostService } from './post.service';
 
 const s = initNestServer(router.posts);
 type ControllerShape = typeof s.controllerShape;
 
 @Controller()
 export class PostController implements ControllerShape {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly postService: PostService) {}
 
   @Get(s.paths.getPosts)
   async getPosts() {
-    const posts = await this.prisma.post.findMany({});
+    const posts = await this.postService.getPosts();
 
     return posts;
   }
 
   @Get(s.paths.getPost)
   async getPost(@Param() { id }: { id: string }) {
-    const post = await this.prisma.post.findUnique({ where: { id } });
+    const post = await this.postService.getPost(id);
 
-    return post ?? null;
+    return post;
   }
 
   @Post(s.paths.createPost)
-  async createPost() {
-    const post = await this.prisma.post.create({
-      data: {
-        title: 'Hello World',
-        content: 'This is a test post',
-        published: true,
-        authorId: '1',
-      },
+  async createPost(@Body() rawBody: unknown) {
+    const body = router.posts.createPost.body.parse(rawBody);
+
+    const post = await this.postService.createPost({
+      title: body.title,
+      content: body.content,
+      published: body.published,
+      authorId: body.authorId,
+      description: body.description,
     });
 
     return post;
   }
 
   @Put(s.paths.updatePost)
-  async updatePost() {
-    const post = await this.prisma.post.update({
-      where: { id: '1' },
-      data: {
-        title: 'Hello World',
-        content: 'This is a test post',
-        published: true,
-        authorId: '1',
-      },
+  async updatePost(@Body() rawBody: unknown) {
+    const body = router.posts.updatePost.body.parse(rawBody);
+
+    const post = await this.postService.updatePost({
+      title: body.title,
+      content: body.content,
+      published: body.published,
+      description: body.description,
     });
 
     return post;
