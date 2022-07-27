@@ -7,7 +7,6 @@
     "example-nest": "apps/example-nest",
     "example-next": "apps/example-next",
     "ts-rest-client": "libs/ts-rest/client",
-    "ts-rest-core": "libs/ts-rest/core",
-    "ts-rest-utils": "libs/ts-rest/utils"
+    "ts-rest-core": "libs/ts-rest/core"
   }
 }
