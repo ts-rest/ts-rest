@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/core",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "description": "RPC-like experience over a regular REST API, with type safe server implementations 🪄",
   "type": "commonjs",
   "license": "MIT",
@@ -12,5 +12,10 @@
     "http",
     "api",
     "type safe"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "libs/ts-rest/core"
+  }
 }
