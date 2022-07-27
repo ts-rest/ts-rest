@@ -5,7 +5,7 @@ import {
   AppRouter,
   isAppRoute,
 } from '@ts-rest/core';
-import { Without } from '@tscont/ts-rest-utils';
+// import { Without } from "./";
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
@@ -30,13 +30,21 @@ type DataReturnArgs<TRoute extends AppRoute> = {
 };
 
 type DataReturn<TRoute extends AppRoute> = (
-  args: Without<DataReturnArgs<TRoute>, never>
+  args: DataReturnArgs<TRoute> // FIXME: Without
 ) => Promise<{ data: TRoute['response']; status: number }>;
 
 type ClientArgs = {
   baseUrl: string;
   baseHeaders: Record<string, string>;
   api: ApiFetcher;
+};
+
+const defaultApi: ApiFetcher = async ({ path, method, headers, body }) => {
+  const result = await fetch(path, { method, headers, body }).then((res) =>
+    res.json()
+  );
+
+  return { status: 200, data: result };
 };
 
 export type ApiFetcher = (args: {
@@ -120,9 +128,12 @@ export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
 export const initQueryClient = <T extends AppRouter>(
   router: T,
-  args: ClientArgs
+  args: Omit<ClientArgs, 'api'> & { api?: ApiFetcher }
 ): InitClientReturn<T> => {
-  const proxy = createNewProxy(router, args);
+  const proxy = createNewProxy(router, {
+    ...args,
+    api: args.api || defaultApi,
+  });
 
   // TODO: See if we can type proxy correctly
   return proxy as InitClientReturn<T>;

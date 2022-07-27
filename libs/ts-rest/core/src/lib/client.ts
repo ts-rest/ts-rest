@@ -34,6 +34,14 @@ type ClientArgs = {
   api: ApiFetcher;
 };
 
+const defaultApi: ApiFetcher = async ({ path, method, headers, body }) => {
+  const result = await fetch(path, { method, headers, body }).then((res) =>
+    res.json()
+  );
+
+  return { status: 200, data: result };
+};
+
 export type ApiFetcher = (args: {
   path: string;
   method: string;
@@ -115,9 +123,12 @@ export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
 export const initClient = <T extends AppRouter>(
   router: T,
-  args: ClientArgs
+  args: Omit<ClientArgs, 'api'> & { api?: ApiFetcher }
 ): InitClientReturn<T> => {
-  const proxy = createNewProxy(router, args);
+  const proxy = createNewProxy(router, {
+    ...args,
+    api: args.api || defaultApi,
+  });
 
   // TODO: See if we can type proxy correctly
   return proxy as InitClientReturn<T>;
