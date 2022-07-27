@@ -63,7 +63,7 @@ export class PostController implements ControllerShape {
 
   @Delete(s.paths.deletePost)
   async deletePost(@Param() { id }: { id: string }) {
-    console.log('deleting post ', id);
+    await this.postService.deletePost(id);
 
     return true;
   }

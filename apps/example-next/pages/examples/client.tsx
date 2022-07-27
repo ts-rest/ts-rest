@@ -1,20 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '../_app';
-import { clientExpress } from '../../api';
+import { clientNest } from '../../api';
 
 export const Index = () => {
   const { data, isLoading } = useQuery([`posts`], () =>
-    clientExpress.posts.getPosts({ query: {} })
+    clientNest.posts.getPosts({ query: {} })
   );
 
   const handleUpdatePost = async (id: string) => {
-    await clientExpress.posts.updatePost({
+    await clientNest.posts.updatePost({
       params: {
         id,
       },
       body: {
-        title: 'New Title',
-        content: 'New Content',
+        title: 'Updated Title',
+        content: 'Updated Content',
         description: 'Updated description',
       },
     });
@@ -23,7 +23,7 @@ export const Index = () => {
   };
 
   const handleDeletePost = async (id: string) => {
-    await clientExpress.posts.deletePost({
+    await clientNest.posts.deletePost({
       params: {
         id,
       },
@@ -34,7 +34,7 @@ export const Index = () => {
   };
 
   const handleCreatePost = async () => {
-    await clientExpress.posts.createPost({
+    await clientNest.posts.createPost({
       body: {
         title: 'New Title',
         content: 'New Content',

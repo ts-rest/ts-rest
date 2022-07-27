@@ -42,7 +42,7 @@ const postsRouter = s.router(router.posts, {
   },
   updatePost: async ({
     params: { id },
-    body: { title, content, published, authorId, description },
+    body: { title, content, published, description },
   }) => {
     const post = await prisma.post.update({
       where: { id },
@@ -50,7 +50,6 @@ const postsRouter = s.router(router.posts, {
         title,
         content,
         published,
-        authorId,
         description,
       },
     });
