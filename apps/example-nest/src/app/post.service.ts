@@ -33,14 +33,17 @@ export class PostService {
     return post;
   }
 
-  async updatePost(params: {
-    title: string | undefined;
-    content: string | undefined;
-    published: boolean | undefined;
-    description: string | undefined;
-  }) {
+  async updatePost(
+    id: string,
+    params: {
+      title: string | undefined;
+      content: string | undefined;
+      published: boolean | undefined;
+      description: string | undefined;
+    }
+  ) {
     const post = await this.prisma.post.update({
-      where: { id: '1' },
+      where: { id },
       data: {
         ...params,
       },

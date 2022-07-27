@@ -48,10 +48,10 @@ export class PostController implements ControllerShape {
   }
 
   @Put(s.paths.updatePost)
-  async updatePost(@Body() rawBody: unknown) {
+  async updatePost(@Param() { id }: { id: string }, @Body() rawBody: unknown) {
     const body = router.posts.updatePost.body.parse(rawBody);
 
-    const post = await this.postService.updatePost({
+    const post = await this.postService.updatePost(id, {
       title: body.title,
       content: body.content,
       published: body.published,
