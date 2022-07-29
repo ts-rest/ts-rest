@@ -52,7 +52,7 @@ const config = {
             type: 'doc',
             docId: 'intro',
             position: 'left',
-            label: 'Documents',
+            label: 'Docs',
           },
           {
             href: 'https://github.com/ts-rest/ts-rest',

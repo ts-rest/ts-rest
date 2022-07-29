@@ -2872,6 +2872,11 @@
     p-map "^4.0.0"
     webpack-sources "^3.2.2"
 
+"@stackblitz/sdk@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@stackblitz/sdk/-/sdk-1.8.0.tgz#9bd5f028ccfc1a921d66f914d1e7ea2761139c1e"
+  integrity sha512-hbS4CpQVF3bxJ+ZD8qu8lAjTZVLTPToLbMtgxbxUmp1AIgqm7i0gMFM1POBA8BqY84CT1A3z74gdCd1bsro7qA==
+
 "@storybook/node-logger@6.1.20":
   version "6.1.20"
   resolved "https://registry.yarnpkg.com/@storybook/node-logger/-/node-logger-6.1.20.tgz#40ec44bfd36e799089c831ecb86588c730023e6c"
