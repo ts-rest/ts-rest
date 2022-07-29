@@ -1,9 +1,9 @@
 import { initClient } from './lib/client';
-import { initTsCont } from '.';
+import { initTsRest } from '.';
 
 import { z } from 'zod';
 
-const c = initTsCont();
+const c = initTsRest();
 
 export type Post = {
   id: string;

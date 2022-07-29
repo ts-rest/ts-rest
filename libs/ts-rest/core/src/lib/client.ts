@@ -26,7 +26,10 @@ type DataReturnArgs<TRoute extends AppRoute> = {
 
 type DataReturn<TRoute extends AppRoute> = (
   args: Without<DataReturnArgs<TRoute>, never>
-) => Promise<{ data: TRoute['response']; status: number }>;
+) => Promise<
+  | { data: TRoute['response']; error: null; status: number }
+  | { data: null; error: string; status: number }
+>;
 
 type ClientArgs = {
   baseUrl: string;
@@ -35,11 +38,15 @@ type ClientArgs = {
 };
 
 const defaultApi: ApiFetcher = async ({ path, method, headers, body }) => {
-  const result = await fetch(path, { method, headers, body }).then((res) =>
-    res.json()
-  );
+  const result = await fetch(path, { method, headers, body });
 
-  return { status: 200, data: result };
+  if (result.ok) {
+    const json = await result.json();
+
+    return { status: result.status, data: json, error: null };
+  }
+
+  return { status: result.status, data: null, error: result.statusText };
 };
 
 export type ApiFetcher = (args: {
@@ -47,16 +54,24 @@ export type ApiFetcher = (args: {
   method: string;
   headers: Record<string, string>;
   body: string | undefined;
-}) => Promise<{
-  status: number;
-  data: unknown;
-}>;
+}) => Promise<
+  | {
+      status: number;
+      data: unknown;
+      error: null;
+    }
+  | {
+      status: number;
+      data: null;
+      error: string;
+    }
+>;
 
 const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
-  return async (inputArgs: DataReturnArgs<any>) => {
+  return async (inputArgs: DataReturnArgs<any>): ReturnType<ApiFetcher> => {
     const path = route.path(inputArgs.params);
 
     const queryString =
@@ -93,7 +108,7 @@ const getRouteQuery = <TAppRoute extends AppRoute>(
           : undefined,
     });
 
-    return { data: result.data, status: result.status };
+    return result;
   };
 };
 
