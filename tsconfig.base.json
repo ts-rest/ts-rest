@@ -12,6 +12,8 @@
     "module": "esnext",
     "lib": ["es2017", "dom"],
     "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {

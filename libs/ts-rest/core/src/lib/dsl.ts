@@ -61,7 +61,7 @@ type TsCont = {
   path: <T>() => T;
 };
 
-export const initTsCont = (): TsCont => {
+export const initTsRest = (): TsCont => {
   return {
     router: (args) => args,
     query: (args) => ({ __type: 'AppRouteQuery', ...args }),

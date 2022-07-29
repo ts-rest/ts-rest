@@ -1,5 +1,6 @@
 import { Express, RequestHandler } from 'express';
 import { z } from 'zod';
+import Zod = require('zod');
 import {
   AppRoute,
   AppRouteMutation,
@@ -8,16 +9,30 @@ import {
   isAppRoute,
 } from './dsl';
 import { getAppRoutePathRoute } from './server';
-import { getValue } from './type-utils';
+import { getValue, Without } from './type-utils';
 
-type AppRouteQueryImplementation<T extends AppRouteQuery> = (input: {
-  params: Parameters<T['path']>[0];
-}) => Promise<T['response']>;
+type AppRouteQueryImplementation<T extends AppRouteQuery> = (
+  input: Without<
+    {
+      params: Parameters<T['path']>[0] extends undefined
+        ? never
+        : Parameters<T['path']>[0];
+      query: T['query'] extends z.AnyZodObject ? z.infer<T['query']> : null;
+    },
+    never
+  >
+) => Promise<T['response']>;
 
-type AppRouteMutationImplementation<T extends AppRouteMutation> = (input: {
-  params: Parameters<T['path']>[0];
-  body: T['body'] extends z.AnyZodObject ? z.infer<T['body']> : null;
-}) => Promise<T['response']>;
+type AppRouteMutationImplementation<T extends AppRouteMutation> = (
+  input: Without<
+    {
+      params: Parameters<T['path']>[0];
+      query: T['query'] extends z.AnyZodObject ? z.infer<T['query']> : never;
+      body: T['body'] extends z.AnyZodObject ? z.infer<T['body']> : never;
+    },
+    never
+  >
+) => Promise<T['response']>;
 
 type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteMutationImplementation<T>
@@ -68,7 +83,15 @@ const transformAppRouteQueryImplementation = (
   console.log(`[tscont] Initialized ${schema.method} ${path}`);
 
   app.get(path, async (req, res) => {
-    return res.json(await route({ params: req.params }));
+    const zodQueryIssues = returnZodErrorsIfZodSchema(schema.query, req.query);
+
+    if (zodQueryIssues.length > 0) {
+      return res.status(400).json({
+        errors: zodQueryIssues,
+      });
+    }
+
+    return res.json(await route({ params: req.params, query: req.query }));
   });
 };
 
@@ -85,7 +108,30 @@ const transformAppRouteMutationImplementation = (
 
   const callback: RequestHandler = async (req, res) => {
     try {
-      const result = await route({ params: req.params, body: req.body });
+      const zodBodyIssues = returnZodErrorsIfZodSchema(schema.body, req.body);
+
+      if (zodBodyIssues.length > 0) {
+        return res.status(400).json({
+          errors: zodBodyIssues,
+        });
+      }
+
+      const zodQueryIssues = returnZodErrorsIfZodSchema(
+        schema.query,
+        req.query
+      );
+
+      if (zodQueryIssues.length > 0) {
+        return res.status(400).json({
+          errors: zodQueryIssues,
+        });
+      }
+
+      const result = await route({
+        params: req.params,
+        body: req.body,
+        query: req.query,
+      });
       return res.json(result);
     } catch (e) {
       console.error(`[tscont] Error on ${method} ${path}`, e);
@@ -110,6 +156,28 @@ const transformAppRouteMutationImplementation = (
       // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
       const _exhaustiveCheck: never = method;
   }
+};
+
+const returnZodErrorsIfZodSchema = (
+  schema: unknown,
+  body: unknown
+): z.ZodIssue[] => {
+  const bodySchema = schema as z.AnyZodObject;
+
+  if (
+    bodySchema &&
+    bodySchema._def &&
+    bodySchema._def.typeName === 'ZodObject'
+  ) {
+    // Check body schema
+    const parsed = bodySchema.safeParse(body);
+
+    if (parsed.success === false) {
+      return parsed.error.issues;
+    }
+  }
+
+  return [];
 };
 
 export const createExpressEndpoints = <

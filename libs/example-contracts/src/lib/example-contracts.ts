@@ -1,7 +1,7 @@
-import { initTsCont } from '@ts-rest/core';
+import { initTsRest } from '@ts-rest/core';
 import { z } from 'zod';
 
-const c = initTsCont();
+const c = initTsRest();
 
 export type Post = {
   id: string;
@@ -32,8 +32,8 @@ export const router = c.router({
       path: () => '/posts',
       response: c.response<Post[]>(),
       query: z.object({
-        take: z.number().optional(),
-        skip: z.number().optional(),
+        take: z.string().optional(),
+        skip: z.string().optional(),
       }),
     }),
     createPost: c.mutation({

@@ -4,6 +4,7 @@ import { router } from '@tscont/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/core';
 import { PrismaClient } from '@prisma/client';
 import * as bodyParser from 'body-parser';
+
 const app = express();
 
 app.use(cors());
@@ -20,8 +21,11 @@ const postsRouter = s.router(router.posts, {
 
     return post ?? null;
   },
-  getPosts: async () => {
-    const posts = await prisma.post.findMany();
+  getPosts: async ({ query: { take, skip } }) => {
+    const posts = await prisma.post.findMany({
+      take: Number(take),
+      skip: Number(skip),
+    });
 
     return posts;
   },
