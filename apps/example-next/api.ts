@@ -13,6 +13,6 @@ export const clientNest = initClient(router, {
 });
 
 export const clientReactQuery = initQueryClient(router, {
-  baseUrl: 'http://localhost:3335',
+  baseUrl: 'http://localhost:3334',
   baseHeaders: {},
 });

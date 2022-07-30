@@ -2168,18 +2168,15 @@
     unist-builder "2.0.3"
     unist-util-visit "2.0.3"
 
+"@mdx-js/react@1.6.21":
+  version "1.6.21"
+  resolved "https://registry.yarnpkg.com/@mdx-js/react/-/react-1.6.21.tgz#86d962471a5e160c59a6b32054aa55c0c7ca404e"
+  integrity sha512-CgSNT9sq2LAlhEbVlPg7DwUQkypz+CWaWGcJbkgmp9WCAy6vW33CQ44UbKPiH3wet9o+UbXeQOqzZd041va83g==
+
 "@mdx-js/react@^1.6.22":
   version "1.6.22"
   resolved "https://registry.yarnpkg.com/@mdx-js/react/-/react-1.6.22.tgz#ae09b4744fddc74714ee9f9d6f17a66e77c43573"
   integrity sha512-TDoPum4SHdfPiGSAaRBw7ECyI8VaHpK8GJugbJIJuqyh6kzw9ZLJZW3HGL3NNrJGxcAixUvqROm+YuQOo5eXtg==
-
-"@mdx-js/react@^2.1.2":
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/@mdx-js/react/-/react-2.1.2.tgz#02972f170cd3ad9113ce448245c5f636bb3e750d"
-  integrity sha512-52e3DTJBrjsw3U51ZCdZ3N1IBaqnbzLIngCSXpKtiYiGr7PIqp3/P/+kym0MPTwBL/y9ZBmCieD8FyrXuEDrRw==
-  dependencies:
-    "@types/mdx" "^2.0.0"
-    "@types/react" ">=16"
 
 "@mdx-js/util@1.6.22":
   version "1.6.22"
@@ -3028,10 +3025,26 @@
     lodash.isplainobject "^4.0.6"
     lodash.merge "^4.6.2"
 
+"@tanstack/match-sorter-utils@^8.0.0-alpha.82":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@tanstack/match-sorter-utils/-/match-sorter-utils-8.1.1.tgz#895f407813254a46082a6bbafad9b39b943dc834"
+  integrity sha512-IdmEekEYxQsoLOR0XQyw3jD1GujBpRRYaGJYQUw1eOT1eUugWxdc7jomh1VQ1EKHcdwDLpLaCz/8y4KraU4T9A==
+  dependencies:
+    remove-accents "0.4.2"
+
 "@tanstack/query-core@^4.0.0-beta.1":
   version "4.0.10"
   resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-4.0.10.tgz#cae6f818006616dc72c95c863592f5f68b47548a"
   integrity sha512-9LsABpZXkWZHi4P1ozRETEDXQocLAxVzQaIhganxbNuz/uA3PsCAJxJTiQrknG5htLMzOF5MqM9G10e6DCxV1A==
+
+"@tanstack/react-query-devtools@^4.0.10":
+  version "4.0.10"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query-devtools/-/react-query-devtools-4.0.10.tgz#d1b3e5b1917f1c22bcee5830ef7af1ccfc4879f4"
+  integrity sha512-3J7LLYQjfjTI0DbPo0bA+M3l4kdvYSWAqihpeG1u93WVyZj0OEFviUv+4cK7+k2AVgQJAPMZ5xvtewKxOOFVrw==
+  dependencies:
+    "@tanstack/match-sorter-utils" "^8.0.0-alpha.82"
+    "@types/use-sync-external-store" "^0.0.3"
+    use-sync-external-store "^1.2.0"
 
 "@tanstack/react-query@^4.0.10":
   version "4.0.10"
@@ -3322,11 +3335,6 @@
   dependencies:
     "@types/unist" "*"
 
-"@types/mdx@^2.0.0":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@types/mdx/-/mdx-2.0.2.tgz#64be19baddba4323ae7893e077e98759316fe279"
-  integrity sha512-mJGfgj4aWpiKb8C0nnJJchs1sHBHn0HugkVfqqyQi7Wn6mBRksLeQsPOFvih/Pu8L1vlDzfe/LidhVHBeUk3aQ==
-
 "@types/mime@^1":
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-1.3.2.tgz#93e25bf9ee75fe0fd80b594bc4feb0e862111b5a"
@@ -3425,7 +3433,7 @@
     "@types/history" "^4.7.11"
     "@types/react" "*"
 
-"@types/react@*", "@types/react@18.0.15", "@types/react@>=16":
+"@types/react@*", "@types/react@18.0.15":
   version "18.0.15"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-18.0.15.tgz#d355644c26832dc27f3e6cbf0c4f4603fc4ab7fe"
   integrity sha512-iz3BtLuIYH1uWdsv6wXYdhozhqj20oD4/Hk2DNXIn1kFsmp9x8d9QB6FnPhfkbhd2PgEONt9Q1x/ebkwjfFLow==
@@ -11233,6 +11241,11 @@ remark-squeeze-paragraphs@4.0.0:
   integrity sha512-8qRqmL9F4nuLPIgl92XUuxI3pFxize+F1H0e/W3llTk0UsjJaj01+RrirkMw7P21RKe4X6goQhYRSvNWX+70Rw==
   dependencies:
     mdast-squeeze-paragraphs "^4.0.0"
+
+remove-accents@0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/remove-accents/-/remove-accents-0.4.2.tgz#0a43d3aaae1e80db919e07ae254b285d9e1c7bb5"
+  integrity sha512-7pXIJqJOq5tFgG1A2Zxti3Ht8jJF337m4sowbuHsW30ZnkQFnDzy9qBNhgzX8ZLW4+UBcXiiR7SwR6pokHsxiA==
 
 renderkid@^3.0.0:
   version "3.0.0"

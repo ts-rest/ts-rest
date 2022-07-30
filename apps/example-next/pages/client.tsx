@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { queryClient } from '../_app';
-import { clientNest } from '../../api';
+import { queryClient } from './_app';
+import { clientNest } from '../api';
 
 export const Index = () => {
   const { data, isLoading } = useQuery([`posts`], () =>

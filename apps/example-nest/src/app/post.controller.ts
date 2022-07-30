@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { router } from '@tscont/example-contracts';
 import { initNestServer } from '@ts-rest/core';
@@ -19,8 +20,11 @@ export class PostController implements ControllerShape {
   constructor(private readonly postService: PostService) {}
 
   @Get(s.paths.getPosts)
-  async getPosts() {
-    const posts = await this.postService.getPosts();
+  async getPosts(@Query() { take, skip }: { take?: string; skip?: string }) {
+    const posts = await this.postService.getPosts({
+      take: take ? Number(take) : undefined,
+      skip: skip ? Number(skip) : undefined,
+    });
 
     return posts;
   }

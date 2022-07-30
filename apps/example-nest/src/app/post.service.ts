@@ -5,8 +5,8 @@ import { PrismaService } from './prisma.service';
 export class PostService {
   constructor(private prisma: PrismaService) {}
 
-  async getPosts() {
-    const posts = await this.prisma.post.findMany({});
+  async getPosts({ take, skip }: { take?: number; skip?: number }) {
+    const posts = await this.prisma.post.findMany({ take, skip });
 
     return posts;
   }

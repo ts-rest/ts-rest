@@ -2,36 +2,84 @@ import { z } from 'zod';
 import {
   AppRoute,
   AppRouteMutation,
+  AppRouteQuery,
   AppRouter,
   isAppRoute,
+  Without,
 } from '@ts-rest/core';
-// import { Without } from "./";
+import {
+  QueryKey,
+  useMutation,
+  UseMutationOptions,
+  UseMutationResult,
+  useQuery,
+  UseQueryOptions,
+  UseQueryResult,
+} from '@tanstack/react-query';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
     ? RecursiveProxyObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? DataReturn<T[TKey]>
+    ? Without<UseQueryArgs<T[TKey]>, never>
     : never;
 };
 
 type AppRouteMutationType<T> = T extends z.AnyZodObject ? z.infer<T> : T;
 
+type UseQueryArgs<TAppRoute extends AppRoute> = {
+  useQuery: TAppRoute extends AppRouteQuery
+    ? DataReturnQuery<TAppRoute>
+    : never;
+  query: TAppRoute extends AppRouteQuery ? DataReturn<TAppRoute> : never;
+  useMutation: TAppRoute extends AppRouteMutation
+    ? DataReturnMutation<TAppRoute>
+    : never;
+  mutation: TAppRoute extends AppRouteMutation ? DataReturn<TAppRoute> : never;
+};
+
 type DataReturnArgs<TRoute extends AppRoute> = {
   body: TRoute extends AppRouteMutation
-    ? AppRouteMutationType<TRoute['body']>
+    ? AppRouteMutationType<TRoute['body']> extends null
+      ? never
+      : AppRouteMutationType<TRoute['body']>
     : never;
-  params: Parameters<TRoute['path']>[0] extends undefined
+  params: Parameters<TRoute['path']>[0] extends null
     ? never
     : Parameters<TRoute['path']>[0];
   query: TRoute['query'] extends z.AnyZodObject
-    ? AppRouteMutationType<TRoute['query']>
+    ? AppRouteMutationType<TRoute['query']> extends null
+      ? never
+      : AppRouteMutationType<TRoute['query']>
     : never;
 };
 
+// Used on X.query and X.mutation
 type DataReturn<TRoute extends AppRoute> = (
-  args: DataReturnArgs<TRoute> // FIXME: Without
+  args: Without<DataReturnArgs<TRoute>, never>
 ) => Promise<{ data: TRoute['response']; status: number }>;
+
+// Used on X.useQuery
+type DataReturnQuery<TAppRoute extends AppRoute> = (
+  queryKey: QueryKey,
+  args: Without<DataReturnArgs<TAppRoute>, never>,
+  options?: UseQueryOptions<TAppRoute['response']>
+) => UseQueryResult<TAppRoute['response']>;
+
+// Used pn X.useMutation
+type DataReturnMutation<TAppRoute extends AppRoute> = (
+  options?: UseMutationOptions<
+    TAppRoute['response'],
+    unknown,
+    Without<DataReturnArgs<TAppRoute>, never>,
+    unknown
+  >
+) => UseMutationResult<
+  TAppRoute['response'],
+  unknown,
+  Without<DataReturnArgs<TAppRoute>, never>,
+  unknown
+>;
 
 type ClientArgs = {
   baseUrl: string;
@@ -57,68 +105,110 @@ export type ApiFetcher = (args: {
   data: unknown;
 }>;
 
-const getRouteQuery = <TAppRoute extends AppRoute>(
+const getCompleteUrl = (query: any, baseUrl: string, path: string) => {
+  const queryString =
+    typeof query === 'object'
+      ? Object.keys(query)
+          .map((key) => {
+            return (
+              encodeURIComponent(key) + '=' + encodeURIComponent(query[key])
+            );
+          })
+          .join('&')
+      : '';
+
+  const completeUrl = `${baseUrl}${path}${
+    queryString.length > 0 && queryString !== null && queryString !== undefined
+      ? '?' + queryString
+      : ''
+  }`;
+
+  return completeUrl;
+};
+
+const getRouteUseQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
-  return async (inputArgs: DataReturnArgs<any>) => {
-    const path = route.path(inputArgs.params);
+  return (
+    queryKey: QueryKey,
+    args: DataReturnArgs<TAppRoute>,
+    options?: UseQueryOptions<TAppRoute['response']>
+  ) => {
+    const dataFn = async () => {
+      const path = route.path(args.params);
 
-    const queryString =
-      typeof inputArgs.query === 'object'
-        ? Object.keys(inputArgs.query)
-            .map((key) => {
-              return (
-                encodeURIComponent(key) +
-                '=' +
-                encodeURIComponent(inputArgs.query[key])
-              );
-            })
-            .join('&')
-        : '';
+      const completeUrl = getCompleteUrl(args.query, clientArgs.baseUrl, path);
 
-    const completeUrl = `${clientArgs.baseUrl}${path}${
-      queryString.length > 0 &&
-      queryString !== null &&
-      queryString !== undefined
-        ? '?' + queryString
-        : ''
-    }`;
+      const result = await clientArgs.api({
+        path: completeUrl,
+        method: route.method,
+        headers: {
+          ...clientArgs.baseHeaders,
+        },
+        body: undefined,
+      });
 
-    const result = await clientArgs.api({
-      path: completeUrl,
-      method: route.method,
-      headers: {
-        ...clientArgs.baseHeaders,
-        'Content-Type': 'application/json',
-      },
-      body:
-        inputArgs.body !== null && inputArgs.body !== undefined
-          ? JSON.stringify(inputArgs.body)
-          : undefined,
-    });
+      return result.data;
+    };
 
-    return { data: result.data, status: result.status };
+    return useQuery(queryKey, dataFn, options);
   };
 };
 
-const createNewProxy = (router: AppRouter, args: ClientArgs) => {
+const getRouteUseMutation = <TAppRoute extends AppRoute>(
+  route: TAppRoute,
+  clientArgs: ClientArgs
+) => {
+  return (options?: UseMutationOptions<TAppRoute['response']>) => {
+    const mutationFunction = async (args: DataReturnArgs<TAppRoute>) => {
+      const path = route.path(args.params);
+
+      const completeUrl = getCompleteUrl(args.query, clientArgs.baseUrl, path);
+
+      const result = await clientArgs.api({
+        path: completeUrl,
+        method: route.method,
+        headers: {
+          ...clientArgs.baseHeaders,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(args.body),
+      });
+
+      return result.data;
+    };
+
+    return useMutation(
+      mutationFunction as () => Promise<TAppRoute['response']>,
+      options
+    );
+  };
+};
+
+const createNewProxy = (router: AppRouter | AppRoute, args: ClientArgs) => {
   return new Proxy(
     {},
     {
-      get: (target, propKey): any => {
-        if (typeof propKey === 'string' && propKey in router) {
-          const subRouter = router[propKey];
-
-          if (isAppRoute(subRouter)) {
-            // If the current router.X is a route, return a function to handle the users args
-            return getRouteQuery(subRouter, args);
-          } else {
-            return createNewProxy(subRouter, args);
+      get: (_, propKey): any => {
+        if (isAppRoute(router)) {
+          switch (propKey) {
+            case 'query':
+              throw new Error('Not implemented');
+            case 'mutation':
+              throw new Error('Not implemented');
+            case 'useQuery':
+              return getRouteUseQuery(router, args);
+            case 'useMutation':
+              return getRouteUseMutation(router, args);
+            default:
+              throw new Error(`Unknown method called on ${String(propKey)}`);
           }
-        }
+        } else {
+          const subRouter = router[propKey as string];
 
-        return createNewProxy(router, args);
+          return createNewProxy(subRouter, args);
+        }
       },
     }
   );
@@ -135,6 +225,5 @@ export const initQueryClient = <T extends AppRouter>(
     api: args.api || defaultApi,
   });
 
-  // TODO: See if we can type proxy correctly
   return proxy as InitClientReturn<T>;
 };

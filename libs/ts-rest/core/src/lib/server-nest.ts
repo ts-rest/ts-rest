@@ -2,12 +2,9 @@ import { AppRoute, AppRouter, isAppRoute } from './dsl';
 import { getAppRoutePathRoute } from './server';
 import { Without } from './type-utils';
 
-type AppRouteShape<T extends AppRoute> = Parameters<T['path']>[0] extends never
-  ? (...params: unknown[]) => Promise<T['response']>
-  : (
-      params: Parameters<T['path']>[0],
-      ...moreParams: unknown[]
-    ) => Promise<T['response']>;
+type AppRouteShape<T extends AppRoute> = (
+  ...args: unknown[]
+) => Promise<T['response']>;
 
 type AppRouterControllerShape<T extends AppRouter> = {
   [K in keyof T]: T[K] extends AppRouter
