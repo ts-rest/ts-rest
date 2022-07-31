@@ -6,10 +6,10 @@
     "version-packages": "changeset version",
     "release": "yarn nx run-many --target=build && changeset publish"
   },
+  "private": true,
   "workspaces": [
     "libs/ts-rest/*"
   ],
-  "private": false,
   "dependencies": {
     "@changesets/cli": "^2.24.1",
     "@docusaurus/core": "2.0.0-rc.1",

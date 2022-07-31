@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [["@ts-rest/core", "@ts-rest/nest", "@ts-rest/react-query"]],
-  "access": "restricted",
+  "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": []
