@@ -6,6 +6,9 @@
     "version-packages": "changeset version",
     "release": "yarn nx run-many --target=build && changeset publish"
   },
+  "workspaces": [
+    "libs/ts-rest/*"
+  ],
   "private": false,
   "dependencies": {
     "@changesets/cli": "^2.24.1",

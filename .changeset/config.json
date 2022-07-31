@@ -3,7 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [["ts-rest*"]],
+  "linked": [["@ts-rest/core", "@ts-rest/nest", "@ts-rest/react-query"]],
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
