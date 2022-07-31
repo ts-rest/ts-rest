@@ -6,9 +6,10 @@ import {
   AppRouteQuery,
   AppRouter,
   isAppRoute,
-} from './dsl';
-import { getAppRoutePathRoute } from './server';
-import { getValue, Without } from './type-utils';
+  getAppRoutePathRoute,
+  getValue,
+  Without,
+} from '@ts-rest/core';
 
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
