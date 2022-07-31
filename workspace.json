@@ -9,7 +9,6 @@
     "example-next": "apps/example-next",
     "ts-rest-core": "libs/ts-rest/core",
     "ts-rest-nest": "libs/ts-rest/nest",
-    "ts-rest-react-query": "libs/ts-rest/react-query",
-    "ts-rest-utils": "libs/ts-rest/utils"
+    "ts-rest-react-query": "libs/ts-rest/react-query"
   }
 }

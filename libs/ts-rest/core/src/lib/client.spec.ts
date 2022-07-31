@@ -1,5 +1,5 @@
-import { initClient } from './lib/client';
-import { initTsRest } from '.';
+import { initClient } from './client';
+import { initTsRest } from '..';
 
 import { z } from 'zod';
 

@@ -163,7 +163,8 @@ const checkQuerySchema = (
 };
 
 export const ApiDecorator = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (_: unknown, ctx: ExecutionContext): ApiDecoratorShape<any> => {
     const req = ctx.switchToHttp().getRequest();
 
     const appRoute = req.appRoute as AppRoute | undefined;
