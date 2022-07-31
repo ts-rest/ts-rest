@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 1.0.2
+
+### Patch Changes
+
+- 1fe80ea: sync versions
+
 ## 1.0.0
 
 ### Major Changes
