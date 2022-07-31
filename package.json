@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "version-packages": "changeset version",
-    "release": "yarn nx run-many --target=build && npm login --registry=https://npm.pkg.github.com --scope=@ts-rest && changeset publish"
+    "release": "yarn nx run-many --target=build && changeset publish"
   },
   "private": true,
   "workspaces": [
