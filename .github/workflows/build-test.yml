@@ -13,7 +13,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: nrwl/nx-set-shas@v2
-      - run: npm ci
+      - run: yarn install
 
       - run: npx nx workspace-lint
       - run: npx nx format:check
