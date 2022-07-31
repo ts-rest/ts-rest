@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 1.0.4
+
+### Patch Changes
+
+- 3adb9c8: Change build path
+
 ## 1.0.3
 
 ### Patch Changes
