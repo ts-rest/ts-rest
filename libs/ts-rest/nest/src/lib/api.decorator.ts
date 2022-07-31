@@ -126,6 +126,42 @@ const checkBodySchema = (
   };
 };
 
+const checkQuerySchema = (
+  query: unknown,
+  appRoute: AppRoute
+):
+  | {
+      success: true;
+      data: unknown;
+    }
+  | {
+      success: false;
+      error: unknown;
+    } => {
+  if (appRoute.query) {
+    if (isZodObject(appRoute.query)) {
+      const result = appRoute.query.safeParse(query);
+
+      if (result.success) {
+        return {
+          success: true,
+          data: result.data,
+        };
+      }
+
+      return {
+        success: false,
+        error: result.error,
+      };
+    }
+  }
+
+  return {
+    success: true,
+    data: query,
+  };
+};
+
 export const ApiDecorator = createParamDecorator(
   (_: unknown, ctx: ExecutionContext) => {
     const req = ctx.switchToHttp().getRequest();
@@ -140,13 +176,24 @@ export const ApiDecorator = createParamDecorator(
 
     const pathParams = getPathParams(req.url, appRoute);
     const queryParams = getQueryParams(req.url);
+
+    const queryResult = checkQuerySchema(queryParams, appRoute);
+
+    if (queryResult.success === false) {
+      throw new BadRequestException(queryResult.error);
+    }
+
     const bodyResult = checkBodySchema(req.body, appRoute);
 
     if (bodyResult.success === false) {
       throw new BadRequestException(bodyResult.error);
     }
 
-    return { query: queryParams, params: pathParams, body: bodyResult.data };
+    return {
+      query: queryResult.data,
+      params: pathParams,
+      body: bodyResult.data,
+    };
   }
 );
 
