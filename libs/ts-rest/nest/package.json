@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/nest",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Nest server integration for @ts-rest",
   "type": "commonjs",
   "license": "MIT",
