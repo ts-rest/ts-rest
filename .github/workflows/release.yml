@@ -12,11 +12,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: nrwl/nx-set-shas@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.x'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@ts-rest'
       - run: yarn install
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@master
