@@ -8,7 +8,7 @@
   },
   "private": true,
   "workspaces": [
-    "libs/ts-rest/*"
+    "dist/libs/ts-rest/*"
   ],
   "dependencies": {
     "@changesets/cli": "^2.24.1",
