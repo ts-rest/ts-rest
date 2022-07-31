@@ -9,7 +9,7 @@
   "workspaces": [
     "libs/ts-rest/*"
   ],
-  "private": false,
+  "private": true,
   "dependencies": {
     "@changesets/cli": "^2.24.1",
     "@docusaurus/core": "2.0.0-rc.1",

@@ -15,6 +15,7 @@
     "api",
     "type safe"
   ],
+  "private": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/ts-rest/ts-rest.git",
