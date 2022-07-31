@@ -87,7 +87,7 @@ const isZodObject = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): body is z.ZodObject<any, any, any, any> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (body as z.ZodObject<any, any, any, any>).parse !== undefined;
+  return (body as z.ZodObject<any, any, any, any>).safeParse !== undefined;
 };
 
 const checkBodySchema = (
@@ -102,7 +102,7 @@ const checkBodySchema = (
       success: false;
       error: unknown;
     } => {
-  if (appRoute.__type === 'AppRouteMutation') {
+  if (appRoute.__type === 'AppRouteMutation' && appRoute.body) {
     if (isZodObject(appRoute.body)) {
       const result = appRoute.body.safeParse(body);
 
@@ -140,7 +140,6 @@ export const ApiDecorator = createParamDecorator(
 
     const pathParams = getPathParams(req.url, appRoute);
     const queryParams = getQueryParams(req.url);
-
     const bodyResult = checkBodySchema(req.body, appRoute);
 
     if (bodyResult.success === false) {
