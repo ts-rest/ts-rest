@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'ts-rest-client',
+  displayName: 'ts-rest-react-query',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {
@@ -11,5 +11,5 @@ export default {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../../coverage/libs/ts-rest/client',
+  coverageDirectory: '../../../coverage/libs/ts-rest/react-query',
 };

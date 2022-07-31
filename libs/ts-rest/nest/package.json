@@ -1,5 +1,5 @@
 {
-  "name": "@ts-rest/client",
+  "name": "@ts-rest/nest",
   "version": "0.0.1",
   "type": "commonjs"
 }

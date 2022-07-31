@@ -1,45 +1,38 @@
+import { Controller } from '@nestjs/common';
+import { router } from '@ts-rest/example-contracts';
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
-import { router } from '@tscont/example-contracts';
-import { initNestServer } from '@ts-rest/core';
+  Api as ApiRoute,
+  ApiDecorator as ApiParams,
+  initNestServer,
+} from '@ts-rest/nest';
 import { PostService } from './post.service';
 
 const s = initNestServer(router.posts);
 type ControllerShape = typeof s.controllerShape;
+type RouteShape = typeof s.routeShapes;
 
 @Controller()
 export class PostController implements ControllerShape {
   constructor(private readonly postService: PostService) {}
 
-  @Get(s.paths.getPosts)
-  async getPosts(@Query() { take, skip }: { take?: string; skip?: string }) {
-    const posts = await this.postService.getPosts({
-      take: take ? Number(take) : undefined,
-      skip: skip ? Number(skip) : undefined,
-    });
+  @ApiRoute(s.route.getPosts)
+  async getPosts(
+    @ApiParams() { query: { take, skip } }: RouteShape['getPosts']
+  ) {
+    const posts = await this.postService.getPosts({ take, skip });
 
     return posts;
   }
 
-  @Get(s.paths.getPost)
-  async getPost(@Param() { id }: { id: string }) {
+  @ApiRoute(s.route.getPost)
+  async getPost(@ApiParams() { params: { id } }: RouteShape['getPost']) {
     const post = await this.postService.getPost(id);
 
     return post;
   }
 
-  @Post(s.paths.createPost)
-  async createPost(@Body() rawBody: unknown) {
-    const body = router.posts.createPost.body.parse(rawBody);
-
+  @ApiRoute(s.route.createPost)
+  async createPost(@ApiParams() { body }: RouteShape['createPost']) {
     const post = await this.postService.createPost({
       title: body.title,
       content: body.content,
@@ -51,10 +44,10 @@ export class PostController implements ControllerShape {
     return post;
   }
 
-  @Put(s.paths.updatePost)
-  async updatePost(@Param() { id }: { id: string }, @Body() rawBody: unknown) {
-    const body = router.posts.updatePost.body.parse(rawBody);
-
+  @ApiRoute(s.route.updatePost)
+  async updatePost(
+    @ApiParams() { params: { id }, body }: RouteShape['updatePost']
+  ) {
     const post = await this.postService.updatePost(id, {
       title: body.title,
       content: body.content,
@@ -65,8 +58,8 @@ export class PostController implements ControllerShape {
     return post;
   }
 
-  @Delete(s.paths.deletePost)
-  async deletePost(@Param() { id }: { id: string }) {
+  @ApiRoute(s.route.deletePost)
+  async deletePost(@ApiParams() { params: { id } }: RouteShape['deletePost']) {
     await this.postService.deletePost(id);
 
     return true;

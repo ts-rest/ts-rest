@@ -1,6 +1,6 @@
 import * as express from 'express';
 import cors = require('cors');
-import { router } from '@tscont/example-contracts';
+import { router } from '@ts-rest/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/core';
 import { PrismaClient } from '@prisma/client';
 import * as bodyParser from 'body-parser';

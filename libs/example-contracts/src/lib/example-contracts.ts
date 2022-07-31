@@ -32,8 +32,8 @@ export const router = c.router({
       path: () => '/posts',
       response: c.response<Post[]>(),
       query: z.object({
-        take: z.string().optional(),
-        skip: z.string().optional(),
+        take: z.string().transform(Number).optional(),
+        skip: z.string().transform(Number).optional(),
       }),
     }),
     createPost: c.mutation({

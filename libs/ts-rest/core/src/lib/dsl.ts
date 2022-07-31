@@ -27,7 +27,7 @@ export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
 
 type PathFunction = (arg: any) => string;
 
-type TsCont = {
+type tsRest = {
   router: <
     T extends {
       [key: string]: AppRoute | AppRouter;
@@ -61,7 +61,7 @@ type TsCont = {
   path: <T>() => T;
 };
 
-export const initTsRest = (): TsCont => {
+export const initTsRest = (): tsRest => {
   return {
     router: (args) => args,
     query: (args) => ({ __type: 'AppRouteQuery', ...args }),

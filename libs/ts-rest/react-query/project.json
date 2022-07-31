@@ -1,16 +1,16 @@
 {
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/ts-rest/client/src",
+  "sourceRoot": "libs/ts-rest/react-query/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/ts-rest/client",
-        "main": "libs/ts-rest/client/src/index.ts",
-        "tsConfig": "libs/ts-rest/client/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/client/*.md"]
+        "outputPath": "dist/libs/ts-rest/react-query",
+        "main": "libs/ts-rest/react-query/src/index.ts",
+        "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
+        "assets": ["libs/ts-rest/react-query/*.md"]
       }
     },
     "publish": {
@@ -29,14 +29,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/ts-rest/client/**/*.ts"]
+        "lintFilePatterns": ["libs/ts-rest/react-query/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/ts-rest/client"],
+      "outputs": ["coverage/libs/ts-rest/react-query"],
       "options": {
-        "jestConfig": "libs/ts-rest/client/jest.config.ts",
+        "jestConfig": "libs/ts-rest/react-query/jest.config.ts",
         "passWithNoTests": true
       }
     }

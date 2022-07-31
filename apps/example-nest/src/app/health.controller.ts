@@ -1,13 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
-import { router } from '@tscont/example-contracts';
-import { initNestServer } from '@ts-rest/core';
+import { Controller } from '@nestjs/common';
+import { router } from '@ts-rest/example-contracts';
+import { Api, initNestServer } from '@ts-rest/nest';
 
 const s = initNestServer(router);
 type ControllerShape = typeof s.controllerShape;
 
 @Controller()
 export class HealthController implements ControllerShape {
-  @Get(s.paths.health)
+  @Api(router.health)
   async health() {
     return { message: 'OK' };
   }

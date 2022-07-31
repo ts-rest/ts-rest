@@ -56,9 +56,9 @@ ts-rest also supports [Nest](https://nestjs.com/), it appears adding Nest to tRP
 This can be defined in a shared library, shared package, or in the backend
 
 ```typescript
-import { initTsCont } from 'ts-rest-core';
+import { initts-rest } from 'ts-rest-core';
 
-const c = initTsCont();
+const c = initts-rest();
 
 export type Post = {
   id: number;

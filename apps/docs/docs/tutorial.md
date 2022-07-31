@@ -63,7 +63,7 @@ export const client = initReactQueryClient(router, {
 
 const App = () => {
   // Effectively a useQuery hook
-  const { data, isLoading } = client.posts.get.useQuery();
+  const { data, isLoading } = client.posts.get.useQuery(['posts']);
 
   // Effectively a useMutation hook
   const { mutate, isLoading } = client.posts.create.useMutation();

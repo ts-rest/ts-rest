@@ -80,7 +80,7 @@ const transformAppRouteQueryImplementation = (
 ) => {
   const path = getAppRoutePathRoute(schema);
 
-  console.log(`[tscont] Initialized ${schema.method} ${path}`);
+  console.log(`[ts-rest] Initialized ${schema.method} ${path}`);
 
   app.get(path, async (req, res) => {
     const zodQueryIssues = returnZodErrorsIfZodSchema(schema.query, req.query);
@@ -102,7 +102,7 @@ const transformAppRouteMutationImplementation = (
 ) => {
   const path = getAppRoutePathRoute(schema);
 
-  console.log(`[tscont] Initialized ${schema.method} ${path}`);
+  console.log(`[ts-rest] Initialized ${schema.method} ${path}`);
 
   const method = schema.method;
 
@@ -134,7 +134,7 @@ const transformAppRouteMutationImplementation = (
       });
       return res.json(result);
     } catch (e) {
-      console.error(`[tscont] Error on ${method} ${path}`, e);
+      console.error(`[ts-rest] Error on ${method} ${path}`, e);
       return res.status(500).send('Internal Server Error');
     }
   };
