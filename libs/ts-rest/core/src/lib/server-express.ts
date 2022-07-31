@@ -1,6 +1,5 @@
 import { Express, RequestHandler } from 'express';
 import { z } from 'zod';
-import Zod = require('zod');
 import {
   AppRoute,
   AppRouteMutation,

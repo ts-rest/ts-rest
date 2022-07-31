@@ -1,5 +1,22 @@
 {
   "name": "@ts-rest/nest",
-  "version": "0.0.1",
-  "type": "commonjs"
+  "version": "0.2.2",
+  "description": "Nest server integration for @ts-rest",
+  "type": "commonjs",
+  "license": "MIT",
+  "keywords": [
+    "rpc",
+    "rest",
+    "typescript",
+    "typescript-rest",
+    "nestjs",
+    "http",
+    "api",
+    "type safe"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "libs/ts-rest/nest"
+  }
 }

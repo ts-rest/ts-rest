@@ -1,5 +1,23 @@
 {
-  "name": "@ts-rest/ts-rest-react-query",
-  "version": "0.0.1",
-  "type": "commonjs"
+  "name": "@ts-rest/react-query",
+  "version": "0.2.2",
+  "description": "react-query client integration for @ts-rest",
+  "type": "commonjs",
+  "license": "MIT",
+  "keywords": [
+    "rpc",
+    "rest",
+    "typescript",
+    "typescript-rest",
+    "react-query",
+    "nestjs",
+    "http",
+    "api",
+    "type safe"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "libs/ts-rest/react-query"
+  }
 }
