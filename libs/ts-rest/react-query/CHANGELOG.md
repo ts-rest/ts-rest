@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 1.0.3
+
+### Patch Changes
+
+- 0d706a3: Sync package versions
+
 ## 1.0.2
 
 ### Patch Changes
