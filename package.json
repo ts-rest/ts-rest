@@ -1,10 +1,14 @@
 {
   "name": "ts-rest",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "version-packages": "changeset version",
+    "release": "yarn nx run-many --target=build && changeset publish"
+  },
   "private": false,
   "dependencies": {
+    "@changesets/cli": "^2.24.1",
     "@docusaurus/core": "2.0.0-rc.1",
     "@docusaurus/preset-classic": "2.0.0-rc.1",
     "@mdx-js/react": "1.6.21",
