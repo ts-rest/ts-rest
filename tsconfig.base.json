@@ -21,6 +21,7 @@
       "@ts-rest/example-contracts": ["libs/example-contracts/src/index.ts"],
       "@ts-rest/example-express": ["apps/example-express/src/index.ts"],
       "@ts-rest/example-nest": ["libs/example-nest/src/index.ts"],
+      "@ts-rest/express": ["libs/ts-rest/express/src/index.ts"],
       "@ts-rest/nest": ["libs/ts-rest/nest/src/index.ts"],
       "@ts-rest/react-query": ["libs/ts-rest/react-query/src/index.ts"],
       "@ts-rest/ts-rest/utils": ["libs/ts-rest/utils/src/index.ts"]

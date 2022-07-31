@@ -8,6 +8,7 @@
     "example-nest": "apps/example-nest",
     "example-next": "apps/example-next",
     "ts-rest-core": "libs/ts-rest/core",
+    "ts-rest-express": "libs/ts-rest/express",
     "ts-rest-nest": "libs/ts-rest/nest",
     "ts-rest-react-query": "libs/ts-rest/react-query"
   }
