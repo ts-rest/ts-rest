@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 1.2.0
+
+### Minor Changes
+
+- 987fd07: Add query and mutation support to react-query, instead of requring useMutation and useQuery
+
 ## 1.1.0
 
 ## 1.0.4
