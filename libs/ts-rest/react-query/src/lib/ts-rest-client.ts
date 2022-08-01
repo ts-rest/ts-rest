@@ -1,9 +1,14 @@
 import { z } from 'zod';
 import {
+  ApiFetcher,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
+  ClientArgs,
+  DataReturn,
+  defaultApi,
+  getRouteQuery,
   isAppRoute,
   Without,
 } from '@ts-rest/core';
@@ -54,11 +59,6 @@ type DataReturnArgs<TRoute extends AppRoute> = {
     : never;
 };
 
-// Used on X.query and X.mutation
-type DataReturn<TRoute extends AppRoute> = (
-  args: Without<DataReturnArgs<TRoute>, never>
-) => Promise<{ data: TRoute['response']; status: number }>;
-
 // Used on X.useQuery
 type DataReturnQuery<TAppRoute extends AppRoute> = (
   queryKey: QueryKey,
@@ -80,30 +80,6 @@ type DataReturnMutation<TAppRoute extends AppRoute> = (
   Without<DataReturnArgs<TAppRoute>, never>,
   unknown
 >;
-
-type ClientArgs = {
-  baseUrl: string;
-  baseHeaders: Record<string, string>;
-  api: ApiFetcher;
-};
-
-const defaultApi: ApiFetcher = async ({ path, method, headers, body }) => {
-  const result = await fetch(path, { method, headers, body }).then((res) =>
-    res.json()
-  );
-
-  return { status: 200, data: result };
-};
-
-export type ApiFetcher = (args: {
-  path: string;
-  method: string;
-  headers: Record<string, string>;
-  body: string | undefined;
-}) => Promise<{
-  status: number;
-  data: unknown;
-}>;
 
 const getCompleteUrl = (query: any, baseUrl: string, path: string) => {
   const queryString =
@@ -194,9 +170,9 @@ const createNewProxy = (router: AppRouter | AppRoute, args: ClientArgs) => {
         if (isAppRoute(router)) {
           switch (propKey) {
             case 'query':
-              throw new Error('Not implemented');
+              throw getRouteQuery(router, args);
             case 'mutation':
-              throw new Error('Not implemented');
+              throw getRouteQuery(router, args);
             case 'useQuery':
               return getRouteUseQuery(router, args);
             case 'useMutation':
