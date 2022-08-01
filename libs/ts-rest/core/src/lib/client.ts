@@ -24,20 +24,28 @@ type DataReturnArgs<TRoute extends AppRoute> = {
     : never;
 };
 
-type DataReturn<TRoute extends AppRoute> = (
+/**
+ * Returned from a mutation or query call
+ */
+export type DataReturn<TRoute extends AppRoute> = (
   args: Without<DataReturnArgs<TRoute>, never>
 ) => Promise<
   | { data: TRoute['response']; error: null; status: number }
   | { data: null; error: string; status: number }
 >;
 
-type ClientArgs = {
+export type ClientArgs = {
   baseUrl: string;
   baseHeaders: Record<string, string>;
   api: ApiFetcher;
 };
 
-const defaultApi: ApiFetcher = async ({ path, method, headers, body }) => {
+export const defaultApi: ApiFetcher = async ({
+  path,
+  method,
+  headers,
+  body,
+}) => {
   const result = await fetch(path, { method, headers, body });
 
   if (result.ok) {
@@ -67,7 +75,7 @@ export type ApiFetcher = (args: {
     }
 >;
 
-const getRouteQuery = <TAppRoute extends AppRoute>(
+export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
