@@ -2,9 +2,7 @@
 sidebar_position: 1
 ---
 
-# tRPC
-
-## Motivation
+# Introduction
 
 ts-rest provides an RPC-like client side interface over your existing REST APIs, as well as allowing you define a _separate_ contract implementation rather than going for a 'implementation is the contract' approach, which is best suited for smaller or simpler APIs.
 

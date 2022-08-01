@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'tREST',
   tagline: 'RPC-like Typescript client, server, and contract tooling',
-  url: 'https://ts-rest.github.io/ts-rest/',
+  url: 'https://ts-rest.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -42,7 +42,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'tRPC',
+        title: 'tREST',
         logo: {
           alt: 'My Site Logo',
           src: 'img/logo.svg',
