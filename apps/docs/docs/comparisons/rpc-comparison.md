@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-## tRPC Comparison
+# tRPC Comparison
 
 I _love_ [tRPC](https://trpc.io/), [KATT (Alex Johansson)](https://github.com/KATT) and all the [other maintainers](https://github.com/trpc/trpc/graphs/contributors) have done some amazing work, and for applications with a single Next.js app, or an express server only consumed by TRPC clients, I whole heartily recommend using tRPC! Also I have undoubtedly taken inspiration from tRPC for tREST.
 

@@ -12,8 +12,8 @@ const FeatureList: FeatureItem[] = [
     title: 'Magic RPC-like client 🪄',
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        tREST provides a simple, RPC like client to give you a fully typed query
+        implementation.
       </>
     ),
   },
@@ -21,8 +21,8 @@ const FeatureList: FeatureItem[] = [
     title: 'REST Under the Hood 🚀',
     description: (
       <>
-        We don't abstract your API with in a ts-rest flavoured way, we aim to
-        let you use your API with other consumers as-is.
+        We don't abstract your API with in a tRPC flavoured way, we aim to let
+        you use your API with other consumers as-is.
       </>
     ),
   },
