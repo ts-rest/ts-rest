@@ -1,5 +1,5 @@
 ---
-title: '@ts-test/react-query'
+title: '@ts-rest/react-query'
 sidebar_position: 5
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: '@ts-test/nest'
+title: '@ts-rest/nest'
 sidebar_position: 7
 ---
 

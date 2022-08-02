@@ -1,5 +1,5 @@
 ---
-title: '@ts-test/express'
+title: '@ts-rest/express'
 sidebar_position: 6
 ---
 

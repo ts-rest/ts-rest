@@ -1,5 +1,5 @@
 ---
-title: '@ts-test/core'
+title: '@ts-rest/core'
 sidebar_position: 3
 ---
 
