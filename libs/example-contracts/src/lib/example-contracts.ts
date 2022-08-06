@@ -26,6 +26,7 @@ export const router = c.router({
       path: ({ id }: { id: string }) => `/posts/${id}`,
       response: c.response<Post | null>(),
       query: null,
+      summary: 'Get a post by id',
     }),
     getPosts: c.query({
       method: 'GET',
@@ -35,6 +36,7 @@ export const router = c.router({
         take: z.string().transform(Number).optional(),
         skip: z.string().transform(Number).optional(),
       }),
+      summary: 'Get all posts',
     }),
     createPost: c.mutation({
       method: 'POST',
@@ -47,6 +49,7 @@ export const router = c.router({
         description: z.string().optional(),
         authorId: z.string(),
       }),
+      summary: 'Create a post',
     }),
     updatePost: c.mutation({
       method: 'PUT',
@@ -58,12 +61,23 @@ export const router = c.router({
         published: z.boolean().optional(),
         description: z.string().optional(),
       }),
+      summary: 'Update a post',
     }),
     deletePost: c.mutation({
       method: 'DELETE',
       path: ({ id }: { id: string }) => `/posts/${id}`,
       response: c.response<boolean>(),
       body: null,
+      summary: 'Delete a post',
+    }),
+    deletePostComment: c.mutation({
+      method: 'DELETE',
+      path: ({ id, commentId }: { id: string; commentId: string }) =>
+        `/posts/${id}/comments/${commentId}`,
+      response: c.response<boolean>(),
+      body: null,
+      summary: 'Delete a comment from a post',
+      deprecated: true,
     }),
   }),
   health: c.query({

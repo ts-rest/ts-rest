@@ -1,18 +1,28 @@
-import { AppRouter, getAppRoutePathRoute, isAppRoute } from '@ts-rest/core';
-import { OpenAPIObject, PathsObject } from 'openapi3-ts';
+import {
+  AppRoute,
+  AppRouter,
+  getAppRoutePathRoute,
+  isAppRoute,
+} from '@ts-rest/core';
+import { OpenAPIObject, PathItemObject, PathsObject } from 'openapi3-ts';
 
-const getPathsFromRouter = (router: AppRouter): string[] => {
-  const paths: string[] = [];
+const getPathsFromRouter = (
+  router: AppRouter,
+  pathHistory?: string[]
+): { path: string; route: AppRoute; paths: string[] }[] => {
+  const paths: { path: string; route: AppRoute; paths: string[] }[] = [];
 
   Object.keys(router).forEach((key) => {
     const value = router[key];
 
     if (isAppRoute(value)) {
-      const path = getAppRoutePathRoute(value);
+      const path = getAppRoutePathRoute(value, {
+        formatter: (param) => `{${param}}`,
+      });
 
-      paths.push(path);
+      paths.push({ path, route: value, paths: pathHistory ?? [] });
     } else {
-      paths.push(...getPathsFromRouter(value));
+      paths.push(...getPathsFromRouter(value, [...(pathHistory ?? []), key]));
     }
   });
 
@@ -22,22 +32,43 @@ const getPathsFromRouter = (router: AppRouter): string[] => {
 export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
+  const mapMethod = {
+    GET: 'get',
+    POST: 'post',
+    PUT: 'put',
+    DELETE: 'delete',
+    PATCH: 'patch',
+  };
+
   const pathObject = paths.reduce((acc, path) => {
-    acc[path] = {
-      put: {
-        description: 'Get all',
-        responses: {
-          200: {
-            description: 'Success',
-          },
+    const paramsFromPath = path.path
+      .match(/{[^}]+}/g)
+      ?.map((param) => param.slice(1, -1));
+
+    const newPath: PathItemObject = {
+      description: path.route.description,
+      summary: path.route.summary,
+      deprecated: path.route.deprecated,
+      tags: path.paths,
+      parameters: paramsFromPath?.map((param) => ({
+        name: param,
+        in: 'path',
+        required: true,
+      })),
+      responses: {
+        200: {
+          description: 'Success',
         },
       },
     };
 
+    acc[path.path] = {
+      ...acc[path.path],
+      [mapMethod[path.route.method]]: newPath,
+    };
+
     return acc;
   }, {} as PathsObject);
-
-  console.log('done 5');
 
   const document: OpenAPIObject = {
     openapi: '3.0.0',
@@ -45,7 +76,7 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
     components: { schemas: {} },
 
     info: {
-      title: 'Example Nest',
+      title: 'Posts API',
       version: '1.0.0',
     },
   };
