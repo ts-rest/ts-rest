@@ -10,5 +10,5 @@
     "strictNullChecks": true
   },
   "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "./src/main.ts"]
 }
