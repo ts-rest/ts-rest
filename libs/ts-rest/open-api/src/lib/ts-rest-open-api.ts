@@ -37,7 +37,7 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
     return acc;
   }, {} as PathsObject);
 
-  console.log('done 4');
+  console.log('done 5');
 
   const document: OpenAPIObject = {
     openapi: '3.0.0',

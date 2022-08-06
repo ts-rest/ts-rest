@@ -6,7 +6,6 @@
     "example-contracts": "libs/example-contracts",
     "example-express": "apps/example-express",
     "example-nest": "apps/example-nest",
-    "example-nest-graphql": "apps/example-nest-graphql",
     "example-next": "apps/example-next",
     "ts-rest-core": "libs/ts-rest/core",
     "ts-rest-express": "libs/ts-rest/express",
