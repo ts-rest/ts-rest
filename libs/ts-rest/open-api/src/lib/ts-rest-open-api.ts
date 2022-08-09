@@ -4,7 +4,9 @@ import {
   getAppRoutePathRoute,
   isAppRoute,
 } from '@ts-rest/core';
-import { OpenAPIObject, PathItemObject, PathsObject } from 'openapi3-ts';
+import { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts';
+import { z } from 'zod';
+import zodToJsonSchema from 'zod-to-json-schema';
 
 const getPathsFromRouter = (
   router: AppRouter,
@@ -40,12 +42,27 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
     PATCH: 'patch',
   };
 
+  const isZodObject = (
+    body: unknown
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): body is z.ZodObject<any, any, any, any> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (body as z.ZodObject<any, any, any, any>)?.safeParse !== undefined;
+  };
   const pathObject = paths.reduce((acc, path) => {
     const paramsFromPath = path.path
       .match(/{[^}]+}/g)
       ?.map((param) => param.slice(1, -1));
 
-    const newPath: PathItemObject = {
+    const bodySchema =
+      path.route?.__type === 'AppRouteMutation' && isZodObject(path.route.body)
+        ? zodToJsonSchema(path.route.body, {
+            name: 'zodObject',
+            target: 'openApi3',
+          }).definitions['zodObject']
+        : undefined;
+
+    const newPath: OperationObject = {
       description: path.route.description,
       summary: path.route.summary,
       deprecated: path.route.deprecated,
@@ -55,6 +72,18 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
         in: 'path',
         required: true,
       })),
+      ...(bodySchema
+        ? {
+            requestBody: {
+              description: 'Body',
+              content: {
+                ['application/json']: {
+                  schema: bodySchema,
+                },
+              },
+            },
+          }
+        : {}),
       responses: {
         200: {
           description: 'Success',
@@ -73,8 +102,7 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
   const document: OpenAPIObject = {
     openapi: '3.0.0',
     paths: pathObject,
-    components: { schemas: {} },
-
+    components: {},
     info: {
       title: 'Posts API',
       version: '1.0.0',

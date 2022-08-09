@@ -18,8 +18,16 @@ export type User = {
   name: string | null;
 };
 
-// Three endpoints, two for posts, and one for health
 export const router = c.router({
+  users: c.router({
+    getUsers: c.query({
+      method: 'GET',
+      path: () => '/users',
+      response: c.response<User[]>(),
+      query: null,
+      summary: 'Get all users',
+    }),
+  }),
   posts: c.router({
     getPost: c.query({
       method: 'GET',
