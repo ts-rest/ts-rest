@@ -12,9 +12,19 @@ async function bootstrap() {
 
   app.use(cors());
 
-  SwaggerModule.setup('api', app, generateOpenApi(router));
+  SwaggerModule.setup(
+    'api',
+    app,
+    generateOpenApi(router, { info: { title: 'Posts API', version: '0.1' } })
+  );
 
-  SwaggerModule.setup('api-basic', app, generateOpenApi(routerBasic));
+  SwaggerModule.setup(
+    'api-basic',
+    app,
+    generateOpenApi(routerBasic, {
+      info: { title: 'Basic API', version: '0.1' },
+    })
+  );
 
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}`);

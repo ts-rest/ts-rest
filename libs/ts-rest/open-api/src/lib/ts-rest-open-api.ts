@@ -4,7 +4,12 @@ import {
   getAppRoutePathRoute,
   isAppRoute,
 } from '@ts-rest/core';
-import { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts';
+import {
+  InfoObject,
+  OpenAPIObject,
+  OperationObject,
+  PathsObject,
+} from 'openapi3-ts';
 import { ZodTypeAny } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
 
@@ -31,7 +36,10 @@ const getPathsFromRouter = (
   return paths;
 };
 
-export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
+export const generateOpenApi = (
+  router: AppRouter,
+  options: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject }
+): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
   const mapMethod = {
@@ -114,11 +122,7 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
   const document: OpenAPIObject = {
     openapi: '3.0.0',
     paths: pathObject,
-    components: {},
-    info: {
-      title: 'Posts API',
-      version: '1.0.0',
-    },
+    ...options,
   };
 
   return document;
