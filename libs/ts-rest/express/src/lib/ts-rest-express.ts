@@ -9,6 +9,7 @@ import {
   getAppRoutePathRoute,
   getValue,
   Without,
+  ZodInferOrType,
 } from '@ts-rest/core';
 
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
@@ -21,7 +22,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     },
     never
   >
-) => Promise<T['response']>;
+) => Promise<ZodInferOrType<T['response']>>;
 
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
@@ -32,7 +33,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
     },
     never
   >
-) => Promise<T['response']>;
+) => Promise<ZodInferOrType<T['response']>>;
 
 type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteMutationImplementation<T>

@@ -1,6 +1,6 @@
 import { z, ZodTypeAny } from 'zod';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
-import { Without } from './type-utils';
+import { Without, ZodInferOrType } from './type-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
@@ -30,7 +30,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
 export type DataReturn<TRoute extends AppRoute> = (
   args: Without<DataReturnArgs<TRoute>, never>
 ) => Promise<
-  | { data: TRoute['response']; error: null; status: number }
+  | { data: ZodInferOrType<TRoute['response']>; error: null; status: number }
   | { data: null; error: string; status: number }
 >;
 

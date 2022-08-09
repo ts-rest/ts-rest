@@ -11,6 +11,7 @@ import {
   getRouteQuery,
   isAppRoute,
   Without,
+  ZodInferOrType,
 } from '@ts-rest/core';
 import {
   QueryKey,
@@ -63,19 +64,19 @@ type DataReturnArgs<TRoute extends AppRoute> = {
 type DataReturnQuery<TAppRoute extends AppRoute> = (
   queryKey: QueryKey,
   args: Without<DataReturnArgs<TAppRoute>, never>,
-  options?: UseQueryOptions<TAppRoute['response']>
-) => UseQueryResult<TAppRoute['response']>;
+  options?: UseQueryOptions<ZodInferOrType<TAppRoute['response']>>
+) => UseQueryResult<ZodInferOrType<TAppRoute['response']>>;
 
 // Used pn X.useMutation
 type DataReturnMutation<TAppRoute extends AppRoute> = (
   options?: UseMutationOptions<
-    TAppRoute['response'],
+    ZodInferOrType<TAppRoute['response']>,
     unknown,
     Without<DataReturnArgs<TAppRoute>, never>,
     unknown
   >
 ) => UseMutationResult<
-  TAppRoute['response'],
+  ZodInferOrType<TAppRoute['response']>,
   unknown,
   Without<DataReturnArgs<TAppRoute>, never>,
   unknown
@@ -156,7 +157,7 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
     };
 
     return useMutation(
-      mutationFunction as () => Promise<TAppRoute['response']>,
+      mutationFunction as () => Promise<ZodInferOrType<TAppRoute['response']>>,
       options
     );
   };
