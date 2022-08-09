@@ -1,5 +1,5 @@
 import { Express, RequestHandler } from 'express';
-import { z } from 'zod';
+import { z, ZodTypeAny } from 'zod';
 import {
   AppRoute,
   AppRouteMutation,
@@ -9,6 +9,7 @@ import {
   getAppRoutePathRoute,
   getValue,
   Without,
+  ZodInferOrType,
 } from '@ts-rest/core';
 
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
@@ -17,22 +18,22 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
       params: Parameters<T['path']>[0] extends undefined
         ? never
         : Parameters<T['path']>[0];
-      query: T['query'] extends z.AnyZodObject ? z.infer<T['query']> : null;
+      query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : null;
     },
     never
   >
-) => Promise<T['response']>;
+) => Promise<ZodInferOrType<T['response']>>;
 
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
     {
       params: Parameters<T['path']>[0];
-      query: T['query'] extends z.AnyZodObject ? z.infer<T['query']> : never;
-      body: T['body'] extends z.AnyZodObject ? z.infer<T['body']> : never;
+      query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : never;
+      body: T['body'] extends ZodTypeAny ? z.infer<T['body']> : never;
     },
     never
   >
-) => Promise<T['response']>;
+) => Promise<ZodInferOrType<T['response']>>;
 
 type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteMutationImplementation<T>
@@ -162,7 +163,7 @@ const returnZodErrorsIfZodSchema = (
   schema: unknown,
   body: unknown
 ): z.ZodIssue[] => {
-  const bodySchema = schema as z.AnyZodObject;
+  const bodySchema = schema as ZodTypeAny;
 
   if (
     bodySchema &&

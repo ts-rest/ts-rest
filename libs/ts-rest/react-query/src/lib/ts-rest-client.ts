@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z, ZodTypeAny } from 'zod';
 import {
   ApiFetcher,
   AppRoute,
@@ -11,6 +11,7 @@ import {
   getRouteQuery,
   isAppRoute,
   Without,
+  ZodInferOrType,
 } from '@ts-rest/core';
 import {
   QueryKey,
@@ -30,7 +31,7 @@ type RecursiveProxyObj<T extends AppRouter> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends z.AnyZodObject ? z.infer<T> : T;
+type AppRouteMutationType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 
 type UseQueryArgs<TAppRoute extends AppRoute> = {
   useQuery: TAppRoute extends AppRouteQuery
@@ -52,7 +53,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
   params: Parameters<TRoute['path']>[0] extends null
     ? never
     : Parameters<TRoute['path']>[0];
-  query: TRoute['query'] extends z.AnyZodObject
+  query: TRoute['query'] extends ZodTypeAny
     ? AppRouteMutationType<TRoute['query']> extends null
       ? never
       : AppRouteMutationType<TRoute['query']>
@@ -63,19 +64,19 @@ type DataReturnArgs<TRoute extends AppRoute> = {
 type DataReturnQuery<TAppRoute extends AppRoute> = (
   queryKey: QueryKey,
   args: Without<DataReturnArgs<TAppRoute>, never>,
-  options?: UseQueryOptions<TAppRoute['response']>
-) => UseQueryResult<TAppRoute['response']>;
+  options?: UseQueryOptions<ZodInferOrType<TAppRoute['response']>>
+) => UseQueryResult<ZodInferOrType<TAppRoute['response']>>;
 
 // Used pn X.useMutation
 type DataReturnMutation<TAppRoute extends AppRoute> = (
   options?: UseMutationOptions<
-    TAppRoute['response'],
+    ZodInferOrType<TAppRoute['response']>,
     unknown,
     Without<DataReturnArgs<TAppRoute>, never>,
     unknown
   >
 ) => UseMutationResult<
-  TAppRoute['response'],
+  ZodInferOrType<TAppRoute['response']>,
   unknown,
   Without<DataReturnArgs<TAppRoute>, never>,
   unknown
@@ -156,7 +157,7 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
     };
 
     return useMutation(
-      mutationFunction as () => Promise<TAppRoute['response']>,
+      mutationFunction as () => Promise<ZodInferOrType<TAppRoute['response']>>,
       options
     );
   };

@@ -64,4 +64,11 @@ export class PostController implements ControllerShape {
 
     return true;
   }
+
+  @ApiRoute(s.route.deletePostComment)
+  async deletePostComment(
+    @ApiParams() { params: { id, commentId } }: RouteShape['deletePostComment']
+  ) {
+    return false;
+  }
 }

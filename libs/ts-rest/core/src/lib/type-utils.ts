@@ -1,3 +1,5 @@
+import { z, ZodTypeAny } from 'zod';
+
 type GetIndexedField<T, K> = K extends keyof T
   ? T[K]
   : K extends `${number}`
@@ -62,3 +64,5 @@ type ExcludeKeysWithTypeOf<T, V> = {
 }[keyof T];
 
 export type Without<T, V> = Pick<T, ExcludeKeysWithTypeOf<T, V>>;
+
+export type ZodInferOrType<T> = T extends ZodTypeAny ? z.infer<T> : T;

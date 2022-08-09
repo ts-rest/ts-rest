@@ -68,6 +68,9 @@ const postsRouter = s.router(router.posts, {
 
     return result;
   },
+  deletePostComment: async ({ params: { id } }) => {
+    return true;
+  },
 });
 
 const completeRouter = s.router(router, {
@@ -76,6 +79,13 @@ const completeRouter = s.router(router, {
     return {
       message: 'OK',
     };
+  },
+  users: {
+    getUsers: async () => {
+      const users = prisma.user.findMany({});
+
+      return users;
+    },
   },
 });
 

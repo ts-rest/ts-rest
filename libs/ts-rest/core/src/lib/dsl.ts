@@ -4,6 +4,9 @@ export type AppRouteQuery = {
   path: PathFunction;
   response: unknown;
   query?: unknown;
+  summary?: string;
+  description?: string;
+  deprecated?: boolean;
 };
 
 export type AppRouteMutation = {
@@ -13,6 +16,9 @@ export type AppRouteMutation = {
   response: unknown;
   body: unknown;
   query?: unknown;
+  summary?: string;
+  description?: string;
+  deprecated?: boolean;
 };
 
 export type AppRoute = AppRouteQuery | AppRouteMutation;
@@ -41,6 +47,9 @@ type tsRest = {
       path: P;
       response: unknown;
       query: unknown;
+      description?: string;
+      summary?: string;
+      deprecated?: boolean;
     },
     P extends PathFunction
   >(
@@ -52,12 +61,16 @@ type tsRest = {
       path: P;
       response: unknown;
       body: unknown;
+      description?: string;
+      summary?: string;
+      deprecated?: boolean;
     },
     P extends PathFunction
   >(
     mutation: T
   ) => T & { __type: 'AppRouteMutation' };
   response: <T>() => T;
+  body: <T>() => T;
   path: <T>() => T;
 };
 
@@ -67,6 +80,7 @@ export const initTsRest = (): tsRest => {
     query: (args) => ({ __type: 'AppRouteQuery', ...args }),
     mutation: (args) => ({ __type: 'AppRouteMutation', ...args }),
     response: <T>() => '' as unknown as T,
+    body: <T>() => '' as unknown as T,
     path: <T>() => '' as unknown as T,
   };
 };
