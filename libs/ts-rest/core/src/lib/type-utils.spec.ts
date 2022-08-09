@@ -9,3 +9,5 @@ const zodObjectNullable = zodObject.nullable();
 type Test2 = ZodInferOrType<typeof zodObject>;
 
 type Test3 = ZodInferOrType<{ title: string }>;
+
+it.todo('should infer type');
