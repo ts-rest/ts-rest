@@ -70,6 +70,7 @@ type tsRest = {
     mutation: T
   ) => T & { __type: 'AppRouteMutation' };
   response: <T>() => T;
+  body: <T>() => T;
   path: <T>() => T;
 };
 
@@ -79,6 +80,7 @@ export const initTsRest = (): tsRest => {
     query: (args) => ({ __type: 'AppRouteQuery', ...args }),
     mutation: (args) => ({ __type: 'AppRouteMutation', ...args }),
     response: <T>() => '' as unknown as T,
+    body: <T>() => '' as unknown as T,
     path: <T>() => '' as unknown as T,
   };
 };
