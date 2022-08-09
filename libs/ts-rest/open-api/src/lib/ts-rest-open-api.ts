@@ -5,7 +5,7 @@ import {
   isAppRoute,
 } from '@ts-rest/core';
 import { OpenAPIObject, OperationObject, PathsObject } from 'openapi3-ts';
-import { z } from 'zod';
+import { ZodTypeAny } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
 
 const getPathsFromRouter = (
@@ -42,12 +42,8 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
     PATCH: 'patch',
   };
 
-  const isZodObject = (
-    body: unknown
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): body is z.ZodObject<any, any, any, any> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (body as z.ZodObject<any, any, any, any>)?.safeParse !== undefined;
+  const isZodObject = (body: unknown): body is ZodTypeAny => {
+    return (body as ZodTypeAny)?.safeParse !== undefined;
   };
   const pathObject = paths.reduce((acc, path) => {
     const paramsFromPath = path.path
@@ -61,6 +57,13 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
             target: 'openApi3',
           }).definitions['zodObject']
         : undefined;
+
+    const responseSchema = isZodObject(path.route.response)
+      ? zodToJsonSchema(path.route.response, {
+          name: 'zodObject',
+          target: 'openApi3',
+        }).definitions['zodObject']
+      : undefined;
 
     const newPath: OperationObject = {
       description: path.route.description,
@@ -77,7 +80,7 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
             requestBody: {
               description: 'Body',
               content: {
-                ['application/json']: {
+                'application/json': {
                   schema: bodySchema,
                 },
               },
@@ -87,6 +90,15 @@ export const generateOpenApi = (router: AppRouter): OpenAPIObject => {
       responses: {
         200: {
           description: 'Success',
+          ...(responseSchema
+            ? {
+                content: {
+                  'application/json': {
+                    schema: responseSchema,
+                  },
+                },
+              }
+            : {}),
         },
       },
     };

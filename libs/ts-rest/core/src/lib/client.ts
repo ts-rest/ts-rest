@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z, ZodTypeAny } from 'zod';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
 import { Without } from './type-utils';
 
@@ -10,7 +10,7 @@ type RecursiveProxyObj<T extends AppRouter> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends z.AnyZodObject ? z.infer<T> : T;
+type AppRouteMutationType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 
 type DataReturnArgs<TRoute extends AppRoute> = {
   body: TRoute extends AppRouteMutation
@@ -19,7 +19,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
   params: Parameters<TRoute['path']>[0] extends undefined
     ? never
     : Parameters<TRoute['path']>[0];
-  query: TRoute['query'] extends z.AnyZodObject
+  query: TRoute['query'] extends ZodTypeAny
     ? AppRouteMutationType<TRoute['query']>
     : never;
 };

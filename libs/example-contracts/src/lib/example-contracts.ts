@@ -3,27 +3,27 @@ import { z } from 'zod';
 
 const c = initTsRest();
 
-export type Post = {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  published: boolean;
-  authorId: string;
-};
+export const PostSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  content: z.string().nullable(),
+  published: z.boolean(),
+  authorId: z.string(),
+});
 
-export type User = {
-  id: string;
-  email: string;
-  name: string | null;
-};
+export const UserSchema = z.object({
+  id: z.string(),
+  name: z.string().nullable(),
+  email: z.string().nullable(),
+});
 
 export const router = c.router({
   users: c.router({
     getUsers: c.query({
       method: 'GET',
       path: () => '/users',
-      response: c.response<User[]>(),
+      response: UserSchema.array(),
       query: null,
       summary: 'Get all users',
     }),
@@ -32,14 +32,14 @@ export const router = c.router({
     getPost: c.query({
       method: 'GET',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: c.response<Post | null>(),
+      response: PostSchema.nullable(),
       query: null,
       summary: 'Get a post by id',
     }),
     getPosts: c.query({
       method: 'GET',
       path: () => '/posts',
-      response: c.response<Post[]>(),
+      response: PostSchema.array(),
       query: z.object({
         take: z.string().transform(Number).optional(),
         skip: z.string().transform(Number).optional(),
@@ -49,7 +49,7 @@ export const router = c.router({
     createPost: c.mutation({
       method: 'POST',
       path: () => '/posts',
-      response: c.response<Post>(),
+      response: PostSchema,
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -62,7 +62,7 @@ export const router = c.router({
     updatePost: c.mutation({
       method: 'PUT',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: c.response<Post>(),
+      response: PostSchema,
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -74,7 +74,7 @@ export const router = c.router({
     deletePost: c.mutation({
       method: 'DELETE',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: c.response<boolean>(),
+      response: z.boolean(),
       body: null,
       summary: 'Delete a post',
     }),
@@ -82,7 +82,7 @@ export const router = c.router({
       method: 'DELETE',
       path: ({ id, commentId }: { id: string; commentId: string }) =>
         `/posts/${id}/comments/${commentId}`,
-      response: c.response<boolean>(),
+      response: z.boolean(),
       body: null,
       summary: 'Delete a comment from a post',
       deprecated: true,
@@ -91,7 +91,7 @@ export const router = c.router({
   health: c.query({
     method: 'GET',
     path: () => '/health',
-    response: c.response<{ message: string }>(),
+    response: z.object({ message: z.string() }),
     query: null,
   }),
 });

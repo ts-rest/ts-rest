@@ -1,5 +1,5 @@
 import { Express, RequestHandler } from 'express';
-import { z } from 'zod';
+import { z, ZodTypeAny } from 'zod';
 import {
   AppRoute,
   AppRouteMutation,
@@ -17,7 +17,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
       params: Parameters<T['path']>[0] extends undefined
         ? never
         : Parameters<T['path']>[0];
-      query: T['query'] extends z.AnyZodObject ? z.infer<T['query']> : null;
+      query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : null;
     },
     never
   >
@@ -27,8 +27,8 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
     {
       params: Parameters<T['path']>[0];
-      query: T['query'] extends z.AnyZodObject ? z.infer<T['query']> : never;
-      body: T['body'] extends z.AnyZodObject ? z.infer<T['body']> : never;
+      query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : never;
+      body: T['body'] extends ZodTypeAny ? z.infer<T['body']> : never;
     },
     never
   >
@@ -162,7 +162,7 @@ const returnZodErrorsIfZodSchema = (
   schema: unknown,
   body: unknown
 ): z.ZodIssue[] => {
-  const bodySchema = schema as z.AnyZodObject;
+  const bodySchema = schema as ZodTypeAny;
 
   if (
     bodySchema &&

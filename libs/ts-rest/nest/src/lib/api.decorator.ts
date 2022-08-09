@@ -7,7 +7,6 @@ import {
   ExecutionContext,
   Get,
   Injectable,
-  Logger,
   NestInterceptor,
   Patch,
   Post,
@@ -20,18 +19,18 @@ import {
   getAppRoutePathRoute,
   Without,
 } from '@ts-rest/core';
-import { Observable, tap } from 'rxjs';
-import { z } from 'zod';
+import { Observable } from 'rxjs';
+import { z, ZodTypeAny } from 'zod';
 
 export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
   {
     params: Parameters<TRoute['path']>[0];
     body: TRoute extends AppRouteMutation
-      ? TRoute['body'] extends z.AnyZodObject
+      ? TRoute['body'] extends ZodTypeAny
         ? z.infer<TRoute['body']>
         : TRoute['body']
       : never;
-    query: TRoute['query'] extends z.AnyZodObject
+    query: TRoute['query'] extends ZodTypeAny
       ? z.infer<TRoute['query']>
       : TRoute['query'];
   },
