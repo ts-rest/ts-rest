@@ -4,6 +4,18 @@
  <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height=150 />
 </p>
 
+ <p align="center">
+   <a href="https://www.npmjs.com/package/@ts-rest/core">
+   <img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript">
+   </a>
+   <a href="https://www.npmjs.com/package/@ts-rest/core">
+   <img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core">
+   </a>
+   <a href="https://codecov.io/gh/ts-rest/ts-rest" > 
+ <img src="https://codecov.io/gh/ts-rest/ts-rest/branch/main/graph/badge.svg?token=JPOVG7KC3Z"/> 
+ </a>
+ </p>
+
 ## Motivation
 
 tREST provides an RPC-like client side interface over your existing REST APIs, as well as allowing you define a _separate_ contract implementation rather than going for a 'implementation is the contract' approach, which is best suited for smaller or simpler APIs.
