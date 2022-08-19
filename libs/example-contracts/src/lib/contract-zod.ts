@@ -1,5 +1,6 @@
 import { initTsRest } from '@ts-rest/core';
 import { z } from 'zod';
+import { routerBasic } from './contract-basic';
 
 const c = initTsRest();
 
@@ -91,7 +92,14 @@ export const router = c.router({
   health: c.query({
     method: 'GET',
     path: () => '/health',
-    response: z.object({ message: z.string() }),
-    query: null,
+    response: {
+      200: z.object({ message: z.string() }),
+      400: z.object({ message: z.literal('Problems') }),
+    },
+    query: z.object({
+      mockError: z.string().transform(Boolean).optional(),
+    }),
   }),
+
+  basicContract: routerBasic,
 });

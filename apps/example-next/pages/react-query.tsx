@@ -17,6 +17,14 @@ export const Index = () => {
     onSuccess: () => refetch(),
   });
 
+  const health = clientReactQuery.health.useQuery(['health'], {
+    query: {},
+  });
+
+  const healthBad = clientReactQuery.health.useQuery(['healthBad'], {
+    query: { mockError: true },
+  });
+
   return (
     <div>
       {isLoading ? (
@@ -48,6 +56,15 @@ export const Index = () => {
       >
         {isCreatePostLoading ? 'Loading' : 'Create Post'}
       </button>
+      <p>Health</p>
+      {health.isLoading ? 'loading' : null}
+
+      <pre>{JSON.stringify(health.data, null, 2)}</pre>
+      <pre>{JSON.stringify(health.error, null, 2)}</pre>
+      <p>Health Bad</p>
+      {healthBad.isLoading ? 'loading' : null}
+      <pre>{JSON.stringify(healthBad.data, null, 2)}</pre>
+      <pre>{JSON.stringify(healthBad.error, null, 2)}</pre>
     </div>
   );
 };

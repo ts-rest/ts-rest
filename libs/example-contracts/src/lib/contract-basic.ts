@@ -11,14 +11,17 @@ type User = {
 export const routerBasic = c.router({
   users: c.query({
     method: 'GET',
-    path: () => '/users',
+    path: () => '/basic/users',
     response: c.response<User[]>(),
     query: null,
   }),
   updateUser: c.mutation({
-    method: 'PUT',
-    path: ({ id }: { id: string }) => `/users/${id}`,
-    response: c.response<User>(),
+    method: 'PATCH',
+    path: ({ id }: { id: string }) => `/basic/users/${id}`,
+    response: {
+      200: c.response<User>(),
+      400: c.response<{ message: string }>(),
+    },
     body: c.body<{ name: string | null; email: string | null }>(),
   }),
 });

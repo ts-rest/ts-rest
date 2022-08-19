@@ -2767,6 +2767,13 @@
   dependencies:
     nx "14.5.4"
 
+"@nrwl/cli@14.5.6":
+  version "14.5.6"
+  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-14.5.6.tgz#1c1f33fe128234aae92c1fb6cf97317d2835983f"
+  integrity sha512-twTR2nzA8xtTQHgMOUxNCXutRQ4OWT9eeJID3H6C5Ev5Mhi25fZheodVOQu72MpMWHhdtH7/7kHzULJaRsTjHw==
+  dependencies:
+    nx "14.5.6"
+
 "@nrwl/cypress@14.5.4":
   version "14.5.4"
   resolved "https://registry.yarnpkg.com/@nrwl/cypress/-/cypress-14.5.4.tgz#52d04f3d3ae05ec1e1751c1c3cbad69ed4a1bd94"
@@ -3011,6 +3018,13 @@
   dependencies:
     nx "14.5.4"
 
+"@nrwl/tao@14.5.6":
+  version "14.5.6"
+  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-14.5.6.tgz#4bff203d06478c839cf15b91719aae3b6920f8ff"
+  integrity sha512-EIbYLhSU85SaYd95t3Mwcy09KVPyPd3DlE7sZBaS3TzFEgOi0o9DLrpHRiZWfUJYgY9ltZHPCQn2hKpd7h7auw==
+  dependencies:
+    nx "14.5.6"
+
 "@nrwl/web@14.5.4":
   version "14.5.4"
   resolved "https://registry.yarnpkg.com/@nrwl/web/-/web-14.5.4.tgz#7c1f1842070d9a2b665182a1c190201ed2d50254"
@@ -3178,17 +3192,17 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.21.tgz#5de5a2385a35309427f6011992b544514d559aa1"
   integrity sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==
 
-"@prisma/client@^4.1.1":
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-4.1.1.tgz#dcb1118397deb8247fbe39a1f3eee5606648adf8"
-  integrity sha512-2pXuIUYxHv5H9o6QTa1VIsl4yMgsAjKQOitlo8WVTB+vo73rmMJITBPavdGUZSWUc7adMkFzEV3y5rVTUQr77Q==
+"@prisma/client@^4.2.1":
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-4.2.1.tgz#b384587f6066070381ea4c90228a14697a0c271b"
+  integrity sha512-PZBkY60+k5oix+e6IUfl3ub8TbRLNsPLdfWrdy2eh80WcHTaT+/UfvXf/B7gXedH7FRtbPFHZXk1hZenJiJZFQ==
   dependencies:
-    "@prisma/engines-version" "4.1.0-48.8d8414deb360336e4698a65aa45a1fbaf1ce13d8"
+    "@prisma/engines-version" "4.2.0-33.2920a97877e12e055c1333079b8d19cee7f33826"
 
-"@prisma/engines-version@4.1.0-48.8d8414deb360336e4698a65aa45a1fbaf1ce13d8":
-  version "4.1.0-48.8d8414deb360336e4698a65aa45a1fbaf1ce13d8"
-  resolved "https://registry.yarnpkg.com/@prisma/engines-version/-/engines-version-4.1.0-48.8d8414deb360336e4698a65aa45a1fbaf1ce13d8.tgz#ce00e6377126e491a8b1e0e2039c97e2924bd6d9"
-  integrity sha512-cRRJwpHFGFJZvtHbY3GZjMffNBEjjZk68ztn+S2hDgPCGB4H66IK26roK94GJxBodSehwRJ0wGyebC2GoIH1JQ==
+"@prisma/engines-version@4.2.0-33.2920a97877e12e055c1333079b8d19cee7f33826":
+  version "4.2.0-33.2920a97877e12e055c1333079b8d19cee7f33826"
+  resolved "https://registry.yarnpkg.com/@prisma/engines-version/-/engines-version-4.2.0-33.2920a97877e12e055c1333079b8d19cee7f33826.tgz#63917e579b9f15460f102eaf08a4411a7e0666e7"
+  integrity sha512-tktkqdiwqE4QhmE088boPt+FwPj1Jub/zk+5F6sEfcRHzO5yz9jyMD5HFVtiwxZPLx/8Xg9ElnuTi8E5lWVQFQ==
 
 "@prisma/engines@4.1.1":
   version "4.1.1"
@@ -10919,6 +10933,42 @@ nx@14.5.4:
     yargs "^17.4.0"
     yargs-parser "21.0.1"
 
+nx@14.5.6:
+  version "14.5.6"
+  resolved "https://registry.yarnpkg.com/nx/-/nx-14.5.6.tgz#c0a24af050ee21979ed4dbe7cc0f7d39925df527"
+  integrity sha512-HqOCRKBFPyyauZVTHyF7l5x97xYGukTjeQXxZD5LdVxiL1lSyaOtBCTNUmOge/jCPH3crvSeV2Wt58ZF4u0yaw==
+  dependencies:
+    "@nrwl/cli" "14.5.6"
+    "@nrwl/tao" "14.5.6"
+    "@parcel/watcher" "2.0.4"
+    chalk "4.1.0"
+    chokidar "^3.5.1"
+    cli-cursor "3.1.0"
+    cli-spinners "2.6.1"
+    cliui "^7.0.2"
+    dotenv "~10.0.0"
+    enquirer "~2.3.6"
+    fast-glob "3.2.7"
+    figures "3.2.0"
+    flat "^5.0.2"
+    fs-extra "^10.1.0"
+    glob "7.1.4"
+    ignore "^5.0.4"
+    js-yaml "4.1.0"
+    jsonc-parser "3.0.0"
+    minimatch "3.0.5"
+    npm-run-path "^4.0.1"
+    open "^8.4.0"
+    semver "7.3.4"
+    string-width "^4.2.3"
+    tar-stream "~2.2.0"
+    tmp "~0.2.1"
+    tsconfig-paths "^3.9.0"
+    tslib "^2.3.0"
+    v8-compile-cache "2.3.0"
+    yargs "^17.4.0"
+    yargs-parser "21.0.1"
+
 object-assign@^4, object-assign@^4.1.0, object-assign@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
@@ -14968,10 +15018,10 @@ zod-to-json-schema@^3.17.1:
   resolved "https://registry.yarnpkg.com/zod-to-json-schema/-/zod-to-json-schema-3.17.1.tgz#681cb645837e0af71852f9b3e1033b419c145cdf"
   integrity sha512-h1WLfvkdwM6lcRt5q09ytNh2OKcU13vY9D0FetN/7Erdd7lVraIiMkEnObg3KELm5EQlMqvi0r5nzMa0EA+8qw==
 
-zod@^3.17.10:
-  version "3.17.10"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.17.10.tgz#8716a05e6869df6faaa878a44ffe3c79e615defb"
-  integrity sha512-IHXnQYQuOOOL/XgHhgl8YjNxBHi3xX0mVcHmqsvJgcxKkEczPshoWdxqyFwsARpf41E0v9U95WUROqsHHxt0UQ==
+zod@^3.18.0:
+  version "3.18.0"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.18.0.tgz#2eed58b3cafb8d9a67aa2fee69279702f584f3bc"
+  integrity sha512-gwTm8RfUCe8l9rDwN5r2A17DkAa8Ez4Yl4yXqc5VqeGaXaJahzYYXbTwvhroZi0SNBqTwh/bKm2N0mpCzuw4bA==
 
 zwitch@^1.0.0:
   version "1.0.5"

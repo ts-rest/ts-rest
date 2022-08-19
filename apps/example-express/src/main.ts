@@ -87,6 +87,21 @@ const completeRouter = s.router(router, {
       return users;
     },
   },
+  basicContract: {
+    users: async () => {
+      const users = await prisma.user.findMany({});
+
+      return users;
+    },
+    updateUser: async () => {
+      const users = await prisma.user.findMany({});
+
+      return {
+        400: { message: 'Fuck' },
+        200: users[0],
+      };
+    },
+  },
 });
 
 createExpressEndpoints(router, completeRouter, app);

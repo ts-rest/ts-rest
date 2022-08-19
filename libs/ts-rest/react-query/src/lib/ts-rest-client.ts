@@ -1,6 +1,5 @@
 import { z, ZodTypeAny } from 'zod';
 import {
-  ApiFetcher,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
@@ -9,11 +8,16 @@ import {
   DataReturn,
   defaultApi,
   getRouteQuery,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  AppRouterResponseWithStatusCodeSupport,
   isAppRoute,
+  SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
+  HTTPStatusCode,
 } from '@ts-rest/core';
 import {
+  QueryFunction,
   QueryKey,
   useMutation,
   UseMutationOptions,
@@ -60,24 +64,68 @@ type DataReturnArgs<TRoute extends AppRoute> = {
     : never;
 };
 
+/**
+ * Based on {@link AppRouterResponseWithStatusCodeSupport}
+ *
+ * Split up the data and error to support react-query style
+ * useQuery and useMutation error handling
+ */
+type SuccessResponseMapper<T> = T extends {
+  [key: string]: unknown;
+}
+  ?
+      | {
+          [K in keyof T]: K extends SuccessfulHttpStatusCode
+            ? { status: K; data: ZodInferOrType<T[K]> }
+            : never;
+        }[keyof T]
+  : ZodInferOrType<T>;
+
+/**
+ * Based on {@link AppRouterResponseWithStatusCodeSupport}
+ *
+ * Returns any handled errors, or any unhandled non success errors
+ */
+type ErrorResponseMapper<T> = T extends {
+  [key: string]: unknown;
+}
+  ?
+      | {
+          [K in keyof T]: K extends SuccessfulHttpStatusCode
+            ? never
+            : { status: K; data: ZodInferOrType<T[K]> };
+        }[keyof T]
+      // If the response isn't one of our typed ones. Return "unknown"
+      | {
+          status: Exclude<HTTPStatusCode, keyof T | SuccessfulHttpStatusCode>;
+          data: unknown;
+        }
+  : ZodInferOrType<T>;
+
+// Data response if it's a 2XX
+type DataResponse<T extends AppRoute> = SuccessResponseMapper<T['response']>;
+
+// Error response if it's not a 2XX
+type ErrorResponse<T extends AppRoute> = ErrorResponseMapper<T['response']>;
+
 // Used on X.useQuery
 type DataReturnQuery<TAppRoute extends AppRoute> = (
   queryKey: QueryKey,
   args: Without<DataReturnArgs<TAppRoute>, never>,
-  options?: UseQueryOptions<ZodInferOrType<TAppRoute['response']>>
-) => UseQueryResult<ZodInferOrType<TAppRoute['response']>>;
+  options?: UseQueryOptions<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>
+) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
 
 // Used pn X.useMutation
 type DataReturnMutation<TAppRoute extends AppRoute> = (
   options?: UseMutationOptions<
-    ZodInferOrType<TAppRoute['response']>,
-    unknown,
+    DataResponse<TAppRoute>,
+    ErrorResponse<TAppRoute>,
     Without<DataReturnArgs<TAppRoute>, never>,
     unknown
   >
 ) => UseMutationResult<
-  ZodInferOrType<TAppRoute['response']>,
-  unknown,
+  DataResponse<TAppRoute>,
+  ErrorResponse<TAppRoute>,
   Without<DataReturnArgs<TAppRoute>, never>,
   unknown
 >;
@@ -112,12 +160,12 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
     args: DataReturnArgs<TAppRoute>,
     options?: UseQueryOptions<TAppRoute['response']>
   ) => {
-    const dataFn = async () => {
+    const dataFn: QueryFunction<TAppRoute['response']> = async () => {
       const path = route.path(args.params);
 
       const completeUrl = getCompleteUrl(args.query, clientArgs.baseUrl, path);
 
-      const result = await clientArgs.api({
+      const result = await defaultApi({
         path: completeUrl,
         method: route.method,
         headers: {
@@ -126,7 +174,27 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
         body: undefined,
       });
 
-      return result.data;
+      // If the response is not a 2XX, throw an error
+      if (!String(result.status).startsWith('2')) {
+        throw result;
+      }
+
+      console.log(result, route.response);
+      // If the AppRoute is a { [key: number]: any}
+
+      if (
+        route.response instanceof Object &&
+        Object.keys(route.response).length > 0 &&
+        Object.keys(route.response).every((key) => {
+          const keyAsNumber = Number(key);
+
+          return keyAsNumber !== keyAsNumber;
+        })
+      ) {
+        return result.data;
+      } else {
+        return result;
+      }
     };
 
     return useQuery(queryKey, dataFn, options);
@@ -143,7 +211,7 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
 
       const completeUrl = getCompleteUrl(args.query, clientArgs.baseUrl, path);
 
-      const result = await clientArgs.api({
+      const result = await defaultApi({
         path: completeUrl,
         method: route.method,
         headers: {
@@ -195,12 +263,9 @@ export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
 export const initQueryClient = <T extends AppRouter>(
   router: T,
-  args: Omit<ClientArgs, 'api'> & { api?: ApiFetcher }
+  args: ClientArgs
 ): InitClientReturn<T> => {
-  const proxy = createNewProxy(router, {
-    ...args,
-    api: args.api || defaultApi,
-  });
+  const proxy = createNewProxy(router, args);
 
   return proxy as InitClientReturn<T>;
 };

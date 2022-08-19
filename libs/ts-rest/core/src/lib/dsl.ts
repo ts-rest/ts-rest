@@ -2,7 +2,7 @@ export type AppRouteQuery = {
   __type: 'AppRouteQuery';
   method: 'GET';
   path: PathFunction;
-  response: unknown;
+  response: unknown | { [status: number]: unknown };
   query?: unknown;
   summary?: string;
   description?: string;
@@ -13,7 +13,7 @@ export type AppRouteMutation = {
   __type: 'AppRouteMutation';
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
   path: PathFunction;
-  response: unknown;
+  response: unknown | { [status: number]: unknown };
   body: unknown;
   query?: unknown;
   summary?: string;
@@ -31,6 +31,7 @@ export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
   return obj.method !== undefined;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PathFunction = (arg: any) => string;
 
 type tsRest = {
@@ -45,7 +46,7 @@ type tsRest = {
     T extends {
       method: 'GET';
       path: P;
-      response: unknown;
+      response: unknown | { [status: number]: unknown };
       query: unknown;
       description?: string;
       summary?: string;
