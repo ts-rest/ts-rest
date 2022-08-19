@@ -77,7 +77,8 @@ const completeRouter = s.router(router, {
   posts: postsRouter,
   health: async () => {
     return {
-      message: 'OK',
+      200: { message: 'OK' },
+      400: { message: 'Problems' },
     };
   },
   users: {

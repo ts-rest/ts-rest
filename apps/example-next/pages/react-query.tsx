@@ -17,6 +17,10 @@ export const Index = () => {
     onSuccess: () => refetch(),
   });
 
+  const { mutate: healthMutate } = clientReactQuery.healthMutation.useMutation({
+    onSettled: (res, err) => console.log('health mutated', res, err),
+  });
+
   const health = clientReactQuery.health.useQuery(['health'], {
     query: {},
   });
@@ -61,10 +65,19 @@ export const Index = () => {
 
       <pre>{JSON.stringify(health.data, null, 2)}</pre>
       <pre>{JSON.stringify(health.error, null, 2)}</pre>
+
+      <button onClick={() => healthMutate({ body: { mockError: false } })}>
+        health OK mutate
+      </button>
+
       <p>Health Bad</p>
       {healthBad.isLoading ? 'loading' : null}
       <pre>{JSON.stringify(healthBad.data, null, 2)}</pre>
       <pre>{JSON.stringify(healthBad.error, null, 2)}</pre>
+
+      <button onClick={() => healthMutate({ body: { mockError: true } })}>
+        health bad mutate
+      </button>
     </div>
   );
 };

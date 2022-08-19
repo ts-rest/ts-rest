@@ -15,27 +15,22 @@
 const sidebars = {
   sidebar: [
     {
-      type: 'category',
-      label: 'Getting Started',
-      collapsed: false,
-      items: [
-        {
-          type: 'doc',
-          id: 'intro',
-        },
-        {
-          type: 'doc',
-          id: 'comparisons/rpc-comparison',
-        },
-        {
-          type: 'doc',
-          id: 'comparisons/graphql-comparison',
-        },
-      ],
+      type: 'doc',
+      id: 'intro',
     },
     {
       type: 'doc',
-      id: 'ts-rest-core',
+      id: 'feature-support',
+    },
+    {
+      type: 'category',
+      label: '@ts-rest/core',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'core/core' },
+        { type: 'doc', id: 'core/fetch' },
+        { type: 'doc', id: 'core/errors' },
+      ],
     },
     {
       type: 'doc',
@@ -48,6 +43,17 @@ const sidebars = {
     {
       type: 'doc',
       id: 'ts-rest-express',
+    },
+    {
+      type: 'category',
+      label: 'Comparisons',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'comparisons/rpc-comparison',
+        },
+      ],
     },
   ],
 };

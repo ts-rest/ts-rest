@@ -99,7 +99,19 @@ export const router = c.router({
     query: z.object({
       mockError: z.string().transform(Boolean).optional(),
     }),
+    summary: 'Get health',
   }),
-
+  healthMutation: c.mutation({
+    method: 'POST',
+    path: () => '/health',
+    response: {
+      200: z.object({ message: z.string() }),
+      400: z.object({ message: z.literal('Problems') }),
+    },
+    body: z.object({
+      mockError: z.boolean().optional(),
+    }),
+    summary: 'Try health mutation',
+  }),
   basicContract: routerBasic,
 });

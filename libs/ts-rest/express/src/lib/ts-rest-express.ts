@@ -193,7 +193,7 @@ export const createExpressEndpoints = <
     const routerViaPath = getValue(schema, path.join('.'));
 
     if (isAppRoute(routerViaPath)) {
-      if (routerViaPath.__type === 'AppRouteMutation') {
+      if (routerViaPath.__tsType === 'AppRouteMutation') {
         transformAppRouteMutationImplementation(route, routerViaPath, app);
       } else {
         transformAppRouteQueryImplementation(

@@ -102,7 +102,7 @@ const checkBodySchema = (
       success: false;
       error: unknown;
     } => {
-  if (appRoute.__type === 'AppRouteMutation' && appRoute.body) {
+  if (appRoute.__tsType === 'AppRouteMutation' && appRoute.body) {
     if (isZodObject(appRoute.body)) {
       const result = appRoute.body.safeParse(body);
 

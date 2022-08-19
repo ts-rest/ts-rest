@@ -15,4 +15,13 @@ export class HealthController implements ControllerShape {
 
     return { status: 200 as const, data: { message: 'OK' } };
   }
+
+  @Api(router.healthMutation)
+  async healthMutation(@ApiDecorator() { body }: R['healthMutation']) {
+    if (body.mockError === true) {
+      return { status: 400 as const, data: { message: 'Problems' as const } };
+    }
+
+    return { status: 200 as const, data: { message: 'OK' } };
+  }
 }

@@ -1,24 +1,32 @@
 export type AppRouteQuery = {
-  __type: 'AppRouteQuery';
+  __tsType: 'AppRouteQuery';
   method: 'GET';
   path: PathFunction;
-  response: unknown | { [status: number]: unknown };
   query?: unknown;
   summary?: string;
   description?: string;
   deprecated?: boolean;
+  response:
+    | { __tsType: 'AppRouteResponse' }
+    | {
+        [status: number]: { __tsType: 'AppRouteResponse' };
+      };
 };
 
 export type AppRouteMutation = {
-  __type: 'AppRouteMutation';
+  __tsType: 'AppRouteMutation';
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
   path: PathFunction;
-  response: unknown | { [status: number]: unknown };
   body: unknown;
   query?: unknown;
   summary?: string;
   description?: string;
   deprecated?: boolean;
+  response:
+    | { __tsType: 'AppRouteResponse' }
+    | {
+        [status: number]: { __tsType: 'AppRouteResponse' };
+      };
 };
 
 export type AppRoute = AppRouteQuery | AppRouteMutation;
@@ -46,31 +54,39 @@ type tsRest = {
     T extends {
       method: 'GET';
       path: P;
-      response: unknown | { [status: number]: unknown };
       query: unknown;
       description?: string;
       summary?: string;
       deprecated?: boolean;
+      response:
+        | { __tsType: 'AppRouteResponse' }
+        | {
+            [status: number]: { __tsType: 'AppRouteResponse' };
+          };
     },
     P extends PathFunction
   >(
     query: T
-  ) => T & { __type: 'AppRouteQuery' };
+  ) => T & { __tsType: 'AppRouteQuery' };
   mutation: <
     T extends {
       method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
       path: P;
-      response: unknown;
       body: unknown;
       description?: string;
       summary?: string;
       deprecated?: boolean;
+      response:
+        | { __tsType: 'AppRouteResponse' }
+        | {
+            [status: number]: { __tsType: 'AppRouteResponse' };
+          };
     },
     P extends PathFunction
   >(
     mutation: T
-  ) => T & { __type: 'AppRouteMutation' };
-  response: <T>() => T;
+  ) => T & { __tsType: 'AppRouteMutation' };
+  response: <T>() => T & { __tsType: 'AppRouteResponse' };
   body: <T>() => T;
   path: <T>() => T;
 };
@@ -78,9 +94,9 @@ type tsRest = {
 export const initTsRest = (): tsRest => {
   return {
     router: (args) => args,
-    query: (args) => ({ __type: 'AppRouteQuery', ...args }),
-    mutation: (args) => ({ __type: 'AppRouteMutation', ...args }),
-    response: <T>() => '' as unknown as T,
+    query: (args) => ({ __tsType: 'AppRouteQuery', ...args }),
+    mutation: (args) => ({ __tsType: 'AppRouteMutation', ...args }),
+    response: <T>() => '' as unknown as T & { __tsType: 'AppRouteResponse' },
     body: <T>() => '' as unknown as T,
     path: <T>() => '' as unknown as T,
   };

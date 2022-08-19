@@ -221,7 +221,27 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
         body: JSON.stringify(args.body),
       });
 
-      return result.data;
+      // If the response is not a 2XX, throw an error
+      if (!String(result.status).startsWith('2')) {
+        throw result;
+      }
+
+      console.log(result, route.response);
+      // If the AppRoute is a { [key: number]: any}
+
+      if (
+        route.response instanceof Object &&
+        Object.keys(route.response).length > 0 &&
+        Object.keys(route.response).every((key) => {
+          const keyAsNumber = Number(key);
+
+          return keyAsNumber !== keyAsNumber;
+        })
+      ) {
+        return result.data;
+      } else {
+        return result;
+      }
     };
 
     return useMutation(

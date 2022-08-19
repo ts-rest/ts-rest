@@ -24,23 +24,26 @@ type DataReturnArgs<TRoute extends AppRoute> = {
     : never;
 };
 
-export type AppRouterResponseWithStatusCodeSupport<T> = T extends {
-  [key: string]: unknown;
-}
-  ?
-      | {
-          [K in keyof T]: { status: K; data: ZodInferOrType<T[K]> };
-        }[keyof T]
-      // If the response isn't one of our typed ones. Return "unknown"
-      | { status: Exclude<HTTPStatusCode, keyof T>; data: unknown }
-  : ZodInferOrType<T>;
+export type AppRouterResponseWithStatusCodeSupport<T> =
+  | {
+      [K in keyof T]: {
+        status: K;
+        data: Omit<ZodInferOrType<T[K]>, '__tsType'>;
+      };
+    }[keyof T]
+  // If the response isn't one of our typed ones. Return "unknown"
+  | { status: Exclude<HTTPStatusCode, keyof T>; data: unknown };
 
 /**
  * Returned from a mutation or query call
  */
 export type DataReturn<TRoute extends AppRoute> = (
   args: Without<DataReturnArgs<TRoute>, never>
-) => Promise<AppRouterResponseWithStatusCodeSupport<TRoute['response']>>;
+) => TRoute['response'] extends {
+  __tsType: 'AppRouteResponse';
+}
+  ? Promise<AppRouterResponseWithStatusCodeSupport<{ 200: TRoute['response'] }>>
+  : Promise<AppRouterResponseWithStatusCodeSupport<TRoute['response']>>;
 
 export type ClientArgs = {
   baseUrl: string;
