@@ -21,7 +21,6 @@ export class PostService {
     title: string;
     content: string;
     published: boolean | undefined;
-    authorId: string;
     description: string | undefined;
   }) {
     const post = await this.prisma.post.create({

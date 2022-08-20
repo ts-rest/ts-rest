@@ -22,7 +22,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     },
     never
   >
-) => Promise<ZodInferOrType<T['response']>>;
+) => Promise<ZodInferOrType<T['responses']>>;
 
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
@@ -33,7 +33,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
     },
     never
   >
-) => Promise<ZodInferOrType<T['response']>>;
+) => Promise<ZodInferOrType<T['responses']>>;
 
 type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteMutationImplementation<T>

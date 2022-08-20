@@ -9,7 +9,6 @@ import {
   OpenAPIObject,
   OperationObject,
   PathsObject,
-  ResponsesObject,
 } from 'openapi3-ts';
 import { ZodTypeAny } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
@@ -37,16 +36,6 @@ const getPathsFromRouter = (
   return paths;
 };
 
-const isAppRouteResponseStatusMap = (
-  response: unknown
-): response is { [key: number]: unknown } => {
-  return (
-    response instanceof Object &&
-    Object.keys(response).length > 0 &&
-    Object.keys(response).every((key) => Number.isSafeInteger(Number(key)))
-  );
-};
-
 const isZodObject = (body: unknown): body is ZodTypeAny => {
   return (body as ZodTypeAny)?.safeParse !== undefined;
 };
@@ -58,51 +47,6 @@ const getResponseSchemaFromZod = (response: unknown) =>
         target: 'openApi3',
       }).definitions['zodObject']
     : undefined;
-
-const generateOpenApiResponses = (route: AppRoute): ResponsesObject => {
-  const response = route.response;
-
-  if (isAppRouteResponseStatusMap(response)) {
-    return Object.keys(response).reduce((acc, key) => {
-      const keyAsNumber = Number(key);
-
-      const responseSchema = getResponseSchemaFromZod(response[keyAsNumber]);
-
-      return {
-        ...acc,
-        [keyAsNumber]: {
-          description: `${keyAsNumber}`,
-          ...(responseSchema
-            ? {
-                content: {
-                  'application/json': {
-                    schema: responseSchema,
-                  },
-                },
-              }
-            : {}),
-        },
-      };
-    }, {});
-  }
-
-  const responseSchema = getResponseSchemaFromZod(response);
-
-  return {
-    200: {
-      description: 'Success',
-      ...(responseSchema
-        ? {
-            content: {
-              'application/json': {
-                schema: responseSchema,
-              },
-            },
-          }
-        : {}),
-    },
-  };
-};
 
 export const generateOpenApi = (
   router: AppRouter,
@@ -125,9 +69,31 @@ export const generateOpenApi = (
 
     const bodySchema =
       path.route?.__tsType === 'AppRouteMutation' &&
-      getResponseSchemaFromZod(path.route.response);
+      getResponseSchemaFromZod(path.route.responses);
 
-    const responses = generateOpenApiResponses(path.route);
+    const responses = Object.keys(path.route.responses).reduce((acc, key) => {
+      const keyAsNumber = Number(key);
+
+      const responseSchema = getResponseSchemaFromZod(
+        path.route.responses[keyAsNumber]
+      );
+
+      return {
+        ...acc,
+        [keyAsNumber]: {
+          description: `${keyAsNumber}`,
+          ...(responseSchema
+            ? {
+                content: {
+                  'application/json': {
+                    schema: responseSchema,
+                  },
+                },
+              }
+            : {}),
+        },
+      };
+    }, {});
 
     const newPath: OperationObject = {
       description: path.route.description,

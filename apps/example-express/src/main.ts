@@ -1,114 +1,114 @@
-import * as express from 'express';
-import cors = require('cors');
-import { router } from '@ts-rest/example-contracts';
-import { createExpressEndpoints, initServer } from '@ts-rest/express';
-import { PrismaClient } from '@prisma/client';
-import * as bodyParser from 'body-parser';
+// import * as express from 'express';
+// import cors = require('cors');
+// import { router } from '@ts-rest/example-contracts';
+// import { createExpressEndpoints, initServer } from '@ts-rest/express';
+// import { PrismaClient } from '@prisma/client';
+// import * as bodyParser from 'body-parser';
 
-const app = express();
+// const app = express();
 
-app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// app.use(cors());
+// app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.json());
 
-const s = initServer();
+// const s = initServer();
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
-const postsRouter = s.router(router.posts, {
-  getPost: async ({ params: { id } }) => {
-    const post = prisma.post.findUnique({ where: { id } });
+// const postsRouter = s.router(router.posts, {
+//   getPost: async ({ params: { id } }) => {
+//     const post = prisma.post.findUnique({ where: { id } });
 
-    return post ?? null;
-  },
-  getPosts: async ({ query: { take, skip } }) => {
-    const posts = await prisma.post.findMany({
-      take: Number(take),
-      skip: Number(skip),
-    });
+//     return post ?? null;
+//   },
+//   getPosts: async ({ query: { take, skip } }) => {
+//     const posts = await prisma.post.findMany({
+//       take: Number(take),
+//       skip: Number(skip),
+//     });
 
-    return posts;
-  },
-  createPost: async ({
-    body: { title, content, published, authorId, description },
-  }) => {
-    const post = await prisma.post.create({
-      data: {
-        title,
-        content,
-        published,
-        authorId,
-        description,
-      },
-    });
+//     return posts;
+//   },
+//   createPost: async ({
+//     body: { title, content, published, authorId, description },
+//   }) => {
+//     const post = await prisma.post.create({
+//       data: {
+//         title,
+//         content,
+//         published,
+//         authorId,
+//         description,
+//       },
+//     });
 
-    return post;
-  },
-  updatePost: async ({
-    params: { id },
-    body: { title, content, published, description },
-  }) => {
-    const post = await prisma.post.update({
-      where: { id },
-      data: {
-        title,
-        content,
-        published,
-        description,
-      },
-    });
+//     return post;
+//   },
+//   updatePost: async ({
+//     params: { id },
+//     body: { title, content, published, description },
+//   }) => {
+//     const post = await prisma.post.update({
+//       where: { id },
+//       data: {
+//         title,
+//         content,
+//         published,
+//         description,
+//       },
+//     });
 
-    return post;
-  },
-  deletePost: async ({ params: { id } }) => {
-    const result = await prisma.post
-      .delete({ where: { id } })
-      .then(() => true)
-      .catch(() => false);
+//     return post;
+//   },
+//   deletePost: async ({ params: { id } }) => {
+//     const result = await prisma.post
+//       .delete({ where: { id } })
+//       .then(() => true)
+//       .catch(() => false);
 
-    return result;
-  },
-  deletePostComment: async ({ params: { id } }) => {
-    return true;
-  },
-});
+//     return result;
+//   },
+//   deletePostComment: async ({ params: { id } }) => {
+//     return true;
+//   },
+// });
 
-const completeRouter = s.router(router, {
-  posts: postsRouter,
-  health: async () => {
-    return {
-      200: { message: 'OK' },
-      400: { message: 'Problems' },
-    };
-  },
-  users: {
-    getUsers: async () => {
-      const users = prisma.user.findMany({});
+// const completeRouter = s.router(router, {
+//   posts: postsRouter,
+//   health: async () => {
+//     return {
+//       200: { message: 'OK' },
+//       400: { message: 'Problems' },
+//     };
+//   },
+//   users: {
+//     getUsers: async () => {
+//       const users = prisma.user.findMany({});
 
-      return users;
-    },
-  },
-  basicContract: {
-    users: async () => {
-      const users = await prisma.user.findMany({});
+//       return users;
+//     },
+//   },
+//   basicContract: {
+//     users: async () => {
+//       const users = await prisma.user.findMany({});
 
-      return users;
-    },
-    updateUser: async () => {
-      const users = await prisma.user.findMany({});
+//       return users;
+//     },
+//     updateUser: async () => {
+//       const users = await prisma.user.findMany({});
 
-      return {
-        400: { message: 'Fuck' },
-        200: users[0],
-      };
-    },
-  },
-});
+//       return {
+//         400: { message: 'Fuck' },
+//         200: users[0],
+//       };
+//     },
+//   },
+// });
 
-createExpressEndpoints(router, completeRouter, app);
+// createExpressEndpoints(router, completeRouter, app);
 
-const port = process.env.port || 3333;
-const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`);
-});
-server.on('error', console.error);
+// const port = process.env.port || 3333;
+// const server = app.listen(port, () => {
+//   console.log(`Listening at http://localhost:${port}`);
+// });
+// server.on('error', console.error);

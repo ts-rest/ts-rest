@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { router } from '@ts-rest/example-contracts';
+import { apiBlog } from '@ts-rest/example-contracts';
 import {
   Api as ApiRoute,
   ApiDecorator as ApiParams,
@@ -7,7 +7,7 @@ import {
 } from '@ts-rest/nest';
 import { PostService } from './post.service';
 
-const s = initNestServer(router.posts);
+const s = initNestServer(apiBlog);
 type ControllerShape = typeof s.controllerShape;
 type RouteShape = typeof s.routeShapes;
 
@@ -28,6 +28,10 @@ export class PostController implements ControllerShape {
   async getPost(@ApiParams() { params: { id } }: RouteShape['getPost']) {
     const post = await this.postService.getPost(id);
 
+    if (!post) {
+      return { status: 404 as const, data: null };
+    }
+
     return { status: 200 as const, data: post };
   }
 
@@ -37,7 +41,6 @@ export class PostController implements ControllerShape {
       title: body.title,
       content: body.content,
       published: body.published,
-      authorId: body.authorId,
       description: body.description,
     });
 
@@ -63,15 +66,5 @@ export class PostController implements ControllerShape {
     await this.postService.deletePost(id);
 
     return { status: 200 as const, data: true };
-  }
-
-  @ApiRoute(s.route.deletePostComment)
-  async deletePostComment(
-    @ApiParams() { params: { id, commentId } }: RouteShape['deletePostComment']
-  ) {
-    return {
-      status: 200 as const,
-      data: await this.postService.deletePost(id),
-    };
   }
 }
