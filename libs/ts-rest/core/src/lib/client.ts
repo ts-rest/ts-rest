@@ -24,42 +24,43 @@ type DataReturnArgs<TRoute extends AppRoute> = {
     : never;
 };
 
-export type AppRouterResponseWithStatusCodeSupport<T> =
+export type ApiRouteResponse<T> =
   | {
       [K in keyof T]: {
         status: K;
-        data: Omit<ZodInferOrType<T[K]>, '__tsType'>;
+        data: ZodInferOrType<T[K]>;
       };
     }[keyof T]
-  // If the response isn't one of our typed ones. Return "unknown"
-  | { status: Exclude<HTTPStatusCode, keyof T>; data: unknown };
+  | {
+      status: Exclude<HTTPStatusCode, keyof T>;
+      data: unknown;
+    };
 
 /**
  * Returned from a mutation or query call
  */
 export type DataReturn<TRoute extends AppRoute> = (
   args: Without<DataReturnArgs<TRoute>, never>
-) => TRoute['response'] extends {
-  __tsType: 'AppRouteResponse';
-}
-  ? Promise<AppRouterResponseWithStatusCodeSupport<{ 200: TRoute['response'] }>>
-  : Promise<AppRouterResponseWithStatusCodeSupport<TRoute['response']>>;
+) => Promise<ApiRouteResponse<TRoute['responses']>>;
 
 export type ClientArgs = {
   baseUrl: string;
   baseHeaders: Record<string, string>;
+  api?: ApiFetcher;
 };
 
-export const defaultApi = async ({
-  path,
-  method,
-  headers,
-  body,
-}: {
+type ApiFetcher = (args: {
   path: string;
   method: string;
   headers: Record<string, string>;
   body: string | undefined;
+}) => Promise<{ status: number; data: unknown }>;
+
+export const defaultApi: ApiFetcher = async ({
+  path,
+  method,
+  headers,
+  body,
 }) => {
   const result = await fetch(path, { method, headers, body });
 
@@ -104,7 +105,9 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
         : ''
     }`;
 
-    const result = await defaultApi({
+    const apiFetcher = clientArgs.api || defaultApi;
+
+    const result = await apiFetcher({
       path: completeUrl,
       method: route.method,
       headers: {

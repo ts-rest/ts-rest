@@ -11,11 +11,16 @@ type R = typeof s.routeShapes;
 export class BasicUserController implements ControllerShape {
   constructor(private prisma: PrismaService) {}
 
-  @Api(routerBasic.users)
-  async users(@ApiDecorator() { query }: R['users']) {
-    const users = await this.prisma.user.findMany({});
+  @Api(routerBasic.user)
+  async user(@ApiDecorator() { params }: R['user']) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: params.id },
+    });
 
-    return users;
+    return {
+      status: 200 as const,
+      data: user,
+    };
   }
 
   @Api(routerBasic.updateUser)

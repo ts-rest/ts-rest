@@ -26,13 +26,17 @@ export const router = c.router({
     getPost: c.query({
       method: 'GET',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: c.response<Post | null>(),
+      responses: {
+        200: c.response<Post | null>(),
+      },
       query: null,
     }),
     getPosts: c.query({
       method: 'GET',
       path: () => '/posts',
-      response: c.response<Post[]>(),
+      responses: {
+        200: c.response<Post[]>(),
+      },
       query: z.object({
         take: z.number().optional(),
         skip: z.number().optional(),
@@ -41,7 +45,9 @@ export const router = c.router({
     createPost: c.mutation({
       method: 'POST',
       path: () => '/posts',
-      response: c.response<Post>(),
+      responses: {
+        200: c.response<Post>(),
+      },
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -54,7 +60,9 @@ export const router = c.router({
     mutationWithQuery: c.mutation({
       method: 'POST',
       path: () => '/posts',
-      response: c.response<Post>(),
+      responses: {
+        200: c.response<Post>(),
+      },
       body: z.object({}),
       query: z.object({
         test: z.string(),
@@ -63,7 +71,9 @@ export const router = c.router({
     updatePost: c.mutation({
       method: 'PUT',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: c.response<Post>(),
+      responses: {
+        200: c.response<Post>(),
+      },
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -76,14 +86,18 @@ export const router = c.router({
     patchPost: c.mutation({
       method: 'PATCH',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: c.response<Post>(),
+      responses: {
+        200: c.response<Post>(),
+      },
       body: z.object({}),
       query: null,
     }),
     deletePost: c.mutation({
       method: 'DELETE',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: c.response<boolean>(),
+      responses: {
+        200: c.response<boolean>(),
+      },
       body: null,
       query: null,
     }),
@@ -91,7 +105,9 @@ export const router = c.router({
   health: c.query({
     method: 'GET',
     path: () => '/health',
-    response: c.response<{ message: string }>(),
+    responses: {
+      200: c.response<{ message: string }>(),
+    },
     query: null,
   }),
 });

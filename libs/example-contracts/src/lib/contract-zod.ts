@@ -24,7 +24,7 @@ export const router = c.router({
     getUsers: c.query({
       method: 'GET',
       path: () => '/users',
-      response: UserSchema.array(),
+      responses: { 200: UserSchema.array() },
       query: null,
       summary: 'Get all users',
     }),
@@ -33,14 +33,14 @@ export const router = c.router({
     getPost: c.query({
       method: 'GET',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: PostSchema.nullable(),
+      responses: { 200: PostSchema.nullable() },
       query: null,
       summary: 'Get a post by id',
     }),
     getPosts: c.query({
       method: 'GET',
       path: () => '/posts',
-      response: PostSchema.array(),
+      responses: { 200: PostSchema.array() },
       query: z.object({
         take: z.string().transform(Number).optional(),
         skip: z.string().transform(Number).optional(),
@@ -50,7 +50,7 @@ export const router = c.router({
     createPost: c.mutation({
       method: 'POST',
       path: () => '/posts',
-      response: PostSchema,
+      responses: { 200: PostSchema },
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -63,7 +63,7 @@ export const router = c.router({
     updatePost: c.mutation({
       method: 'PUT',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: PostSchema,
+      responses: { 200: PostSchema },
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -75,7 +75,7 @@ export const router = c.router({
     deletePost: c.mutation({
       method: 'DELETE',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      response: z.boolean(),
+      responses: { 200: z.boolean() },
       body: null,
       summary: 'Delete a post',
     }),
@@ -83,7 +83,7 @@ export const router = c.router({
       method: 'DELETE',
       path: ({ id, commentId }: { id: string; commentId: string }) =>
         `/posts/${id}/comments/${commentId}`,
-      response: z.boolean(),
+      responses: { 200: z.boolean() },
       body: null,
       summary: 'Delete a comment from a post',
       deprecated: true,
@@ -92,7 +92,7 @@ export const router = c.router({
   health: c.query({
     method: 'GET',
     path: () => '/health',
-    response: {
+    responses: {
       200: z.object({ message: z.string() }),
       400: z.object({ message: z.literal('Problems') }),
     },
@@ -104,7 +104,7 @@ export const router = c.router({
   healthMutation: c.mutation({
     method: 'POST',
     path: () => '/health',
-    response: {
+    responses: {
       200: z.object({ message: z.string() }),
       400: z.object({ message: z.literal('Problems') }),
     },

@@ -21,14 +21,14 @@ export class PostController implements ControllerShape {
   ) {
     const posts = await this.postService.getPosts({ take, skip });
 
-    return posts;
+    return { status: 200 as const, data: posts };
   }
 
   @ApiRoute(s.route.getPost)
   async getPost(@ApiParams() { params: { id } }: RouteShape['getPost']) {
     const post = await this.postService.getPost(id);
 
-    return post;
+    return { status: 200 as const, data: post };
   }
 
   @ApiRoute(s.route.createPost)
@@ -41,7 +41,7 @@ export class PostController implements ControllerShape {
       description: body.description,
     });
 
-    return post;
+    return { status: 200 as const, data: post };
   }
 
   @ApiRoute(s.route.updatePost)
@@ -55,20 +55,23 @@ export class PostController implements ControllerShape {
       description: body.description,
     });
 
-    return post;
+    return { status: 200 as const, data: post };
   }
 
   @ApiRoute(s.route.deletePost)
   async deletePost(@ApiParams() { params: { id } }: RouteShape['deletePost']) {
     await this.postService.deletePost(id);
 
-    return true;
+    return { status: 200 as const, data: true };
   }
 
   @ApiRoute(s.route.deletePostComment)
   async deletePostComment(
     @ApiParams() { params: { id, commentId } }: RouteShape['deletePostComment']
   ) {
-    return false;
+    return {
+      status: 200 as const,
+      data: await this.postService.deletePost(id),
+    };
   }
 }

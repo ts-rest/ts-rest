@@ -12,7 +12,9 @@ export const routerBasic = c.router({
   user: c.query({
     method: 'GET',
     path: ({ id }: { id: string }) => `/basic/users/${id}`,
-    response: c.response<User>(),
+    responses: {
+      200: c.response<User | null>(),
+    },
     query: null,
     summary: 'Get all users',
   }),
@@ -20,7 +22,7 @@ export const routerBasic = c.router({
     method: 'PATCH',
     path: ({ id }: { id: string }) => `/basic/users/${id}`,
     body: c.body<{ name: string | null; email: string | null }>(),
-    response: {
+    responses: {
       200: c.response<User>(),
       400: c.response<{ message: string }>(),
     },
@@ -28,22 +30,22 @@ export const routerBasic = c.router({
   }),
 });
 
-const client = initClient(routerBasic, {
-  baseUrl: 'http://localhost:3000',
-  baseHeaders: {},
-});
+// const client = initClient(routerBasic, {
+//   baseUrl: 'http://localhost:3000',
+//   baseHeaders: {},
+// });
 
-const data = await client.user({ params: { id: '1' } });
+// const data = await client.user({ params: { id: '1' } });
 
-if (data.status === 200) {
-  data.data;
-}
+// if (data.status === 200) {
+//   data.data;
+// }
 
-const updatedUser = await client.updateUser({
-  params: { id: '1' },
-  body: { email: '', name: '' },
-});
+// const updatedUser = await client.updateUser({
+//   params: { id: '1' },
+//   body: { email: '', name: '' },
+// });
 
-if (updatedUser.status === 400) {
-  updatedUser.data;
-}
+// if (updatedUser.status === 400) {
+//   updatedUser.data;
+// }

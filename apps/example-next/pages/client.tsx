@@ -46,13 +46,15 @@ export const Index = () => {
     queryClient.refetchQueries([`posts`]);
   };
 
+  const posts = data?.status === 200 ? data.data : [];
+
   return (
     <div>
       {isLoading ? (
         <p>Loading...</p>
       ) : (
         <div>
-          {data?.data?.map((post) => (
+          {posts?.map((post) => (
             <div key={post.id} className="bg-gray-100">
               <h3 className="text-lg">{post.title}</h3>
               <p>{post.description}</p>

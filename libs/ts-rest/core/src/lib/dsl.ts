@@ -6,11 +6,9 @@ export type AppRouteQuery = {
   summary?: string;
   description?: string;
   deprecated?: boolean;
-  response:
-    | { __tsType: 'AppRouteResponse' }
-    | {
-        [status: number]: { __tsType: 'AppRouteResponse' };
-      };
+  responses: {
+    [status: number]: unknown;
+  };
 };
 
 export type AppRouteMutation = {
@@ -22,11 +20,9 @@ export type AppRouteMutation = {
   summary?: string;
   description?: string;
   deprecated?: boolean;
-  response:
-    | { __tsType: 'AppRouteResponse' }
-    | {
-        [status: number]: { __tsType: 'AppRouteResponse' };
-      };
+  responses: {
+    [status: number]: unknown;
+  };
 };
 
 export type AppRoute = AppRouteQuery | AppRouteMutation;
@@ -58,11 +54,9 @@ type tsRest = {
       description?: string;
       summary?: string;
       deprecated?: boolean;
-      response:
-        | { __tsType: 'AppRouteResponse' }
-        | {
-            [status: number]: { __tsType: 'AppRouteResponse' };
-          };
+      responses: {
+        [status: number]: unknown;
+      };
     },
     P extends PathFunction
   >(
@@ -76,17 +70,15 @@ type tsRest = {
       description?: string;
       summary?: string;
       deprecated?: boolean;
-      response:
-        | { __tsType: 'AppRouteResponse' }
-        | {
-            [status: number]: { __tsType: 'AppRouteResponse' };
-          };
+      responses: {
+        [status: number]: unknown;
+      };
     },
     P extends PathFunction
   >(
     mutation: T
   ) => T & { __tsType: 'AppRouteMutation' };
-  response: <T>() => T & { __tsType: 'AppRouteResponse' };
+  response: <T>() => T;
   body: <T>() => T;
   path: <T>() => T;
 };
@@ -96,7 +88,7 @@ export const initTsRest = (): tsRest => {
     router: (args) => args,
     query: (args) => ({ __tsType: 'AppRouteQuery', ...args }),
     mutation: (args) => ({ __tsType: 'AppRouteMutation', ...args }),
-    response: <T>() => '' as unknown as T & { __tsType: 'AppRouteResponse' },
+    response: <T>() => '' as unknown as T,
     body: <T>() => '' as unknown as T,
     path: <T>() => '' as unknown as T,
   };

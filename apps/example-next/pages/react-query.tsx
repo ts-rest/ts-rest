@@ -1,12 +1,10 @@
 import { clientReactQuery } from '../api';
 
 export const Index = () => {
-  const { data, isLoading, refetch } = clientReactQuery.posts.getPosts.useQuery(
-    ['posts'],
-    {
+  const { data, error, isLoading, refetch } =
+    clientReactQuery.posts.getPosts.useQuery(['posts'], {
       query: {},
-    }
-  );
+    });
 
   const { mutate: createPost, isLoading: isCreatePostLoading } =
     clientReactQuery.posts.createPost.useMutation({
@@ -35,7 +33,7 @@ export const Index = () => {
         <p>Loading...</p>
       ) : (
         <div>
-          {data?.map((post) => (
+          {data?.data.map((post) => (
             <div key={post.id} className="bg-gray-100">
               <h3 className="text-lg">{post.title}</h3>
               <p>{post.description}</p>

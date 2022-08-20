@@ -6,7 +6,7 @@ This is completely optional, you can just use non-typed error handling and only 
 
 :::
 
-To handle errors safety you have the option to pass a status code in the response object.
+To handle errors safety you have the option to pass a status code in the response object - by default ts-rest types the status code to 200 if one isn't provided!
 
 ```typescript
 export const routerBasic = c.router({
@@ -44,14 +44,16 @@ if (status === 200) {
 The typed response includes the typed status codes along with any other possible statuses
 
 ```typescript
-type Response = {
+const updatedUser: {
     status: 200;
-    data: User;
+    data: User
 } | {
     status: 400;
-    data: null;
+    data: {
+        message: string;
+    }
 } | {
-    status: 100 | 101 | 102 | 201 | 202 | 203 | 204 | 205 | 206 | 207 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308 | 401 | 402 | ... 33 more ... | 511;
+    status: 100 | 101 | 102 | 201 | 202 | 203 | ... 47 more ... | 511;
     data: unknown;
 }
 ```

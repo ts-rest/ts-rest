@@ -15,6 +15,9 @@ export class UserController implements ControllerShape {
   async getUsers(@ApiDecorator() { query }: R['getUsers']) {
     const users = await this.prisma.user.findMany({});
 
-    return users;
+    return {
+      status: 200 as const,
+      data: users,
+    };
   }
 }

@@ -33,8 +33,10 @@ const sidebars = {
       ],
     },
     {
-      type: 'doc',
-      id: 'ts-rest-react-query',
+      type: 'category',
+      label: '@ts-rest/react-query',
+      collapsed: false,
+      items: [{ type: 'doc', id: 'react-query/react-query' }],
     },
     {
       type: 'doc',
