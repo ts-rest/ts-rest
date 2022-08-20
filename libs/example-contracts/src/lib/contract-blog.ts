@@ -1,14 +1,13 @@
 import { initTsRest } from '@ts-rest/core';
 import { z } from 'zod';
 
-interface Post {
+export interface Post {
   id: string;
   title: string;
   description: string | null;
   content: string | null;
   published: boolean;
   tags: string[];
-  image: string | null;
 }
 const c = initTsRest();
 
@@ -56,10 +55,13 @@ export const apiBlog = c.router({
   getPosts: c.query({
     method: 'GET',
     path: () => '/posts',
-    responses: { 200: c.response<Post[]>() },
+    responses: {
+      200: c.response<{ posts: Post[]; total: number }>(),
+    },
     query: z.object({
       take: z.string().transform(Number).optional(),
       skip: z.string().transform(Number).optional(),
+      search: z.string().optional(),
     }),
     summary: 'Get all posts',
   }),

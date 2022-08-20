@@ -17,11 +17,18 @@ export class PostController implements ControllerShape {
 
   @ApiRoute(s.route.getPosts)
   async getPosts(
-    @ApiParams() { query: { take, skip } }: RouteShape['getPosts']
+    @ApiParams() { query: { take, skip, search } }: RouteShape['getPosts']
   ) {
-    const posts = await this.postService.getPosts({ take, skip });
+    const { posts, totalPosts } = await this.postService.getPosts({
+      take,
+      skip,
+      search,
+    });
 
-    return { status: 200 as const, data: posts };
+    return {
+      status: 200 as const,
+      data: { posts, total: totalPosts },
+    };
   }
 
   @ApiRoute(s.route.getPost)
@@ -44,7 +51,7 @@ export class PostController implements ControllerShape {
       description: body.description,
     });
 
-    return { status: 200 as const, data: post };
+    return { status: 201 as const, data: post };
   }
 
   @ApiRoute(s.route.updatePost)

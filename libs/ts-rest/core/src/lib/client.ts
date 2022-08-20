@@ -88,12 +88,16 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       typeof inputArgs.query === 'object'
         ? Object.keys(inputArgs.query)
             .map((key) => {
+              if (inputArgs.query[key] === undefined) {
+                return null;
+              }
               return (
                 encodeURIComponent(key) +
                 '=' +
                 encodeURIComponent(inputArgs.query[key])
               );
             })
+            .filter(Boolean)
             .join('&')
         : '';
 

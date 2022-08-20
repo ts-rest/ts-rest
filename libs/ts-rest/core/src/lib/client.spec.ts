@@ -162,6 +162,26 @@ describe('client', () => {
       });
     });
 
+    it('w/ undefined query parameters', async () => {
+      const value = { key: 'value' };
+      api.mockResolvedValue({ data: value, status: 200 });
+
+      const result = await client.posts.getPosts({
+        query: { take: 10, skip: undefined },
+      });
+
+      expect(result).toStrictEqual({ data: value, status: 200 });
+
+      expect(api).toHaveBeenCalledWith({
+        method: 'GET',
+        path: 'http://api.com/posts?take=10',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: undefined,
+      });
+    });
+
     it('w/ sub path', async () => {
       const value = { key: 'value' };
       api.mockResolvedValue({ data: value, status: 200 });

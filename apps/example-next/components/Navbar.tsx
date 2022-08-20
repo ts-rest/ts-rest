@@ -1,10 +1,14 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useStore } from '../state';
 
 export const Navbar: React.FunctionComponent = () => {
   const router = useRouter();
 
+  const { searchString, setSearchString } = useStore();
+
   const post = router.query.id as string | undefined;
+
   return (
     <div className="navbar bg-base-100 ">
       <div className="flex-1">
@@ -19,15 +23,25 @@ export const Navbar: React.FunctionComponent = () => {
       </div>
 
       <div className="flex-none gap-2">
-        {post ? null : (
-          <div className="form-control">
-            <input
-              type="text"
-              placeholder="Search"
-              className="input input-bordered"
-            />
-          </div>
-        )}
+        <div className="form-control">
+          <input
+            type="text"
+            placeholder="Search"
+            className="input input-bordered"
+            value={searchString}
+            onChange={(e) => {
+              // if not on homepage, redirect to homepage
+              if (router.pathname !== '/') {
+                router.push('/');
+              }
+
+              setSearchString(e.target.value);
+            }}
+          />
+        </div>
+        <Link href="/post/new">
+          <button className="btn ">New Post</button>
+        </Link>
         <div className="dropdown dropdown-end">
           <label tabIndex={0} className="btn btn-ghost btn-circle">
             <div className="avatar placeholder">
