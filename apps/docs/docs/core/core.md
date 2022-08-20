@@ -8,21 +8,32 @@ Breaking down the contract to sub-routers also allows you to split up the backen
 const c = initContract();
 
 export const contract = c.router({
-  posts: c.router({
-    get: c.query({
-      method: 'GET',
-      path: () => '/posts',
-      response: c.response<Post[]>(),
+  createPost: c.mutation({
+    method: 'POST',
+    path: () => '/posts',
+    responses: {
+      201: c.response<Post>(),
+    },
+    body: z.object({
+      title: z.string(),
+      content: z.string(),
+      published: z.boolean().optional(),
+      description: z.string().optional(),
     }),
-    create: c.mutation({
-      method: 'POST',
-      path: () => '/posts',
-      body: z.object({
-        title: z.string(),
-        content: z.string(),
-      }),
-      response: c.response<Post>(),
+    summary: 'Create a post',
+  }),
+  getPosts: c.query({
+    method: 'GET',
+    path: () => '/posts',
+    responses: {
+      200: c.response<{ posts: Post[]; total: number }>(),
+    },
+    query: z.object({
+      take: z.string().transform(Number).optional(),
+      skip: z.string().transform(Number).optional(),
+      search: z.string().optional(),
     }),
+    summary: 'Get all posts',
   }),
 });
 ```

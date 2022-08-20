@@ -1,12 +1,6 @@
 # Error Handling
 
-:::tip
-
-This is completely optional, you can just use non-typed error handling and only care about general success/failure cases.
-
-:::
-
-To handle errors safety you have the option to pass a status code in the response object - by default ts-rest types the status code to 200 if one isn't provided!
+Since 2.0 ts-rest-api has a built-in error handling, all you need to do is define the response status codes in the contract. The Nest/Express libraries handle the rest for you, letting you utilise HTTP status codes fully without worrying about type safety!
 
 ```typescript
 export const routerBasic = c.router({
