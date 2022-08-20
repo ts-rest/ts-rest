@@ -72,6 +72,6 @@ export class PostController implements ControllerShape {
   async deletePost(@ApiParams() { params: { id } }: RouteShape['deletePost']) {
     await this.postService.deletePost(id);
 
-    return { status: 200 as const, data: true };
+    return { status: 200 as const, data: { message: 'Post Deleted' } };
   }
 }

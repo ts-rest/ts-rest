@@ -12,6 +12,13 @@ import {
   ZodInferOrType,
 } from '@ts-rest/core';
 
+export type ApiRouteResponse<T> = {
+  [K in keyof T]: {
+    status: K;
+    data: ZodInferOrType<T[K]>;
+  };
+}[keyof T];
+
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
     {
@@ -22,7 +29,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     },
     never
   >
-) => Promise<ZodInferOrType<T['responses']>>;
+) => Promise<ApiRouteResponse<T['responses']>>;
 
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
@@ -33,7 +40,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
     },
     never
   >
-) => Promise<ZodInferOrType<T['responses']>>;
+) => Promise<ApiRouteResponse<T['responses']>>;
 
 type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteMutationImplementation<T>
@@ -57,8 +64,10 @@ export const initServer = () => {
 };
 
 const recursivelyApplyExpressRouter = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   router: RecursiveRouterObj<any> | AppRouteImplementation<any>,
   path: string[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routeTransformer: (route: AppRouteImplementation<any>, path: string[]) => void
 ): void => {
   if (typeof router === 'object') {
@@ -75,6 +84,7 @@ const recursivelyApplyExpressRouter = (
 };
 
 const transformAppRouteQueryImplementation = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   route: AppRouteQueryImplementation<any>,
   schema: AppRouteQuery,
   app: Express
@@ -92,11 +102,14 @@ const transformAppRouteQueryImplementation = (
       });
     }
 
-    return res.json(await route({ params: req.params, query: req.query }));
+    const result = await route({ params: req.params, query: req.query });
+
+    return res.status(Number(result.status)).json(result.data);
   });
 };
 
 const transformAppRouteMutationImplementation = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   route: AppRouteMutationImplementation<any>,
   schema: AppRouteMutation,
   app: Express
@@ -133,7 +146,8 @@ const transformAppRouteMutationImplementation = (
         body: req.body,
         query: req.query,
       });
-      return res.json(result);
+
+      return res.status(Number(result.status)).json(result.data);
     } catch (e) {
       console.error(`[ts-rest] Error on ${method} ${path}`, e);
       return res.status(500).send('Internal Server Error');
@@ -185,18 +199,23 @@ export const createExpressEndpoints = <
   T extends RecursiveRouterObj<TRouter>,
   TRouter extends AppRouter
 >(
-  schema: AppRouter,
+  schema: TRouter,
   router: T,
   app: Express
 ) => {
   recursivelyApplyExpressRouter(router, [], (route, path) => {
     const routerViaPath = getValue(schema, path.join('.'));
 
+    if (!routerViaPath) {
+      throw new Error(`[ts-rest] No router found for path ${path.join('.')}`);
+    }
+
     if (isAppRoute(routerViaPath)) {
       if (routerViaPath.__tsType === 'AppRouteMutation') {
         transformAppRouteMutationImplementation(route, routerViaPath, app);
       } else {
         transformAppRouteQueryImplementation(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           route as AppRouteQueryImplementation<any>,
           routerViaPath,
           app

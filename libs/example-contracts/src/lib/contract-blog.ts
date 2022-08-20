@@ -41,7 +41,10 @@ export const apiBlog = c.router({
   deletePost: c.mutation({
     method: 'DELETE',
     path: ({ id }: { id: string }) => `/posts/${id}`,
-    responses: { 200: c.response<boolean>() },
+    responses: {
+      200: c.response<{ message: string }>(),
+      404: c.response<{ message: string }>(),
+    },
     body: null,
     summary: 'Delete a post',
   }),
