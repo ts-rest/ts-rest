@@ -1,1 +1,2 @@
-export * from './lib/contract-blog';
+export * from './lib/contract-zod';
+export * from './lib/contract-basic';

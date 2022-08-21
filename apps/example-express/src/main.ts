@@ -1,6 +1,6 @@
 import * as express from 'express';
 import cors = require('cors');
-import { apiBlog } from '@ts-rest/example-contracts';
+import { router } from '@ts-rest/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import { PrismaClient } from '@prisma/client';
 import * as bodyParser from 'body-parser';
@@ -15,75 +15,81 @@ const s = initServer();
 
 const prisma = new PrismaClient();
 
-const completedRouter = s.router(apiBlog, {
+const postsRouter = s.router(router.posts, {
   getPost: async ({ params: { id } }) => {
-    const post = await prisma.post.findUnique({ where: { id } });
+    const post = prisma.post.findUnique({ where: { id } });
 
-    if (!post) {
-      return {
-        status: 404,
-        data: null,
-      };
-    }
-
-    return {
-      status: 200,
-      data: post,
-    };
+    return post ?? null;
   },
-  getPosts: async ({ query }) => {
+  getPosts: async ({ query: { take, skip } }) => {
     const posts = await prisma.post.findMany({
-      where: {
-        ...(query.search ? { title: { contains: query.search } } : {}),
-      },
+      take: Number(take),
+      skip: Number(skip),
     });
 
-    return {
-      status: 200,
-      data: {
-        posts,
-        total: 0,
-      },
-    };
+    return posts;
   },
-  createPost: async ({ body }) => {
+  createPost: async ({
+    body: { title, content, published, authorId, description },
+  }) => {
     const post = await prisma.post.create({
-      data: body,
+      data: {
+        title,
+        content,
+        published,
+        authorId,
+        description,
+      },
     });
 
-    return {
-      status: 201,
-      data: post,
-    };
+    return post;
   },
-  updatePost: async ({ body, params }) => {
+  updatePost: async ({
+    params: { id },
+    body: { title, content, published, description },
+  }) => {
     const post = await prisma.post.update({
-      where: {
-        id: params.id,
+      where: { id },
+      data: {
+        title,
+        content,
+        published,
+        description,
       },
-      data: body,
     });
 
-    return {
-      status: 200,
-      data: post,
-    };
+    return post;
   },
-  deletePost: async ({ params }) => {
-    await prisma.post.delete({
-      where: {
-        id: params.id,
-      },
-    });
+  deletePost: async ({ params: { id } }) => {
+    const result = await prisma.post
+      .delete({ where: { id } })
+      .then(() => true)
+      .catch(() => false);
 
-    return {
-      status: 200,
-      data: { message: 'Post deleted' },
-    };
+    return result;
+  },
+  deletePostComment: async ({ params: { id } }) => {
+    return true;
   },
 });
 
-createExpressEndpoints(apiBlog, completedRouter, app);
+const completeRouter = s.router(router, {
+  posts: postsRouter,
+  health: async () => {
+    return {
+      message: 'OK',
+    };
+  },
+  users: {
+    getUsers: async () => {
+      const users = prisma.user.findMany({});
+
+      return users;
+    },
+  },
+});
+
+createExpressEndpoints(router, completeRouter, app);
 
 const port = process.env.port || 3333;
 const server = app.listen(port, () => {

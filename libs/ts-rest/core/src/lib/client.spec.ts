@@ -26,17 +26,13 @@ export const router = c.router({
     getPost: c.query({
       method: 'GET',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<Post | null>(),
-      },
+      response: c.response<Post | null>(),
       query: null,
     }),
     getPosts: c.query({
       method: 'GET',
       path: () => '/posts',
-      responses: {
-        200: c.response<Post[]>(),
-      },
+      response: c.response<Post[]>(),
       query: z.object({
         take: z.number().optional(),
         skip: z.number().optional(),
@@ -45,9 +41,7 @@ export const router = c.router({
     createPost: c.mutation({
       method: 'POST',
       path: () => '/posts',
-      responses: {
-        200: c.response<Post>(),
-      },
+      response: c.response<Post>(),
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -60,9 +54,7 @@ export const router = c.router({
     mutationWithQuery: c.mutation({
       method: 'POST',
       path: () => '/posts',
-      responses: {
-        200: c.response<Post>(),
-      },
+      response: c.response<Post>(),
       body: z.object({}),
       query: z.object({
         test: z.string(),
@@ -71,9 +63,7 @@ export const router = c.router({
     updatePost: c.mutation({
       method: 'PUT',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<Post>(),
-      },
+      response: c.response<Post>(),
       body: z.object({
         title: z.string(),
         content: z.string(),
@@ -86,18 +76,14 @@ export const router = c.router({
     patchPost: c.mutation({
       method: 'PATCH',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<Post>(),
-      },
+      response: c.response<Post>(),
       body: z.object({}),
       query: null,
     }),
     deletePost: c.mutation({
       method: 'DELETE',
       path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<boolean>(),
-      },
+      response: c.response<boolean>(),
       body: null,
       query: null,
     }),
@@ -105,9 +91,7 @@ export const router = c.router({
   health: c.query({
     method: 'GET',
     path: () => '/health',
-    responses: {
-      200: c.response<{ message: string }>(),
-    },
+    response: c.response<{ message: string }>(),
     query: null,
   }),
 });
@@ -149,26 +133,6 @@ describe('client', () => {
       api.mockResolvedValue({ data: value, status: 200 });
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
-
-      expect(result).toStrictEqual({ data: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: 'http://api.com/posts?take=10',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
-    });
-
-    it('w/ undefined query parameters', async () => {
-      const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
-
-      const result = await client.posts.getPosts({
-        query: { take: 10, skip: undefined },
-      });
 
       expect(result).toStrictEqual({ data: value, status: 200 });
 

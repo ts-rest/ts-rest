@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["openapi", "tanstack", "todos", "TRPC", "ts-rest"],
+  "cSpell.words": ["openapi", "tanstack", "TRPC", "ts-rest"],
   "typescript.tsdk": "node_modules/typescript/lib",
   "yaml.schemas": {
     "https://json.schemastore.org/github-workflow.json": "file:///Users/olly/projects/ts-rest/.github/workflows/deploy.yml"

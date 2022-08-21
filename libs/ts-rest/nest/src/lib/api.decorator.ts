@@ -6,7 +6,6 @@ import {
   Delete,
   ExecutionContext,
   Get,
-  HttpException,
   Injectable,
   NestInterceptor,
   Patch,
@@ -20,7 +19,7 @@ import {
   getAppRoutePathRoute,
   Without,
 } from '@ts-rest/core';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { z, ZodTypeAny } from 'zod';
 
 export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
@@ -102,7 +101,7 @@ const checkBodySchema = (
       success: false;
       error: unknown;
     } => {
-  if (appRoute.__tsType === 'AppRouteMutation' && appRoute.body) {
+  if (appRoute.__type === 'AppRouteMutation' && appRoute.body) {
     if (isZodObject(appRoute.body)) {
       const result = appRoute.body.safeParse(body);
 
@@ -225,19 +224,7 @@ export class ApiRouteInterceptor implements NestInterceptor {
 
     req.appRoute = this.appRoute;
 
-    return next.handle().pipe(
-      map((value) => {
-        if (
-          typeof value === 'object' &&
-          typeof value.status === 'number' &&
-          value.data !== undefined
-        ) {
-          throw new HttpException(value?.data, value.status);
-        }
-
-        return value;
-      })
-    );
+    return next.handle();
   }
 }
 

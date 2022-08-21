@@ -1,3 +1,8 @@
+---
+title: '@ts-rest/react-query'
+sidebar_position: 5
+---
+
 # React Query
 
 This is a client using` @ts-react/react-query`, using `@tanstack/react-query` under the hood.
