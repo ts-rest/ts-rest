@@ -36,6 +36,18 @@ const getPathsFromRouter = (
   return paths;
 };
 
+const isZodObject = (body: unknown): body is ZodTypeAny => {
+  return (body as ZodTypeAny)?.safeParse !== undefined;
+};
+
+const getResponseSchemaFromZod = (response: unknown) =>
+  isZodObject(response)
+    ? zodToJsonSchema(response, {
+        name: 'zodObject',
+        target: 'openApi3',
+      }).definitions['zodObject']
+    : undefined;
+
 export const generateOpenApi = (
   router: AppRouter,
   options: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject }
@@ -50,28 +62,38 @@ export const generateOpenApi = (
     PATCH: 'patch',
   };
 
-  const isZodObject = (body: unknown): body is ZodTypeAny => {
-    return (body as ZodTypeAny)?.safeParse !== undefined;
-  };
   const pathObject = paths.reduce((acc, path) => {
     const paramsFromPath = path.path
       .match(/{[^}]+}/g)
       ?.map((param) => param.slice(1, -1));
 
     const bodySchema =
-      path.route?.__type === 'AppRouteMutation' && isZodObject(path.route.body)
-        ? zodToJsonSchema(path.route.body, {
-            name: 'zodObject',
-            target: 'openApi3',
-          }).definitions['zodObject']
-        : undefined;
+      path.route?.__tsType === 'AppRouteMutation' &&
+      getResponseSchemaFromZod(path.route.responses);
 
-    const responseSchema = isZodObject(path.route.response)
-      ? zodToJsonSchema(path.route.response, {
-          name: 'zodObject',
-          target: 'openApi3',
-        }).definitions['zodObject']
-      : undefined;
+    const responses = Object.keys(path.route.responses).reduce((acc, key) => {
+      const keyAsNumber = Number(key);
+
+      const responseSchema = getResponseSchemaFromZod(
+        path.route.responses[keyAsNumber]
+      );
+
+      return {
+        ...acc,
+        [keyAsNumber]: {
+          description: `${keyAsNumber}`,
+          ...(responseSchema
+            ? {
+                content: {
+                  'application/json': {
+                    schema: responseSchema,
+                  },
+                },
+              }
+            : {}),
+        },
+      };
+    }, {});
 
     const newPath: OperationObject = {
       description: path.route.description,
@@ -95,20 +117,7 @@ export const generateOpenApi = (
             },
           }
         : {}),
-      responses: {
-        200: {
-          description: 'Success',
-          ...(responseSchema
-            ? {
-                content: {
-                  'application/json': {
-                    schema: responseSchema,
-                  },
-                },
-              }
-            : {}),
-        },
-      },
+      responses,
     };
 
     acc[path.path] = {
