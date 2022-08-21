@@ -57,6 +57,12 @@ const config = {
             label: 'Docs',
           },
           {
+            type: 'doc',
+            docId: 'quickstart',
+            position: 'left',
+            label: 'Quickstart',
+          },
+          {
             href: 'https://github.com/ts-rest/ts-rest',
             label: 'GitHub',
             position: 'right',

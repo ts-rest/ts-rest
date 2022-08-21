@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
 import { api } from '..';
-import { Layout } from '../../components/Layout';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 

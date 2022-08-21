@@ -16,7 +16,7 @@ const s = initServer();
 const prisma = new PrismaClient();
 
 const completedRouter = s.router(apiBlog, {
-  getPost: async ({ params: { id }, query }) => {
+  getPost: async ({ params: { id } }) => {
     const post = await prisma.post.findUnique({ where: { id } });
 
     if (!post) {

@@ -2,7 +2,6 @@ import { apiBlog } from '@ts-rest/example-contracts';
 import { initQueryClient } from '@ts-rest/react-query';
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { Layout } from '../components/Layout';
 import { useDebounce } from '../hooks/useDebounce';
 import { useStore } from '../state';
 
@@ -14,7 +13,7 @@ export const api = initQueryClient(apiBlog, {
 export function Index() {
   const { searchString } = useStore();
 
-  const { data, isLoading, refetch } = api.getPosts.useQuery(['posts'], {
+  const { data, isLoading, refetch, error } = api.getPosts.useQuery(['posts'], {
     query: {
       take: 5,
       skip: 0,

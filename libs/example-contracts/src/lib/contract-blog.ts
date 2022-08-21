@@ -1,4 +1,4 @@
-import { initTsRest } from '@ts-rest/core';
+import { initClient, initTsRest } from '@ts-rest/core';
 import { z } from 'zod';
 
 export interface Post {

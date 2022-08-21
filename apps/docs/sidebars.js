@@ -20,7 +20,7 @@ const sidebars = {
     },
     {
       type: 'doc',
-      id: 'feature-support',
+      id: 'quickstart',
     },
     {
       type: 'category',
@@ -33,24 +33,19 @@ const sidebars = {
       ],
     },
     {
-      type: 'category',
+      type: 'doc',
       label: '@ts-rest/react-query',
-      collapsed: false,
-      items: [{ type: 'doc', id: 'react-query/react-query' }],
-    },
-    {
-      type: 'category',
-      label: '@ts-rest/nest',
-      collapsed: false,
-      items: [
-        { type: 'doc', id: 'nest/nest' },
-        { type: 'doc', id: 'nest/error' },
-        { type: 'doc', id: 'nest/zod' },
-      ],
+      id: 'react-query',
     },
     {
       type: 'doc',
-      id: 'ts-rest-express',
+      label: '@ts-rest/nest',
+      id: 'nest',
+    },
+    {
+      type: 'doc',
+      label: '@ts-rest/express',
+      id: 'express',
     },
     {
       type: 'category',
