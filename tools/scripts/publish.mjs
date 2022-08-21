@@ -49,4 +49,4 @@ try {
 }
 
 // Execute "npm publish" to publish
-execSync(`npm publish --tag next --access public`);
+execSync(`npm publish --access public --tag ${tag}`);

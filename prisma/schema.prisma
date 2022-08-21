@@ -18,6 +18,21 @@ model Post {
   content     String?
   description String?
   published   Boolean  @default(false)
-  tags        String[]
-  image       String?
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    String
+}
+
+model Profile {
+  id     String  @id @default(cuid())
+  bio    String?
+  user   User    @relation(fields: [userId], references: [id])
+  userId String  @unique
+}
+
+model User {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  name    String?
+  posts   Post[]
+  profile Profile?
 }

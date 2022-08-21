@@ -5,60 +5,10 @@ import { PrismaService } from './prisma.service';
 export class PostService {
   constructor(private prisma: PrismaService) {}
 
-  async getPosts({
-    take,
-    skip,
-    search,
-  }: {
-    take?: number;
-    skip?: number;
-    search?: string;
-  }) {
-    const posts = await this.prisma.post.findMany({
-      take,
-      skip,
-      where: {
-        ...(search
-          ? {
-              OR: [
-                {
-                  title: { contains: search },
-                },
-                {
-                  content: { contains: search },
-                },
-                {
-                  description: { contains: search },
-                },
-              ],
-            }
-          : {}),
-      },
-    });
+  async getPosts({ take, skip }: { take?: number; skip?: number }) {
+    const posts = await this.prisma.post.findMany({ take, skip });
 
-    const totalPosts = await this.prisma.post.count({
-      take,
-      skip,
-      where: {
-        ...(search
-          ? {
-              OR: [
-                {
-                  title: { contains: search },
-                },
-                {
-                  content: { contains: search },
-                },
-                {
-                  description: { contains: search },
-                },
-              ],
-            }
-          : {}),
-      },
-    });
-
-    return { posts, totalPosts };
+    return posts;
   }
 
   async getPost(id: string) {
@@ -71,6 +21,7 @@ export class PostService {
     title: string;
     content: string;
     published: boolean | undefined;
+    authorId: string;
     description: string | undefined;
   }) {
     const post = await this.prisma.post.create({

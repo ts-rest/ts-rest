@@ -1,10 +1,10 @@
-import { AppRoute, AppRouter, ApiRouteResponse, Without } from '@ts-rest/core';
+import { AppRoute, AppRouter, Without, ZodInferOrType } from '@ts-rest/core';
 import { ApiDecoratorShape } from './api.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...args: any[]
-) => Promise<ApiRouteResponse<T['responses']>>;
+) => Promise<ZodInferOrType<T['response']>>;
 
 type AppRouterControllerShape<T extends AppRouter> = {
   [K in keyof T]: T[K] extends AppRouter
