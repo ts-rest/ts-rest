@@ -23,6 +23,11 @@ const sidebars = {
       id: 'quickstart',
     },
     {
+      type: 'doc',
+      id: 'examples',
+      label: 'Examples',
+    },
+    {
       type: 'category',
       label: '@ts-rest/core',
       collapsed: false,
