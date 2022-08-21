@@ -1,5 +1,15 @@
 # @ts-rest/react-query
 
+## 2.0.0
+
+### Major Changes
+
+- 0b3a890: Change contract to support multiple responses, for different statuses
+
+### Patch Changes
+
+- 0b3a890: Add error handling support to express
+
 ## 1.3.0
 
 ### Patch Changes
