@@ -37,3 +37,31 @@ export const contract = c.router({
   }),
 });
 ```
+
+## Combining Contracts
+
+You can combine contracts to create a single contract, helpful if you want many sub contracts, especially if they are huge.
+
+```typescript
+const c = initContract();
+
+export const postContract = c.router({
+  getPosts: c.query({
+    method: 'GET',
+    path: () => '/posts',
+    responses: {
+      200: c.response<{ posts: Post[]; total: number }>(),
+    },
+    query: z.object({
+      take: z.string().transform(Number).optional(),
+      skip: z.string().transform(Number).optional(),
+      search: z.string().optional(),
+    }),
+    summary: 'Get all posts',
+  }),
+});
+
+export const contract = c.router({
+  posts: postContract,
+});
+```

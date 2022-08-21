@@ -1,7 +1,3 @@
----
-title: '@ts-rest/express'
----
-
 # Express Server
 
 ```typescript
