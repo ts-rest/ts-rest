@@ -1,0 +1,12 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "@ts-rest/core": "1.3.0",
+    "@ts-rest/express": "1.3.0",
+    "@ts-rest/nest": "1.3.0",
+    "@ts-rest/open-api": "1.3.0",
+    "@ts-rest/react-query": "1.3.0"
+  },
+  "changesets": []
+}
