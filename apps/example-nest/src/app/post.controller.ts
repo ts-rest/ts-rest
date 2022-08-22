@@ -1,13 +1,9 @@
 import { Controller } from '@nestjs/common';
-import { router } from '@ts-rest/example-contracts';
-import {
-  Api as ApiRoute,
-  ApiDecorator as ApiParams,
-  initNestServer,
-} from '@ts-rest/nest';
+import { apiBlog } from '@ts-rest/example-contracts';
+import { Api, ApiDecorator, initNestServer } from '@ts-rest/nest';
 import { PostService } from './post.service';
 
-const s = initNestServer(router.posts);
+const s = initNestServer(apiBlog);
 type ControllerShape = typeof s.controllerShape;
 type RouteShape = typeof s.routeShapes;
 
@@ -15,38 +11,48 @@ type RouteShape = typeof s.routeShapes;
 export class PostController implements ControllerShape {
   constructor(private readonly postService: PostService) {}
 
-  @ApiRoute(s.route.getPosts)
+  @Api(s.route.getPosts)
   async getPosts(
-    @ApiParams() { query: { take, skip } }: RouteShape['getPosts']
+    @ApiDecorator() { query: { take, skip, search } }: RouteShape['getPosts']
   ) {
-    const posts = await this.postService.getPosts({ take, skip });
+    const { posts, totalPosts } = await this.postService.getPosts({
+      take,
+      skip,
+      search,
+    });
 
-    return posts;
+    return {
+      status: 200 as const,
+      data: { posts, total: totalPosts },
+    };
   }
 
-  @ApiRoute(s.route.getPost)
-  async getPost(@ApiParams() { params: { id } }: RouteShape['getPost']) {
+  @Api(s.route.getPost)
+  async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']) {
     const post = await this.postService.getPost(id);
 
-    return post;
+    if (!post) {
+      return { status: 404 as const, data: null };
+    }
+
+    return { status: 200 as const, data: post };
   }
 
-  @ApiRoute(s.route.createPost)
-  async createPost(@ApiParams() { body }: RouteShape['createPost']) {
+  @Api(s.route.createPost)
+  async createPost(@ApiDecorator() { body }: RouteShape['createPost']) {
     const post = await this.postService.createPost({
       title: body.title,
       content: body.content,
       published: body.published,
-      authorId: body.authorId,
       description: body.description,
     });
 
-    return post;
+    return { status: 201 as const, data: post };
   }
 
-  @ApiRoute(s.route.updatePost)
+  @Api(s.route.updatePost)
   async updatePost(
-    @ApiParams() { params: { id }, body }: RouteShape['updatePost']
+    @ApiDecorator() { params: { id }, body }: RouteShape['updatePost']
   ) {
     const post = await this.postService.updatePost(id, {
       title: body.title,
@@ -55,20 +61,15 @@ export class PostController implements ControllerShape {
       description: body.description,
     });
 
-    return post;
+    return { status: 200 as const, data: post };
   }
 
-  @ApiRoute(s.route.deletePost)
-  async deletePost(@ApiParams() { params: { id } }: RouteShape['deletePost']) {
+  @Api(s.route.deletePost)
+  async deletePost(
+    @ApiDecorator() { params: { id } }: RouteShape['deletePost']
+  ) {
     await this.postService.deletePost(id);
 
-    return true;
-  }
-
-  @ApiRoute(s.route.deletePostComment)
-  async deletePostComment(
-    @ApiParams() { params: { id, commentId } }: RouteShape['deletePostComment']
-  ) {
-    return false;
+    return { status: 200 as const, data: { message: 'Post Deleted' } };
   }
 }

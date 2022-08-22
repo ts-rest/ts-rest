@@ -1,17 +1,4 @@
----
-title: '@ts-rest/express'
-sidebar_position: 6
----
-
 # Express Server
-
-:::caution
-
-The Express implementation is a work in progress, it's missing
-
-- Body and Query Parsing
-
-:::
 
 ```typescript
 const s = initServer();
