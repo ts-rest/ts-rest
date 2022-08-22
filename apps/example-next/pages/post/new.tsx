@@ -14,7 +14,7 @@ export function Index() {
 
   const { mutate } = api.createPost.useMutation({
     onSuccess: (res) => {
-      router.push(`/post/${res.data.id}`);
+      router.push(`/post/${res.body.id}`);
       toast.success('Post created!');
     },
   });

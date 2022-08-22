@@ -44,10 +44,10 @@ Return type
 ```typescript
 const data: {
     status: 200;
-    data: User
+    body: User
 } | {
     status: 400 | 100 | 101 | 102 | 201 | 202 | 203 | 204 | 205 | 206 | 207 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | ... 36 more ... | 511;
-    data: unknown;
+    body: unknown;
 }
 ```
 

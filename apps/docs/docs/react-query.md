@@ -10,18 +10,24 @@ export const client = initReactQueryClient(router, {
 
 const App = () => {
   // Effectively a useQuery hook
-  const { data, isLoading } = client.posts.get.useQuery(['posts']);
+  const { data, isLoading, error } = client.posts.get.useQuery(['posts']);
 
   // Effectively a useMutation hook
   const { mutate, isLoading } = client.posts.create.useMutation();
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (data?.status !== 200) {
+    return <div>Error</div>;
+  }
+
   return (
     <div>
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : (
-        <div>{data.map((post) => post.title)}</div>
-      )}
+      {data.body.map((post) => (
+        <p key={post.id}>post.title</p>
+      ))}
     </div>
   );
 };
@@ -33,7 +39,7 @@ const App = () => {
 
 ```typescript
 // Normal fetch
-const { data } = await client.posts.get.query();
+const { body, status } = await client.posts.get.query();
 
 // useQuery hook
 const { data, isLoading } = client.posts.get.useQuery();

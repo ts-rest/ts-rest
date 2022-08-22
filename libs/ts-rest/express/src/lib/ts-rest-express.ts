@@ -15,7 +15,7 @@ import {
 export type ApiRouteResponse<T> = {
   [K in keyof T]: {
     status: K;
-    data: ZodInferOrType<T[K]>;
+    body: ZodInferOrType<T[K]>;
   };
 }[keyof T];
 
@@ -104,7 +104,7 @@ const transformAppRouteQueryImplementation = (
 
     const result = await route({ params: req.params, query: req.query });
 
-    return res.status(Number(result.status)).json(result.data);
+    return res.status(Number(result.status)).json(result.body);
   });
 };
 
@@ -147,7 +147,7 @@ const transformAppRouteMutationImplementation = (
         query: req.query,
       });
 
-      return res.status(Number(result.status)).json(result.data);
+      return res.status(Number(result.status)).json(result.body);
     } catch (e) {
       console.error(`[ts-rest] Error on ${method} ${path}`, e);
       return res.status(500).send('Internal Server Error');

@@ -23,7 +23,7 @@ export class PostController implements ControllerShape {
 
     return {
       status: 200 as const,
-      data: { posts, total: totalPosts },
+      body: { posts, total: totalPosts },
     };
   }
 
@@ -32,10 +32,10 @@ export class PostController implements ControllerShape {
     const post = await this.postService.getPost(id);
 
     if (!post) {
-      return { status: 404 as const, data: null };
+      return { status: 404 as const, body: null };
     }
 
-    return { status: 200 as const, data: post };
+    return { status: 200 as const, body: post };
   }
 
   @Api(s.route.createPost)
@@ -47,7 +47,7 @@ export class PostController implements ControllerShape {
       description: body.description,
     });
 
-    return { status: 201 as const, data: post };
+    return { status: 201 as const, body: post };
   }
 
   @Api(s.route.updatePost)
@@ -61,7 +61,7 @@ export class PostController implements ControllerShape {
       description: body.description,
     });
 
-    return { status: 200 as const, data: post };
+    return { status: 200 as const, body: post };
   }
 
   @Api(s.route.deletePost)
@@ -70,6 +70,6 @@ export class PostController implements ControllerShape {
   ) {
     await this.postService.deletePost(id);
 
-    return { status: 200 as const, data: { message: 'Post Deleted' } };
+    return { status: 200 as const, body: { message: 'Post Deleted' } };
   }
 }

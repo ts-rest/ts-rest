@@ -28,12 +28,12 @@ export type ApiRouteResponse<T> =
   | {
       [K in keyof T]: {
         status: K;
-        data: ZodInferOrType<T[K]>;
+        body: ZodInferOrType<T[K]>;
       };
     }[keyof T]
   | {
       status: Exclude<HTTPStatusCode, keyof T>;
-      data: unknown;
+      body: unknown;
     };
 
 /**
@@ -54,7 +54,7 @@ type ApiFetcher = (args: {
   method: string;
   headers: Record<string, string>;
   body: string | undefined;
-}) => Promise<{ status: number; data: unknown }>;
+}) => Promise<{ status: number; body: unknown }>;
 
 export const defaultApi: ApiFetcher = async ({
   path,
@@ -67,12 +67,12 @@ export const defaultApi: ApiFetcher = async ({
   try {
     return {
       status: result.status,
-      data: await result.json(),
+      body: await result.json(),
     };
   } catch {
     return {
       status: result.status,
-      data: await result.text(),
+      body: await result.text(),
     };
   }
 };

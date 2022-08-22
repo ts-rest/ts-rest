@@ -68,7 +68,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
  */
 type SuccessResponseMapper<T> = {
   [K in keyof T]: K extends SuccessfulHttpStatusCode
-    ? { status: K; data: ZodInferOrType<T[K]> }
+    ? { status: K; body: ZodInferOrType<T[K]> }
     : never;
 }[keyof T];
 
@@ -79,12 +79,12 @@ type ErrorResponseMapper<T> =
   | {
       [K in keyof T]: K extends SuccessfulHttpStatusCode
         ? never
-        : { status: K; data: ZodInferOrType<T[K]> };
+        : { status: K; body: ZodInferOrType<T[K]> };
     }[keyof T]
   // If the response isn't one of our typed ones. Return "unknown"
   | {
       status: Exclude<HTTPStatusCode, keyof T | SuccessfulHttpStatusCode>;
-      data: unknown;
+      body: unknown;
     };
 
 // Data response if it's a 2XX
