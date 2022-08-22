@@ -1,7 +1,3 @@
----
-sidebar_position: 2
----
-
 # tRPC Comparison
 
 I _love_ [tRPC](https://trpc.io/), [KATT (Alex Johansson)](https://github.com/KATT) and all the [other maintainers](https://github.com/trpc/trpc/graphs/contributors) have done some amazing work, and for applications with a single Next.js app, or an express server only consumed by TRPC clients, I whole heartily recommend using tRPC! Also I have undoubtedly taken inspiration from tRPC for tREST.
@@ -19,24 +15,3 @@ tREST allows you design an API as you would "normally", e.g. GET, POST, PUT, DEL
 tRPC structures your API as RPC calls such as `/trpc/getPosts` or `/trpc/getPostComments` etc, this provides an arguably simpler API for the client implementation, however, you loose the predictability of REST(ish) APIs if you have consumers who aren't in Typescript (able to us @ts-rest) or public consumers.
 
 tRPC has many plugins to solve this issue by mapping the API implementation to a REST-like API, however, these approaches are often a bit clunky and reduce the safety of the system overall, tREST does this heavy lifting in the client and server implementations rather than requiring a second layer of abstraction and API endpoint(s) to be defined.
-
-| **Features**      | REST | tRPC  | tREST  |
-| ----------------- | ---- | ----- | ------ |
-| E2E Type Safe     | ❌   | ✅    | ✅     |
-| Protocol          | REST | RPC   | REST   |
-| Public API        | ✅   | ❌    | ✅     |
-| Zod/Yup/Joi       | ❌   | ✅    | 🏗 v1.0 |
-| WebSocket Support | ❌   | ✅    | ❌     |
-| Cmd+Click Access  | ❌   | 🏗 v10 | ✅     |
-| Separate Contract | ❌   | ❌    | ✅     |
-
-tREST also supports [Nest](https://nestjs.com/), it appears adding Nest to tRPC is against the Nest controller principles, so it is not recommended.
-
-| **Libraries Support** | REST | tRPC        | tREST  |
-| --------------------- | ---- | ----------- | ------ |
-| Client fetch/custom   | ✅   | ✅          | ✅     |
-| Client react-query    | ✅   | ✅          | 🏗 v1.0 |
-| Client swr            | ✅   | ✅ (plugin) | 🏗 v1.0 |
-| Server Express        | ✅   | ✅          | ✅     |
-| Server Nest           | ✅   | ❌          | ✅     |
-| Server Next           | ✅   | ✅          | 🏗 v1.0 |
