@@ -22,13 +22,13 @@ const completedRouter = s.router(apiBlog, {
     if (!post) {
       return {
         status: 404,
-        data: null,
+        body: null,
       };
     }
 
     return {
       status: 200,
-      data: post,
+      body: post,
     };
   },
   getPosts: async ({ query }) => {
@@ -40,7 +40,7 @@ const completedRouter = s.router(apiBlog, {
 
     return {
       status: 200,
-      data: {
+      body: {
         posts,
         total: 0,
       },
@@ -53,7 +53,7 @@ const completedRouter = s.router(apiBlog, {
 
     return {
       status: 201,
-      data: post,
+      body: post,
     };
   },
   updatePost: async ({ body, params }) => {
@@ -66,7 +66,7 @@ const completedRouter = s.router(apiBlog, {
 
     return {
       status: 200,
-      data: post,
+      body: post,
     };
   },
   deletePost: async ({ params }) => {
@@ -78,7 +78,7 @@ const completedRouter = s.router(apiBlog, {
 
     return {
       status: 200,
-      data: { message: 'Post deleted' },
+      body: { message: 'Post deleted' },
     };
   },
 });

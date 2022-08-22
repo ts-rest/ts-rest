@@ -16,10 +16,10 @@ export class PostController implements ControllerShape {
     const post = await this.postService.getPost(id);
 
     if (!post) {
-      return { status: 404 as const, data: null };
+      return { status: 404 as const, body: null };
     }
 
-    return { status: 200 as const, data: post };
+    return { status: 200 as const, body: post };
   }
 }
 ```

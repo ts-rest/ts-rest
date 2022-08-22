@@ -118,7 +118,7 @@ export class PostController implements ControllerShape {
   async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']) {
     const post = await this.postService.getPost(id);
 
-    return { status: 200 as const, data: post };
+    return { status: 200 as const, body: post };
   }
 
   @Api(s.route.createPost)
@@ -128,7 +128,7 @@ export class PostController implements ControllerShape {
       body: body.body,
     });
 
-    return { status: 201 as const, data: post };
+    return { status: 201 as const, body: post };
   }
 }
 ```
@@ -154,7 +154,7 @@ const router = s.router(contract, {
 
     return {
       status: 200,
-      data: post,
+      body: post,
     };
   },
   createPost: async ({ body }) => {
@@ -164,7 +164,7 @@ const router = s.router(contract, {
 
     return {
       status: 201,
-      data: post,
+      body: post,
     };
   },
 });
@@ -206,7 +206,7 @@ const client = initClient(contract, {
   baseHeaders: {},
 });
 
-const { data, status } = await client.createPost({
+const { body, status } = await client.createPost({
   body: {
     title: 'Post Title',
     body: 'Post Body',
@@ -214,11 +214,11 @@ const { data, status } = await client.createPost({
 });
 
 if (status === 201) {
-  // data is Post
-  console.log(data);
+  // body is Post
+  console.log(body);
 } else {
-  // data is unknown
-  console.log(data);
+  // body is unknown
+  console.log(body);
 }
 ```
 
@@ -244,7 +244,7 @@ export const Index = () => {
     return <div>Error</div>;
   }
 
-  return <div>{data.data.title}</div>;
+  return <div>{data.body.title}</div>;
 };
 ```
 
@@ -258,7 +258,7 @@ If status is 2XX, it's part of the "data" return. If it's any other status code 
 const data:
   | {
       status: 200;
-      data: Post | null;
+      body: Post | null;
     }
   | undefined;
 ```
@@ -267,11 +267,11 @@ const data:
 const error:
   | {
       status: 404;
-      data: null
+      body: null
     }
   | {
       status: 404 | 100 | 101 | 102 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308 | 400 | 401 | 402 | 403 | 405 | 406 | 407 | 408 | 409 | 410 | 411 | 412 | 413 | 414 | 415 | 416 | 417 | 418 | 419 | ... 16 more ... | 511;
-      data: unknown;
+      body: unknown;
     }
   | null
 ```

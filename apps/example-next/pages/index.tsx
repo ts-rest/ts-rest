@@ -13,7 +13,7 @@ export const api = initQueryClient(apiBlog, {
 export function Index() {
   const { searchString } = useStore();
 
-  const { data, isLoading, refetch, error } = api.getPosts.useQuery(['posts'], {
+  const { data, isLoading, refetch } = api.getPosts.useQuery(['posts'], {
     query: {
       take: 5,
       skip: 0,
@@ -35,7 +35,7 @@ export function Index() {
     return <div>No posts found</div>;
   }
 
-  const { posts, total } = data.data;
+  const { posts } = data.body;
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">

@@ -7,7 +7,10 @@ const router = s.router(router, {
   getPost: async ({ params: { id } }) => {
     const post = prisma.post.findUnique({ where: { id } });
 
-    return post ?? null;
+    return {
+      status: 200,
+      body: post ?? null,
+    };
   },
 });
 

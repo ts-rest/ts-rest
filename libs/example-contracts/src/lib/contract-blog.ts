@@ -1,4 +1,4 @@
-import { initClient, initTsRest } from '@ts-rest/core';
+import { initTsRest } from '@ts-rest/core';
 import { z } from 'zod';
 
 export interface Post {
@@ -51,7 +51,10 @@ export const apiBlog = c.router({
   getPost: c.query({
     method: 'GET',
     path: ({ id }: { id: string }) => `/posts/${id}`,
-    responses: { 200: c.response<Post>(), 404: c.response<null>() },
+    responses: {
+      200: c.response<Post>(),
+      404: c.response<null>(),
+    },
     query: null,
     summary: 'Get a post by id',
   }),

@@ -23,7 +23,7 @@ const Edit = ({ post }: { post: Post }) => {
 
   const { mutate } = api.updatePost.useMutation({
     onSuccess: (res) => {
-      router.push(`/post/${res.data.id}`);
+      router.push(`/post/${res.body.id}`);
       toast.success('Post updated!');
     },
   });
@@ -110,7 +110,7 @@ export function Index() {
     );
   }
 
-  return <Edit post={data.data} />;
+  return <Edit post={data.body} />;
 }
 
 export default Index;

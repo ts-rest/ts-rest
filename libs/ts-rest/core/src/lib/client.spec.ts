@@ -128,11 +128,11 @@ describe('client', () => {
   describe('get', () => {
     it('w/ no parameters', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.getPosts({ query: {} });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
@@ -146,11 +146,11 @@ describe('client', () => {
 
     it('w/ query parameters', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
@@ -164,13 +164,13 @@ describe('client', () => {
 
     it('w/ undefined query parameters', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.getPosts({
         query: { take: 10, skip: undefined },
       });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
@@ -184,11 +184,11 @@ describe('client', () => {
 
     it('w/ sub path', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.getPost({ params: { id: '1' } });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
@@ -204,13 +204,13 @@ describe('client', () => {
   describe('post', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.createPost({
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'POST',
@@ -228,14 +228,14 @@ describe('client', () => {
 
     it('w/ sub path and body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.updatePost({
         params: { id: '1' },
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'PUT',
@@ -252,14 +252,14 @@ describe('client', () => {
     });
 
     it('w/ query params', async () => {
-      api.mockResolvedValue({ data: {}, status: 200 });
+      api.mockResolvedValue({ body: {}, status: 200 });
 
       const result = await client.posts.mutationWithQuery({
         query: { test: 'test' },
         body: {},
       });
 
-      expect(result).toStrictEqual({ data: {}, status: 200 });
+      expect(result).toStrictEqual({ body: {}, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'POST',
@@ -275,14 +275,14 @@ describe('client', () => {
   describe('put', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.updatePost({
         params: { id: '1' },
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'PUT',
@@ -302,14 +302,14 @@ describe('client', () => {
   describe('patch', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.patchPost({
         params: { id: '1' },
         body: {},
       });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'PATCH',
@@ -325,14 +325,14 @@ describe('client', () => {
   describe('delete', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ data: value, status: 200 });
+      api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.deletePost({
         params: { id: '1' },
         body: null,
       });
 
-      expect(result).toStrictEqual({ data: value, status: 200 });
+      expect(result).toStrictEqual({ body: value, status: 200 });
 
       expect(api).toHaveBeenCalledWith({
         method: 'DELETE',

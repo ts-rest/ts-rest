@@ -96,7 +96,7 @@ const checkBodySchema = (
 ):
   | {
       success: true;
-      data: unknown;
+      body: unknown;
     }
   | {
       success: false;
@@ -109,7 +109,7 @@ const checkBodySchema = (
       if (result.success) {
         return {
           success: true,
-          data: result.data,
+          body: result.data,
         };
       }
 
@@ -122,7 +122,7 @@ const checkBodySchema = (
 
   return {
     success: true,
-    data: body,
+    body: body,
   };
 };
 
@@ -132,7 +132,7 @@ const checkQuerySchema = (
 ):
   | {
       success: true;
-      data: unknown;
+      body: unknown;
     }
   | {
       success: false;
@@ -145,7 +145,7 @@ const checkQuerySchema = (
       if (result.success) {
         return {
           success: true,
-          data: result.data,
+          body: result.data,
         };
       }
 
@@ -158,7 +158,7 @@ const checkQuerySchema = (
 
   return {
     success: true,
-    data: query,
+    body: query,
   };
 };
 
@@ -191,9 +191,9 @@ export const ApiDecorator = createParamDecorator(
     }
 
     return {
-      query: queryResult.data,
+      query: queryResult.body,
       params: pathParams,
-      body: bodyResult.data,
+      body: bodyResult.body,
     };
   }
 );
@@ -230,9 +230,9 @@ export class ApiRouteInterceptor implements NestInterceptor {
         if (
           typeof value === 'object' &&
           typeof value.status === 'number' &&
-          value.data !== undefined
+          value.body !== undefined
         ) {
-          throw new HttpException(value?.data, value.status);
+          throw new HttpException(value?.body, value.status);
         }
 
         return value;

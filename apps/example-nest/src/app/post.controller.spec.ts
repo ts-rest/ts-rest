@@ -30,7 +30,7 @@ describe('PostController', () => {
       .get('/posts')
       .expect(200)
       .expect({
-        data: postService.getPosts({}),
+        body: postService.getPosts({}),
       });
   });
 

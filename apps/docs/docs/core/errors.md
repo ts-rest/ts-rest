@@ -22,10 +22,10 @@ export const routerBasic = c.router({
 The default fetch client has support for this,
 
 ```typescript
-const { status, data } = await client.user({ params: { id: '1' } });
+const { status, body } = await client.user({ params: { id: '1' } });
 
 if (status === 200) {
-  console.log(data.email);
+  console.log(body.email);
 } else if (status === 400) {
   console.log('Not found');
 } else {
@@ -40,15 +40,15 @@ The typed response includes the typed status codes along with any other possible
 ```typescript
 const updatedUser: {
     status: 200;
-    data: User
+    body: User
 } | {
     status: 400;
-    data: {
+    body: {
         message: string;
     }
 } | {
     status: 100 | 101 | 102 | 201 | 202 | 203 | ... 47 more ... | 511;
-    data: unknown;
+    body: unknown;
 }
 ```
 
