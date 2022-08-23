@@ -4,6 +4,23 @@
  * work well for content-centric websites.
  */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.header-code-blocks > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-code-blocks > div > div:nth-child(2) {
+  height: 100%;
+}
+
+.header-code-blocks > div > div:nth-child(2) > pre {
+  height: 100%;
+}
+
 /* :root {
   --ifm-color-primary: #4a735c;
   --ifm-color-primary-dark: #436853;

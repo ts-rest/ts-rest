@@ -5,6 +5,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './index.module.css';
 import HomepageFeatures from '../components/HomepageFeatures';
 import sdk from '@stackblitz/sdk';
+import CodeBlock from '@theme/CodeBlock';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -40,10 +41,76 @@ export default function Home(): JSX.Element {
       title={`Hello from ${siteConfig.title}`}
       description="Description will go into a meta tag in <head />"
     >
-      <HomepageHeader />
-      <main>
-        <HomepageFeatures />
-      </main>
+      <div className="container my-24 mx-auto text-center">
+        <h1 className="text-3xl font-black text-center text-white md:text-5xl">
+          RPC-like client and server for a{' '}
+          <span className="bg-clip-text text-transparent  bg-gradient-to-r from-emerald-400 to-sky-600">
+            magical
+          </span>{' '}
+          end-to-end-typed experience
+        </h1>
+        <h3 className="text-gray-400">
+          tREST makes creating a fully typed API out of your hands trivial -
+          giving you more time to focus on what matters, your product and your
+          project.
+        </h3>
+      </div>
+      <div className="my-12 header-code-blocks mx-4 text-left grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+        <CodeBlock className="w-full" language="jsx" title="client.ts">
+          {`const client = initClient(contract, {
+  baseUrl: 'http://localhost:3000',
+  baseHeaders: {},
+});
+
+const { body, status } = await client.createPost({
+  body: {
+    title: 'Post Title',
+    body: 'Post Body',
+  },
+});`}
+        </CodeBlock>
+        <CodeBlock
+          className="w-full hidden md:block "
+          language="jsx"
+          title="contract.ts"
+        >
+          {`
+import { initTsRest } from '@ts-rest/core';
+
+const c = initTsRest();
+
+export const contract = c.router({
+  createPost: c.mutation({
+    method: 'POST',
+    path: () => '/posts',
+    responses: {
+      201: c.response<Post>(),
+    },
+    body: c.body<{title: string}>()
+    summary: 'Create a post',
+  }),
+});`}
+        </CodeBlock>
+        <CodeBlock className="w-full" language="jsx" title="server.ts">
+          {`const s = initServer();
+
+const router = s.router(contract, {
+  createPost: async ({ body }) => {
+    const post = await prisma.post.create({
+      data: body,
+    });
+
+    return {
+      status: 201,
+      body: post,
+    };
+  },
+});
+
+createExpressEndpoints(contract, router, app);`}
+        </CodeBlock>
+      </div>
+      <div className="text-center">ts-rest </div>
     </Layout>
   );
 }
