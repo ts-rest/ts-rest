@@ -1,5 +1,16 @@
 # @ts-rest/core
 
+## 2.0.0
+
+### Major Changes
+
+- 4792b26: Change contract to support multiple responses, for different statuses
+- c88fb99: Rename data to body to be more HTTP spec compliant
+
+### Patch Changes
+
+- 4792b26: Add error handling support to express
+
 ## 1.3.0
 
 ### Minor Changes

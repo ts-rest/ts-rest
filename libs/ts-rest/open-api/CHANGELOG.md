@@ -1,5 +1,15 @@
 # @ts-rest/open-api
 
+## 2.0.0
+
+### Major Changes
+
+- 4792b26: Change contract to support multiple responses, for different statuses
+
+### Patch Changes
+
+- 4792b26: Add error handling support to express
+
 ## 1.3.0
 
 ### Minor Changes
