@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 2.0.1
+
+### Patch Changes
+
+- 119aed6: Bump versions to 2.0.1
+
 ## 2.0.0
 
 ### Major Changes
