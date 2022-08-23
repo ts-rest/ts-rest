@@ -42,14 +42,14 @@ export default function Home(): JSX.Element {
       description="Description will go into a meta tag in <head />"
     >
       <div className="container my-24 mx-auto text-center">
-        <h1 className="text-3xl font-black text-center text-white md:text-5xl">
+        <h1 className="text-3xl font-black text-center dark:text-white md:text-5xl">
           RPC-like client and server for a{' '}
           <span className="bg-clip-text text-transparent  bg-gradient-to-r from-emerald-400 to-sky-600">
             magical
           </span>{' '}
           end-to-end-typed experience
         </h1>
-        <h3 className="text-gray-400">
+        <h3 className="dark:text-gray-300 text-gray-500">
           tREST makes creating a fully typed API trivial - giving you more time
           to focus on what matters, your product and your project.
         </h3>

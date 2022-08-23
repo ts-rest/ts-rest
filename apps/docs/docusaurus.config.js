@@ -16,6 +16,7 @@ const config = {
   organizationName: 'ts-rest', // Usually your GitHub org/user name.
   projectName: 'ts-rest', // Usually your repo name.
   plugins: [],
+
   presets: [
     [
       'classic',
