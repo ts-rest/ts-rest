@@ -12,8 +12,8 @@ const FeatureList: FeatureItem[] = [
     title: 'Magic RPC-like client 🪄',
     description: (
       <>
-        tREST provides a simple, RPC like client to give you a fully typed query
-        implementation.
+        tREST provides a simple, RPC like client to give you a fully typed
+        client implementation.
       </>
     ),
   },
@@ -21,8 +21,8 @@ const FeatureList: FeatureItem[] = [
     title: 'REST Under the Hood 🚀',
     description: (
       <>
-        We don't abstract your API with in a tRPC flavoured way, we aim to let
-        you use your API with other consumers as-is.
+        We don't abstract away from REST (or however your API is designed), we
+        aim to let you use your API with other consumers as-is.
       </>
     ),
   },
@@ -30,7 +30,8 @@ const FeatureList: FeatureItem[] = [
     title: 'Contract Driven 👮‍♀️',
     description: (
       <>
-        No worrying about unnecessary rebuilds, easy cross-repo APIs and more.
+        No worrying about unnecessary rebuilds in monorepos, easy cross-repo API
+        packages and more.
       </>
     ),
   },

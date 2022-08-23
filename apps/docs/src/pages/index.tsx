@@ -50,9 +50,8 @@ export default function Home(): JSX.Element {
           end-to-end-typed experience
         </h1>
         <h3 className="text-gray-400">
-          tREST makes creating a fully typed API out of your hands trivial -
-          giving you more time to focus on what matters, your product and your
-          project.
+          tREST makes creating a fully typed API trivial - giving you more time
+          to focus on what matters, your product and your project.
         </h3>
       </div>
       <div className="my-12 header-code-blocks mx-4 text-left grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
@@ -110,7 +109,12 @@ const router = s.router(contract, {
 createExpressEndpoints(contract, router, app);`}
         </CodeBlock>
       </div>
-      <div className="text-center">ts-rest </div>
+
+      <HomepageFeatures />
+
+      <div className="text-center mb-16 mt-10">
+        <h2>Get started and read the Quickstart guide ⚡️</h2>
+      </div>
     </Layout>
   );
 }
