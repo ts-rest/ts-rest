@@ -35,6 +35,9 @@ invariant(
   `Could not find "build.options.outputPath" of project "${name}". Is project.json configured  correctly?`
 );
 
+// Read ./README.md
+const mainReadMe = readFileSync('README.md');
+
 process.chdir(outputPath);
 
 // Updating the version in "package.json" before publishing
@@ -42,6 +45,11 @@ try {
   const json = JSON.parse(readFileSync(`package.json`).toString());
   json.version = version;
   writeFileSync(`package.json`, JSON.stringify(json, null, 2));
+
+  // Write main README back to package
+  if (name === 'ts-rest-core') {
+    writeFileSync('README.md', mainReadMe);
+  }
 } catch (e) {
   console.error(
     chalk.bold.red(`Error reading package.json file from library build output.`)
@@ -49,4 +57,4 @@ try {
 }
 
 // Execute "npm publish" to publish
-execSync(`npm publish --tag next --access public`);
+// execSync(`npm publish --tag next --access public`);
