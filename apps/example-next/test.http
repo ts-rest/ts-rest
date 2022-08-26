@@ -31,4 +31,4 @@ GET {{host}}/posts/2 HTTP/1.1
 GET {{host}}/posts?search=REST HTTP/1.1
 
 ### Test
-GET {{host}}/test
+GET {{host}}/health

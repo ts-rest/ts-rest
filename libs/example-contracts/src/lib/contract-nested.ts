@@ -3,17 +3,25 @@ import { apiBlog } from './contract-blog';
 
 const c = initTsRest();
 
-export const apiNested = c.router({
-  posts: apiBlog,
-  health: c.router({
-    check: c.query({
-      method: 'GET',
-      path: () => '/health',
-      responses: {
-        200: c.response<{ message: string }>(),
-      },
-      query: null,
-      summary: 'Check health',
-    }),
+const apiHealth = c.router({
+  check: c.query({
+    method: 'GET',
+    path: () => '/health',
+    responses: {
+      200: c.response<{ message: string }>(),
+    },
+    query: null,
+    summary: 'Check health',
   }),
+});
+
+export const apiNested = c.router({
+  /**
+   * Posts API
+   */
+  posts: apiBlog,
+  /**
+   * Health API
+   */
+  health: apiHealth,
 });

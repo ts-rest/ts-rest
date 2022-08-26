@@ -60,6 +60,13 @@ type AppRouterWithImplementation = {
   [key: string]: AppRouterWithImplementation | AppRouteWithImplementation<any>;
 };
 
+/**
+ * Combine all AppRoutes with their implementations into a single object
+ * which is easier to work with
+ * @param router
+ * @param implementation
+ * @returns
+ */
 const mergeRouterAndImplementation = <T extends AppRouter>(
   router: T,
   implementation: RecursiveRouterObj<T>
@@ -90,6 +97,14 @@ export const isAppRouteWithImplementation = (
   return obj?.implementation !== undefined && obj?.method;
 };
 
+/**
+ * Check whether the route is correct
+ *
+ * @param route
+ * @param query
+ * @param method
+ * @returns
+ */
 const isRouteCorrect = (route: AppRoute, query: string[], method: string) => {
   const path = getAppRoutePathRoute(route, { formatter: () => '-' });
 
@@ -110,6 +125,15 @@ const isRouteCorrect = (route: AppRoute, query: string[], method: string) => {
   return false;
 };
 
+/**
+ * Takes a completed app router (with implementations) and attempts to
+ * match up the request to the correct route
+ *
+ * @param router
+ * @param query
+ * @param method
+ * @returns
+ */
 const getRouteImplementation = (
   router: AppRouterWithImplementation,
   query: string[],
@@ -137,7 +161,34 @@ const getRouteImplementation = (
   return null;
 };
 
-export const createNextRoute =
+/**
+ * Create the implementation for a given AppRouter.
+ *
+ * @param appRouter - AppRouter
+ * @param implementation - Implementation of the AppRouter, e.g. your API controllers
+ * @returns
+ */
+export const createNextRoute = <T extends AppRouter>(
+  appRouter: T,
+  implementation: RecursiveRouterObj<T>
+) => implementation;
+
+/**
+ * Turn a completed set of Next routes into a Next.js compatible route.
+ *
+ * Should be exported from your [...ts-rest].tsx file.
+ *
+ * e.g.
+ *
+ * ```typescript
+ * export default createNextRouter(contract, implementation);
+ * ```
+ *
+ * @param routes
+ * @param obj
+ * @returns
+ */
+export const createNextRouter =
   <T extends AppRouter>(routes: T, obj: RecursiveRouterObj<T>) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
     const params = (req.query?.['ts-rest'] as string[]) || [];
