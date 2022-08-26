@@ -1,0 +1,34 @@
+@host = http://localhost:4200/api
+@contentType = application/json
+
+### Create Post
+POST {{host}}/posts HTTP/1.1
+content-type: application/json
+  
+{
+  "title": "Post Title",
+  "content": "Post Content"
+}
+
+### Create Posts (Bad Body)
+POST {{host}}/posts HTTP/1.1
+content-type: application/json
+  
+{
+  "title": "Post Title"
+}
+
+### Delete Post
+DELETE {{host}}/posts/1 HTTP/1.1
+  
+### Get Posts
+GET {{host}}/posts HTTP/1.1
+
+### Get Post
+GET {{host}}/posts/2 HTTP/1.1
+
+### Search Posts
+GET {{host}}/posts?search=REST HTTP/1.1
+
+### Test
+GET {{host}}/test

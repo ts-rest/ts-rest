@@ -32,7 +32,7 @@ export type AppRouter = {
 };
 
 export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
-  return obj.method !== undefined;
+  return obj?.method !== undefined;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
