@@ -1,13 +1,14 @@
 import { apiNested } from '@ts-rest/example-contracts';
 import { createNextRoute, createNextRouter } from '@ts-rest/next';
+import { posts } from '../../server/posts';
 
 const postsRouter = createNextRoute(apiNested.posts, {
   createPost: async (args) => {
+    const newPost = posts.createPost(args.body);
+
     return {
       status: 200,
-      body: {
-        id: '1',
-      },
+      body: newPost,
     };
   },
   updatePost: async (args) => {
@@ -30,9 +31,9 @@ const postsRouter = createNextRoute(apiNested.posts, {
     };
   },
   getPost: async ({ params }) => {
-    console.log(params);
+    const post = await posts.getPost(params.id);
 
-    if (params.id === '2') {
+    if (!post) {
       return {
         status: 404,
         body: null,
@@ -41,38 +42,24 @@ const postsRouter = createNextRoute(apiNested.posts, {
 
     return {
       status: 200,
-      body: {
-        id: '1',
-        title: 'title',
-        tags: [],
-        description: '',
-        content: '',
-        published: false,
-      },
+      body: post,
     };
   },
   getPosts: async (args) => {
+    const allPosts = await posts.getPosts();
+
     return {
       status: 200,
       body: {
-        posts: [
-          {
-            id: '1',
-            title: 'title',
-            tags: [],
-            description: '',
-            content: '',
-            published: false,
-          },
-        ],
-        total: 1,
+        posts: allPosts,
+        total: allPosts.length,
       },
     };
   },
 });
 
 const healthRouter = createNextRoute(apiNested.health, {
-  check: async () => {
+  check: async (args) => {
     return {
       status: 200,
       body: { message: 'OK' },
