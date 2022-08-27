@@ -18,6 +18,7 @@ import {
   AppRoute,
   AppRouteMutation,
   getAppRoutePathRoute,
+  getPathParamsFromUrl,
   Without,
 } from '@ts-rest/core';
 import { map, Observable } from 'rxjs';
@@ -47,39 +48,6 @@ const getQueryParams = (url: string): Record<string, string> => {
   }
 
   return queryParams;
-};
-
-const getPathParams = (
-  url: string,
-  appRoute: AppRoute
-): Record<string, string> => {
-  const baseUrl = url.split('?')[0];
-
-  const paths = getAppRoutePathRoute(appRoute);
-
-  const baseUrlAsArr = baseUrl.split('/');
-  const pathAsArr = paths.split('/');
-
-  const pathParams: Record<string, string> = {};
-
-  baseUrlAsArr.forEach((baseUrlPart, index) => {
-    pathParams[pathAsArr[index]] = baseUrlPart;
-  });
-
-  // remove pathParams where key doesn't start with :
-  const pathParamsWithoutColons = Object.entries(pathParams).reduce(
-    (acc, [key, value]) => {
-      if (key.startsWith(':')) {
-        const keyWithoutColon = key.slice(1);
-        acc[keyWithoutColon] = value;
-      }
-
-      return acc;
-    },
-    {} as Record<string, string>
-  );
-
-  return pathParamsWithoutColons;
 };
 
 const isZodObject = (
@@ -175,7 +143,7 @@ export const ApiDecorator = createParamDecorator(
       );
     }
 
-    const pathParams = getPathParams(req.url, appRoute);
+    const pathParams = getPathParamsFromUrl(req.url, appRoute);
     const queryParams = getQueryParams(req.url);
 
     const queryResult = checkQuerySchema(queryParams, appRoute);
