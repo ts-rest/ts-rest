@@ -17,8 +17,8 @@ import {
 import {
   AppRoute,
   AppRouteMutation,
-  getAppRoutePathRoute,
   getPathParamsFromUrl,
+  PathParams,
   Without,
 } from '@ts-rest/core';
 import { map, Observable } from 'rxjs';
@@ -26,7 +26,7 @@ import { z, ZodTypeAny } from 'zod';
 
 export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
   {
-    params: Parameters<TRoute['path']>[0];
+    params: PathParams<TRoute>;
     body: TRoute extends AppRouteMutation
       ? TRoute['body'] extends ZodTypeAny
         ? z.infer<TRoute['body']>
@@ -167,19 +167,17 @@ export const ApiDecorator = createParamDecorator(
 );
 
 const getMethodDecorator = (appRoute: AppRoute) => {
-  const path = getAppRoutePathRoute(appRoute);
-
   switch (appRoute.method) {
     case 'DELETE':
-      return Delete(path);
+      return Delete(appRoute.path);
     case 'GET':
-      return Get(path);
+      return Get(appRoute.path);
     case 'POST':
-      return Post(path);
+      return Post(appRoute.path);
     case 'PATCH':
-      return Patch(path);
+      return Patch(appRoute.path);
     case 'PUT':
-      return Put(path);
+      return Put(appRoute.path);
   }
 };
 

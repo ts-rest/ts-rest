@@ -1,5 +1,6 @@
 import { z, ZodTypeAny } from 'zod';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
+import { ParamsFromUrl } from './paths';
 import { Without, ZodInferOrType } from './type-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
@@ -12,13 +13,20 @@ type RecursiveProxyObj<T extends AppRouter> = {
 
 type AppRouteMutationType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 
+/**
+ * Extract the path params from the path in the contract
+ */
+export type PathParams<T extends AppRoute> = ParamsFromUrl<
+  T['path']
+> extends infer U
+  ? U
+  : never;
+
 type DataReturnArgs<TRoute extends AppRoute> = {
   body: TRoute extends AppRouteMutation
     ? AppRouteMutationType<TRoute['body']>
     : never;
-  params: Parameters<TRoute['path']>[0] extends undefined
-    ? never
-    : Parameters<TRoute['path']>[0];
+  params: PathParams<TRoute>;
   query: TRoute['query'] extends ZodTypeAny
     ? AppRouteMutationType<TRoute['query']>
     : never;

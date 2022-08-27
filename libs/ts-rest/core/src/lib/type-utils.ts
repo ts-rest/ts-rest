@@ -1,4 +1,4 @@
-import { z, ZodTypeAny } from 'zod';
+import { z, ZodType, ZodTypeAny } from 'zod';
 
 type GetIndexedField<T, K> = K extends keyof T
   ? T[K]
@@ -66,3 +66,18 @@ type ExcludeKeysWithTypeOf<T, V> = {
 export type Without<T, V> = Pick<T, ExcludeKeysWithTypeOf<T, V>>;
 
 export type ZodInferOrType<T> = T extends ZodTypeAny ? z.infer<T> : T;
+
+type Try<A, B, C> = A extends B ? A : C;
+
+type NarrowRaw<T> =
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (T extends Function ? T : never)
+  | (T extends string | number | bigint | boolean ? T : never)
+  | (T extends [] ? [] : never)
+  | {
+      [K in keyof T]: K extends 'description' ? T[K] : NarrowNotZod<T[K]>;
+    };
+
+type NarrowNotZod<T> = Try<T, ZodType, NarrowRaw<T>>;
+
+export type Narrow<T> = Try<T, [], NarrowNotZod<T>>;

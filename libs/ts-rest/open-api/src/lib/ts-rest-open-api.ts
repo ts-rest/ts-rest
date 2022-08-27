@@ -1,9 +1,4 @@
-import {
-  AppRoute,
-  AppRouter,
-  getAppRoutePathRoute,
-  isAppRoute,
-} from '@ts-rest/core';
+import { AppRoute, AppRouter, isAppRoute } from '@ts-rest/core';
 import {
   InfoObject,
   OpenAPIObject,
@@ -23,11 +18,14 @@ const getPathsFromRouter = (
     const value = router[key];
 
     if (isAppRoute(value)) {
-      const path = getAppRoutePathRoute(value, {
-        formatter: (param) => `{${param}}`,
-      });
+      // Replace /posts/:id with /posts/{id} TODO: CHECK THIS WORKS
+      const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
 
-      paths.push({ path, route: value, paths: pathHistory ?? [] });
+      paths.push({
+        path: pathWithPathParams,
+        route: value,
+        paths: pathHistory ?? [],
+      });
     } else {
       paths.push(...getPathsFromRouter(value, [...(pathHistory ?? []), key]));
     }

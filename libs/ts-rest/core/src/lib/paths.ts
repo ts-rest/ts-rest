@@ -4,7 +4,7 @@
  */
 type RecursivelyExtractPathParams<
   T extends string,
-  TAcc extends Record<string, string>
+  TAcc extends null | Record<string, string>
 > = T extends `/:${infer PathParam}/${infer Right}`
   ? { [key in PathParam]: string } & RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/:${infer PathParam}`
@@ -28,13 +28,17 @@ type RecursivelyExtractPathParams<
  *
  * @params T - The URL e.g. /posts/:id
  */
-export type ParamsFromUrl<T extends string> =
+export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
+  T,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  RecursivelyExtractPathParams<T, {}> extends infer U
-    ? {
+  {}
+> extends infer U
+  ? keyof U extends never
+    ? undefined
+    : {
         [key in keyof U]: U[key];
       }
-    : never;
+  : never;
 
 /**
  * Any string like /posts/:id or /posts or /:id is valid
