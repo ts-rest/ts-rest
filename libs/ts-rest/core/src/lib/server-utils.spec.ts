@@ -166,19 +166,19 @@ describe('getPathParamsFromArray', () => {
     );
 
     expect(pathParams).toStrictEqual({ id: '1', commentId: '2' });
-  }),
-    it('should ignore any query params', () => {
-      const appRoute = c.query({
-        method: 'GET',
-        path: ({ id }) => `/posts/${id}`,
-        query: null,
-        responses: {
-          200: c.response<{ message: string }>(),
-        },
-      });
-
-      const pathParams = getPathParamsFromArray(['posts', '1'], appRoute);
-
-      expect(pathParams).toStrictEqual({ id: '1' });
+  });
+  it('should ignore any query params', () => {
+    const appRoute = c.query({
+      method: 'GET',
+      path: ({ id }) => `/posts/${id}`,
+      query: null,
+      responses: {
+        200: c.response<{ message: string }>(),
+      },
     });
+
+    const pathParams = getPathParamsFromArray(['posts', '1'], appRoute);
+
+    expect(pathParams).toStrictEqual({ id: '1' });
+  });
 });
