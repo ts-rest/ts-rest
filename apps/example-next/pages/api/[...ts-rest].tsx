@@ -4,10 +4,12 @@ import { posts } from '../../server/posts';
 
 const postsRouter = createNextRoute(apiNested.posts, {
   createPost: async (args) => {
-    const newPost = posts.createPost(args.body);
+    const newPost = await posts.createPost(args.body);
+
+    console.log(newPost);
 
     return {
-      status: 200,
+      status: 201,
       body: newPost,
     };
   },

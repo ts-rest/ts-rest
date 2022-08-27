@@ -14,6 +14,7 @@ import {
   getAppRoutePathRoute,
   getPathParamsFromArray,
   isAppRoute,
+  returnZodErrorsIfZodSchema,
   ZodInferOrType,
 } from '@ts-rest/core';
 
@@ -207,6 +208,22 @@ export const createNextRouter =
     }
 
     const pathParams = getPathParamsFromArray(params, route);
+
+    const zodBodyIssues = returnZodErrorsIfZodSchema(route.body, req.body);
+
+    if (zodBodyIssues.length > 0) {
+      return res.status(400).json({
+        errors: zodBodyIssues,
+      });
+    }
+
+    const zodQueryIssues = returnZodErrorsIfZodSchema(route.query, req.query);
+
+    if (zodQueryIssues.length > 0) {
+      return res.status(400).json({
+        errors: zodQueryIssues,
+      });
+    }
 
     const { body, status } = await route.implementation({
       body: req.body,

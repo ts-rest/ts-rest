@@ -10,6 +10,7 @@ import {
   getValue,
   Without,
   ZodInferOrType,
+  returnZodErrorsIfZodSchema,
 } from '@ts-rest/core';
 
 export type ApiRouteResponse<T> = {
@@ -171,28 +172,6 @@ const transformAppRouteMutationImplementation = (
       // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
       const _exhaustiveCheck: never = method;
   }
-};
-
-const returnZodErrorsIfZodSchema = (
-  schema: unknown,
-  body: unknown
-): z.ZodIssue[] => {
-  const bodySchema = schema as ZodTypeAny;
-
-  if (
-    bodySchema &&
-    bodySchema._def &&
-    bodySchema._def.typeName === 'ZodObject'
-  ) {
-    // Check body schema
-    const parsed = bodySchema.safeParse(body);
-
-    if (parsed.success === false) {
-      return parsed.error.issues;
-    }
-  }
-
-  return [];
 };
 
 export const createExpressEndpoints = <

@@ -25,7 +25,7 @@ DELETE {{host}}/posts/1 HTTP/1.1
 GET {{host}}/posts HTTP/1.1
 
 ### Get Post
-GET {{host}}/posts/cl6lbxj360003pikjbw65z6ec HTTP/1.1
+GET {{host}}/posts/cl7b56nof002792kjkeugskez HTTP/1.1
 
 ### Search Posts
 GET {{host}}/posts?search=REST HTTP/1.1
