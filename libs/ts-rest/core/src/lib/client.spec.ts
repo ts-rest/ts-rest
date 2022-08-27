@@ -1,9 +1,9 @@
 import { initClient } from './client';
-import { initTsRest } from '..';
+import { initContract } from '..';
 
 import { z } from 'zod';
 
-const c = initTsRest();
+const c = initContract();
 
 export type Post = {
   id: string;

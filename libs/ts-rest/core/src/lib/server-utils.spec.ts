@@ -1,7 +1,7 @@
-import { initTsRest } from './dsl';
+import { initContract } from './dsl';
 import { getPathParamsFromArray, getPathParamsFromUrl } from './server-utils';
 
-const c = initTsRest();
+const c = initContract();
 
 describe('getPathParamsFromUrl', () => {
   it('should extract params from url', () => {

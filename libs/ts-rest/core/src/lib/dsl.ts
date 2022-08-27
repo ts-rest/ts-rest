@@ -66,25 +66,28 @@ export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
  * The instantiated ts-rest client
  */
 type ContractInstance = {
-  router: <T extends AppRouter>(endpoints: Narrow<T>) => T;
-  query: <T extends AppRouteQuery>(query: Narrow<T>) => T;
-  mutation: <T extends AppRouteMutation>(mutation: Narrow<T>) => T;
+  router: <T extends AppRouter>(endpoints: Narrow<T>) => Narrow<T>;
+  query: <T extends AppRouteQuery>(query: Narrow<T>) => Narrow<T>;
+  mutation: <T extends AppRouteMutation>(mutation: Narrow<T>) => Narrow<T>;
   response: <T>() => T;
   body: <T>() => T;
 };
+
+/**
+ *
+ * @deprecated Please use {@link initContract} instead.
+ */
+export const initTsRest = (): ContractInstance => initContract();
 
 /**
  * Instantiate a ts-rest client, primarily to access `router`, `response`, and `body`
  *
  * @returns {ContractInstance}
  */
-export const initTsRest = (): ContractInstance => {
+export const initContract = (): ContractInstance => {
   return {
-    // @ts-expect-error Narrowing cases error
     router: (args) => args,
-    // @ts-expect-error Narrowing cases error
     query: (args) => args,
-    // @ts-expect-error Narrowing cases error
     mutation: (args) => args,
     response: <T>() => '' as unknown as T,
     body: <T>() => '' as unknown as T,

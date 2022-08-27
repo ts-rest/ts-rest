@@ -1,9 +1,9 @@
-import { initTsRest } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
 import { NextApiResponse } from 'next';
 import { createNextRoute, createNextRouter } from './ts-rest-next';
 import { mockReq } from './test-helpers';
 
-const c = initTsRest();
+const c = initContract();
 
 const contract = c.router({
   get: {

@@ -27,7 +27,7 @@ yarn add @ts-rest/core
 
 import { initTsRest } from '@ts-rest/core';
 
-const c = initTsRest();
+const c = initContract();
 
 const PostSchema = z.object({
   id: z.string(),
@@ -67,9 +67,9 @@ Create a contract, this should ideally be shared between your consumers and prod
 ```typescript
 // contract.ts
 
-import { initTsRest } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
 
-const c = initTsRest();
+const c = initContract();
 
 export const contract = c.router({
   createPost: c.mutation({

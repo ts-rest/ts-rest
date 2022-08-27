@@ -74,9 +74,9 @@ const { body, status } = await client.createPost({
           title="contract.ts"
         >
           {`
-import { initTsRest } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
 
-const c = initTsRest();
+const c = initContract();
 
 export const contract = c.router({
   createPost: c.mutation({

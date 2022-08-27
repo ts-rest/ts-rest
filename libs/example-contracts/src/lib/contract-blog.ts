@@ -1,4 +1,4 @@
-import { initTsRest } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 
 export interface Post {
@@ -9,7 +9,7 @@ export interface Post {
   published: boolean;
   tags: string[];
 }
-const c = initTsRest();
+const c = initContract();
 
 export const apiBlog = c.router({
   createPost: {
