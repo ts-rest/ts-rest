@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 2.1.0
+
+### Minor Changes
+
+- 75f157a: Add Zod validation to @ts-rest/next
+
 ## 2.0.1
 
 ### Patch Changes
