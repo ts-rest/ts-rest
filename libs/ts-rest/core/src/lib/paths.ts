@@ -1,3 +1,7 @@
+/**
+ * @params T - The URL e.g. /posts/:id
+ * @params TAcc - Accumulator object
+ */
 type RecursivelyExtractPathParams<
   T extends string,
   TAcc extends Record<string, string>
@@ -21,19 +25,13 @@ type RecursivelyExtractPathParams<
  * Extract path params from path function
  *
  * { id: string, commentId: string }
+ *
+ * @params T - The URL e.g. /posts/:id
  */
-type ParamsFromUrl<T extends string> =
+export type ParamsFromUrl<T extends string> =
   // eslint-disable-next-line @typescript-eslint/ban-types
-  RecursivelyExtractPathParams<T, {}>;
-
-const url = '/post/:id/comments/:commentId';
-type Test = ParamsFromUrl<typeof url>;
-
-const urlSimple = '/:idOne';
-type TestSimple = ParamsFromUrl<typeof urlSimple>;
-
-const urlOneDeep = '/test/:idEnd';
-type TestOneDeep = ParamsFromUrl<typeof urlOneDeep>;
-
-const urlIdThenKey = '/:idStart/test';
-type TestIdThenKey = ParamsFromUrl<typeof urlIdThenKey>;
+  RecursivelyExtractPathParams<T, {}> extends infer U
+    ? {
+        [key in keyof U]: U[key];
+      }
+    : never;
