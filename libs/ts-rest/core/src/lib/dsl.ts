@@ -89,7 +89,7 @@ export const initContract = (): ContractInstance => {
     router: (args) => args,
     query: (args) => args,
     mutation: (args) => args,
-    response: <T>() => '' as unknown as T,
-    body: <T>() => '' as unknown as T,
+    response: <T>() => undefined as unknown as T,
+    body: <T>() => undefined as unknown as T,
   };
 };
