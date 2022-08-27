@@ -35,3 +35,10 @@ export type ParamsFromUrl<T extends string> =
         [key in keyof U]: U[key];
       }
     : never;
+
+/**
+ * Any string like /posts/:id or /posts or /:id is valid
+ */
+export type ColonDelimitedPath<T extends string> = T extends `/${string}`
+  ? T
+  : never;
