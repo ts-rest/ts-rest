@@ -39,7 +39,7 @@
     "express": "4.18.1",
     "graphql": "^16.6.0",
     "next": "12.2.5",
-    "openapi3-ts": "^3.0.1",
+    "openapi3-ts": "^2.0.2",
     "postcss": "^8.4.16",
     "prism-react-renderer": "^1.2.1",
     "react": "18.2.0",

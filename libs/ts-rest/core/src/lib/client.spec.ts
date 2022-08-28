@@ -302,6 +302,7 @@ describe('client', () => {
 
       const result = await client.posts.patchPost({
         params: { id: '1' },
+        body: null,
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
@@ -312,7 +313,7 @@ describe('client', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({}),
+        body: undefined,
       });
     });
   });

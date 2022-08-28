@@ -38,13 +38,19 @@ const isZodObject = (body: unknown): body is ZodTypeAny => {
   return (body as ZodTypeAny)?.safeParse !== undefined;
 };
 
-const getResponseSchemaFromZod = (response: unknown) =>
-  isZodObject(response)
-    ? zodToJsonSchema(response, {
-        name: 'zodObject',
-        target: 'openApi3',
-      }).definitions['zodObject']
-    : undefined;
+const getResponseSchemaFromZod = (response: unknown) => {
+  const isZodObj = isZodObject(response);
+
+  if (!isZodObj) {
+    return null;
+  }
+  const schema = zodToJsonSchema(response, {
+    name: 'zodObject',
+    target: 'openApi3',
+  });
+
+  return schema.definitions['zodObject'];
+};
 
 export const generateOpenApi = (
   router: AppRouter,
@@ -66,8 +72,9 @@ export const generateOpenApi = (
       ?.map((param) => param.slice(1, -1));
 
     const bodySchema =
-      path.route?.method !== 'GET' &&
-      getResponseSchemaFromZod(path.route.responses);
+      path.route?.method !== 'GET'
+        ? getResponseSchemaFromZod(path.route.body)
+        : null;
 
     const responses = Object.keys(path.route.responses).reduce((acc, key) => {
       const keyAsNumber = Number(key);

@@ -31,10 +31,10 @@ import {
 } from '@ts-rest/core';
 
 type RecursiveProxyObj<T extends AppRouter> = {
-  [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveProxyObj<T[TKey]>
-    : T[TKey] extends AppRoute
+  [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<UseQueryArgs<T[TKey]>, never>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObj<T[TKey]>
     : never;
 };
 

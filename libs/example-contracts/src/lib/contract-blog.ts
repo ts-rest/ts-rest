@@ -9,6 +9,16 @@ export interface Post {
   published: boolean;
   tags: string[];
 }
+
+const PostSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  content: z.string().nullable(),
+  published: z.boolean().nullable(),
+  tags: z.array(z.string()),
+});
+
 const c = initContract();
 
 export const apiBlog = c.router({
@@ -16,7 +26,7 @@ export const apiBlog = c.router({
     method: 'POST',
     path: '/posts',
     responses: {
-      201: c.response<Post>(),
+      201: PostSchema,
     },
     body: z.object({
       title: z.string(),
@@ -29,7 +39,7 @@ export const apiBlog = c.router({
   updatePost: {
     method: 'PATCH',
     path: `/posts/:id`,
-    responses: { 200: c.response<Post>() },
+    responses: { 200: PostSchema },
     body: z.object({
       title: z.string().optional(),
       content: z.string().optional(),
@@ -42,8 +52,8 @@ export const apiBlog = c.router({
     method: 'DELETE',
     path: `/posts/:id`,
     responses: {
-      200: c.response<{ message: string }>(),
-      404: c.response<{ message: string }>(),
+      200: z.object({ message: z.string() }),
+      404: z.object({ message: z.string() }),
     },
     body: null,
     summary: 'Delete a post',
@@ -52,8 +62,8 @@ export const apiBlog = c.router({
     method: 'GET',
     path: `/posts/:id`,
     responses: {
-      200: c.response<Post>(),
-      404: c.response<null>(),
+      200: PostSchema,
+      404: z.null(),
     },
     query: null,
     summary: 'Get a post by id',
@@ -62,7 +72,7 @@ export const apiBlog = c.router({
     method: 'GET',
     path: '/posts',
     responses: {
-      200: c.response<{ posts: Post[]; total: number }>(),
+      200: z.object({ posts: PostSchema.array(), total: z.number() }),
     },
     query: z.object({
       take: z.string().transform(Number).optional(),
