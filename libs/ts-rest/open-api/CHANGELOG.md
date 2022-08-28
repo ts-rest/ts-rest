@@ -1,5 +1,15 @@
 # @ts-rest/open-api
 
+## 3.0.0
+
+### Major Changes
+
+- 895112a: Migrate paths to a string rather than function
+
+### Patch Changes
+
+- 6195da1: Fix body zod parsing not working at all
+
 ## 2.1.0
 
 ## 2.0.1
