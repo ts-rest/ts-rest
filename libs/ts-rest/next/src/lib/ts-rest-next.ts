@@ -21,6 +21,8 @@ import {
 type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
   params: PathParams<T>;
   query: ZodInferOrType<T['query']>;
+  req: NextApiRequest;
+  res: NextApiResponse;
 }) => Promise<ApiRouteResponse<T['responses']>>;
 
 type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
@@ -28,6 +30,8 @@ type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
     params: PathParams<T>;
     body: ZodInferOrType<T['body']>;
     query: ZodInferOrType<T['query']>;
+    req: NextApiRequest;
+    res: NextApiResponse;
   }) => Promise<ApiRouteResponse<T['responses']>>;
 
 type RouteToFunctionImplementation<T extends AppRoute> = T extends AppRouteQuery
@@ -229,6 +233,8 @@ export const createNextRouter =
       body: req.body,
       query: req.query,
       params: pathParams,
+      req,
+      res,
     });
 
     res.status(Number(status)).json(body);
