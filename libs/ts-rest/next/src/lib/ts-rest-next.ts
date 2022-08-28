@@ -11,21 +11,21 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
-  getAppRoutePathRoute,
   getPathParamsFromArray,
   isAppRoute,
+  PathParams,
   returnZodErrorsIfZodSchema,
   ZodInferOrType,
 } from '@ts-rest/core';
 
 type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
-  params: Parameters<T['path']>[0];
+  params: PathParams<T>;
   query: ZodInferOrType<T['query']>;
 }) => Promise<ApiRouteResponse<T['responses']>>;
 
 type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
   (args: {
-    params: Parameters<T['path']>[0];
+    params: PathParams<T>;
     body: ZodInferOrType<T['body']>;
     query: ZodInferOrType<T['query']>;
   }) => Promise<ApiRouteResponse<T['responses']>>;
@@ -107,15 +107,15 @@ export const isAppRouteWithImplementation = (
  * @returns
  */
 const isRouteCorrect = (route: AppRoute, query: string[], method: string) => {
-  const path = getAppRoutePathRoute(route, { formatter: () => '-' });
-
-  const pathAsArray = path.split('/').slice(1);
+  const pathAsArray = route.path.split('/').slice(1);
 
   if (pathAsArray.length === query.length && route.method === method) {
     let matches = true;
 
     for (let i = 0; i < pathAsArray.length; i++) {
-      if (pathAsArray[i] !== '-' && pathAsArray[i] !== query[i]) {
+      const isCurrElementWildcard = pathAsArray[i].startsWith(':');
+
+      if (!isCurrElementWildcard && pathAsArray[i] !== query[i]) {
         matches = false;
       }
     }

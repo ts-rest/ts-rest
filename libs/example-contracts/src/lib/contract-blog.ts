@@ -1,4 +1,4 @@
-import { initTsRest } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 
 export interface Post {
@@ -9,14 +9,24 @@ export interface Post {
   published: boolean;
   tags: string[];
 }
-const c = initTsRest();
+
+const PostSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  content: z.string().nullable(),
+  published: z.boolean(),
+  tags: z.array(z.string()),
+});
+
+const c = initContract();
 
 export const apiBlog = c.router({
-  createPost: c.mutation({
+  createPost: {
     method: 'POST',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
-      201: c.response<Post>(),
+      201: PostSchema,
     },
     body: z.object({
       title: z.string(),
@@ -25,11 +35,11 @@ export const apiBlog = c.router({
       description: z.string().optional(),
     }),
     summary: 'Create a post',
-  }),
-  updatePost: c.mutation({
+  },
+  updatePost: {
     method: 'PATCH',
-    path: ({ id }: { id: string }) => `/posts/${id}`,
-    responses: { 200: c.response<Post>() },
+    path: `/posts/:id`,
+    responses: { 200: PostSchema },
     body: z.object({
       title: z.string().optional(),
       content: z.string().optional(),
@@ -37,32 +47,32 @@ export const apiBlog = c.router({
       description: z.string().optional(),
     }),
     summary: 'Update a post',
-  }),
-  deletePost: c.mutation({
+  },
+  deletePost: {
     method: 'DELETE',
-    path: ({ id }: { id: string }) => `/posts/${id}`,
+    path: `/posts/:id`,
     responses: {
-      200: c.response<{ message: string }>(),
-      404: c.response<{ message: string }>(),
+      200: z.object({ message: z.string() }),
+      404: z.object({ message: z.string() }),
     },
     body: null,
     summary: 'Delete a post',
-  }),
-  getPost: c.query({
+  },
+  getPost: {
     method: 'GET',
-    path: ({ id }: { id: string }) => `/posts/${id}`,
+    path: `/posts/:id`,
     responses: {
-      200: c.response<Post>(),
-      404: c.response<null>(),
+      200: PostSchema,
+      404: z.null(),
     },
     query: null,
     summary: 'Get a post by id',
-  }),
-  getPosts: c.query({
+  },
+  getPosts: {
     method: 'GET',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
-      200: c.response<{ posts: Post[]; total: number }>(),
+      200: z.object({ posts: PostSchema.array(), total: z.number() }),
     },
     query: z.object({
       take: z.string().transform(Number).optional(),
@@ -70,5 +80,5 @@ export const apiBlog = c.router({
       search: z.string().optional(),
     }),
     summary: 'Get all posts',
-  }),
+  },
 });

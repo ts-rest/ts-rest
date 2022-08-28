@@ -1,18 +1,18 @@
-import { initTsRest } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
 import { apiBlog } from './contract-blog';
 
-const c = initTsRest();
+const c = initContract();
 
 const apiHealth = c.router({
-  check: c.query({
+  check: {
     method: 'GET',
-    path: () => '/health',
+    path: '/health',
     responses: {
       200: c.response<{ message: string }>(),
     },
     query: null,
     summary: 'Check health',
-  }),
+  },
 });
 
 export const apiNested = c.router({

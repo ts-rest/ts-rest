@@ -4,7 +4,7 @@
  */
 type RecursivelyExtractPathParams<
   T extends string,
-  TAcc extends Record<string, string>
+  TAcc extends null | Record<string, string>
 > = T extends `/:${infer PathParam}/${infer Right}`
   ? { [key in PathParam]: string } & RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/:${infer PathParam}`
@@ -28,17 +28,60 @@ type RecursivelyExtractPathParams<
  *
  * @params T - The URL e.g. /posts/:id
  */
-export type ParamsFromUrl<T extends string> =
+export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
+  T,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  RecursivelyExtractPathParams<T, {}> extends infer U
-    ? {
+  {}
+> extends infer U
+  ? keyof U extends never
+    ? undefined
+    : {
         [key in keyof U]: U[key];
       }
-    : never;
+  : never;
 
 /**
- * Any string like /posts/:id or /posts or /:id is valid
+ * @param path - The URL e.g. /posts/:id
+ * @param params - The params e.g. { id: string }
+ * @returns - The URL with the params e.g. /posts/123
  */
-export type ColonDelimitedPath<T extends string> = T extends `/${string}`
-  ? T
-  : never;
+export const insertParamsIntoPath = <T extends string>(
+  path: T,
+  params: ParamsFromUrl<T>
+) => {
+  return path
+    .replace(/:([^/]+)/g, (_, p) => {
+      return params?.[p] || '';
+    })
+    .replace(/\/\//g, '/');
+};
+
+/**
+ *
+ * @param query - The query e.g. { id: string }
+ * @returns - The query url segment e.g. ?id=123
+ */
+export const convertQueryParamsToUrlString = (
+  query: Record<string, string>
+) => {
+  const queryString =
+    typeof query === 'object'
+      ? Object.keys(query)
+          .map((key) => {
+            if (query[key] === undefined) {
+              return null;
+            }
+            return (
+              encodeURIComponent(key) + '=' + encodeURIComponent(query[key])
+            );
+          })
+          .filter(Boolean)
+          .join('&')
+      : '';
+
+  return queryString.length > 0 &&
+    queryString !== null &&
+    queryString !== undefined
+    ? '?' + queryString
+    : '';
+};

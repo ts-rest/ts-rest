@@ -1,9 +1,9 @@
 import { initClient } from './client';
-import { initTsRest } from '..';
+import { initContract } from '..';
 
 import { z } from 'zod';
 
-const c = initTsRest();
+const c = initContract();
 
 export type Post = {
   id: string;
@@ -20,96 +20,92 @@ export type User = {
   name: string | null;
 };
 
+const postsRouter = c.router({
+  getPost: {
+    method: 'GET',
+    path: `/posts/:id`,
+    responses: {
+      200: c.response<Post | null>(),
+    },
+  },
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    responses: {
+      200: c.response<Post[]>(),
+    },
+    query: z.object({
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    }),
+  },
+  createPost: {
+    method: 'POST',
+    path: '/posts',
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.object({
+      title: z.string(),
+      content: z.string(),
+      published: z.boolean().optional(),
+      description: z.string().optional(),
+      authorId: z.string(),
+    }),
+  },
+  mutationWithQuery: {
+    method: 'POST',
+    path: '/posts',
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.object({}),
+    query: z.object({
+      test: z.string(),
+    }),
+  },
+  updatePost: {
+    method: 'PUT',
+    path: `/posts/:id`,
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.object({
+      title: z.string(),
+      content: z.string(),
+      published: z.boolean().optional(),
+      description: z.string().optional(),
+      authorId: z.string(),
+    }),
+  },
+  patchPost: {
+    method: 'PATCH',
+    path: `/posts/:id`,
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: null,
+  },
+  deletePost: {
+    method: 'DELETE',
+    path: `/posts/:id`,
+    responses: {
+      200: c.response<boolean>(),
+    },
+    body: null,
+  },
+});
+
 // Three endpoints, two for posts, and one for health
 export const router = c.router({
-  posts: c.router({
-    getPost: c.query({
-      method: 'GET',
-      path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<Post | null>(),
-      },
-      query: null,
-    }),
-    getPosts: c.query({
-      method: 'GET',
-      path: () => '/posts',
-      responses: {
-        200: c.response<Post[]>(),
-      },
-      query: z.object({
-        take: z.number().optional(),
-        skip: z.number().optional(),
-      }),
-    }),
-    createPost: c.mutation({
-      method: 'POST',
-      path: () => '/posts',
-      responses: {
-        200: c.response<Post>(),
-      },
-      body: z.object({
-        title: z.string(),
-        content: z.string(),
-        published: z.boolean().optional(),
-        description: z.string().optional(),
-        authorId: z.string(),
-      }),
-      query: null,
-    }),
-    mutationWithQuery: c.mutation({
-      method: 'POST',
-      path: () => '/posts',
-      responses: {
-        200: c.response<Post>(),
-      },
-      body: z.object({}),
-      query: z.object({
-        test: z.string(),
-      }),
-    }),
-    updatePost: c.mutation({
-      method: 'PUT',
-      path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<Post>(),
-      },
-      body: z.object({
-        title: z.string(),
-        content: z.string(),
-        published: z.boolean().optional(),
-        description: z.string().optional(),
-        authorId: z.string(),
-      }),
-      query: null,
-    }),
-    patchPost: c.mutation({
-      method: 'PATCH',
-      path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<Post>(),
-      },
-      body: z.object({}),
-      query: null,
-    }),
-    deletePost: c.mutation({
-      method: 'DELETE',
-      path: ({ id }: { id: string }) => `/posts/${id}`,
-      responses: {
-        200: c.response<boolean>(),
-      },
-      body: null,
-      query: null,
-    }),
-  }),
-  health: c.query({
+  posts: postsRouter,
+  health: {
     method: 'GET',
-    path: () => '/health',
+    path: '/health',
     responses: {
       200: c.response<{ message: string }>(),
     },
-    query: null,
-  }),
+  },
 });
 
 const api = jest.fn();
@@ -306,7 +302,7 @@ describe('client', () => {
 
       const result = await client.posts.patchPost({
         params: { id: '1' },
-        body: {},
+        body: null,
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
@@ -317,7 +313,7 @@ describe('client', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({}),
+        body: undefined,
       });
     });
   });

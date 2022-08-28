@@ -6,11 +6,11 @@ import {
   AppRouteQuery,
   AppRouter,
   isAppRoute,
-  getAppRoutePathRoute,
   getValue,
   Without,
   ZodInferOrType,
   returnZodErrorsIfZodSchema,
+  PathParams,
 } from '@ts-rest/core';
 
 export type ApiRouteResponse<T> = {
@@ -23,9 +23,7 @@ export type ApiRouteResponse<T> = {
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
     {
-      params: Parameters<T['path']>[0] extends undefined
-        ? never
-        : Parameters<T['path']>[0];
+      params: PathParams<T>;
       query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : null;
     },
     never
@@ -35,7 +33,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
     {
-      params: Parameters<T['path']>[0];
+      params: PathParams<T>;
       query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : never;
       body: T['body'] extends ZodTypeAny ? z.infer<T['body']> : never;
     },
@@ -90,11 +88,9 @@ const transformAppRouteQueryImplementation = (
   schema: AppRouteQuery,
   app: Express
 ) => {
-  const path = getAppRoutePathRoute(schema);
+  console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
 
-  console.log(`[ts-rest] Initialized ${schema.method} ${path}`);
-
-  app.get(path, async (req, res) => {
+  app.get(schema.path, async (req, res) => {
     const zodQueryIssues = returnZodErrorsIfZodSchema(schema.query, req.query);
 
     if (zodQueryIssues.length > 0) {
@@ -103,7 +99,11 @@ const transformAppRouteQueryImplementation = (
       });
     }
 
-    const result = await route({ params: req.params, query: req.query });
+    const result = await route({
+      // @ts-expect-error because the decorator shape is any
+      params: req.params,
+      query: req.query,
+    });
 
     return res.status(Number(result.status)).json(result.body);
   });
@@ -115,9 +115,7 @@ const transformAppRouteMutationImplementation = (
   schema: AppRouteMutation,
   app: Express
 ) => {
-  const path = getAppRoutePathRoute(schema);
-
-  console.log(`[ts-rest] Initialized ${schema.method} ${path}`);
+  console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
 
   const method = schema.method;
 
@@ -143,6 +141,7 @@ const transformAppRouteMutationImplementation = (
       }
 
       const result = await route({
+        // @ts-expect-error because the decorator shape is any
         params: req.params,
         body: req.body,
         query: req.query,
@@ -150,23 +149,23 @@ const transformAppRouteMutationImplementation = (
 
       return res.status(Number(result.status)).json(result.body);
     } catch (e) {
-      console.error(`[ts-rest] Error on ${method} ${path}`, e);
+      console.error(`[ts-rest] Error on ${method} ${schema.path}`, e);
       return res.status(500).send('Internal Server Error');
     }
   };
 
   switch (method) {
     case 'DELETE':
-      app.delete(path, callback);
+      app.delete(schema.path, callback);
       break;
     case 'POST':
-      app.post(path, callback);
+      app.post(schema.path, callback);
       break;
     case 'PUT':
-      app.put(path, callback);
+      app.put(schema.path, callback);
       break;
     case 'PATCH':
-      app.patch(path, callback);
+      app.patch(schema.path, callback);
       break;
     default:
       // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
@@ -190,7 +189,7 @@ export const createExpressEndpoints = <
     }
 
     if (isAppRoute(routerViaPath)) {
-      if (routerViaPath.__tsType === 'AppRouteMutation') {
+      if (routerViaPath.method !== 'GET') {
         transformAppRouteMutationImplementation(route, routerViaPath, app);
       } else {
         transformAppRouteQueryImplementation(

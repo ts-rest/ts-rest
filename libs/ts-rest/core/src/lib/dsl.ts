@@ -1,95 +1,109 @@
+import { Narrow } from './type-utils';
+
+/**
+ * A query endpoint. In REST terms, one using GET.
+ */
 export type AppRouteQuery = {
-  __tsType: 'AppRouteQuery';
   method: 'GET';
-  path: PathFunction;
+  /**
+   * The path with colon-prefixed parameters
+   * e.g. "/posts/:id".
+   */
+  path: string;
   query?: unknown;
   summary?: string;
   description?: string;
   deprecated?: boolean;
-  responses: {
-    [status: number]: unknown;
-  };
+  responses: Record<number, unknown>;
 };
 
+/**
+ * A mutation endpoint. In REST terms, one using POST, PUT,
+ * PATCH, or DELETE.
+ */
 export type AppRouteMutation = {
-  __tsType: 'AppRouteMutation';
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
-  path: PathFunction;
+  /**
+   * The path with colon-prefixed parameters
+   * e.g. "/posts/:id".
+   */
+  path: string;
   body: unknown;
   query?: unknown;
   summary?: string;
   description?: string;
   deprecated?: boolean;
-  responses: {
-    [status: number]: unknown;
-  };
+  responses: Record<number, unknown>;
 };
 
+/**
+ * A union of all possible endpoint types.
+ */
 export type AppRoute = AppRouteQuery | AppRouteMutation;
 
+/**
+ * A router (or contract) in @ts-rest is a collection of more routers or
+ * individual routes
+ */
 export type AppRouter = {
   [key: string]: AppRouter | AppRoute;
 };
 
+/**
+ * Differentiate between a route and a router
+ *
+ * @param obj
+ * @returns
+ */
 export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
   return obj?.method !== undefined;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PathFunction = (arg: any) => string;
-
-type tsRest = {
-  router: <
-    T extends {
-      [key: string]: AppRoute | AppRouter;
-    }
-  >(
-    endpoints: T
-  ) => T;
-  query: <
-    T extends {
-      method: 'GET';
-      path: P;
-      query: unknown;
-      description?: string;
-      summary?: string;
-      deprecated?: boolean;
-      responses: {
-        [status: number]: unknown;
-      };
-    },
-    P extends PathFunction
-  >(
-    query: T
-  ) => T & { __tsType: 'AppRouteQuery' };
-  mutation: <
-    T extends {
-      method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
-      path: P;
-      body: unknown;
-      description?: string;
-      summary?: string;
-      deprecated?: boolean;
-      responses: {
-        [status: number]: unknown;
-      };
-    },
-    P extends PathFunction
-  >(
-    mutation: T
-  ) => T & { __tsType: 'AppRouteMutation' };
+/**
+ * The instantiated ts-rest client
+ */
+type ContractInstance = {
+  /**
+   * A collection of routes or routers
+   */
+  router: <T extends AppRouter>(endpoints: Narrow<T>) => Narrow<T>;
+  /**
+   * A single query route, should exist within
+   * a {@link AppRouter}
+   */
+  query: <T extends AppRouteQuery>(query: Narrow<T>) => Narrow<T>;
+  /**
+   * A single mutation route, should exist within
+   * a {@link AppRouter}
+   */
+  mutation: <T extends AppRouteMutation>(mutation: Narrow<T>) => Narrow<T>;
+  /**
+   * Exists to allow storing a Type in the contract (at compile time only)
+   */
   response: <T>() => T;
+  /**
+   * Exists to allow storing a Type in the contract (at compile time only)
+   */
   body: <T>() => T;
-  path: <T>() => T;
 };
 
-export const initTsRest = (): tsRest => {
+/**
+ *
+ * @deprecated Please use {@link initContract} instead.
+ */
+export const initTsRest = (): ContractInstance => initContract();
+
+/**
+ * Instantiate a ts-rest client, primarily to access `router`, `response`, and `body`
+ *
+ * @returns {ContractInstance}
+ */
+export const initContract = (): ContractInstance => {
   return {
     router: (args) => args,
-    query: (args) => ({ __tsType: 'AppRouteQuery', ...args }),
-    mutation: (args) => ({ __tsType: 'AppRouteMutation', ...args }),
-    response: <T>() => '' as unknown as T,
-    body: <T>() => '' as unknown as T,
-    path: <T>() => '' as unknown as T,
+    query: (args) => args,
+    mutation: (args) => args,
+    response: <T>() => undefined as unknown as T,
+    body: <T>() => undefined as unknown as T,
   };
 };

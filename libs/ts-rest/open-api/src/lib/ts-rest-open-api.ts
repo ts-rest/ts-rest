@@ -1,9 +1,4 @@
-import {
-  AppRoute,
-  AppRouter,
-  getAppRoutePathRoute,
-  isAppRoute,
-} from '@ts-rest/core';
+import { AppRoute, AppRouter, isAppRoute } from '@ts-rest/core';
 import {
   InfoObject,
   OpenAPIObject,
@@ -23,11 +18,14 @@ const getPathsFromRouter = (
     const value = router[key];
 
     if (isAppRoute(value)) {
-      const path = getAppRoutePathRoute(value, {
-        formatter: (param) => `{${param}}`,
-      });
+      // Replace /posts/:id with /posts/{id} TODO: CHECK THIS WORKS
+      const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
 
-      paths.push({ path, route: value, paths: pathHistory ?? [] });
+      paths.push({
+        path: pathWithPathParams,
+        route: value,
+        paths: pathHistory ?? [],
+      });
     } else {
       paths.push(...getPathsFromRouter(value, [...(pathHistory ?? []), key]));
     }
@@ -40,13 +38,19 @@ const isZodObject = (body: unknown): body is ZodTypeAny => {
   return (body as ZodTypeAny)?.safeParse !== undefined;
 };
 
-const getResponseSchemaFromZod = (response: unknown) =>
-  isZodObject(response)
-    ? zodToJsonSchema(response, {
-        name: 'zodObject',
-        target: 'openApi3',
-      }).definitions['zodObject']
-    : undefined;
+const getResponseSchemaFromZod = (response: unknown) => {
+  const isZodObj = isZodObject(response);
+
+  if (!isZodObj) {
+    return null;
+  }
+  const schema = zodToJsonSchema(response, {
+    name: 'zodObject',
+    target: 'openApi3',
+  });
+
+  return schema.definitions['zodObject'];
+};
 
 export const generateOpenApi = (
   router: AppRouter,
@@ -68,8 +72,9 @@ export const generateOpenApi = (
       ?.map((param) => param.slice(1, -1));
 
     const bodySchema =
-      path.route?.__tsType === 'AppRouteMutation' &&
-      getResponseSchemaFromZod(path.route.responses);
+      path.route?.method !== 'GET'
+        ? getResponseSchemaFromZod(path.route.body)
+        : null;
 
     const responses = Object.keys(path.route.responses).reduce((acc, key) => {
       const keyAsNumber = Number(key);

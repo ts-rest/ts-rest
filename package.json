@@ -5,7 +5,8 @@
   "scripts": {
     "version-packages": "changeset version",
     "release": "yarn nx run-many --target=build && changeset publish",
-    "nest": "yarn nx run example-nest:serve"
+    "nest": "yarn nx run example-nest:serve",
+    "affected:all": "yarn nx affected:lint && yarn nx affected:test && yarn nx affected:build"
   },
   "private": true,
   "workspaces": [
@@ -89,7 +90,7 @@
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
-    "babel-jest": "28.1.3",
+    "babel-jest": "29.0.1",
     "cypress": "^10.6.0",
     "eslint": "~8.23.0",
     "eslint-config-next": "12.2.5",
@@ -99,8 +100,8 @@
     "eslint-plugin-jsx-a11y": "6.6.1",
     "eslint-plugin-react": "7.31.1",
     "eslint-plugin-react-hooks": "4.6.0",
-    "jest": "28.1.3",
-    "jest-environment-jsdom": "^28.1.3",
+    "jest": "29.0.1",
+    "jest-environment-jsdom": "^29.0.1",
     "nx": "14.5.10",
     "prettier": "^2.6.2",
     "prisma": "^4.2.1",

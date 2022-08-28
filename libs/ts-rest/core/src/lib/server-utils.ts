@@ -1,28 +1,6 @@
 import { AppRoute } from './dsl';
 
 /**
- *  We don't know the path params at runtime, so use a proxy object to create the routes
- *  E.g. ({id, commentId}) => `/posts/:id/comments/:commentId`
- */
-export const getAppRoutePathRoute = (
-  schema: AppRoute,
-  options?: { formatter?: (param: string) => string }
-): string => {
-  const proxyObj: Record<string, string> = {};
-  const pathParamGenerator = new Proxy(proxyObj, {
-    get: (_, key) => {
-      return options?.formatter
-        ? options.formatter(String(key))
-        : `:${String(key)}`;
-    },
-  });
-
-  const generatedPath = schema.path(pathParamGenerator);
-
-  return generatedPath;
-};
-
-/**
  * Extract path params from url
  * @param url e.g. /posts/1/comments/2?unwanted-query-param=true
  * @param appRoute
@@ -48,9 +26,7 @@ export const getPathParamsFromArray = (
   urlChunks: string[],
   appRoute: AppRoute
 ): Record<string, string> => {
-  const paths = getAppRoutePathRoute(appRoute);
-
-  const pathAsArr = paths.split('/').slice(1);
+  const pathAsArr = appRoute.path.split('/').slice(1);
 
   const pathParams: Record<string, string> = {};
 

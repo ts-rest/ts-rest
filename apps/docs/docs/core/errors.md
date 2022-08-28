@@ -4,16 +4,16 @@ Since 2.0 ts-rest-api has a built-in error handling, all you need to do is defin
 
 ```typescript
 export const routerBasic = c.router({
-  updateUser: c.mutation({
+  updateUser: {
     method: 'PATCH',
-    path: ({ id }: { id: string }) => `/basic/users/${id}`,
+    path: `/basic/users/:id`,
     response: {
       200: c.response<User>(),
       400: c.response<{ message: string }>(),
     },
     body: c.body<{ name: string | null; email: string | null }>(),
     summary: 'Update a user',
-  }),
+  },
 });
 ```
 

@@ -1,35 +1,35 @@
-import { initTsRest } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
 import { NextApiResponse } from 'next';
 import { createNextRoute, createNextRouter } from './ts-rest-next';
 import { mockReq } from './test-helpers';
 
-const c = initTsRest();
+const c = initContract();
 
 const contract = c.router({
-  get: c.query({
+  get: {
     method: 'GET',
-    path: () => '/test',
+    path: '/test',
     query: c.body<{ test: string }>(),
     responses: {
       200: c.response<{ message: string }>(),
     },
-  }),
-  getWithParams: c.query({
+  },
+  getWithParams: {
     method: 'GET',
-    path: ({ id }: { id: string }) => `/test/${id}`,
+    path: `/test/:id`,
     query: null,
     responses: {
       200: c.response<{ id: string }>(),
     },
-  }),
-  advanced: c.mutation({
+  },
+  advanced: {
     method: 'POST',
-    path: ({ id }: { id: string }) => `/advanced/${id}`,
+    path: `/advanced/:id`,
     body: c.body<{ test: string }>(),
     responses: {
       200: c.response<{ id: string; test: string }>(),
     },
-  }),
+  },
 });
 
 const nextEndpoint = createNextRoute(contract, {

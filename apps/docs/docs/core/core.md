@@ -8,9 +8,9 @@ Breaking down the contract to sub-routers also allows you to split up the backen
 const c = initContract();
 
 export const contract = c.router({
-  createPost: c.mutation({
+  createPost: {
     method: 'POST',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
       201: c.response<Post>(),
     },
@@ -21,10 +21,10 @@ export const contract = c.router({
       description: z.string().optional(),
     }),
     summary: 'Create a post',
-  }),
-  getPosts: c.query({
+  },
+  getPosts: {
     method: 'GET',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
       200: c.response<{ posts: Post[]; total: number }>(),
     },
@@ -34,7 +34,7 @@ export const contract = c.router({
       search: z.string().optional(),
     }),
     summary: 'Get all posts',
-  }),
+  },
 });
 ```
 
@@ -46,9 +46,9 @@ You can combine contracts to create a single contract, helpful if you want many 
 const c = initContract();
 
 export const postContract = c.router({
-  getPosts: c.query({
+  getPosts: {
     method: 'GET',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
       200: c.response<{ posts: Post[]; total: number }>(),
     },
@@ -58,7 +58,7 @@ export const postContract = c.router({
       search: z.string().optional(),
     }),
     summary: 'Get all posts',
-  }),
+  },
 });
 
 export const contract = c.router({

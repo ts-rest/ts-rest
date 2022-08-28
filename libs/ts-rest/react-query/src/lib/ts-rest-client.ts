@@ -13,6 +13,7 @@ import {
   Without,
   ZodInferOrType,
   HTTPStatusCode,
+  PathParams,
 } from '@ts-rest/core';
 import {
   QueryFunction,
@@ -24,12 +25,16 @@ import {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
+import {
+  convertQueryParamsToUrlString,
+  insertParamsIntoPath,
+} from '@ts-rest/core';
 
 type RecursiveProxyObj<T extends AppRouter> = {
-  [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveProxyObj<T[TKey]>
-    : T[TKey] extends AppRoute
+  [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<UseQueryArgs<T[TKey]>, never>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObj<T[TKey]>
     : never;
 };
 
@@ -52,9 +57,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
       ? never
       : AppRouteMutationType<TRoute['body']>
     : never;
-  params: Parameters<TRoute['path']>[0] extends null
-    ? never
-    : Parameters<TRoute['path']>[0];
+  params: PathParams<TRoute>;
   query: TRoute['query'] extends ZodTypeAny
     ? AppRouteMutationType<TRoute['query']> extends null
       ? never
@@ -115,25 +118,15 @@ type DataReturnMutation<TAppRoute extends AppRoute> = (
   unknown
 >;
 
-const getCompleteUrl = (query: any, baseUrl: string, path: string) => {
-  const queryString =
-    typeof query === 'object'
-      ? Object.keys(query)
-          .map((key) => {
-            return (
-              encodeURIComponent(key) + '=' + encodeURIComponent(query[key])
-            );
-          })
-          .join('&')
-      : '';
-
-  const completeUrl = `${baseUrl}${path}${
-    queryString.length > 0 && queryString !== null && queryString !== undefined
-      ? '?' + queryString
-      : ''
-  }`;
-
-  return completeUrl;
+const getCompleteUrl = (
+  query: any,
+  baseUrl: string,
+  params: Record<string, string>,
+  route: AppRoute
+) => {
+  const path = insertParamsIntoPath(route.path, params as any);
+  const queryComponent = convertQueryParamsToUrlString(query);
+  return `${baseUrl}${path}${queryComponent}`;
 };
 
 const getRouteUseQuery = <TAppRoute extends AppRoute>(
@@ -146,9 +139,13 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
     options?: UseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
-      const path = route.path(args.params);
-
-      const completeUrl = getCompleteUrl(args.query, clientArgs.baseUrl, path);
+      const completeUrl = getCompleteUrl(
+        args.query,
+        clientArgs.baseUrl,
+        // @ts-expect-error - we know this is a valid path param
+        args.params,
+        route
+      );
 
       const apiFetcher = clientArgs.api || defaultApi;
 
@@ -179,9 +176,13 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
 ) => {
   return (options?: UseMutationOptions<TAppRoute['responses']>) => {
     const mutationFunction = async (args: DataReturnArgs<TAppRoute>) => {
-      const path = route.path(args.params);
-
-      const completeUrl = getCompleteUrl(args.query, clientArgs.baseUrl, path);
+      const completeUrl = getCompleteUrl(
+        args.query,
+        clientArgs.baseUrl,
+        // @ts-expect-error - we know this is a valid path param
+        args.params,
+        route
+      );
 
       const result = await defaultApi({
         path: completeUrl,

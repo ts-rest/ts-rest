@@ -1,65 +1,13 @@
-import { initTsRest } from './dsl';
-import {
-  getAppRoutePathRoute,
-  getPathParamsFromArray,
-  getPathParamsFromUrl,
-} from './server-utils';
+import { initContract } from './dsl';
+import { getPathParamsFromArray, getPathParamsFromUrl } from './server-utils';
 
-const c = initTsRest();
-
-describe('getAppRoutePathRoute', () => {
-  it('should work for basic routes', () => {
-    const appRoute = c.query({
-      method: 'GET',
-      path: () => `/posts`,
-      query: null,
-      responses: {
-        200: c.response<{ message: string }>(),
-      },
-    });
-
-    const path = getAppRoutePathRoute(appRoute, {});
-
-    expect(path).toStrictEqual('/posts');
-  });
-
-  it('should work for routes with path params', () => {
-    const appRoute = c.query({
-      method: 'GET',
-      path: ({ id }) => `/posts/${id}`,
-      query: null,
-      responses: {
-        200: c.response<{ message: string }>(),
-      },
-    });
-
-    const path = getAppRoutePathRoute(appRoute, {});
-
-    expect(path).toStrictEqual('/posts/:id');
-  });
-
-  it('should work for routes with many path params', () => {
-    const appRoute = c.query({
-      method: 'GET',
-      path: ({ id, commentId }) => `/posts/${id}/comments/${commentId}`,
-      query: null,
-      responses: {
-        200: c.response<{ message: string }>(),
-      },
-    });
-
-    const path = getAppRoutePathRoute(appRoute, {});
-
-    expect(path).toStrictEqual('/posts/:id/comments/:commentId');
-  });
-});
+const c = initContract();
 
 describe('getPathParamsFromUrl', () => {
   it('should extract params from url', () => {
     const appRoute = c.query({
       method: 'GET',
-      path: ({ id }) => `/posts/${id}`,
-      query: null,
+      path: `/posts/:id`,
       responses: {
         200: c.response<{ message: string }>(),
       },
@@ -73,8 +21,7 @@ describe('getPathParamsFromUrl', () => {
   it('should extract params from url with many path params', () => {
     const appRoute = c.query({
       method: 'GET',
-      path: ({ id, commentId }) => `/posts/${id}/comments/${commentId}`,
-      query: null,
+      path: `/posts/:id/comments/:commentId`,
       responses: {
         200: c.response<{ message: string }>(),
       },
@@ -88,8 +35,7 @@ describe('getPathParamsFromUrl', () => {
   it('should ignore any query params', () => {
     const appRoute = c.query({
       method: 'GET',
-      path: ({ id }) => `/posts/${id}`,
-      query: null,
+      path: `/posts/:id`,
       responses: {
         200: c.response<{ message: string }>(),
       },
@@ -106,8 +52,7 @@ describe('getPathParamsFromUrl', () => {
   it('should return empty object if no path params', () => {
     const appRoute = c.query({
       method: 'GET',
-      path: () => `/posts`,
-      query: null,
+      path: `/posts`,
       responses: {
         200: c.response<{ message: string }>(),
       },
@@ -118,11 +63,10 @@ describe('getPathParamsFromUrl', () => {
     expect(pathParams).toStrictEqual({});
   });
 
-  it('should fail gracefully if url doesnt match route', () => {
+  it(`should fail gracefully if url doesn't match route`, () => {
     const appRoute = c.query({
       method: 'GET',
-      path: ({ id }) => `/posts/${id}`,
-      query: null,
+      path: `/posts/:id`,
       responses: {
         200: c.response<{ message: string }>(),
       },
@@ -138,7 +82,7 @@ describe('getPathParamsFromArray', () => {
   it('should extract params from array', () => {
     const appRoute = c.query({
       method: 'GET',
-      path: ({ id }) => `/posts/${id}`,
+      path: `/posts/:id`,
       query: null,
       responses: {
         200: c.response<{ message: string }>(),
@@ -153,7 +97,7 @@ describe('getPathParamsFromArray', () => {
   it('should extract params from array with many path params', () => {
     const appRoute = c.query({
       method: 'GET',
-      path: ({ id, commentId }) => `/posts/${id}/comments/${commentId}`,
+      path: `/posts/:id/comments/:commentId`,
       query: null,
       responses: {
         200: c.response<{ message: string }>(),
@@ -170,7 +114,7 @@ describe('getPathParamsFromArray', () => {
   it('should ignore any query params', () => {
     const appRoute = c.query({
       method: 'GET',
-      path: ({ id }) => `/posts/${id}`,
+      path: `/posts/:id`,
       query: null,
       responses: {
         200: c.response<{ message: string }>(),
