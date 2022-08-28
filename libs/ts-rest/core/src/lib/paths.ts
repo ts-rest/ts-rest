@@ -41,8 +41,47 @@ export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
   : never;
 
 /**
- * Any string like /posts/:id or /posts or /:id is valid
+ * @param path - The URL e.g. /posts/:id
+ * @param params - The params e.g. { id: string }
+ * @returns - The URL with the params e.g. /posts/123
  */
-export type ColonDelimitedPath<T extends string> = T extends `/${string}`
-  ? T
-  : never;
+export const insertParamsIntoPath = <T extends string>(
+  path: T,
+  params: ParamsFromUrl<T>
+) => {
+  return path
+    .replace(/:([^/]+)/g, (_, p) => {
+      return params?.[p] || '';
+    })
+    .replace(/\/\//g, '/');
+};
+
+/**
+ *
+ * @param query - The query e.g. { id: string }
+ * @returns - The query url segment e.g. ?id=123
+ */
+export const convertQueryParamsToUrlString = (
+  query: Record<string, string>
+) => {
+  const queryString =
+    typeof query === 'object'
+      ? Object.keys(query)
+          .map((key) => {
+            if (query[key] === undefined) {
+              return null;
+            }
+            return (
+              encodeURIComponent(key) + '=' + encodeURIComponent(query[key])
+            );
+          })
+          .filter(Boolean)
+          .join('&')
+      : '';
+
+  return queryString.length > 0 &&
+    queryString !== null &&
+    queryString !== undefined
+    ? '?' + queryString
+    : '';
+};

@@ -1,7 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/ban-types */
 import { expectType } from 'tsd';
-import { ColonDelimitedPath, ParamsFromUrl } from './paths';
+import {
+  convertQueryParamsToUrlString,
+  insertParamsIntoPath,
+  ParamsFromUrl,
+} from './paths';
 
 const type = <T>() => '' as unknown as T;
 
@@ -24,12 +26,83 @@ expectType<{ id: string; commentId: string; commentId2: string }>(
   type<ParamsFromUrl<typeof urlManyParams>>()
 );
 
-const invalidPathTest = 'cat';
-expectType<never>(type<ColonDelimitedPath<typeof invalidPathTest>>());
+describe('insertParamsIntoPath', () => {
+  it('should insert params into path', () => {
+    const path = '/post/:id/comments/:commentId';
 
-const validPathTest = '/cat';
-expectType<{}>(type<ColonDelimitedPath<typeof validPathTest>>());
+    const params = {
+      commentId: '2',
+      id: '1',
+    };
 
-it('ParamsFromUrl', () => {
-  expect(true);
+    const result = insertParamsIntoPath(path, params);
+
+    expect(result).toBe('/post/1/comments/2');
+  });
+
+  it('should insert params into path with no params', () => {
+    const path = '/posts';
+
+    const result = insertParamsIntoPath(path, undefined);
+
+    expect(result).toBe('/posts');
+  });
+
+  it('should insert params into path with many params', () => {
+    const path = '/post/:id/comments/:commentId/:commentId2';
+
+    const params = {
+      commentId: '2',
+      commentId2: '3',
+      id: '1',
+    };
+
+    const result = insertParamsIntoPath(path, params);
+
+    expect(result).toBe('/post/1/comments/2/3');
+  });
+
+  it('should insert into paths with only one param', () => {
+    const path = '/:id';
+
+    const params = {
+      id: '1',
+    };
+
+    const result = insertParamsIntoPath(path, params);
+
+    expect(result).toBe('/1');
+  });
+});
+
+describe('convertQueryParamsToUrlString', () => {
+  it('should convert query params to url string', () => {
+    const query = {
+      id: '1',
+    };
+
+    const result = convertQueryParamsToUrlString(query);
+
+    expect(result).toBe('?id=1');
+  });
+
+  it('should convert query params to url string with no params', () => {
+    const query = {};
+
+    const result = convertQueryParamsToUrlString(query);
+
+    expect(result).toBe('');
+  });
+
+  it('should convert query params to url string with many params', () => {
+    const query = {
+      id: '1',
+      commentId: '2',
+      commentId2: '3',
+    };
+
+    const result = convertQueryParamsToUrlString(query);
+
+    expect(result).toBe('?id=1&commentId=2&commentId2=3');
+  });
 });

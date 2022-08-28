@@ -70,7 +70,7 @@ const checkBodySchema = (
       success: false;
       error: unknown;
     } => {
-  if (appRoute.__tsType === 'AppRouteMutation' && appRoute.body) {
+  if (appRoute.method !== 'GET' && appRoute.body) {
     if (isZodObject(appRoute.body)) {
       const result = appRoute.body.safeParse(body);
 
@@ -160,6 +160,7 @@ export const ApiDecorator = createParamDecorator(
 
     return {
       query: queryResult.body,
+      // @ts-expect-error because the decorator shape is any
       params: pathParams,
       body: bodyResult.body,
     };

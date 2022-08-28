@@ -1,4 +1,6 @@
-@host = http://localhost:4200/api
+# @host = http://localhost:4200/api
+# @host = http://localhost:3333
+@host = http://localhost:3334
 @contentType = application/json
 
 ### Create Post

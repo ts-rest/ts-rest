@@ -100,6 +100,7 @@ const transformAppRouteQueryImplementation = (
     }
 
     const result = await route({
+      // @ts-expect-error because the decorator shape is any
       params: req.params,
       query: req.query,
     });
@@ -140,6 +141,7 @@ const transformAppRouteMutationImplementation = (
       }
 
       const result = await route({
+        // @ts-expect-error because the decorator shape is any
         params: req.params,
         body: req.body,
         query: req.query,
@@ -187,7 +189,7 @@ export const createExpressEndpoints = <
     }
 
     if (isAppRoute(routerViaPath)) {
-      if (routerViaPath.__tsType === 'AppRouteMutation') {
+      if (routerViaPath.method !== 'GET') {
         transformAppRouteMutationImplementation(route, routerViaPath, app);
       } else {
         transformAppRouteQueryImplementation(

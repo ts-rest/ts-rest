@@ -66,7 +66,7 @@ export const generateOpenApi = (
       ?.map((param) => param.slice(1, -1));
 
     const bodySchema =
-      path.route?.__tsType === 'AppRouteMutation' &&
+      path.route?.method !== 'GET' &&
       getResponseSchemaFromZod(path.route.responses);
 
     const responses = Object.keys(path.route.responses).reduce((acc, key) => {

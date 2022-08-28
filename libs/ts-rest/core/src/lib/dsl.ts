@@ -4,9 +4,6 @@ import { Narrow } from './type-utils';
  * A query endpoint. In REST terms, one using GET.
  */
 export type AppRouteQuery = {
-  /**
-   * The method to use.
-   */
   method: 'GET';
   /**
    * The path with colon-prefixed parameters
@@ -66,10 +63,27 @@ export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
  * The instantiated ts-rest client
  */
 type ContractInstance = {
+  /**
+   * A collection of routes or routers
+   */
   router: <T extends AppRouter>(endpoints: Narrow<T>) => Narrow<T>;
+  /**
+   * A single query route, should exist within
+   * a {@link AppRouter}
+   */
   query: <T extends AppRouteQuery>(query: Narrow<T>) => Narrow<T>;
+  /**
+   * A single mutation route, should exist within
+   * a {@link AppRouter}
+   */
   mutation: <T extends AppRouteMutation>(mutation: Narrow<T>) => Narrow<T>;
+  /**
+   * Exists to allow storing a Type in the contract (at compile time only)
+   */
   response: <T>() => T;
+  /**
+   * Exists to allow storing a Type in the contract (at compile time only)
+   */
   body: <T>() => T;
 };
 
