@@ -5,7 +5,8 @@
   "scripts": {
     "version-packages": "changeset version",
     "release": "yarn nx run-many --target=build && changeset publish",
-    "nest": "yarn nx run example-nest:serve"
+    "nest": "yarn nx run example-nest:serve",
+    "affected:all": "yarn nx affected:lint && yarn nx affected:test && yarn nx affected:build"
   },
   "private": true,
   "workspaces": [

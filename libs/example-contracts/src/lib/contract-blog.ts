@@ -15,7 +15,7 @@ const PostSchema = z.object({
   title: z.string(),
   description: z.string().nullable(),
   content: z.string().nullable(),
-  published: z.boolean().nullable(),
+  published: z.boolean(),
   tags: z.array(z.string()),
 });
 

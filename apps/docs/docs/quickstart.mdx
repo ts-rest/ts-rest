@@ -36,9 +36,9 @@ const PostSchema = z.object({
 });
 
 export const contract = c.router({
-  createPost: c.mutation({
+  createPost: {
     method: 'POST',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
       201: PostSchema,
     },
@@ -47,16 +47,15 @@ export const contract = c.router({
       body: z.string(),
     }),
     summary: 'Create a post',
-  }),
-  getPost: c.query({
+  },
+  getPost: {
     method: 'GET',
-    path: ({ id }: { id: string }) => `/posts/${id}`,
+    path: `/posts/:id`,
     responses: {
       200: PostSchema.nullable(),
     },
-    query: null,
     summary: 'Get a post by id',
-  }),
+  },
 });
 ```
 
@@ -72,24 +71,23 @@ import { initContract } from '@ts-rest/core';
 const c = initContract();
 
 export const contract = c.router({
-  createPost: c.mutation({
+  createPost: {
     method: 'POST',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
       201: c.response<Post>(),
     },
     body: c.body<{title: string}>()
     summary: 'Create a post',
-  }),
-  getPost: c.query({
+  },
+  getPost: {
     method: 'GET',
-    path: ({ id }: { id: string }) => `/posts/${id}`,
+    path: `/posts/:id`,
     responses: {
       200: c.response<Post | null>(),
     },
-    query: null,
     summary: 'Get a post by id',
-  }),
+  },
 });
 ```
 
