@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.1.0
+
+### Minor Changes
+
+- 1696c44: Provide access to req and res from Next.js adapter
+
 ## 3.0.0
 
 ### Major Changes
