@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.0.0
+
+### Major Changes
+
+- 895112a: Migrate paths to a string rather than function
+
 ## 2.1.0
 
 ### Minor Changes
