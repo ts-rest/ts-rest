@@ -49,6 +49,11 @@ const sidebars = {
     },
     {
       type: 'doc',
+      label: '@ts-rest/next',
+      id: 'next',
+    },
+    {
+      type: 'doc',
       label: '@ts-rest/express',
       id: 'express',
     },

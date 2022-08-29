@@ -79,15 +79,15 @@ import { initContract } from '@ts-rest/core';
 const c = initContract();
 
 export const contract = c.router({
-  createPost: c.mutation({
+  createPost: {
     method: 'POST',
-    path: () => '/posts',
+    path: '/posts',
     responses: {
       201: c.response<Post>(),
     },
     body: c.body<{title: string}>()
     summary: 'Create a post',
-  }),
+  },
 });`}
         </CodeBlock>
         <CodeBlock className="w-full" language="jsx" title="server.ts">

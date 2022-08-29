@@ -176,13 +176,29 @@ const server = app.listen(port, () => {
 ```
 
   </TabItem>
-  <TabItem value="next" label="Next.js ⚠️">
+  <TabItem value="next" label="Next.js">
 
-:::info
+```typescript
+// pages/api/[...ts-rest].tsx
 
-Next.js isn't implemented just yet, it's in progress. Right now, tRPC is **perfect** for Next.js!
+const postsRouter = createNextRoute(api.posts, {
+  createPost: async (args) => {
+    const newPost = await posts.createPost(args.body);
 
-:::
+    return {
+      status: 201,
+      body: newPost,
+    };
+  },
+});
+
+const router = createNextRoute(api, {
+  posts: postsRouter,
+});
+
+// Actually initiate the collective endpoints
+export default createNextRouter(api, router);
+```
 
   </TabItem>
 </Tabs>
