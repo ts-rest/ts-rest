@@ -37,7 +37,8 @@
       "outputs": ["coverage/libs/ts-rest/express"],
       "options": {
         "jestConfig": "libs/ts-rest/express/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
       }
     }
   },

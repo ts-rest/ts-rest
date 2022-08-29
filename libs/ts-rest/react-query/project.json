@@ -37,7 +37,8 @@
       "outputs": ["coverage/libs/ts-rest/react-query"],
       "options": {
         "jestConfig": "libs/ts-rest/react-query/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
       }
     }
   },

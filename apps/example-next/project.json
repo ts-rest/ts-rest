@@ -47,7 +47,8 @@
       "outputs": ["coverage/apps/example-next"],
       "options": {
         "jestConfig": "apps/example-next/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
       }
     },
     "lint": {

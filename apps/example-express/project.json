@@ -48,7 +48,8 @@
       "outputs": ["coverage/apps/example-express"],
       "options": {
         "jestConfig": "apps/example-express/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
       }
     }
   },

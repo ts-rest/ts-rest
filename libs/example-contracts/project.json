@@ -37,7 +37,8 @@
       "outputs": ["coverage/libs/example-contracts"],
       "options": {
         "jestConfig": "libs/example-contracts/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
       }
     }
   },

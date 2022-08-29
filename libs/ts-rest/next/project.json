@@ -37,7 +37,8 @@
       "outputs": ["coverage/libs/ts-rest/next"],
       "options": {
         "jestConfig": "libs/ts-rest/next/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
       }
     }
   },
