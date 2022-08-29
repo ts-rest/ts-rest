@@ -68,6 +68,11 @@ const sidebars = {
         },
       ],
     },
+    {
+      type: 'doc',
+      id: 'nx',
+      label: 'NX Monorepo',
+    },
   ],
 };
 

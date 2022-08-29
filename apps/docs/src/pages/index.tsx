@@ -50,8 +50,8 @@ export default function Home(): JSX.Element {
           end-to-end-typed experience
         </h1>
         <h3 className="dark:text-gray-300 text-gray-500">
-          tREST makes creating a fully typed API trivial - giving you more time
-          to focus on what matters, your product and your project.
+          ts-rest makes creating a fully typed API trivial - giving you more
+          time to focus on what matters, your product and your project.
         </h3>
       </div>
       <div className="my-12 header-code-blocks mx-4 text-left grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">

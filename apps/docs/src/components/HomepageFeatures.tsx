@@ -12,7 +12,7 @@ const FeatureList: FeatureItem[] = [
     title: 'Magic RPC-like client 🪄',
     description: (
       <>
-        tREST provides a simple, RPC like client to give you a fully typed
+        ts-rest provides a simple, RPC like client to give you a fully typed
         client implementation.
       </>
     ),
