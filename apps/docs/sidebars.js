@@ -28,6 +28,11 @@ const sidebars = {
       label: 'Examples',
     },
     {
+      type: 'doc',
+      id: 'nx',
+      label: 'NX Monorepo',
+    },
+    {
       type: 'category',
       label: '@ts-rest/core',
       collapsed: false,
@@ -67,11 +72,6 @@ const sidebars = {
           id: 'comparisons/rpc-comparison',
         },
       ],
-    },
-    {
-      type: 'doc',
-      id: 'nx',
-      label: 'NX Monorepo',
     },
   ],
 };
