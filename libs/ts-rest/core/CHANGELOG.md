@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.1.1
+
+### Patch Changes
+
+- d3a74fe: Remove unnecessary recursion
+
 ## 3.1.0
 
 ## 3.0.0
