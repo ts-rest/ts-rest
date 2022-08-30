@@ -66,17 +66,17 @@ type ContractInstance = {
   /**
    * A collection of routes or routers
    */
-  router: <T extends AppRouter>(endpoints: Narrow<T>) => Narrow<T>;
+  router: <T extends AppRouter>(endpoints: Narrow<T>) => T;
   /**
    * A single query route, should exist within
    * a {@link AppRouter}
    */
-  query: <T extends AppRouteQuery>(query: Narrow<T>) => Narrow<T>;
+  query: <T extends AppRouteQuery>(query: Narrow<T>) => T;
   /**
    * A single mutation route, should exist within
    * a {@link AppRouter}
    */
-  mutation: <T extends AppRouteMutation>(mutation: Narrow<T>) => Narrow<T>;
+  mutation: <T extends AppRouteMutation>(mutation: Narrow<T>) => T;
   /**
    * Exists to allow storing a Type in the contract (at compile time only)
    */
@@ -100,8 +100,11 @@ export const initTsRest = (): ContractInstance => initContract();
  */
 export const initContract = (): ContractInstance => {
   return {
+    // @ts-expect-error - this is a type error, but it's not clear how to fix it
     router: (args) => args,
+    // @ts-expect-error - this is a type error, but it's not clear how to fix it
     query: (args) => args,
+    // @ts-expect-error - this is a type error, but it's not clear how to fix it
     mutation: (args) => args,
     response: <T>() => undefined as unknown as T,
     body: <T>() => undefined as unknown as T,
