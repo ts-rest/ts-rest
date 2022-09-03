@@ -17,7 +17,11 @@ import {
 } from '@ts-rest/core';
 import {
   QueryFunction,
+  QueryFunctionContext,
   QueryKey,
+  useInfiniteQuery,
+  UseInfiniteQueryOptions,
+  UseInfiniteQueryResult,
   useMutation,
   UseMutationOptions,
   UseMutationResult,
@@ -43,6 +47,9 @@ type AppRouteMutationType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 type UseQueryArgs<TAppRoute extends AppRoute> = {
   useQuery: TAppRoute extends AppRouteQuery
     ? DataReturnQuery<TAppRoute>
+    : never;
+  useInfiniteQuery: TAppRoute extends AppRouteQuery
+    ? DataReturnInfiniteQuery<TAppRoute>
     : never;
   query: TAppRoute extends AppRouteQuery ? DataReturn<TAppRoute> : never;
   useMutation: TAppRoute extends AppRouteMutation
@@ -102,6 +109,18 @@ type DataReturnQuery<TAppRoute extends AppRoute> = (
   args: Without<DataReturnArgs<TAppRoute>, never>,
   options?: UseQueryOptions<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>
 ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
+
+// Used on X.useInfiniteQuery
+type DataReturnInfiniteQuery<TAppRoute extends AppRoute> = (
+  queryKey: QueryKey,
+  args: (
+    context: QueryFunctionContext<QueryKey>
+  ) => Without<DataReturnArgs<TAppRoute>, never>,
+  options?: UseInfiniteQueryOptions<
+    DataResponse<TAppRoute>,
+    ErrorResponse<TAppRoute>
+  >
+) => UseInfiniteQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
 
 // Used pn X.useMutation
 type DataReturnMutation<TAppRoute extends AppRoute> = (
@@ -170,6 +189,51 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
   };
 };
 
+const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
+  route: TAppRoute,
+  clientArgs: ClientArgs
+) => {
+  return (
+    queryKey: QueryKey,
+    args: (context: QueryFunctionContext) => DataReturnArgs<TAppRoute>,
+    options?: UseInfiniteQueryOptions<TAppRoute['responses']>
+  ) => {
+    const dataFn: QueryFunction<TAppRoute['responses']> = async (
+      infiniteQueryParams
+    ) => {
+      const resultingQueryArgs = args(infiniteQueryParams);
+
+      const completeUrl = getCompleteUrl(
+        resultingQueryArgs.query,
+        clientArgs.baseUrl,
+        // @ts-expect-error - we know this is a valid path param
+        resultingQueryArgs.params,
+        route
+      );
+
+      const apiFetcher = clientArgs.api || defaultApi;
+
+      const result = await apiFetcher({
+        path: completeUrl,
+        method: route.method,
+        headers: {
+          ...clientArgs.baseHeaders,
+        },
+        body: undefined,
+      });
+
+      // If the response is not a 2XX, throw an error to be handled by react-query
+      if (!String(result.status).startsWith('2')) {
+        throw result;
+      }
+
+      return result;
+    };
+
+    return useInfiniteQuery(queryKey, dataFn, options);
+  };
+};
+
 const getRouteUseMutation = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
@@ -217,11 +281,13 @@ const createNewProxy = (router: AppRouter | AppRoute, args: ClientArgs) => {
         if (isAppRoute(router)) {
           switch (propKey) {
             case 'query':
-              throw getRouteQuery(router, args);
+              return getRouteQuery(router, args);
             case 'mutation':
-              throw getRouteQuery(router, args);
+              return getRouteQuery(router, args);
             case 'useQuery':
               return getRouteUseQuery(router, args);
+            case 'useInfiniteQuery':
+              return getRouteUseInfiniteQuery(router, args);
             case 'useMutation':
               return getRouteUseMutation(router, args);
             default:

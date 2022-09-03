@@ -1,31 +1,31 @@
 import { apiBlog } from '@ts-rest/example-contracts';
 import { initQueryClient } from '@ts-rest/react-query';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useDebounce } from '../hooks/useDebounce';
-import { useStore } from '../state';
+import classNames from 'classnames';
 
 export const api = initQueryClient(apiBlog, {
-  baseUrl: 'http://localhost:3334',
+  baseUrl: 'http://localhost:4200/api',
   baseHeaders: {},
 });
 
 export function Index() {
-  const { searchString } = useStore();
+  const PAGE_SIZE = 5;
 
-  const { data, isLoading, refetch } = api.getPosts.useQuery(['posts'], {
-    query: {
-      take: 5,
-      skip: 0,
-      ...(searchString !== '' ? { search: searchString } : {}),
-    },
-  });
-
-  const searchStringDebounced = useDebounce(searchString, 250);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch, searchStringDebounced]);
+  const { isLoading, data, hasNextPage, fetchNextPage } =
+    api.getPosts.useInfiniteQuery(
+      ['posts'],
+      ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
+        query: { skip: pageParam.skip, take: pageParam.take },
+      }),
+      {
+        getNextPageParam: (lastPage, allPages) =>
+          lastPage.status === 200
+            ? lastPage.body.count > allPages.length * PAGE_SIZE
+              ? { take: PAGE_SIZE, skip: allPages.length * PAGE_SIZE }
+              : undefined
+            : undefined,
+      }
+    );
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -35,36 +35,47 @@ export function Index() {
     return <div>No posts found</div>;
   }
 
-  const { posts } = data.body;
+  const posts = data.pages.flatMap((page) =>
+    page.status === 200 ? page.body.posts : []
+  );
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-      {posts.map((post) => (
-        <Link href={`/post/${post.id}`} key={post.id}>
-          <div className="card bg-base-100 shadow-xl w-full hover:scale-105 transition cursor-pointer">
-            <div className="card-body">
-              <div className="flex flex-row justify-between">
-                <h2 className="card-title">{post.title}</h2>
-                <div>
-                  <div className="avatar placeholder">
-                    <div className="bg-neutral-focus text-neutral-content rounded-full w-8">
-                      <span className="text-xs">OB</span>
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {posts.map((post) => (
+          <Link href={`/post/${post.id}`} key={post.id}>
+            <div className="card bg-base-100 shadow-xl w-full hover:scale-105 transition cursor-pointer">
+              <div className="card-body">
+                <div className="flex flex-row justify-between">
+                  <h2 className="card-title">{post.title}</h2>
+                  <div>
+                    <div className="avatar placeholder">
+                      <div className="bg-neutral-focus text-neutral-content rounded-full w-8">
+                        <span className="text-xs">OB</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <p>{post.description}?</p>
-              <div className="card-actions justify-end">
-                {post.tags.map((tag) => (
-                  <div key={tag} className="badge badge-outline">
-                    Fashion
-                  </div>
-                ))}
+                <p>{post.description}?</p>
+                <div className="card-actions justify-end">
+                  {post.tags.map((tag) => (
+                    <div key={tag} className="badge badge-outline">
+                      Fashion
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        ))}
+      </div>
+      <button
+        disabled={!hasNextPage}
+        className={classNames('btn mt-6', { 'btn-disabled': !hasNextPage })}
+        onClick={() => fetchNextPage()}
+      >
+        Load more
+      </button>
     </div>
   );
 }

@@ -1,10 +1,10 @@
 import { apiNested } from '@ts-rest/example-contracts';
 import { createNextRoute, createNextRouter } from '@ts-rest/next';
-import { posts } from '../../server/posts';
+import { postsService } from '../../server/posts';
 
 const postsRouter = createNextRoute(apiNested.posts, {
   createPost: async (args) => {
-    const newPost = await posts.createPost(args.body);
+    const newPost = await postsService.createPost(args.body);
 
     return {
       status: 201,
@@ -31,7 +31,7 @@ const postsRouter = createNextRoute(apiNested.posts, {
     };
   },
   getPost: async ({ params }) => {
-    const post = await posts.getPost(params.id);
+    const post = await postsService.getPost(params.id);
 
     if (!post) {
       return {
@@ -46,13 +46,18 @@ const postsRouter = createNextRoute(apiNested.posts, {
     };
   },
   getPosts: async (args) => {
-    const allPosts = await posts.getPosts();
+    const { posts, count } = await postsService.getPosts({
+      skip: args.query.skip,
+      take: args.query.take,
+    });
 
     return {
       status: 200,
       body: {
-        posts: allPosts,
-        total: allPosts.length,
+        posts: posts,
+        count: count,
+        skip: args.query.skip,
+        take: args.query.take,
       },
     };
   },

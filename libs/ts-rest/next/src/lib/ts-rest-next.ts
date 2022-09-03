@@ -11,10 +11,11 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
+  checkBodySchema,
+  checkQuerySchema,
   getPathParamsFromArray,
   isAppRoute,
   PathParams,
-  returnZodErrorsIfZodSchema,
   ZodInferOrType,
 } from '@ts-rest/core';
 
@@ -213,25 +214,21 @@ export const createNextRouter =
 
     const pathParams = getPathParamsFromArray(params, route);
 
-    const zodBodyIssues = returnZodErrorsIfZodSchema(route.body, req.body);
+    const queryResult = checkQuerySchema(req.query, route);
 
-    if (zodBodyIssues.length > 0) {
-      return res.status(400).json({
-        errors: zodBodyIssues,
-      });
+    if (queryResult.success === false) {
+      return res.status(400).json(queryResult.error);
     }
 
-    const zodQueryIssues = returnZodErrorsIfZodSchema(route.query, req.query);
+    const bodyResult = checkBodySchema(req.body, route);
 
-    if (zodQueryIssues.length > 0) {
-      return res.status(400).json({
-        errors: zodQueryIssues,
-      });
+    if (bodyResult.success === false) {
+      return res.status(400).json(bodyResult.error);
     }
 
     const { body, status } = await route.implementation({
-      body: req.body,
-      query: req.query,
+      body: bodyResult.body,
+      query: queryResult.body,
       params: pathParams,
       req,
       res,

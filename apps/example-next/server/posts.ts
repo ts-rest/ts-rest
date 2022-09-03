@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const posts = {
+export const postsService = {
   createPost: async (data: { title: string; content: string }) => {
     const newPost = await prisma.post.create({ data });
 
@@ -13,9 +13,10 @@ export const posts = {
 
     return post || null;
   },
-  getPosts: async () => {
-    const posts = await prisma.post.findMany({});
+  getPosts: async (args: { skip?: number; take?: number }) => {
+    const posts = await prisma.post.findMany(args);
+    const count = await prisma.post.count();
 
-    return posts;
+    return { posts, count };
   },
 };

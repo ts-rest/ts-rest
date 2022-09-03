@@ -23,7 +23,7 @@ export class PostController implements ControllerShape {
 
     return {
       status: 200 as const,
-      body: { posts, total: totalPosts },
+      body: { posts, count: totalPosts, skip, take },
     };
   }
 

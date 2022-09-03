@@ -42,7 +42,9 @@ const completedRouter = s.router(apiBlog, {
       status: 200,
       body: {
         posts,
-        total: 0,
+        count: 0,
+        skip: query.skip,
+        take: query.take,
       },
     };
   },

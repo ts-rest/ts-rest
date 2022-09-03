@@ -1,46 +1,43 @@
 {
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/ts-rest/react-query/src",
+  "sourceRoot": "libs/ts-rest/react-query-2/src",
   "projectType": "library",
+  "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nrwl/web:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/ts-rest/react-query",
-        "main": "libs/ts-rest/react-query/src/index.ts",
-        "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/react-query/*.md"]
+        "outputPath": "dist/libs/ts-rest/react-query-2",
+        "tsConfig": "libs/ts-rest/react-query-2/tsconfig.lib.json",
+        "project": "libs/ts-rest/react-query-2/package.json",
+        "entryFile": "libs/ts-rest/react-query-2/src/index.ts",
+        "external": ["react/jsx-runtime"],
+        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
+        "compiler": "swc",
+        "assets": [
+          {
+            "glob": "libs/ts-rest/react-query-2/README.md",
+            "input": ".",
+            "output": "."
+          }
+        ]
       }
-    },
-    "publish": {
-      "executor": "@nrwl/workspace:run-commands",
-      "options": {
-        "command": "node tools/scripts/publish.mjs ts-rest-react-query {args.ver} {args.tag}"
-      },
-      "dependsOn": [
-        {
-          "projects": "self",
-          "target": "build"
-        }
-      ]
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/ts-rest/react-query/**/*.ts"]
+        "lintFilePatterns": ["libs/ts-rest/react-query-2/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/ts-rest/react-query"],
+      "outputs": ["coverage/libs/ts-rest/react-query-2"],
       "options": {
-        "jestConfig": "libs/ts-rest/react-query/jest.config.ts",
-        "passWithNoTests": true,
-        "coverageReporters": ["lcov", "text-summary"]
+        "jestConfig": "libs/ts-rest/react-query-2/jest.config.ts",
+        "passWithNoTests": true
       }
     }
-  },
-  "tags": []
+  }
 }

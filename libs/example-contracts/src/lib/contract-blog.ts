@@ -72,11 +72,16 @@ export const apiBlog = c.router({
     method: 'GET',
     path: '/posts',
     responses: {
-      200: z.object({ posts: PostSchema.array(), total: z.number() }),
+      200: z.object({
+        posts: PostSchema.array(),
+        count: z.number(),
+        skip: z.number(),
+        take: z.number(),
+      }),
     },
     query: z.object({
-      take: z.string().transform(Number).optional(),
-      skip: z.string().transform(Number).optional(),
+      take: z.string().transform(Number),
+      skip: z.string().transform(Number),
       search: z.string().optional(),
     }),
     summary: 'Get all posts',
