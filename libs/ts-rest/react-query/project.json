@@ -1,6 +1,6 @@
 {
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/ts-rest/react-query-2/src",
+  "sourceRoot": "libs/ts-rest/react-query/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -8,16 +8,16 @@
       "executor": "@nrwl/web:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/ts-rest/react-query-2",
-        "tsConfig": "libs/ts-rest/react-query-2/tsconfig.lib.json",
-        "project": "libs/ts-rest/react-query-2/package.json",
-        "entryFile": "libs/ts-rest/react-query-2/src/index.ts",
+        "outputPath": "dist/libs/ts-rest/react-query",
+        "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
+        "project": "libs/ts-rest/react-query/package.json",
+        "entryFile": "libs/ts-rest/react-query/src/index.ts",
         "external": ["react/jsx-runtime"],
         "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
         "compiler": "swc",
         "assets": [
           {
-            "glob": "libs/ts-rest/react-query-2/README.md",
+            "glob": "libs/ts-rest/react-query/README.md",
             "input": ".",
             "output": "."
           }
@@ -28,14 +28,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/ts-rest/react-query-2/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["libs/ts-rest/react-query/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/ts-rest/react-query-2"],
+      "outputs": ["coverage/libs/ts-rest/react-query"],
       "options": {
-        "jestConfig": "libs/ts-rest/react-query-2/jest.config.ts",
+        "jestConfig": "libs/ts-rest/react-query/jest.config.ts",
         "passWithNoTests": true
       }
     }
