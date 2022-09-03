@@ -7,7 +7,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'ts-rest',
-  tagline: 'RPC-like Typescript client, server, and contract tooling',
+  tagline:
+    'RPC-like client and server helpers for a magical end to end typed experience',
   url: 'https://ts-rest.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -16,7 +17,6 @@ const config = {
   organizationName: 'ts-rest', // Usually your GitHub org/user name.
   projectName: 'ts-rest', // Usually your repo name.
   plugins: [],
-
   presets: [
     [
       'classic',
@@ -44,6 +44,8 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      metadata: [{ name: 'keywords', content: 'typescript, API, REST' }],
+      image: 'img/banner.jpg',
       navbar: {
         title: 'ts-rest',
         logo: {

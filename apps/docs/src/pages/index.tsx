@@ -38,8 +38,8 @@ export default function Home(): JSX.Element {
 
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      title={`ts-rest 🪄`}
+      description="RPC-like client and server helpers for a magical end to end typed experience"
     >
       <div className="container my-24 mx-auto text-center">
         <h1 className="text-3xl font-black text-center dark:text-white md:text-5xl">
