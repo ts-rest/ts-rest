@@ -7,6 +7,7 @@ import {
   ExecutionContext,
   Get,
   HttpException,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Injectable,
   NestInterceptor,
   Patch,
