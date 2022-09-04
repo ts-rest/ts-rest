@@ -17,6 +17,15 @@ const config = {
   organizationName: 'ts-rest', // Usually your GitHub org/user name.
   projectName: 'ts-rest', // Usually your repo name.
   plugins: [],
+  scripts: [
+    {
+      defer: true,
+      'data-domain': 'ts-rest.com',
+      'data-api': '/pl-api/api/event',
+      src: '/pl-api/js/script.js',
+    },
+  ],
+
   presets: [
     [
       'classic',
