@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.2.1
+
+### Patch Changes
+
+- 029de31: Fix missing typescript definitions
+
 ## 3.2.0
 
 ### Minor Changes
