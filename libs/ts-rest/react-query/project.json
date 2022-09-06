@@ -5,23 +5,13 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/web:rollup",
+      "executor": "@nrwl/js:swc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/ts-rest/react-query",
+        "main": "libs/ts-rest/react-query/src/index.ts",
         "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
-        "project": "libs/ts-rest/react-query/package.json",
-        "entryFile": "libs/ts-rest/react-query/src/index.ts",
-        "external": ["react/jsx-runtime"],
-        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
-        "compiler": "swc",
-        "assets": [
-          {
-            "glob": "libs/ts-rest/react-query/README.md",
-            "input": ".",
-            "output": "."
-          }
-        ]
+        "assets": ["libs/ts-rest/react-query/*.md"]
       }
     },
     "lint": {
