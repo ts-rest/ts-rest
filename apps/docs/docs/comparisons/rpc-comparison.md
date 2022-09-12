@@ -12,6 +12,6 @@ One example of this is with NX, in NX you can rebuild only "affected" packages, 
 
 ts-rest allows you design an API as you would "normally", e.g. GET, POST, PUT, DELETE etc. to `/posts`, `/posts/:id`, `/posts/:id/comments` etc. whilst providing these endpoints to the client as RPC-type calls like `client.posts.getPost({ id: "1" })` or `client.posts.getPostComments()` in a fully type safe interface.
 
-tRPC structures your API as RPC calls such as `/trpc/getPosts` or `/trpc/getPostComments` etc, this provides an arguably simpler API for the client implementation, however, you loose the predictability of REST(ish) APIs if you have consumers who aren't in Typescript (able to us @ts-rest) or public consumers.
+tRPC structures your API as RPC calls such as `/trpc/getPosts` or `/trpc/getPostComments` etc, this provides an arguably simpler API for the client implementation, however, you loose the predictability of REST(ish) APIs if you have consumers who aren't in Typescript (able to use @ts-rest) or public consumers.
 
 tRPC has many plugins to solve this issue by mapping the API implementation to a REST-like API, however, these approaches are often a bit clunky and reduce the safety of the system overall, ts-rest does this heavy lifting in the client and server implementations rather than requiring a second layer of abstraction and API endpoint(s) to be defined.
