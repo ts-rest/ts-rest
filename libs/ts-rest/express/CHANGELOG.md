@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.2.2
+
+### Patch Changes
+
+- 09f8252: Expose request headers in express router
+
 ## 3.2.1
 
 ## 3.2.0
