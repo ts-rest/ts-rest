@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.3.0
+
+### Minor Changes
+
+- bd619e4: Make createExpressEndpoints take IRouter instead of Express
+
 ## 3.2.2
 
 ### Patch Changes
