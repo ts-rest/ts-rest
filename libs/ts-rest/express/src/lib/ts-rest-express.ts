@@ -1,5 +1,6 @@
 import { Express, RequestHandler } from 'express';
 import { z, ZodTypeAny } from 'zod';
+import { IncomingHttpHeaders } from 'http';
 import {
   AppRoute,
   AppRouteMutation,
@@ -25,6 +26,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     {
       params: PathParams<T>;
       query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : null;
+      headers: IncomingHttpHeaders;
     },
     never
   >
@@ -36,6 +38,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
       params: PathParams<T>;
       query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : never;
       body: T['body'] extends ZodTypeAny ? z.infer<T['body']> : never;
+      headers: IncomingHttpHeaders;
     },
     never
   >
@@ -103,6 +106,7 @@ const transformAppRouteQueryImplementation = (
       // @ts-expect-error because the decorator shape is any
       params: req.params,
       query: req.query,
+      headers: req.headers,
     });
 
     return res.status(Number(result.status)).json(result.body);
@@ -145,6 +149,7 @@ const transformAppRouteMutationImplementation = (
         params: req.params,
         body: req.body,
         query: req.query,
+        headers: req.headers,
       });
 
       return res.status(Number(result.status)).json(result.body);
