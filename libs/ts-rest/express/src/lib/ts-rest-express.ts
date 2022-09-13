@@ -1,4 +1,4 @@
-import { Express, RequestHandler } from 'express';
+import { IRouter, RequestHandler } from 'express';
 import { z, ZodTypeAny } from 'zod';
 import { IncomingHttpHeaders } from 'http';
 import {
@@ -89,7 +89,7 @@ const transformAppRouteQueryImplementation = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   route: AppRouteQueryImplementation<any>,
   schema: AppRouteQuery,
-  app: Express
+  app: IRouter
 ) => {
   console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
 
@@ -117,7 +117,7 @@ const transformAppRouteMutationImplementation = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   route: AppRouteMutationImplementation<any>,
   schema: AppRouteMutation,
-  app: Express
+  app: IRouter
 ) => {
   console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
 
@@ -184,7 +184,7 @@ export const createExpressEndpoints = <
 >(
   schema: TRouter,
   router: T,
-  app: Express
+  app: IRouter
 ) => {
   recursivelyApplyExpressRouter(router, [], (route, path) => {
     const routerViaPath = getValue(schema, path.join('.'));
