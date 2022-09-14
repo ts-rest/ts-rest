@@ -125,12 +125,69 @@ const expectedApiDoc = {
 
 describe('ts-rest-open-api', () => {
   describe('generateOpenApi', () => {
-    it('w/ no parameters', async () => {
+    it('should generate doc with defaults', async () => {
       const apiDoc = generateOpenApi(router, {
         info: { title: 'Blog API', version: '0.1' },
       });
 
-      expect(apiDoc).toEqual(expectedApiDoc);
+      expect(apiDoc).toStrictEqual(expectedApiDoc);
+    });
+
+    it('should generate doc with operation ids', async () => {
+      const apiDoc = generateOpenApi(
+        router,
+        {
+          info: { title: 'Blog API', version: '0.1' },
+        },
+        { setOperationId: true }
+      );
+
+      expect(apiDoc).toEqual({
+        ...expectedApiDoc,
+        paths: {
+          '/health': {
+            get: {
+              ...expectedApiDoc.paths['/health'].get,
+              operationId: 'health',
+            },
+          },
+          '/posts': {
+            post: {
+              ...expectedApiDoc.paths['/posts'].post,
+              operationId: 'createPost',
+            },
+          },
+          '/posts/{id}': {
+            get: {
+              ...expectedApiDoc.paths['/posts/{id}'].get,
+              operationId: 'getPost',
+            },
+          },
+        },
+      });
+    });
+
+    it('should throw when duplicate operationIds', async () => {
+      const router = c.router({
+        posts: postsRouter,
+        getPost: {
+          method: 'GET',
+          path: `/posts/:id`,
+          responses: {
+            200: c.response<Post | null>(),
+          },
+        },
+      });
+
+      expect(() =>
+        generateOpenApi(
+          router,
+          {
+            info: { title: 'Blog API', version: '0.1' },
+          },
+          { setOperationId: true }
+        )
+      ).toThrowError(/getPost/);
     });
   });
 });
