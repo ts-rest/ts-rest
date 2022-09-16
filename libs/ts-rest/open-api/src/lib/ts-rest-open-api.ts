@@ -1,12 +1,8 @@
-import { AppRoute, AppRouter, isAppRoute } from '@ts-rest/core';
-import {
-  InfoObject,
-  OpenAPIObject,
-  OperationObject,
-  PathsObject,
-} from 'openapi3-ts';
-import { ZodTypeAny } from 'zod';
-import zodToJsonSchema from 'zod-to-json-schema';
+import { AppRoute, AppRouter, isAppRoute } from "@ts-rest/core";
+import { InfoObject, OpenAPIObject, OperationObject,
+  PathsObject } from "openapi3-ts";
+import { ZodTypeAny } from "zod";
+import zodToJsonSchema from "zod-to-json-schema";
 
 const getPathsFromRouter = (
   router: AppRouter,
@@ -133,11 +129,9 @@ export const generateOpenApi = (
     return acc;
   }, {} as PathsObject);
 
-  const document: OpenAPIObject = {
+  return {
     openapi: '3.0.0',
     paths: pathObject,
     ...options,
   };
-
-  return document;
 };

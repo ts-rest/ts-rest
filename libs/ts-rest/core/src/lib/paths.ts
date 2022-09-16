@@ -45,10 +45,13 @@ export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
  * @param params - The params e.g. { id: string }
  * @returns - The URL with the params e.g. /posts/123
  */
-export const insertParamsIntoPath = <T extends string>(
-  path: T,
-  params: ParamsFromUrl<T>
-) => {
+export const insertParamsIntoPath = <T extends string>({
+  path,
+  params,
+}: {
+  path: T;
+  params: ParamsFromUrl<T>;
+}) => {
   return path
     .replace(/:([^/]+)/g, (_, p) => {
       return params?.[p] || '';

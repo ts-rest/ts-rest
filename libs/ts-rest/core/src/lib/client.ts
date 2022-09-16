@@ -27,7 +27,7 @@ export type PathParams<T extends AppRoute> = ParamsFromUrl<
   ? U
   : never;
 
-type DataReturnArgs<TRoute extends AppRoute> = {
+interface DataReturnArgs<TRoute extends AppRoute> {
   body: TRoute extends AppRouteMutation
     ? AppRouteMutationType<TRoute['body']>
     : never;
@@ -35,7 +35,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
   query: TRoute['query'] extends ZodTypeAny
     ? AppRouteMutationType<TRoute['query']>
     : never;
-};
+}
 
 export type ApiRouteResponse<T> =
   | {
@@ -56,11 +56,11 @@ export type DataReturn<TRoute extends AppRoute> = (
   args: Without<DataReturnArgs<TRoute>, never>
 ) => Promise<ApiRouteResponse<TRoute['responses']>>;
 
-export type ClientArgs = {
+export interface ClientArgs {
   baseUrl: string;
   baseHeaders: Record<string, string>;
   api?: ApiFetcher;
-};
+}
 
 type ApiFetcher = (args: {
   path: string;
@@ -95,7 +95,10 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   clientArgs: ClientArgs
 ) => {
   return async (inputArgs: DataReturnArgs<any>) => {
-    const path = insertParamsIntoPath(route.path, inputArgs.params);
+    const path = insertParamsIntoPath({
+      path: route.path,
+      params: inputArgs.params,
+    });
 
     const queryComponent = convertQueryParamsToUrlString(inputArgs.query);
 
@@ -103,7 +106,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
 
     const apiFetcher = clientArgs.api || defaultApi;
 
-    const result = await apiFetcher({
+    return await apiFetcher({
       path: completeUrl,
       method: route.method,
       headers: {
@@ -115,8 +118,6 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
           ? JSON.stringify(inputArgs.body)
           : undefined,
     });
-
-    return result;
   };
 };
 
@@ -152,3 +153,5 @@ export const initClient = <T extends AppRouter>(
 
   return proxy as InitClientReturn<T>;
 };
+
+const bestIDE = ''

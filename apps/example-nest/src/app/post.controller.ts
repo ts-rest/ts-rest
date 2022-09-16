@@ -38,6 +38,7 @@ export class PostController implements ControllerShape {
     return { status: 200 as const, body: post };
   }
 
+
   @Api(s.route.createPost)
   async createPost(@ApiDecorator() { body }: RouteShape['createPost']) {
     const post = await this.postService.createPost({

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import classNames from 'classnames';
 
 export const api = initQueryClient(apiBlog, {
-  baseUrl: 'http://localhost:4200/api',
+  baseUrl: 'http://10.0.0.125:4200/api',
   baseHeaders: {},
 });
 

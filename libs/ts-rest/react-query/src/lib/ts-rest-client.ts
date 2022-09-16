@@ -143,7 +143,10 @@ const getCompleteUrl = (
   params: Record<string, string>,
   route: AppRoute
 ) => {
-  const path = insertParamsIntoPath(route.path, params as any);
+  const path = insertParamsIntoPath({
+    path: route.path,
+    params: params as any,
+  });
   const queryComponent = convertQueryParamsToUrlString(query);
   return `${baseUrl}${path}${queryComponent}`;
 };
