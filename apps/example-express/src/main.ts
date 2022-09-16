@@ -4,6 +4,8 @@ import { apiBlog } from '@ts-rest/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import { PrismaClient } from '@prisma/client';
 import * as bodyParser from 'body-parser';
+import { serve, setup } from 'swagger-ui-express';
+import { generateOpenApi } from '@ts-rest/open-api';
 
 const app = express();
 
@@ -84,6 +86,17 @@ const completedRouter = s.router(apiBlog, {
     };
   },
 });
+
+const openapi = generateOpenApi(apiBlog, {
+  info: { title: 'Play API', version: '0.1' },
+});
+
+const apiDocs = express.Router();
+
+apiDocs.use(serve);
+apiDocs.get('/', setup(openapi));
+
+app.use('/api-docs', apiDocs);
 
 createExpressEndpoints(apiBlog, completedRouter, app);
 
