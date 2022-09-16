@@ -153,5 +153,3 @@ export const initClient = <T extends AppRouter>(
 
   return proxy as InitClientReturn<T>;
 };
-
-const bestIDE = ''

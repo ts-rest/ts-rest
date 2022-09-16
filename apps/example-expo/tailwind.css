@@ -1,36 +1,36 @@
 .my-4 {
   margin-top: 1rem;
-  margin-bottom: 1rem
+  margin-bottom: 1rem;
 }
 
 .h-32 {
-  height: 8rem
+  height: 8rem;
 }
 
 .w-32 {
-  width: 8rem
+  width: 8rem;
 }
 
 .px-4 {
   padding-left: 1rem;
-  padding-right: 1rem
+  padding-right: 1rem;
 }
 
 .text-xl {
   font-size: 1.25rem;
-  line-height: 1.75rem
+  line-height: 1.75rem;
 }
 
 .font-bold {
-  font-weight: 700
+  font-weight: 700;
 }
 
 .text-blue-600 {
   --tw-text-opacity: 1;
-  color: rgb(37 99 235 / var(--tw-text-opacity))
+  color: rgb(37 99 235 / var(--tw-text-opacity));
 }
 
 .text-green-600 {
   --tw-text-opacity: 1;
-  color: rgb(22 163 74 / var(--tw-text-opacity))
+  color: rgb(22 163 74 / var(--tw-text-opacity));
 }
