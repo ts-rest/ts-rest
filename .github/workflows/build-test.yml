@@ -18,8 +18,8 @@ jobs:
       - run: npx nx workspace-lint
       - run: npx nx format:check
       - run: npx nx affected --target=lint --parallel
-      - run: npx nx run-many --target=test --all --parallel --coverage
-      - run: npx nx affected --target=build --parallel
+      - run: npx nx run-many --target=test --all --parallel --coverage --exclude=example-expo
+      - run: npx nx affected --target=build --parallel --exclude=example-expo
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
