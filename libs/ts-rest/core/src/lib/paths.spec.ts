@@ -35,7 +35,7 @@ describe('insertParamsIntoPath', () => {
       id: '1',
     };
 
-    const result = insertParamsIntoPath(path, params);
+    const result = insertParamsIntoPath({ path, params });
 
     expect(result).toBe('/post/1/comments/2');
   });
@@ -43,7 +43,7 @@ describe('insertParamsIntoPath', () => {
   it('should insert params into path with no params', () => {
     const path = '/posts';
 
-    const result = insertParamsIntoPath(path, undefined);
+    const result = insertParamsIntoPath({ path, params: undefined });
 
     expect(result).toBe('/posts');
   });
@@ -57,7 +57,7 @@ describe('insertParamsIntoPath', () => {
       id: '1',
     };
 
-    const result = insertParamsIntoPath(path, params);
+    const result = insertParamsIntoPath({ path, params });
 
     expect(result).toBe('/post/1/comments/2/3');
   });
@@ -69,7 +69,7 @@ describe('insertParamsIntoPath', () => {
       id: '1',
     };
 
-    const result = insertParamsIntoPath(path, params);
+    const result = insertParamsIntoPath({ path, params });
 
     expect(result).toBe('/1');
   });
