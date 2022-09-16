@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.4.0
+
+### Minor Changes
+
+- 3dc6b1c: Allow setting operationId in open-api docs
+
 ## 3.3.0
 
 ## 3.2.2

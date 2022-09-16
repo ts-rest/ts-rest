@@ -7,8 +7,13 @@ import zodToJsonSchema from "zod-to-json-schema";
 const getPathsFromRouter = (
   router: AppRouter,
   pathHistory?: string[]
-): { path: string; route: AppRoute; paths: string[] }[] => {
-  const paths: { path: string; route: AppRoute; paths: string[] }[] = [];
+): { id: string; path: string; route: AppRoute; paths: string[] }[] => {
+  const paths: {
+    id: string;
+    path: string;
+    route: AppRoute;
+    paths: string[];
+  }[] = [];
 
   Object.keys(router).forEach((key) => {
     const value = router[key];
@@ -18,6 +23,7 @@ const getPathsFromRouter = (
       const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
 
       paths.push({
+        id: key,
         path: pathWithPathParams,
         route: value,
         paths: pathHistory ?? [],
@@ -50,7 +56,8 @@ const getResponseSchemaFromZod = (response: unknown) => {
 
 export const generateOpenApi = (
   router: AppRouter,
-  options: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject }
+  apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
+  options: { setOperationId?: boolean } = {}
 ): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
@@ -62,7 +69,19 @@ export const generateOpenApi = (
     PATCH: 'patch',
   };
 
+  const operationIds = new Map<string, string[]>();
+
   const pathObject = paths.reduce((acc, path) => {
+    if (options.setOperationId) {
+      const existingOp = operationIds.get(path.id);
+      if (existingOp) {
+        throw new Error(
+          `Route '${path.id}' already defined under ${existingOp.join('.')}`
+        );
+      }
+      operationIds.set(path.id, path.paths);
+    }
+
     const paramsFromPath = path.path
       .match(/{[^}]+}/g)
       ?.map((param) => param.slice(1, -1));
@@ -106,6 +125,7 @@ export const generateOpenApi = (
         in: 'path',
         required: true,
       })),
+      ...(options.setOperationId ? { operationId: path.id } : {}),
       ...(bodySchema
         ? {
             requestBody: {
@@ -132,6 +152,6 @@ export const generateOpenApi = (
   return {
     openapi: '3.0.0',
     paths: pathObject,
-    ...options,
+    ...apiDoc,
   };
 };
