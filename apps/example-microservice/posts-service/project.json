@@ -1,0 +1,57 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/example-microservice/posts-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/node:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/example-microservice/posts-service",
+        "main": "apps/example-microservice/posts-service/src/main.ts",
+        "tsConfig": "apps/example-microservice/posts-service/tsconfig.app.json",
+        "assets": ["apps/example-microservice/posts-service/src/assets"]
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false,
+          "fileReplacements": [
+            {
+              "replace": "apps/example-microservice/posts-service/src/environments/environment.ts",
+              "with": "apps/example-microservice/posts-service/src/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/node:node",
+      "options": {
+        "buildTarget": "example-microservice-posts-service:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "example-microservice-posts-service:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/example-microservice/posts-service/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/example-microservice/posts-service"],
+      "options": {
+        "jestConfig": "apps/example-microservice/posts-service/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

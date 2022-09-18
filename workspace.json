@@ -5,6 +5,8 @@
     "docs": "apps/docs",
     "example-contracts": "libs/example-contracts",
     "example-express": "apps/example-express",
+    "example-microservice-posts-service": "apps/example-microservice/posts-service",
+    "example-microservice-users-service": "apps/example-microservice/users-service",
     "example-nest": "apps/example-nest",
     "example-next": "apps/example-next",
     "ts-rest-core": "libs/ts-rest/core",

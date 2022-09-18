@@ -4,11 +4,13 @@
   "license": "MIT",
   "scripts": {
     "version-packages": "changeset version",
-    "release": "yarn nx run-many --target=build --exclude=example-expo && changeset publish",
-    "nest": "yarn nx run example-nest:serve",
-    "affected:all": "yarn nx affected:lint && yarn nx affected:test && yarn nx affected:build",
-    "docs:build": "yarn nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
-    "preinstall": "npx only-allow pnpm"
+    "release": "pnpm nx run-many --target=build --exclude=example-expo && changeset publish",
+    "nest": "pnpm nx run example-nest:serve",
+    "affected:all": "pnpm nx affected:lint && pnpm nx affected:test && pnpm nx affected:build",
+    "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
+    "preinstall": "npx only-allow pnpm",
+    "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service",
+    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
