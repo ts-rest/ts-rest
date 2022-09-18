@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/example-microservice/web-app/src",
+  "targets": {
+    "build": {
+      "executor": "@wanews/nx-vite:build",
+      "options": {}
+    },
+    "serve": {
+      "__TODO:__": "Figure out why the native plugin fails with pnpm",
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "pnpm exec vite apps/example-microservice/web-app"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": ["apps/example-microservice/web-app/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "npx vitest --run",
+        "cwd": "apps/example-microservice/web-app"
+      }
+    }
+  },
+  "tags": []
+}

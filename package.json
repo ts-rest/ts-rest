@@ -8,9 +8,8 @@
     "nest": "pnpm nx run example-nest:serve",
     "affected:all": "pnpm nx affected:lint && pnpm nx affected:test && pnpm nx affected:build",
     "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
-    "preinstall": "npx only-allow pnpm",
-    "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service",
-    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service"
+    "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service,example-microservice-web-app",
+    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
@@ -38,6 +37,7 @@
     "@tanstack/react-query": "^4.2.3",
     "@tanstack/react-query-devtools": "^4.2.3",
     "@types/uuid": "^8.3.4",
+    "@vitejs/plugin-react": "^2.1.0",
     "apollo-server-express": "^3.10.2",
     "autoprefixer": "^10.4.8",
     "body-parser": "^1.20.0",
@@ -125,6 +125,7 @@
     "@types/swagger-ui-express": "^4.1.3",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
+    "@wanews/nx-vite": "^0.11.0",
     "babel-jest": "29.0.1",
     "babel-preset-expo": "~9.2.0",
     "concurrently": "^7.4.0",
@@ -155,6 +156,7 @@
     "ts-jest": "28.0.8",
     "ts-node": "^10.9.1",
     "tsd": "^0.22.0",
-    "typescript": "^4.8.2"
+    "typescript": "^4.8.2",
+    "vite": "^3.1.2"
   }
 }
