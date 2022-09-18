@@ -7,7 +7,8 @@
     "release": "yarn nx run-many --target=build --exclude=example-expo && changeset publish",
     "nest": "yarn nx run example-nest:serve",
     "affected:all": "yarn nx affected:lint && yarn nx affected:test && yarn nx affected:build",
-    "docs:build": "yarn nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts"
+    "docs:build": "yarn nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
+    "preinstall": "npx only-allow pnpm"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
