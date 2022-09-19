@@ -8,7 +8,14 @@ const PostSchema = z.object({
   content: z.string().nullable(),
   published: z.boolean(),
   tags: z.array(z.string()),
+  author: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+  }),
 });
+
+export type Post = z.infer<typeof PostSchema>;
 
 const c = initContract();
 
@@ -17,10 +24,13 @@ export const postsApi = c.router({
     method: 'GET',
     path: '/posts',
     query: z.object({
-      userId: z.number(),
+      userId: z.number().optional(),
     }),
     responses: {
       200: z.array(PostSchema),
+      400: z.object({
+        message: z.string(),
+      }),
     },
   },
 });
