@@ -1,5 +1,4 @@
 import { IRouter, RequestHandler } from 'express';
-import { z, ZodTypeAny } from 'zod';
 import { IncomingHttpHeaders } from 'http';
 import {
   AppRoute,
@@ -25,7 +24,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
     {
       params: PathParams<T>;
-      query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : null;
+      query: ZodInferOrType<T['query']>;
       headers: IncomingHttpHeaders;
     },
     never
@@ -36,8 +35,8 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
     {
       params: PathParams<T>;
-      query: T['query'] extends ZodTypeAny ? z.infer<T['query']> : never;
-      body: T['body'] extends ZodTypeAny ? z.infer<T['body']> : never;
+      query: ZodInferOrType<T['query']>;
+      body: ZodInferOrType<T['body']>;
       headers: IncomingHttpHeaders;
     },
     never
