@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.4.1
+
+### Patch Changes
+
+- 92346a0: Fix body not working without Zod schema
+
 ## 3.4.0
 
 ## 3.3.0
