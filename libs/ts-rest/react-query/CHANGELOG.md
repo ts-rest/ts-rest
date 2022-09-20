@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.4.2
+
+### Patch Changes
+
+- 242d795: Fix custom api not being used on useMutation
+
 ## 3.4.1
 
 ## 3.4.0
