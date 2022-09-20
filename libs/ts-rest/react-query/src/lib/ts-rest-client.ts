@@ -251,7 +251,9 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
         route
       );
 
-      const result = await defaultApi({
+      const apiFetcher = clientArgs.api || defaultApi;
+
+      const result = await apiFetcher({
         path: completeUrl,
         method: route.method,
         headers: {
