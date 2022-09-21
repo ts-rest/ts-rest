@@ -54,7 +54,20 @@ const config = {
         apiKey: '2f0471d89771f7e3cd3796164c0a6f09',
         indexName: 'ts-rest',
       },
-      metadata: [{ name: 'keywords', content: 'typescript, API, REST' }],
+      announcementBar: {
+        id: 'support_us',
+        content:
+          "We're making some big changes to our docs, please give us a ⭐️ and help out by <a target='_blank' rel='noopener noreferrer' href='https://github.com/ts-rest/ts-rest'>contributing</a>!",
+        backgroundColor: '#007667',
+        textColor: '#ffffff',
+        isCloseable: false,
+      },
+      metadata: [
+        {
+          name: 'keywords',
+          content: 'ts-rest, ts rest, typesafe, typescript, API, REST',
+        },
+      ],
       image: 'img/banner.jpg',
       navbar: {
         title: 'ts-rest',
