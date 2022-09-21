@@ -51,7 +51,7 @@ yarn add @ts-rest/open-api
 Create a contract, implement it on your server then consume it in your client. Incrementally adopt, trial it with your team, then get shipping faster.
 
 <div align="center" style="margin:50px">
-<h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart">Quickstart Guide 👈</h2>
+<h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide 👈</h2>
 </div>
 
 ## Stargazers over Time ⭐️
