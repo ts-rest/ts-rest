@@ -12,9 +12,10 @@
    <a href="https://www.npmjs.com/package/@ts-rest/core">
    <img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core">
    </a>
-   <a href="https://codecov.io/gh/ts-rest/ts-rest" > 
- <img src="https://codecov.io/gh/ts-rest/ts-rest/branch/main/graph/badge.svg?token=JPOVG7KC3Z"/> 
- </a>
+     <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
+    <img alt="GitHub" src="https://img.shields.io/github/license/ts-rest/ts-rest">   
+   </a>
+   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ts-rest/ts-rest/CI">
  </p>
 
 # Introduction
@@ -49,4 +50,10 @@ yarn add @ts-rest/open-api
 
 Create a contract, implement it on your server then consume it in your client. Incrementally adopt, trial it with your team, then get shipping faster.
 
-👉 Read more on the official [Quickstart Guide](https://ts-rest.com/docs/quickstart) 👈
+<div align="center" style="margin:50px">
+<h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart">Quickstart Guide 👈</h2>
+</div>
+
+## Stargazers over Time ⭐️
+
+[![Stargazers over time](https://starchart.cc/ts-rest/ts-rest.svg)](https://starchart.cc/pragmaticivan/nestjs-otel)
