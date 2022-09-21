@@ -50,7 +50,9 @@ export function getValue<
     .split(/[.[\]]/)
     .filter(Boolean)
     .reduce<GetFieldType<TData, TPath>>(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (value, key) => (value as any)?.[key],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data as any
     );
 

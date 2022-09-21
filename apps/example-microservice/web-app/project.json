@@ -17,7 +17,7 @@
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "options": {
-        "lintFilePatterns": ["apps/example-microservice/web-app/**/*.ts"]
+        "lintFilePatterns": ["apps/example-microservice/web-app/**/*.tsx"]
       }
     },
     "test": {

@@ -94,6 +94,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async (inputArgs: DataReturnArgs<any>) => {
     const path = insertParamsIntoPath({
       path: route.path,
@@ -125,6 +126,7 @@ const createNewProxy = (router: AppRouter, args: ClientArgs) => {
   return new Proxy(
     {},
     {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get: (target, propKey): any => {
         if (typeof propKey === 'string' && propKey in router) {
           const subRouter = router[propKey];
