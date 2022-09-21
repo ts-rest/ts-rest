@@ -49,6 +49,11 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      algolia: {
+        appId: '2TFBRG9081',
+        apiKey: '2f0471d89771f7e3cd3796164c0a6f09',
+        indexName: 'ts-rest',
+      },
       metadata: [{ name: 'keywords', content: 'typescript, API, REST' }],
       image: 'img/banner.jpg',
       navbar: {
