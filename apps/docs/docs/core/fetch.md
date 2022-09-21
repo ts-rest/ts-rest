@@ -1,6 +1,6 @@
 # Fetch Client
 
-Connect to your tRPC instance
+Connect to your ts-rest instance
 
 ```typescript
 export const client = initClient(router, {
