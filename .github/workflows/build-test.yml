@@ -16,7 +16,7 @@ jobs:
       - run: yarn install
 
       - run: npx nx workspace-lint
-      - run: npx nx format:check
+      - run: npx nx format:check --libs-and-apps=true
       - run: npx nx affected --target=lint --parallel
       - run: npx nx run-many --target=test --all --parallel --coverage --exclude=example-expo
       - run: npx nx affected --target=build --parallel --exclude=example-expo
