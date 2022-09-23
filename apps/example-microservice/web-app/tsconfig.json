@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.settings.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/apps/example-microservice/web-app",
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react"
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

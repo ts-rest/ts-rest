@@ -20,6 +20,12 @@
       "@ts-rest/core": ["libs/ts-rest/core/src/index.ts"],
       "@ts-rest/example-contracts": ["libs/example-contracts/src/index.ts"],
       "@ts-rest/example-express": ["apps/example-express/src/index.ts"],
+      "@ts-rest/example-microservice/util-posts-api": [
+        "libs/example-microservice/util-posts-api/src/index.ts"
+      ],
+      "@ts-rest/example-microservice/util-users-api": [
+        "libs/example-microservice/util-users-api/src/index.ts"
+      ],
       "@ts-rest/example-nest": ["libs/example-nest/src/index.ts"],
       "@ts-rest/express": ["libs/ts-rest/express/src/index.ts"],
       "@ts-rest/nest": ["libs/ts-rest/nest/src/index.ts"],
