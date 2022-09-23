@@ -81,6 +81,7 @@
     "ts-morph": "^15.1.0",
     "tslib": "^2.3.0",
     "uuid": "^8.3.2",
+    "vitest": "^0.23.4",
     "zod": "^3.18.0",
     "zod-to-json-schema": "^3.17.1",
     "zustand": "^4.1.1"
