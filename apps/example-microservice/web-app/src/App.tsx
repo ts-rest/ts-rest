@@ -10,6 +10,7 @@ export const App = () => {
 
   return (
     <div>
+      <h1>Posts from posts-service</h1>
       {posts.map((post) => (
         <div key={post.id}>
           <h1>{post.title}</h1>
