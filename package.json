@@ -38,6 +38,7 @@
     "@tanstack/react-query-devtools": "^4.2.3",
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-react": "^2.1.0",
+    "@vitest/coverage-c8": "^0.23.4",
     "apollo-server-express": "^3.10.2",
     "autoprefixer": "^10.4.8",
     "body-parser": "^1.20.0",
