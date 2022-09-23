@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build Prisma Client
+        run: pnpm exec prisma generate
+
       - name: Modify Workspace File
         run: sed -e "s;libs/;dist/libs/;g" package.json > package-new.json && mv package-new.json package.json
 
