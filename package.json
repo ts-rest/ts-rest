@@ -36,6 +36,7 @@
     "@tailwindcss/typography": "^0.5.4",
     "@tanstack/react-query": "^4.2.3",
     "@tanstack/react-query-devtools": "^4.2.3",
+    "@types/body-parser": "^1.19.2",
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-react": "^2.1.0",
     "@vitest/coverage-c8": "^0.23.4",
