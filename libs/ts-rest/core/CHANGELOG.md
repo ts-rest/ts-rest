@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.5.0
+
+### Minor Changes
+
+- 068822d: Add support for multipart/form-data
+
 ## 3.4.2
 
 ## 3.4.1
