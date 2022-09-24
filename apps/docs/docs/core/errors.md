@@ -17,7 +17,7 @@ export const routerBasic = c.router({
 });
 ```
 
-## Client
+## Client Errors
 
 The default fetch client has support for this,
 
@@ -32,6 +32,8 @@ if (status === 200) {
   console.log('Something went wrong');
 }
 ```
+
+### Client Error Typing
 
 :::info
 

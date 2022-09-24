@@ -19,4 +19,18 @@ export const usersApi = c.router({
       200: UserSchema,
     },
   },
+  updateUserAvatar: {
+    method: 'POST',
+    path: '/users/:id/avatar',
+    contentType: 'multipart/form-data',
+    body: c.body<{ avatar: File }>(),
+    responses: {
+      200: z.object({
+        message: z.string(),
+      }),
+      400: z.object({
+        message: z.string(),
+      }),
+    },
+  },
 });

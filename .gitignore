@@ -58,3 +58,6 @@ web-build/
 
 apps/example-expo-e2e/artifacts
 apps/expo-e2e/artifacts
+
+# example apps upload directory
+uploads/ 

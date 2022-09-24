@@ -26,18 +26,27 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
       params: PathParams<T>;
       query: ZodInferOrType<T['query']>;
       headers: IncomingHttpHeaders;
+      req: Request;
     },
     never
   >
 ) => Promise<ApiRouteResponse<T['responses']>>;
+
+type WithoutFileIfMultiPart<T extends AppRouteMutation> =
+  T['contentType'] extends 'multipart/form-data'
+    ? Without<ZodInferOrType<T['body']>, File>
+    : ZodInferOrType<T['body']>;
 
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
     {
       params: PathParams<T>;
       query: ZodInferOrType<T['query']>;
-      body: ZodInferOrType<T['body']>;
+      body: WithoutFileIfMultiPart<T>;
       headers: IncomingHttpHeaders;
+      files: unknown;
+      file: unknown;
+      req: Request;
     },
     never
   >
@@ -102,10 +111,12 @@ const transformAppRouteQueryImplementation = (
     }
 
     const result = await route({
-      // @ts-expect-error because the decorator shape is any
       params: req.params,
       query: req.query,
       headers: req.headers,
+
+      // @ts-expect-error because the decorator shape is any
+      req: req,
     });
 
     return res.status(Number(result.status)).json(result.body);
@@ -144,11 +155,18 @@ const transformAppRouteMutationImplementation = (
       }
 
       const result = await route({
-        // @ts-expect-error because the decorator shape is any
         params: req.params,
         body: req.body,
         query: req.query,
         headers: req.headers,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        files: req.files,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        file: req.file,
+        // @ts-expect-error because the decorator shape is any
+        req: req,
       });
 
       return res.status(Number(result.status)).json(result.body);

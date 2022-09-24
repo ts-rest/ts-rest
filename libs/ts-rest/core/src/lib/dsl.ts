@@ -28,6 +28,7 @@ export type AppRouteMutation = {
    * e.g. "/posts/:id".
    */
   path: string;
+  contentType?: 'application/json' | 'multipart/form-data';
   body: unknown;
   query?: unknown;
   summary?: string;

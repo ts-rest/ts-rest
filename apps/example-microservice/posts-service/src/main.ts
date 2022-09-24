@@ -5,6 +5,9 @@
 
 import * as express from 'express';
 import * as cors from 'cors';
+import * as multer from 'multer';
+
+const upload = multer({ dest: 'uploads/' });
 
 import { postsApi } from '@ts-rest/example-microservice/util-posts-api';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
@@ -44,11 +47,24 @@ const postsRouter = s.router(postsApi, {
       ],
     };
   },
+  updatePostThumbnail: async ({ file }) => {
+    const thumbnail = file as Express.Multer.File;
+
+    return {
+      status: 200,
+      body: {
+        message: `File ${thumbnail.originalname} successfully!`,
+      },
+    };
+  },
 });
 
 const app = express();
 
 app.use(cors());
+
+// File upload
+app.post(postsApi.updatePostThumbnail.path, upload.single('thumbnail'));
 
 createExpressEndpoints(postsApi, postsRouter, app);
 

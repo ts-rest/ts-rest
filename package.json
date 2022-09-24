@@ -9,7 +9,8 @@
     "affected:all": "pnpm nx affected:lint && pnpm nx affected:test && pnpm nx affected:build",
     "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
     "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service,example-microservice-web-app",
-    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app"
+    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app",
+    "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
@@ -37,6 +38,7 @@
     "@tanstack/react-query": "^4.2.3",
     "@tanstack/react-query-devtools": "^4.2.3",
     "@types/body-parser": "^1.19.2",
+    "@types/multer": "^1.4.7",
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-react": "^2.1.0",
     "@vitest/coverage-c8": "^0.23.4",
@@ -56,6 +58,7 @@
     "expo-updates": "~0.14.3",
     "express": "4.18.1",
     "graphql": "^16.6.0",
+    "multer": "1.4.5-lts.1",
     "next": "12.2.5",
     "openapi3-ts": "^2.0.2",
     "postcss": "^8.4.16",

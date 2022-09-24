@@ -6,7 +6,6 @@ import {
   AppRouter,
   ClientArgs,
   DataReturn,
-  defaultApi,
   getRouteQuery,
   isAppRoute,
   SuccessfulHttpStatusCode,
@@ -14,6 +13,8 @@ import {
   ZodInferOrType,
   HTTPStatusCode,
   PathParams,
+  getCompleteUrl,
+  fetchApi,
 } from '@ts-rest/core';
 import {
   QueryFunction,
@@ -29,10 +30,6 @@ import {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
-import {
-  convertQueryParamsToUrlString,
-  insertParamsIntoPath,
-} from '@ts-rest/core';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -137,20 +134,6 @@ type DataReturnMutation<TAppRoute extends AppRoute> = (
   unknown
 >;
 
-const getCompleteUrl = (
-  query: any,
-  baseUrl: string,
-  params: Record<string, string>,
-  route: AppRoute
-) => {
-  const path = insertParamsIntoPath({
-    path: route.path,
-    params: params as any,
-  });
-  const queryComponent = convertQueryParamsToUrlString(query);
-  return `${baseUrl}${path}${queryComponent}`;
-};
-
 const getRouteUseQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
@@ -161,24 +144,14 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
     options?: UseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
-      const completeUrl = getCompleteUrl(
+      const path = getCompleteUrl(
         args.query,
         clientArgs.baseUrl,
-        // @ts-expect-error - we know this is a valid path param
         args.params,
         route
       );
 
-      const apiFetcher = clientArgs.api || defaultApi;
-
-      const result = await apiFetcher({
-        path: completeUrl,
-        method: route.method,
-        headers: {
-          ...clientArgs.baseHeaders,
-        },
-        body: undefined,
-      });
+      const result = await fetchApi(path, clientArgs, route, args.body);
 
       // If the response is not a 2XX, throw an error to be handled by react-query
       if (!String(result.status).startsWith('2')) {
@@ -206,24 +179,19 @@ const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
     ) => {
       const resultingQueryArgs = args(infiniteQueryParams);
 
-      const completeUrl = getCompleteUrl(
+      const path = getCompleteUrl(
         resultingQueryArgs.query,
         clientArgs.baseUrl,
-        // @ts-expect-error - we know this is a valid path param
         resultingQueryArgs.params,
         route
       );
 
-      const apiFetcher = clientArgs.api || defaultApi;
-
-      const result = await apiFetcher({
-        path: completeUrl,
-        method: route.method,
-        headers: {
-          ...clientArgs.baseHeaders,
-        },
-        body: undefined,
-      });
+      const result = await fetchApi(
+        path,
+        clientArgs,
+        route,
+        resultingQueryArgs.body
+      );
 
       // If the response is not a 2XX, throw an error to be handled by react-query
       if (!String(result.status).startsWith('2')) {
@@ -243,25 +211,14 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
 ) => {
   return (options?: UseMutationOptions<TAppRoute['responses']>) => {
     const mutationFunction = async (args: DataReturnArgs<TAppRoute>) => {
-      const completeUrl = getCompleteUrl(
+      const path = getCompleteUrl(
         args.query,
         clientArgs.baseUrl,
-        // @ts-expect-error - we know this is a valid path param
         args.params,
         route
       );
 
-      const apiFetcher = clientArgs.api || defaultApi;
-
-      const result = await apiFetcher({
-        path: completeUrl,
-        method: route.method,
-        headers: {
-          ...clientArgs.baseHeaders,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(args.body),
-      });
+      const result = await fetchApi(path, clientArgs, route, args.body);
 
       // If the response is not a 2XX, throw an error to be handled by react-query
       if (!String(result.status).startsWith('2')) {

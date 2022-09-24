@@ -33,4 +33,18 @@ export const postsApi = c.router({
       }),
     },
   },
+  updatePostThumbnail: {
+    method: 'POST',
+    path: '/posts/:id/thumbnail',
+    contentType: 'multipart/form-data',
+    body: c.body<{ thumbnail: File; data: string }>(),
+    responses: {
+      200: z.object({
+        message: z.string(),
+      }),
+      400: z.object({
+        message: z.string(),
+      }),
+    },
+  },
 });

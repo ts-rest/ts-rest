@@ -23,21 +23,22 @@ import {
   getPathParamsFromUrl,
   PathParams,
   Without,
+  ZodInferOrType,
 } from '@ts-rest/core';
 import { map, Observable } from 'rxjs';
-import { z, ZodTypeAny } from 'zod';
+
+type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
+  T['contentType'] extends 'multipart/form-data'
+    ? Without<ZodInferOrType<T['body']>, File>
+    : ZodInferOrType<T['body']>;
 
 export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
   {
     params: PathParams<TRoute>;
     body: TRoute extends AppRouteMutation
-      ? TRoute['body'] extends ZodTypeAny
-        ? z.infer<TRoute['body']>
-        : TRoute['body']
+      ? BodyWithoutFileIfMultiPart<TRoute>
       : never;
-    query: TRoute['query'] extends ZodTypeAny
-      ? z.infer<TRoute['query']>
-      : TRoute['query'];
+    query: ZodInferOrType<TRoute['query']>;
   },
   never
 >;

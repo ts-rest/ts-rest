@@ -53,7 +53,9 @@ describe('react-query', () => {
       method: 'GET',
       path: 'http://api.com/health',
       body: undefined,
-      headers: {},
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     await waitFor(() => {
@@ -79,7 +81,9 @@ describe('react-query', () => {
       method: 'GET',
       path: 'http://api.com/health',
       body: undefined,
-      headers: {},
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     await waitFor(() => {

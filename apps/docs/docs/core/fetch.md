@@ -9,11 +9,15 @@ export const client = initClient(router, {
 });
 ```
 
+### Query
+
 **Query** against the contract, a _query_ is a function that does a GET request to the api.
 
 ```typescript
 const { data } = await client.posts.get();
 ```
+
+### Mutate
 
 **Mutate** against the contract, a _mutation_ is a function that does a POST, PUT, PATCH or DELETE request to the api.
 
@@ -39,7 +43,7 @@ if (status === 200) {
 }
 ```
 
-Return type
+### Return type
 
 ```typescript
 const data: {

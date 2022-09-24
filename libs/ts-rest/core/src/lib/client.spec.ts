@@ -106,6 +106,15 @@ export const router = c.router({
       200: c.response<{ message: string }>(),
     },
   },
+  upload: {
+    method: 'POST',
+    path: '/upload',
+    body: c.body<{ file: File }>(),
+    responses: {
+      200: c.response<{ message: string }>(),
+    },
+    contentType: 'multipart/form-data',
+  },
 });
 
 const api = jest.fn();
@@ -337,6 +346,53 @@ describe('client', () => {
           'Content-Type': 'application/json',
         },
         body: undefined,
+      });
+    });
+  });
+
+  describe('multipart/form-data', () => {
+    it('w/ body', async () => {
+      const value = { key: 'value' };
+      api.mockResolvedValue({ body: value, status: 200 });
+
+      const file = new File([''], 'filename', { type: 'text/plain' });
+
+      const result = await client.upload({
+        body: { file },
+      });
+
+      const expectedFormData = new FormData();
+      expectedFormData.append('file', file);
+
+      expect(result).toStrictEqual({ body: value, status: 200 });
+
+      expect(api).toHaveBeenCalledWith({
+        method: 'POST',
+        path: 'http://api.com/upload',
+        headers: {},
+        body: expectedFormData,
+      });
+    });
+
+    it('w/ FormData', async () => {
+      const value = { key: 'value' };
+      api.mockResolvedValue({ body: value, status: 200 });
+
+      const formData = new FormData();
+
+      formData.append('test', 'test');
+
+      const result = await client.upload({
+        body: formData,
+      });
+
+      expect(result).toStrictEqual({ body: value, status: 200 });
+
+      expect(api).toHaveBeenCalledWith({
+        method: 'POST',
+        path: 'http://api.com/upload',
+        headers: {},
+        body: formData,
       });
     });
   });
