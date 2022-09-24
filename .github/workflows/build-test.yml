@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build Prisma Client
+        run: pnpm exec prisma generate
+
       - run: npx nx workspace-lint
       # - run: npx nx format:check --libs-and-apps=true
       - run: npx nx affected --target=lint --parallel
