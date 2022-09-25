@@ -42,7 +42,7 @@ export default function Home(): JSX.Element {
       description="RPC-like client and server helpers for a magical end to end typed experience"
     >
       <div className="container my-24 mx-auto text-center">
-        <h1 className="text-3xl font-black text-center dark:text-white md:text-5xl">
+        <h1 className="text-3xl font-dark text-center dark:text-white md:text-5xl">
           RPC-like client and server for a{' '}
           <span className="bg-clip-text text-transparent  bg-gradient-to-r from-emerald-400 to-sky-600">
             magical

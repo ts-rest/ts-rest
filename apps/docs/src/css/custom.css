@@ -41,15 +41,20 @@
   --ifm-color-emphasis-800: #f5f5f5;
   --ifm-color-emphasis-900: #f5f5f5;
   --ifm-color-emphasis-1000: #f5f5f5;
+  --ifm-navbar-link-color: black;
+  --ifm-menu-color: black;
+  --ifm-font-color-base: black;
+  --ifm-heading-color: black;
 }
+
 :root[data-theme='dark'] {
   --ifm-footer-background-color: #171717;
   --ifm-navbar-background-color: #111111;
   --ifm-background-color: #111111;
-}
-
-.hero {
-  color: white;
+  --ifm-navbar-link-color: white;
+  --ifm-menu-color: white;
+  --ifm-font-color-base: white;
+  --ifm-heading-color: white;
 }
 
 .docusaurus-highlight-code-line {

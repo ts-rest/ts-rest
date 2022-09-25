@@ -2,6 +2,8 @@
 
 This is a client using` @ts-react/react-query`, using `@tanstack/react-query` under the hood.
 
+## useQuery and useMutation
+
 ```tsx
 export const client = initReactQueryClient(router, {
   baseUrl: 'http://localhost:3333',
@@ -45,7 +47,7 @@ const { body, status } = await client.posts.get.query();
 const { data, isLoading } = client.posts.get.useQuery();
 ```
 
-## Infinite Query
+## useInfiniteQuery
 
 One fantastic feature of `react-query` is the ability to create infinite queries. This is a great way to handle pagination.
 
