@@ -1,48 +1,66 @@
 import React from 'react';
-import clsx from 'clsx';
-import styles from './HomepageFeatures.module.css';
 
 type FeatureItem = {
   title: string;
   description: JSX.Element;
+  icon: string;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Magic RPC-like client 🪄',
+    icon: '🪄',
+    title: 'RPC-like Client Without Codegen',
     description: (
       <>
-        ts-rest provides a simple, RPC like client to give you a fully typed
-        client implementation.
+        Fully typed RPC-like client, with no need for code generation, reducing
+        your bundle size as the types disappear at compile time.
       </>
     ),
   },
   {
-    title: 'REST Under the Hood 🚀',
+    icon: '🚀',
+    title: 'API Design Agnostic',
     description: (
       <>
-        We don't abstract away from REST (or however your API is designed), we
-        aim to let you use your API with other consumers as-is.
+        We don't abstract away from your API structure, we aim to let you use
+        your API with other consumers as-is.
       </>
     ),
   },
   {
-    title: 'Contract Driven 👮‍♀️',
+    icon: '❤️',
+    title: 'First Class DX',
     description: (
       <>
-        No worrying about unnecessary rebuilds in monorepos, easy cross-repo API
-        packages and more.
+        Less unnecessary builds in monorepos, instant compile-time errors, and
+        instantly view endpoint implementations through your IDEs "go to
+        definition"
+      </>
+    ),
+  },
+  {
+    icon: '✌️',
+    title: 'Framework Agnostic',
+    description: (
+      <>
+        ts-rest comes with a whole host of support frameworks, including
+        Express, Nest, Next and react-query!
       </>
     ),
   },
 ];
 
-function Feature({ title, description }: FeatureItem) {
+function Feature({ title, description, icon }: FeatureItem) {
   return (
-    <div className={clsx('col col--4')}>
-      <div className="text--center padding-horiz--md">
-        <h3>{title}</h3>
-        <p>{description}</p>
+    <div className="flex flex-row gap-4">
+      <div>
+        <div className=" bg-emerald-200/50 outline-emerald-300 dark:bg-emerald-700/30 w-14 h-14 outline dark:outline-emerald-500/50 rounded-md flex items-center justify-center">
+          <span className="text-3xl">{icon}</span>
+        </div>
+      </div>
+      <div className="">
+        <h3 className="mb-1">{title}</h3>
+        <p className="">{description}</p>
       </div>
     </div>
   );
@@ -50,9 +68,9 @@ function Feature({ title, description }: FeatureItem) {
 
 export default function HomepageFeatures(): JSX.Element {
   return (
-    <section className={styles.features}>
+    <section className="">
       <div className="container">
-        <div className="row">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}

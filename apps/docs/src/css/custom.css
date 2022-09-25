@@ -21,6 +21,11 @@
   height: 100%;
 }
 
+@font-face {
+  font-family: 'Virgil';
+  src: url('/Virgil.woff2');
+}
+
 :root {
   --ifm-color-primary: #008372;
   --ifm-color-primary-dark: #007667;
