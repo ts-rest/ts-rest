@@ -4,14 +4,14 @@ import Link from 'next/link';
 import classNames from 'classnames';
 
 export const api = initQueryClient(apiBlog, {
-  baseUrl: 'http://10.0.0.125:4200/api',
+  baseUrl: 'http://localhost:4200/api',
   baseHeaders: {},
 });
 
 export function Index() {
   const PAGE_SIZE = 5;
 
-  const { isLoading, data, hasNextPage, fetchNextPage } =
+  const { isLoading, data, hasNextPage, fetchNextPage, isPaused } =
     api.getPosts.useInfiniteQuery(
       ['posts'],
       ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
@@ -24,8 +24,12 @@ export function Index() {
               ? { take: PAGE_SIZE, skip: allPages.length * PAGE_SIZE }
               : undefined
             : undefined,
+        networkMode: 'offlineFirst',
+        staleTime: 1000 * 5,
       }
     );
+
+  console.log(isPaused);
 
   if (isLoading) {
     return <div>Loading...</div>;
