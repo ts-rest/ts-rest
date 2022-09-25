@@ -10,6 +10,8 @@
     "example-microservice-util-posts-api": "libs/example-microservice/util-posts-api",
     "example-microservice-util-users-api": "libs/example-microservice/util-users-api",
     "example-microservice-web-app": "apps/example-microservice/web-app",
+    "example-microservice-web-app-solid": "apps/example-microservice/web-app-solid",
+
     "example-nest": "apps/example-nest",
     "example-next": "apps/example-next",
     "ts-rest-core": "libs/ts-rest/core",

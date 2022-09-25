@@ -8,8 +8,8 @@
     "nest": "pnpm nx run example-nest:serve",
     "affected:all": "pnpm nx affected:lint && pnpm nx affected:test && pnpm nx affected:build",
     "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
-    "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service,example-microservice-web-app",
-    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app",
+    "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service,example-microservice-web-app,example-microservice-web-app-solid --parallel=10",
+    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app,example-microservice-web-app-solid",
     "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
@@ -88,9 +88,11 @@
     "vitest": "^0.23.4",
     "zod": "^3.18.0",
     "zod-to-json-schema": "^3.17.1",
-    "zustand": "^4.1.1"
+    "zustand": "^4.1.1",
+    "solid-js": "^1.5.1"
   },
   "devDependencies": {
+    "vite-plugin-solid": "^2.3.0",
     "@docusaurus/module-type-aliases": "2.0.1",
     "@nestjs/schematics": "^9.0.1",
     "@nestjs/testing": "^9.0.11",
