@@ -17,9 +17,9 @@ export default defineConfig({
         __dirname,
         '../../../libs/ts-rest/core/src/index.ts'
       ),
-      '@ts-rest/react-query': path.resolve(
+      '@ts-rest/solid-query': path.resolve(
         __dirname,
-        '../../../libs/ts-rest/react-query/src/index.ts'
+        '../../../libs/ts-rest/solid-query/src/index.ts'
       ),
       '@ts-rest/example-microservice/util-posts-api': path.resolve(
         __dirname,

@@ -2,17 +2,21 @@ import type { Component } from 'solid-js';
 
 import logo from './logo.svg';
 import styles from './App.module.css';
-import { initClient } from '@ts-rest/core';
 import { postsApi } from '@ts-rest/example-microservice/util-posts-api';
+import { initQueryClient } from '@ts-rest/solid-query';
 
-const client = initClient(postsApi, {
+const client = initQueryClient(postsApi, {
   baseUrl: 'http://localhost:5003',
   baseHeaders: {},
 });
 
-client.getPosts({ query: {} }).then(console.log);
-
 const App: Component = () => {
+  const updatePostThumbnail = client.updatePostThumbnail.createMutation({});
+
+  const data = client.getPosts.createQuery(() => ['posts'], { query: {} });
+
+  console.log(data.data);
+
   return (
     <div class={styles.App}>
       <header class={styles.header}>

@@ -19,6 +19,7 @@
     "ts-rest-nest": "libs/ts-rest/nest",
     "ts-rest-next": "libs/ts-rest/next",
     "ts-rest-open-api": "libs/ts-rest/open-api",
-    "ts-rest-react-query": "libs/ts-rest/react-query"
+    "ts-rest-react-query": "libs/ts-rest/react-query",
+    "ts-rest-solid-query": "libs/ts-rest/solid-query"
   }
 }

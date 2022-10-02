@@ -1,5 +1,8 @@
 lockfileVersion: 5.4
 
+overrides:
+  vite-plugin-solid: 2.3.0
+
 importers:
 
   .:
@@ -47,6 +50,7 @@ importers:
       '@tailwindcss/typography': ^0.5.4
       '@tanstack/react-query': ^4.2.3
       '@tanstack/react-query-devtools': ^4.2.3
+      '@tanstack/solid-query': ^4.8.0
       '@testing-library/jest-dom': 5.16.5
       '@testing-library/jest-native': 4.0.5
       '@testing-library/react': 13.3.0
@@ -145,7 +149,7 @@ importers:
       typescript: ^4.8.2
       uuid: ^8.3.2
       vite: ^3.1.2
-      vite-plugin-solid: ^2.3.0
+      vite-plugin-solid: 2.3.0
       vitest: ^0.23.4
       zod: ^3.18.0
       zod-to-json-schema: ^3.17.1
@@ -170,6 +174,7 @@ importers:
       '@tailwindcss/typography': 0.5.7_tailwindcss@3.1.8
       '@tanstack/react-query': 4.3.4_h2d5nxtg76cuxvdvhzbd3qx6ou
       '@tanstack/react-query-devtools': 4.3.5_hbsvmtv74eglyqgnta4rgheflu
+      '@tanstack/solid-query': 4.8.0_solid-js@1.5.6
       '@types/body-parser': 1.19.2
       '@types/multer': 1.4.7
       '@types/uuid': 8.3.4
@@ -297,7 +302,7 @@ importers:
       tsd: 0.22.0
       typescript: 4.8.3
       vite: 3.1.2_sass@1.54.5
-      vite-plugin-solid: 2.3.8_solid-js@1.5.6+vite@3.1.2
+      vite-plugin-solid: 2.3.0_solid-js@1.5.6+vite@3.1.2
 
   apps/docs:
     specifiers: {}
@@ -342,6 +347,9 @@ importers:
     specifiers: {}
 
   libs/ts-rest/react-query:
+    specifiers: {}
+
+  libs/ts-rest/solid-query:
     specifiers: {}
 
 packages:
@@ -8261,6 +8269,10 @@ packages:
     resolution: {integrity: sha512-NLAe3j5Vk1yYEtoPP5fPGPjRzkZPx67KUM3f14L3InziJZJ0wVecCh7uKfgYkbRKJSeq6PlbND7iuCGdTplN6Q==}
     dev: false
 
+  /@tanstack/query-core/4.8.0:
+    resolution: {integrity: sha512-PVcSqAWboFA86eNgtHTOjfHjBkNuFGAM6kPH82p1ibx1R76f7EjedZ+LZi4ZnW4ppoSl/+hUtCgWsiNQ2ViLTw==}
+    dev: false
+
   /@tanstack/react-query-devtools/4.3.5_hbsvmtv74eglyqgnta4rgheflu:
     resolution: {integrity: sha512-Jb3HywQmvQDmyixNOzjv8xjksngguG9WjmJlBWjSBCcUFIm3GQGpeJYm62EnJmJ+lHMgDNWDr61UV7Fya8TVTA==}
     peerDependencies:
@@ -8292,6 +8304,15 @@ packages:
       react-dom: 18.2.0_react@18.2.0
       react-native: 0.69.5_react@18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
+    dev: false
+
+  /@tanstack/solid-query/4.8.0_solid-js@1.5.6:
+    resolution: {integrity: sha512-mwgvd6QGYHYdIJyKG7aL5zMNLYKJPoPEWMR8P+8wHGBbHoVTL2LPfkWcP3MMlyDdY7esPOocbhpufgmOPNDRVQ==}
+    peerDependencies:
+      solid-js: ^1.5.4
+    dependencies:
+      '@tanstack/query-core': 4.8.0
+      solid-js: 1.5.6
     dev: false
 
   /@testing-library/dom/8.18.0:
@@ -26560,8 +26581,8 @@ packages:
       vfile-message: 2.0.4
     dev: false
 
-  /vite-plugin-solid/2.3.8_solid-js@1.5.6+vite@3.1.2:
-    resolution: {integrity: sha512-x+cs2aBmD+MjIrGGy+tXK1d8pztNkaMlb3TjsLI8/ZhlNvpr2lB8HrpVNYkz61yLIIyJOTyjPaN9lbOtMAaArw==}
+  /vite-plugin-solid/2.3.0_solid-js@1.5.6+vite@3.1.2:
+    resolution: {integrity: sha512-N2sa54C3UZC2nN5vpj5o6YP+XdIAZW6n6xv8OasxNAcAJPFeZT7EOVvumL0V4c8hBz1yuYniMWdESY8807fVSg==}
     peerDependencies:
       solid-js: ^1.3.17
       vite: ^3.0.0
