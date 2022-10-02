@@ -59,7 +59,7 @@ jobs:
         id: last_successful_commit
         with:
           branch: 'main'
-          workflow_id: 'deploy-main.yml'
+          workflow_id: 'release.yml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - id: set-nx-affected
         run: NX_AFFECTED_BASE=${{ steps.last_successful_commit.outputs.commit_hash }} pnpm run ci:nx-affected
