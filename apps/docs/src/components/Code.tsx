@@ -4,55 +4,57 @@ import CodeBlock from '@theme/CodeBlock';
 const sections = [
   {
     title: 'client.ts',
-    code: `const client = initClient(contract, {
-      baseUrl: 'http://localhost:3000',
-      baseHeaders: {},
-      });
+    code: `
+const client = initClient(contract, {
+  baseUrl: 'http://localhost:3000',
+  baseHeaders: {},
+});
       
-      const { body, status } = await client.createPost({
-      body: {
-      title: 'Post Title',
-      body: 'Post Body',
-      },
-      });`,
+const { body, status } = await client.createPost({
+  body: {
+    title: 'Post Title',
+    body: 'Post Body',
+  },
+});`,
   },
   {
     title: 'contract.ts',
     code: `
-    import { initContract } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
     
-    const c = initContract();
+const c = initContract();
     
-    export const contract = c.router({
-    createPost: {
+export const contract = c.router({
+  createPost: {
     method: 'POST',
     path: '/posts',
     responses: {
-    201: c.response<Post>(),
+     201: c.response<Post>(),
     },
     body: c.body<{title: string}>()
     summary: 'Create a post',
-    },
-    });`,
+  },
+});`,
   },
   {
     title: 'server.ts',
-    code: `const s = initServer();
+    code: `
+const s = initServer();
 
-    const router = s.router(contract, {
-    createPost: async ({ body }) => {
+const router = s.router(contract, {
+  createPost: async ({ body }) => {
     const post = await prisma.post.create({
-    data: body,
+      data: body,
     });
     
     return {
-    status: 201,
-    body: post,
+      status: 201,
+      body: post,
     };
-    },
-    });
+  },  
+});
     
-    createExpressEndpoints(contract, router, app);`,
+createExpressEndpoints(contract, router, app);`,
   },
 ];
 
