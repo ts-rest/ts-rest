@@ -21,8 +21,8 @@ const config = {
     {
       defer: true,
       'data-domain': 'ts-rest.com',
-      'data-api': '/pl-api/api/event',
-      src: '/pl-api/js/script.js',
+      'data-api': 'https://plausible.oliverbutler.uk/api/event',
+      src: 'https://plausible.oliverbutler.uk/js/script.js',
     },
   ],
 

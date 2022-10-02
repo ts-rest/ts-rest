@@ -5,8 +5,10 @@ on:
       - main
 
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      nx_affected: ${{ steps.set-nx-affected.outputs.nx_affected }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -53,3 +55,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - uses: nrwl/last-successful-commit-action@v1
+        id: last_successful_commit
+        with:
+          branch: 'main'
+          workflow_id: 'deploy-main.yml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - id: set-nx-affected
+        run: NX_AFFECTED_BASE=${{ steps.last_successful_commit.outputs.commit_hash }} pnpm run ci:nx-affected
+
+  deploy-docs:
+    name: Deploy Docs
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ contains(needs.build.outputs.nx_affected, 'docs') }}
+    steps:
+      - run: echo "Deploying Docs to AWS"

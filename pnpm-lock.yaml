@@ -1,12 +1,10 @@
 lockfileVersion: 5.4
 
-overrides:
-  vite-plugin-solid: 2.3.0
-
 importers:
 
   .:
     specifiers:
+      '@actions/core': ^1.10.0
       '@changesets/cli': ^2.24.3
       '@docusaurus/core': 2.0.1
       '@docusaurus/module-type-aliases': 2.0.1
@@ -155,6 +153,7 @@ importers:
       zod-to-json-schema: ^3.17.1
       zustand: ^4.1.1
     dependencies:
+      '@actions/core': 1.10.0
       '@changesets/cli': 2.24.4
       '@docusaurus/core': 2.0.1_ma5zvtfsjc3ub7ijxakxs6grta
       '@docusaurus/preset-classic': 2.0.1_7i4kzpvwyhte2w6lajqg7d6vli
@@ -353,6 +352,19 @@ importers:
     specifiers: {}
 
 packages:
+
+  /@actions/core/1.10.0:
+    resolution: {integrity: sha512-2aZDDa3zrrZbP5ZYg159sNoLRb61nQ7awl5pSvIq5Qpj81vwDzdMRKzkWJGJuwVvWpvZKx7vspJALyvaaIQyug==}
+    dependencies:
+      '@actions/http-client': 2.0.1
+      uuid: 8.3.2
+    dev: false
+
+  /@actions/http-client/2.0.1:
+    resolution: {integrity: sha512-PIXiMVtz6VvyaRsGY268qvj57hXQEpsYogYOu2nrQhlf+XCGmZstmuZBbAybUl1nQGnvS1k1eEsQ69ZoD7xlSw==}
+    dependencies:
+      tunnel: 0.0.6
+    dev: false
 
   /@adobe/css-tools/4.0.1:
     resolution: {integrity: sha512-+u76oB43nOHrF4DDWRLWDCtci7f3QJoEBigemIdIeTi1ODqjx6Tad9NCVnPRwewWlKkVab5PlK8DCtPTyX7S8g==}
@@ -25925,6 +25937,11 @@ packages:
     dependencies:
       safe-buffer: 5.2.1
     dev: true
+
+  /tunnel/0.0.6:
+    resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
+    engines: {node: '>=0.6.11 <=0.7.0 || >=0.7.3'}
+    dev: false
 
   /turndown/7.0.0:
     resolution: {integrity: sha512-G1FfxfR0mUNMeGjszLYl3kxtopC4O9DRRiMlMDDVHvU1jaBkGFg4qxIyjIk2aiKLHyDyZvZyu4qBO2guuYBy3Q==}

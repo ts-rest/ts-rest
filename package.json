@@ -10,7 +10,8 @@
     "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
     "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service,example-microservice-web-app,example-microservice-web-app-solid --parallel=10",
     "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app,example-microservice-web-app-solid",
-    "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch"
+    "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch",
+    "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
@@ -18,6 +19,7 @@
     "libs/ts-rest/*"
   ],
   "dependencies": {
+    "@actions/core": "^1.10.0",
     "@changesets/cli": "^2.24.3",
     "@docusaurus/core": "2.0.1",
     "@docusaurus/preset-classic": "2.0.1",
