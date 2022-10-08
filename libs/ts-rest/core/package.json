@@ -2,7 +2,6 @@
   "name": "@ts-rest/core",
   "version": "3.5.0",
   "description": "RPC-like experience over a regular REST API, with type safe server implementations 🪄",
-  "type": "commonjs",
   "license": "MIT",
   "keywords": [
     "rpc",
@@ -18,5 +17,16 @@
     "type": "git",
     "url": "https://github.com/ts-rest/ts-rest.git",
     "directory": "libs/ts-rest/core"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "tslib": {
+      "optional": true
+    }
+  },
+  "peerDependencies": {
+    "zod": "^3.0.0"
   }
 }

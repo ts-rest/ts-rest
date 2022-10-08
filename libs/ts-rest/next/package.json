@@ -1,5 +1,15 @@
 {
   "name": "@ts-rest/next",
   "version": "3.5.0",
-  "type": "commonjs"
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "@swc/helpers": {
+      "optional": true
+    }
+  },
+  "peerDependencies": {
+    "next": "^12.0.0"
+  }
 }

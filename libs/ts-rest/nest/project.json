@@ -4,13 +4,15 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:swc",
+      "executor": "@nrwl/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "project": "libs/ts-rest/nest/package.json",
         "outputPath": "dist/libs/ts-rest/nest",
         "main": "libs/ts-rest/nest/src/index.ts",
         "tsConfig": "libs/ts-rest/nest/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/nest/*.md"]
+        "format": ["esm", "cjs"],
+        "compiler": "tsc"
       }
     },
     "publish": {

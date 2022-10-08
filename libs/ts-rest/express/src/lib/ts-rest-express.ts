@@ -1,4 +1,4 @@
-import { IRouter, RequestHandler } from 'express';
+import { IRouter, Request, Response } from 'express';
 import { IncomingHttpHeaders } from 'http';
 import {
   AppRoute,
@@ -110,12 +110,10 @@ const transformAppRouteQueryImplementation = (
       });
     }
 
-    const result = await route({
+    const result = await route({    // @ts-ignore
       params: req.params,
       query: req.query,
       headers: req.headers,
-
-      // @ts-expect-error because the decorator shape is any
       req: req,
     });
 
@@ -133,7 +131,7 @@ const transformAppRouteMutationImplementation = (
 
   const method = schema.method;
 
-  const callback: RequestHandler = async (req, res) => {
+  const callback = async (req: Request, res: Response) => {
     try {
       const zodBodyIssues = returnZodErrorsIfZodSchema(schema.body, req.body);
 
@@ -155,6 +153,8 @@ const transformAppRouteMutationImplementation = (
       }
 
       const result = await route({
+
+        // @ts-ignore
         params: req.params,
         body: req.body,
         query: req.query,
@@ -165,7 +165,6 @@ const transformAppRouteMutationImplementation = (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         file: req.file,
-        // @ts-expect-error because the decorator shape is any
         req: req,
       });
 
@@ -189,9 +188,6 @@ const transformAppRouteMutationImplementation = (
     case 'PATCH':
       app.patch(schema.path, callback);
       break;
-    default:
-      // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
-      const _exhaustiveCheck: never = method;
   }
 };
 

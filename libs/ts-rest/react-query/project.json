@@ -5,13 +5,15 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/js:swc",
+      "executor": "@nrwl/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "project": "libs/ts-rest/react-query/package.json",
         "outputPath": "dist/libs/ts-rest/react-query",
         "main": "libs/ts-rest/react-query/src/index.ts",
         "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/react-query/*.md"]
+        "format": ["esm", "cjs"],
+        "compiler": "tsc"
       }
     },
     "lint": {

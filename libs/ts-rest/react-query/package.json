@@ -2,7 +2,6 @@
   "name": "@ts-rest/react-query",
   "version": "3.5.0",
   "description": "react-query client integration for @ts-rest",
-  "type": "commonjs",
   "license": "MIT",
   "keywords": [
     "rpc",
@@ -20,5 +19,18 @@
     "type": "git",
     "url": "https://github.com/ts-rest/ts-rest.git",
     "directory": "libs/ts-rest/react-query"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "@swc/helpers": {
+      "optional": true
+    }
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "zod": "^3.0.0",
+    "@tanstack/react-query": "^4.0.0"
   }
 }

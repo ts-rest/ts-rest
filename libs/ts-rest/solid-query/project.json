@@ -5,13 +5,15 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/js:swc",
+      "executor": "@nrwl/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "project": "libs/ts-rest/solid-query/package.json",
         "outputPath": "dist/libs/ts-rest/solid-query",
         "main": "libs/ts-rest/solid-query/src/index.ts",
         "tsConfig": "libs/ts-rest/solid-query/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/solid-query/*.md"]
+        "format": ["esm", "cjs"],
+        "compiler": "tsc"
       }
     },
     "lint": {

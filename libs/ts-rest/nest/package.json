@@ -2,7 +2,6 @@
   "name": "@ts-rest/nest",
   "version": "3.5.0",
   "description": "Nest server integration for @ts-rest",
-  "type": "commonjs",
   "license": "MIT",
   "keywords": [
     "rpc",
@@ -19,5 +18,17 @@
     "type": "git",
     "url": "https://github.com/ts-rest/ts-rest.git",
     "directory": "libs/ts-rest/nest"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "rxjs": {
+      "optional": true
+    }
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^9.0.0",
+    "rxjs": "^7.0.0"
   }
 }

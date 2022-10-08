@@ -4,13 +4,15 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nrwl/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "project": "libs/ts-rest/next/package.json",
         "outputPath": "dist/libs/ts-rest/next",
         "main": "libs/ts-rest/next/src/index.ts",
         "tsConfig": "libs/ts-rest/next/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/next/*.md"]
+        "format": ["esm", "cjs"],
+        "compiler": "tsc"
       }
     },
     "publish": {
