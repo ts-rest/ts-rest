@@ -110,6 +110,7 @@ const transformAppRouteQueryImplementation = (
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     const result = await route({    // @ts-ignore
       params: req.params,
       query: req.query,
@@ -153,7 +154,7 @@ const transformAppRouteMutationImplementation = (
       }
 
       const result = await route({
-
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         params: req.params,
         body: req.body,
