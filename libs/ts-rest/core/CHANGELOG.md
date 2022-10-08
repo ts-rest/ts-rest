@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.6.0
+
+### Minor Changes
+
+- 6753c69: Build ESM and CommonJS for improved compatibility
+
 ## 3.5.0
 
 ### Minor Changes
