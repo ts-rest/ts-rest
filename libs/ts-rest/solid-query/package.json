@@ -21,7 +21,7 @@
     "directory": "libs/ts-rest/solid-query"
   },
   "peerDependencies": {
-    "zod": "^3.0.0",
-    "@tanstack/solid-query": "^4.0.0"
+    "zod": "3.x.x",
+    "@tanstack/solid-query": "4.x.x"
   }
 }

@@ -10,7 +10,7 @@
     }
   },
   "peerDependencies": {
-    "express": "^4.17.0",
-    "zod": "^3.0.0"
+    "express": "4.x.x",
+    "zod": "3.x.x"
   }
 }

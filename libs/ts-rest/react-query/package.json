@@ -29,8 +29,8 @@
     }
   },
   "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
-    "zod": "^3.0.0",
-    "@tanstack/react-query": "^4.0.0"
+    "react": "16.x.x || 17.x.x || 18.x.x",
+    "zod": "3.x.x",
+    "@tanstack/react-query": "4.x.x"
   }
 }

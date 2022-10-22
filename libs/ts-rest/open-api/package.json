@@ -10,9 +10,9 @@
     }
   },
   "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
-    "zod": "^3.0.0",
-    "openapi3-ts": "^2.0.0",
-    "zod-to-json-schema": "^3.0.0"
+    "react": "16.x.x || 17.x.x || 18.x.x",
+    "zod": "3.x.x",
+    "openapi3-ts": "2.x.x",
+    "zod-to-json-schema": "^3.x.x"
   }
 }

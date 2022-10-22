@@ -10,6 +10,6 @@
     }
   },
   "peerDependencies": {
-    "next": "^12.0.0"
+    "next": "12.x.x"
   }
 }

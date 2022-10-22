@@ -11,7 +11,8 @@
     "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service,example-microservice-web-app,example-microservice-web-app-solid --parallel=10",
     "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app,example-microservice-web-app-solid",
     "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch",
-    "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts"
+    "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts",
+    "postinstall": "pnpm prisma generate"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
@@ -32,7 +33,7 @@
     "@nestjs/platform-express": "^9.0.11",
     "@nestjs/swagger": "^6.1.0",
     "@nrwl/rollup": "15.0.1",
-    "@prisma/client": "^4.2.1",
+    "@prisma/client": "^4.5.0",
     "@react-navigation/native": "^6.0.13",
     "@react-navigation/stack": "^6.3.0",
     "@stackblitz/sdk": "^1.8.0",
@@ -162,7 +163,7 @@
     "metro-resolver": "0.72.3",
     "nx": "15.0.1",
     "prettier": "^2.6.2",
-    "prisma": "^4.2.1",
+    "prisma": "^4.5.0",
     "react-test-renderer": "18.2.0",
     "sass": "1.55.0",
     "supertest": "^6.2.4",
@@ -174,4 +175,3 @@
     "vite-plugin-solid": "2.3.0"
   }
 }
-
