@@ -8,6 +8,7 @@ import { initQueryClient } from '@ts-rest/solid-query';
 const client = initQueryClient(postsApi, {
   baseUrl: 'http://localhost:5003',
   baseHeaders: {},
+
 });
 
 const App: Component = () => {

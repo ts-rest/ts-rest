@@ -34,7 +34,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/ts-rest/express"],
+      "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/express"],
       "options": {
         "jestConfig": "libs/ts-rest/express/jest.config.ts",
         "passWithNoTests": true,

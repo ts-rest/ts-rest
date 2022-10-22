@@ -46,7 +46,9 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/example-microservice/users-service"],
+      "outputs": [
+        "{workspaceRoot}/coverage/apps/example-microservice/users-service"
+      ],
       "options": {
         "jestConfig": "apps/example-microservice/users-service/jest.config.ts",
         "passWithNoTests": true

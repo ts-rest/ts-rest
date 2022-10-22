@@ -25,7 +25,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/ts-rest/react-query"],
+      "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/react-query"],
       "options": {
         "jestConfig": "libs/ts-rest/react-query/jest.config.ts",
         "passWithNoTests": true

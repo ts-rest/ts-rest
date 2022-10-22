@@ -54,5 +54,23 @@ const data: {
     body: unknown;
 }
 ```
-
 :::
+
+
+## Using Axios (custom api override)
+
+By default ts-rest ships with an incredibly simple fetch 
+implementation for data fetching, because fetch requires zero extra
+dependencies and works perfectly for most use cases, however, 
+sometimes you may want to use Axios, or another data fetching strategy, for that
+you can pass a `api` attribute to the `initClient` or `initQueryClient`.
+
+```typescript
+const client = initClient(contract, {
+  baseUrl: "http://localhost:3333/api",
+  baseHeaders: {},
+  api: () => {
+    // TODO: Add this
+  }
+})
+```

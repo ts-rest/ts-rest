@@ -25,7 +25,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/ts-rest/solid-query"],
+      "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/solid-query"],
       "options": {
         "jestConfig": "libs/ts-rest/solid-query/jest.config.ts",
         "passWithNoTests": true
