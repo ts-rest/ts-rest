@@ -65,3 +65,33 @@ export const contract = c.router({
   posts: postContract,
 });
 ```
+
+## Intellisense
+
+For intellisense on your contract types, you can use [JSDoc Reference](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#type).
+
+```typescript
+const c = initContract();
+
+export const contract = c.router({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    responses: {
+      200: c.response<{ posts: Post[]; total: number }>(),
+    },
+    query: z.object({
+      /**
+       * @type {string} - UTC timestamp in milliseconds
+       */
+      beginDate: z.string(), 
+      /**
+       * @type {string} - UTC timestamp in milliseconds
+       */
+      endDate: z.string(),
+    }),
+    summary: 'Get posts within time-range',
+  },
+});
+
+```
