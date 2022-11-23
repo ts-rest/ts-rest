@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/react-query",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "react-query client integration for @ts-rest",
   "license": "MIT",
   "keywords": [
@@ -32,5 +32,16 @@
     "react": "16.x.x || 17.x.x || 18.x.x",
     "zod": "3.x.x",
     "@tanstack/react-query": "4.x.x"
-  }
+  },
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "index.cjs",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "typings": "index.d.ts"
 }

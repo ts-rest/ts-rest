@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.6.1
+
+### Patch Changes
+
+- Update package.json exports to fix #66
+
 ## 3.6.0
 
 ### Minor Changes
