@@ -103,4 +103,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
       - name: 'Deploy docs to S3'
-        run: 'aws s3 cp --recursive dist/apps/docs/ s3://ts-rest-docs-bucket/'
+        run: 'aws s3 sync dist/apps/docs/ s3://ts-rest-docs-bucket/'
