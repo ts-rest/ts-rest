@@ -1,9 +1,10 @@
 {
   "name": "michaelangrivera-ts-rest-react-query",
-  "version": "3.6.2",
+  "version": "3.6.6",
   "description": "react-query client integration for @ts-rest",
-  "license": "MIT",  "main": "lib/index.js",
-  "module": "index.ts",
+  "license": "MIT",
+  "main": "index.js",
+  "module": "index.cjs",
   "typings": "index.d.ts",
   "exports": {
     ".": {

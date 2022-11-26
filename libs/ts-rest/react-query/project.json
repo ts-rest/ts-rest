@@ -12,6 +12,7 @@
         "outputPath": "dist/libs/ts-rest/react-query",
         "main": "libs/ts-rest/react-query/src/index.ts",
         "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
+        "generateExportsField": true,
         "format": ["esm", "cjs"],
         "compiler": "tsc"
       }
