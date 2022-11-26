@@ -9,8 +9,9 @@ import {
   getValue,
   Without,
   ZodInferOrType,
-  returnZodErrorsIfZodSchema,
   PathParams,
+  checkQuerySchema,
+  checkBodySchema,
 } from '@ts-rest/core';
 
 export type ApiRouteResponse<T> = {
@@ -102,18 +103,17 @@ const transformAppRouteQueryImplementation = (
   console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
 
   app.get(schema.path, async (req, res) => {
-    const zodQueryIssues = returnZodErrorsIfZodSchema(schema.query, req.query);
+    const queryResult = checkQuerySchema(req.query, schema);
 
-    if (zodQueryIssues.length > 0) {
-      return res.status(400).json({
-        errors: zodQueryIssues,
-      });
+    if (!queryResult.success) {
+      return res.status(400).send(queryResult.error);
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    const result = await route({    // @ts-ignore
+    const result = await route({
+      // @ts-ignore
       params: req.params,
-      query: req.query,
+      query: queryResult.body,
       headers: req.headers,
       req: req,
     });
@@ -134,31 +134,24 @@ const transformAppRouteMutationImplementation = (
 
   const callback = async (req: Request, res: Response) => {
     try {
-      const zodBodyIssues = returnZodErrorsIfZodSchema(schema.body, req.body);
+      const queryResult = checkQuerySchema(req.query, schema);
 
-      if (zodBodyIssues.length > 0) {
-        return res.status(400).json({
-          errors: zodBodyIssues,
-        });
+      if (!queryResult.success) {
+        return res.status(400).send(queryResult.error);
       }
 
-      const zodQueryIssues = returnZodErrorsIfZodSchema(
-        schema.query,
-        req.query
-      );
+      const bodyResult = checkBodySchema(req.body, schema);
 
-      if (zodQueryIssues.length > 0) {
-        return res.status(400).json({
-          errors: zodQueryIssues,
-        });
+      if (!bodyResult.success) {
+        return res.status(400).send(bodyResult.error);
       }
 
       const result = await route({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         params: req.params,
-        body: req.body,
-        query: req.query,
+        body: bodyResult.body,
+        query: queryResult.body,
         headers: req.headers,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

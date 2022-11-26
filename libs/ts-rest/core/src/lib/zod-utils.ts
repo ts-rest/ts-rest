@@ -1,28 +1,6 @@
 import { z, ZodTypeAny } from 'zod';
 import { AppRoute } from './dsl';
 
-export const returnZodErrorsIfZodSchema = (
-  schema: unknown,
-  body: unknown
-): z.ZodIssue[] => {
-  const bodySchema = schema as ZodTypeAny;
-
-  if (
-    bodySchema &&
-    bodySchema._def &&
-    bodySchema._def.typeName === 'ZodObject'
-  ) {
-    // Check body schema
-    const parsed = bodySchema.safeParse(body);
-
-    if (parsed.success === false) {
-      return parsed.error.issues;
-    }
-  }
-
-  return [];
-};
-
 const isZodObject = (
   body: unknown
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
