@@ -1,5 +1,7 @@
 # ts-rest
 
+# Do not use, this is a test version
+
 <p align="center">
  <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height=150 />
 </p>
