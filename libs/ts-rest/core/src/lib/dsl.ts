@@ -1,15 +1,17 @@
 import { Narrow } from './type-utils';
 
 /**
+ * The path with colon-prefixed parameters
+ * e.g. "/posts/:id".
+ */
+type Path = string;
+
+/**
  * A query endpoint. In REST terms, one using GET.
  */
 export type AppRouteQuery = {
   method: 'GET';
-  /**
-   * The path with colon-prefixed parameters
-   * e.g. "/posts/:id".
-   */
-  path: string;
+  path: Path;
   pathParams?: unknown;
   query?: unknown;
   summary?: string;
@@ -24,11 +26,7 @@ export type AppRouteQuery = {
  */
 export type AppRouteMutation = {
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
-  /**
-   * The path with colon-prefixed parameters
-   * e.g. "/posts/:id".
-   */
-  path: string;
+  path: Path;
   pathParams?: unknown;
   contentType?: 'application/json' | 'multipart/form-data';
   body: unknown;

@@ -3,6 +3,7 @@ import { initQueryClient } from './ts-rest-client';
 import { renderHook } from '@testing-library/react-hooks';
 import { waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+// @ts-ignore
 import React from 'react';
 
 const api = jest.fn();

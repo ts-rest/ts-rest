@@ -6,9 +6,7 @@ import {
   ParamsFromUrl,
 } from './paths';
 import { HTTPStatusCode } from './status-codes';
-import { Without, ZodInferOrType } from './type-utils';
-
-
+import { Merge, Without, ZodInferOrType } from './type-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -23,11 +21,19 @@ type AppRouteMutationType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 /**
  * Extract the path params from the path in the contract
  */
-export type PathParams<T extends AppRoute> = ParamsFromUrl<
+export type PathParamsFromUrl<T extends AppRoute> = ParamsFromUrl<
   T['path']
 > extends infer U
   ? U
   : never;
+
+/**
+ * Merge PathParamsFromUrl<T> with pathParams schema if it exists
+ */
+export type PathParamsWithCustomValidators<T extends AppRoute> =
+  T['pathParams'] extends undefined
+    ? PathParamsFromUrl<T>
+    : Merge<PathParamsFromUrl<T>, ZodInferOrType<T['pathParams']>>;
 
 // Allow FormData if the contentType is multipart/form-data
 type AppRouteBodyOrFormData<T extends AppRouteMutation> =
@@ -39,7 +45,7 @@ interface DataReturnArgs<TRoute extends AppRoute> {
   body: TRoute extends AppRouteMutation
     ? AppRouteBodyOrFormData<TRoute>
     : never;
-  params: PathParams<TRoute>;
+  params: PathParamsFromUrl<TRoute>;
   query: TRoute['query'] extends ZodTypeAny
     ? AppRouteMutationType<TRoute['query']>
     : never;
@@ -144,16 +150,13 @@ export const fetchApi = (
 };
 
 export const getCompleteUrl = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   query: any,
   baseUrl: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any,
   route: AppRoute
 ) => {
   const path = insertParamsIntoPath({
     path: route.path,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     params: params as any,
   });
   const queryComponent = convertQueryParamsToUrlString(query);
@@ -164,7 +167,6 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async (inputArgs: DataReturnArgs<any>) => {
     const completeUrl = getCompleteUrl(
       inputArgs.query,
@@ -181,7 +183,6 @@ const createNewProxy = (router: AppRouter, args: ClientArgs) => {
   return new Proxy(
     {},
     {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get: (target, propKey): any => {
         if (typeof propKey === 'string' && propKey in router) {
           const subRouter = router[propKey];

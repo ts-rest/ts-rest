@@ -1,7 +1,6 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
-import { OpenAPIObject } from 'openapi3-ts';
-import { generateOpenApi } from './ts-rest-open-api';
+import { generateOpenApi } from '@ts-rest/open-api';
 
 const c = initContract();
 

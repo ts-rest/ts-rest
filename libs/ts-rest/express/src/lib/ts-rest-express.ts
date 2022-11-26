@@ -5,13 +5,12 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
-  isAppRoute,
+  checkZodSchema,
   getValue,
+  isAppRoute,
+  PathParamsWithCustomValidators,
   Without,
   ZodInferOrType,
-  PathParams,
-  checkZodSchema,
-  Merge,
 } from '@ts-rest/core';
 
 export type ApiRouteResponse<T> = {
@@ -24,7 +23,7 @@ export type ApiRouteResponse<T> = {
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
     {
-      params: PathParamsWithZod<T>;
+      params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
       headers: IncomingHttpHeaders;
       req: Request;
@@ -38,17 +37,10 @@ type WithoutFileIfMultiPart<T extends AppRouteMutation> =
     ? Without<ZodInferOrType<T['body']>, File>
     : ZodInferOrType<T['body']>;
 
-/**
- * Merge PathParams<T> with pathParams schema if it exists
- */
-type PathParamsWithZod<T extends AppRoute> = T['pathParams'] extends undefined
-  ? PathParams<T>
-  : Merge<PathParams<T>, ZodInferOrType<T['pathParams']>>;
-
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
     {
-      params: PathParamsWithZod<T>;
+      params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
       body: WithoutFileIfMultiPart<T>;
       headers: IncomingHttpHeaders;
@@ -82,10 +74,8 @@ export const initServer = () => {
 };
 
 const recursivelyApplyExpressRouter = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   router: RecursiveRouterObj<any> | AppRouteImplementation<any>,
   path: string[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routeTransformer: (route: AppRouteImplementation<any>, path: string[]) => void
 ): void => {
   if (typeof router === 'object') {
@@ -102,7 +92,6 @@ const recursivelyApplyExpressRouter = (
 };
 
 const transformAppRouteQueryImplementation = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   route: AppRouteQueryImplementation<any>,
   schema: AppRouteQuery,
   app: IRouter
@@ -124,9 +113,7 @@ const transformAppRouteQueryImplementation = (
       return res.status(400).send(paramsResult.error);
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     const result = await route({
-      // @ts-ignore
       params: paramsResult.data,
       query: queryResult.data,
       headers: req.headers,
@@ -138,7 +125,6 @@ const transformAppRouteQueryImplementation = (
 };
 
 const transformAppRouteMutationImplementation = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   route: AppRouteMutationImplementation<any>,
   schema: AppRouteMutation,
   app: IRouter
@@ -161,18 +147,22 @@ const transformAppRouteMutationImplementation = (
         return res.status(400).send(bodyResult.error);
       }
 
+      const paramsResult = checkZodSchema(req.params, schema.pathParams, {
+        passThroughExtraKeys: true,
+      });
+
+      if (!paramsResult.success) {
+        return res.status(400).send(paramsResult.error);
+      }
+
       const result = await route({
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        params: req.params,
+        params: paramsResult.data,
         body: bodyResult.data,
         query: queryResult.data,
         headers: req.headers,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error
         files: req.files,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error
         file: req.file,
         req: req,
       });
@@ -220,7 +210,6 @@ export const createExpressEndpoints = <
         transformAppRouteMutationImplementation(route, routerViaPath, app);
       } else {
         transformAppRouteQueryImplementation(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           route as AppRouteQueryImplementation<any>,
           routerViaPath,
           app

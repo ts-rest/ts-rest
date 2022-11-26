@@ -12,7 +12,7 @@ import {
   Without,
   ZodInferOrType,
   HTTPStatusCode,
-  PathParams,
+  PathParamsFromUrl,
   getCompleteUrl,
   fetchApi,
 } from '@ts-rest/core';
@@ -61,7 +61,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
       ? never
       : AppRouteMutationType<TRoute['body']>
     : never;
-  params: PathParams<TRoute>;
+  params: PathParamsFromUrl<TRoute>;
   query: TRoute['query'] extends ZodTypeAny
     ? AppRouteMutationType<TRoute['query']> extends null
       ? never

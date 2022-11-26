@@ -35,17 +35,12 @@ export const getPathParamsFromArray = (
   });
 
   // remove pathParams where key doesn't start with :
-  const pathParamsWithoutColons = Object.entries(pathParams).reduce(
-    (acc, [key, value]) => {
-      if (key.startsWith(':')) {
-        const keyWithoutColon = key.slice(1);
-        acc[keyWithoutColon] = value;
-      }
+  return Object.entries(pathParams).reduce((acc, [key, value]) => {
+    if (key.startsWith(':')) {
+      const keyWithoutColon = key.slice(1);
+      acc[keyWithoutColon] = value;
+    }
 
-      return acc;
-    },
-    {} as Record<string, string>
-  );
-
-  return pathParamsWithoutColons;
+    return acc;
+  }, {} as Record<string, string>);
 };

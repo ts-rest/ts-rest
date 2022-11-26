@@ -14,12 +14,12 @@ import {
   checkZodSchema,
   getPathParamsFromArray,
   isAppRoute,
-  PathParams,
+  PathParamsFromUrl,
   ZodInferOrType,
 } from '@ts-rest/core';
 
 type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
-  params: PathParams<T>;
+  params: PathParamsFromUrl<T>;
   query: ZodInferOrType<T['query']>;
   req: NextApiRequest;
   res: NextApiResponse;
@@ -27,7 +27,7 @@ type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
 
 type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
   (args: {
-    params: PathParams<T>;
+    params: PathParamsFromUrl<T>;
     body: ZodInferOrType<T['body']>;
     query: ZodInferOrType<T['query']>;
     req: NextApiRequest;
@@ -225,10 +225,18 @@ export const createNextRouter =
       return res.status(400).json(bodyResult.error);
     }
 
+    const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!pathParamsResult.success) {
+      return res.status(400).json(pathParamsResult.error);
+    }
+
     const { body, status } = await route.implementation({
       body: bodyResult.data,
       query: queryResult.data,
-      params: pathParams,
+      params: pathParamsResult.data,
       req,
       res,
     });

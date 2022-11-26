@@ -1,11 +1,8 @@
-import { z, ZodTypeAny } from 'zod';
-import { AppRoute } from './dsl';
+import { z } from 'zod';
 
-const isZodObject = (
+export const isZodObject = (
   body: unknown
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): body is z.ZodObject<any, any, any, any> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (body as z.ZodObject<any, any, any, any>)?.safeParse !== undefined;
 };
 

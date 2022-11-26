@@ -2,7 +2,6 @@ import { AppRoute, AppRouter, ApiRouteResponse, Without } from '@ts-rest/core';
 import { ApiDecoratorShape } from './api.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...args: any[]
 ) => Promise<ApiRouteResponse<T['responses']>>;
 

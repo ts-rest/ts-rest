@@ -50,9 +50,7 @@ export function getValue<
     .split(/[.[\]]/)
     .filter(Boolean)
     .reduce<GetFieldType<TData, TPath>>(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (value, key) => (value as any)?.[key],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data as any
     );
 
@@ -79,7 +77,6 @@ export type Merge<T, U> = Omit<T, keyof U> & U;
 type Try<A, B, C> = A extends B ? A : C;
 
 type NarrowRaw<T> =
-  // eslint-disable-next-line @typescript-eslint/ban-types
   | (T extends Function ? T : never)
   | (T extends string | number | bigint | boolean ? T : never)
   | (T extends [] ? [] : never)

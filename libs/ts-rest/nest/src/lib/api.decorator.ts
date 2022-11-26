@@ -7,7 +7,6 @@ import {
   ExecutionContext,
   Get,
   HttpException,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Injectable,
   NestInterceptor,
   Patch,
@@ -20,7 +19,7 @@ import {
   AppRouteMutation,
   checkZodSchema,
   getPathParamsFromUrl,
-  PathParams,
+  PathParamsWithCustomValidators,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
@@ -33,7 +32,7 @@ type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
 
 export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
   {
-    params: PathParams<TRoute>;
+    params: PathParamsWithCustomValidators<TRoute>;
     body: TRoute extends AppRouteMutation
       ? BodyWithoutFileIfMultiPart<TRoute>
       : never;
@@ -54,7 +53,6 @@ const getQueryParams = (url: string): Record<string, string> => {
 };
 
 export const ApiDecorator = createParamDecorator(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (_: unknown, ctx: ExecutionContext): ApiDecoratorShape<any> => {
     const req = ctx.switchToHttp().getRequest();
 
@@ -84,10 +82,17 @@ export const ApiDecorator = createParamDecorator(
       throw new BadRequestException(bodyResult.error);
     }
 
+    const pathParamsResult = checkZodSchema(pathParams, appRoute.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!pathParamsResult.success) {
+      throw new BadRequestException(pathParamsResult.error);
+    }
+
     return {
       query: queryResult.data,
-      // @ts-expect-error because the decorator shape is any
-      params: pathParams,
+      params: pathParamsResult.data,
       body: bodyResult.data,
     };
   }
@@ -112,7 +117,6 @@ const getMethodDecorator = (appRoute: AppRoute) => {
 export class ApiRouteInterceptor implements NestInterceptor {
   constructor(private readonly appRoute: AppRoute) {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
 

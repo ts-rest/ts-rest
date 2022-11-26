@@ -1,29 +1,29 @@
-import { AppRoute, AppRouter, isAppRoute } from '@ts-rest/core';
+import { AppRoute, AppRouter, isAppRoute, isZodObject } from '@ts-rest/core';
 import {
   InfoObject,
   OpenAPIObject,
   OperationObject,
   PathsObject,
 } from 'openapi3-ts';
-import { ZodTypeAny } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
+
+type RouterPath = {
+  id: string;
+  path: string;
+  route: AppRoute;
+  paths: string[];
+};
 
 const getPathsFromRouter = (
   router: AppRouter,
   pathHistory?: string[]
-): { id: string; path: string; route: AppRoute; paths: string[] }[] => {
-  const paths: {
-    id: string;
-    path: string;
-    route: AppRoute;
-    paths: string[];
-  }[] = [];
+): RouterPath[] => {
+  const paths: RouterPath[] = [];
 
   Object.keys(router).forEach((key) => {
     const value = router[key];
 
     if (isAppRoute(value)) {
-      // Replace /posts/:id with /posts/{id} TODO: CHECK THIS WORKS
       const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
 
       paths.push({
@@ -38,10 +38,6 @@ const getPathsFromRouter = (
   });
 
   return paths;
-};
-
-const isZodObject = (body: unknown): body is ZodTypeAny => {
-  return (body as ZodTypeAny)?.safeParse !== undefined;
 };
 
 const getResponseSchemaFromZod = (response: unknown) => {
