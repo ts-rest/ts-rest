@@ -74,6 +74,8 @@ export type With<T, V> = Pick<T, ExcludeKeysWithoutTypeOf<T, V>>;
 
 export type ZodInferOrType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 
+export type Merge<T, U> = Omit<T, keyof U> & U;
+
 type Try<A, B, C> = A extends B ? A : C;
 
 type NarrowRaw<T> =

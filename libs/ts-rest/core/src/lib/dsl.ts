@@ -10,6 +10,7 @@ export type AppRouteQuery = {
    * e.g. "/posts/:id".
    */
   path: string;
+  pathParams?: unknown;
   query?: unknown;
   summary?: string;
   description?: string;
@@ -28,6 +29,7 @@ export type AppRouteMutation = {
    * e.g. "/posts/:id".
    */
   path: string;
+  pathParams?: unknown;
   contentType?: 'application/json' | 'multipart/form-data';
   body: unknown;
   query?: unknown;

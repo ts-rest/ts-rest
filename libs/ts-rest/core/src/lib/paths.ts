@@ -82,9 +82,5 @@ export const convertQueryParamsToUrlString = (
           .join('&')
       : '';
 
-  return queryString.length > 0 &&
-    queryString !== null &&
-    queryString !== undefined
-    ? '?' + queryString
-    : '';
+  return queryString?.length > 0 ? '?' + queryString : '';
 };

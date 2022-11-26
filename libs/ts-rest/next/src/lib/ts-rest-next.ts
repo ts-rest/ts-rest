@@ -11,8 +11,7 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
-  checkBodySchema,
-  checkQuerySchema,
+  checkZodSchema,
   getPathParamsFromArray,
   isAppRoute,
   PathParams,
@@ -214,21 +213,21 @@ export const createNextRouter =
 
     const pathParams = getPathParamsFromArray(params, route);
 
-    const queryResult = checkQuerySchema(req.query, route);
+    const queryResult = checkZodSchema(req.query, route.query);
 
-    if (queryResult.success === false) {
+    if (!queryResult.success) {
       return res.status(400).json(queryResult.error);
     }
 
-    const bodyResult = checkBodySchema(req.body, route);
+    const bodyResult = checkZodSchema(req.body, route.body);
 
-    if (bodyResult.success === false) {
+    if (!bodyResult.success) {
       return res.status(400).json(bodyResult.error);
     }
 
     const { body, status } = await route.implementation({
-      body: bodyResult.body,
-      query: queryResult.body,
+      body: bodyResult.data,
+      query: queryResult.data,
       params: pathParams,
       req,
       res,

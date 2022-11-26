@@ -85,6 +85,12 @@ const completedRouter = s.router(apiBlog, {
       body: { message: 'Post deleted' },
     };
   },
+  testPathParams: async ({ params }) => {
+    return {
+      status: 200,
+      body: params,
+    };
+  },
 });
 
 const openapi = generateOpenApi(apiBlog, {
@@ -105,3 +111,5 @@ const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
 server.on('error', console.error);
+
+export default app;

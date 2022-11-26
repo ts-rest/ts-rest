@@ -18,8 +18,7 @@ import {
 import {
   AppRoute,
   AppRouteMutation,
-  checkBodySchema,
-  checkQuerySchema,
+  checkZodSchema,
   getPathParamsFromUrl,
   PathParams,
   Without,
@@ -70,23 +69,26 @@ export const ApiDecorator = createParamDecorator(
     const pathParams = getPathParamsFromUrl(req.url, appRoute);
     const queryParams = getQueryParams(req.url);
 
-    const queryResult = checkQuerySchema(queryParams, appRoute);
+    const queryResult = checkZodSchema(queryParams, appRoute.query);
 
-    if (queryResult.success === false) {
+    if (!queryResult.success) {
       throw new BadRequestException(queryResult.error);
     }
 
-    const bodyResult = checkBodySchema(req.body, appRoute);
+    const bodyResult = checkZodSchema(
+      req.body,
+      appRoute.method === 'GET' ? null : appRoute.body
+    );
 
-    if (bodyResult.success === false) {
+    if (!bodyResult.success) {
       throw new BadRequestException(bodyResult.error);
     }
 
     return {
-      query: queryResult.body,
+      query: queryResult.data,
       // @ts-expect-error because the decorator shape is any
       params: pathParams,
-      body: bodyResult.body,
+      body: bodyResult.data,
     };
   }
 );

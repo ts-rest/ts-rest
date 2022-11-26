@@ -10,8 +10,8 @@ import {
   Without,
   ZodInferOrType,
   PathParams,
-  checkQuerySchema,
-  checkBodySchema,
+  checkZodSchema,
+  Merge,
 } from '@ts-rest/core';
 
 export type ApiRouteResponse<T> = {
@@ -24,7 +24,7 @@ export type ApiRouteResponse<T> = {
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
     {
-      params: PathParams<T>;
+      params: PathParamsWithZod<T>;
       query: ZodInferOrType<T['query']>;
       headers: IncomingHttpHeaders;
       req: Request;
@@ -38,10 +38,17 @@ type WithoutFileIfMultiPart<T extends AppRouteMutation> =
     ? Without<ZodInferOrType<T['body']>, File>
     : ZodInferOrType<T['body']>;
 
+/**
+ * Merge PathParams<T> with pathParams schema if it exists
+ */
+type PathParamsWithZod<T extends AppRoute> = T['pathParams'] extends undefined
+  ? PathParams<T>
+  : Merge<PathParams<T>, ZodInferOrType<T['pathParams']>>;
+
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: Without<
     {
-      params: PathParams<T>;
+      params: PathParamsWithZod<T>;
       query: ZodInferOrType<T['query']>;
       body: WithoutFileIfMultiPart<T>;
       headers: IncomingHttpHeaders;
@@ -103,17 +110,25 @@ const transformAppRouteQueryImplementation = (
   console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
 
   app.get(schema.path, async (req, res) => {
-    const queryResult = checkQuerySchema(req.query, schema);
+    const queryResult = checkZodSchema(req.query, schema.query);
 
     if (!queryResult.success) {
       return res.status(400).send(queryResult.error);
     }
 
+    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!paramsResult.success) {
+      return res.status(400).send(paramsResult.error);
+    }
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     const result = await route({
       // @ts-ignore
-      params: req.params,
-      query: queryResult.body,
+      params: paramsResult.data,
+      query: queryResult.data,
       headers: req.headers,
       req: req,
     });
@@ -134,13 +149,13 @@ const transformAppRouteMutationImplementation = (
 
   const callback = async (req: Request, res: Response) => {
     try {
-      const queryResult = checkQuerySchema(req.query, schema);
+      const queryResult = checkZodSchema(req.query, schema.query);
 
       if (!queryResult.success) {
         return res.status(400).send(queryResult.error);
       }
 
-      const bodyResult = checkBodySchema(req.body, schema);
+      const bodyResult = checkZodSchema(req.body, schema.body);
 
       if (!bodyResult.success) {
         return res.status(400).send(bodyResult.error);
@@ -150,8 +165,8 @@ const transformAppRouteMutationImplementation = (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         params: req.params,
-        body: bodyResult.body,
-        query: queryResult.body,
+        body: bodyResult.data,
+        query: queryResult.data,
         headers: req.headers,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

@@ -33,6 +33,7 @@ export const postsApi = c.router({
       }),
     },
   },
+
   updatePostThumbnail: {
     method: 'POST',
     path: '/posts/:id/thumbnail',

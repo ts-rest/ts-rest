@@ -29,7 +29,7 @@ export const apiBlog = c.router({
       201: PostSchema,
     },
     body: z.object({
-      title: z.string(),
+      title: z.string().transform((v) => v.trim()),
       content: z.string(),
       published: z.boolean().optional(),
       description: z.string().optional(),
@@ -85,5 +85,19 @@ export const apiBlog = c.router({
       search: z.string().optional(),
     }),
     summary: 'Get all posts',
+  },
+  testPathParams: {
+    method: 'GET',
+    path: '/test/:id/:name',
+    pathParams: z.object({
+      id: z.string().transform(Number),
+      name: z.string(),
+    }),
+    responses: {
+      200: z.object({
+        id: z.number(),
+        name: z.string(),
+      }),
+    },
   },
 });

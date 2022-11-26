@@ -1,10 +1,9 @@
-@host = http://localhost:3333
 @contentType = application/json
 
 ### Create Post
 POST {{host}}/posts HTTP/1.1
 content-type: application/json
-  
+
 {
   "title": "Post Title",
   "content": "Post Content"
@@ -13,15 +12,15 @@ content-type: application/json
 ### Create Posts (Bad Body)
 POST {{host}}/posts HTTP/1.1
 content-type: application/json
-  
+
 {
   "title": "Post Title"
 }
 
-  
+
 ### Get Posts
 GET {{host}}/posts HTTP/1.1
 
 ### Search Posts
-GET {{host}}/posts?search=REST HTTP/1.1
+GET {{host}}/posts?search=great&take=10&skip=0 HTTP/1.1
 
