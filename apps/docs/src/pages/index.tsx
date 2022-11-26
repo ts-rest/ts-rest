@@ -90,7 +90,7 @@ export default function Home(): JSX.Element {
         <div className="relative w-fit h-fit mx-auto">
           <a href="https://ts-rest.com/docs/quickstart" target="_blank">
             <button
-              className="transition-all text-gray-900 bg-emerald-400 cursor-pointer hover:bg-emerald-600 
+              className="transition-all text-gray-900 bg-emerald-400 cursor-pointer hover:bg-emerald-600
           p-4 rounded-xl appearance-none border-none text-2xl font-bold"
             >
               QuickStart Guide
@@ -115,7 +115,7 @@ export default function Home(): JSX.Element {
               <text
                 x="0"
                 y="18"
-                font-family="Virgil, Segoe UI Emoji"
+                font-family="Virgil"
                 font-size="20px"
                 className="fill-black dark:fill-white"
                 text-anchor="start"

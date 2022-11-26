@@ -23,7 +23,7 @@
 
 @font-face {
   font-family: 'Virgil';
-  src: url('/Virgil.woff2');
+  src: url('/Virgil.woff2') format('woff2');
 }
 
 :root {
