@@ -1,8 +1,7 @@
 import * as express from 'express';
 import cors = require('cors');
-import { apiBlog } from '@ts-rest/example-contracts';
+import { apiBlog, Post } from '@ts-rest/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
-import { PrismaClient } from '@prisma/client';
 import * as bodyParser from 'body-parser';
 import { serve, setup } from 'swagger-ui-express';
 import { generateOpenApi } from '@ts-rest/open-api';
@@ -15,11 +14,19 @@ app.use(bodyParser.json());
 
 const s = initServer();
 
-const prisma = new PrismaClient();
+const mockPostFixtureFactory = (partial: Partial<Post>): Post => ({
+  id: 'mock-id',
+  title: `Post`,
+  content: `Content`,
+  description: `Description`,
+  published: true,
+  tags: ['tag1', 'tag2'],
+  ...partial,
+});
 
 const completedRouter = s.router(apiBlog, {
   getPost: async ({ params: { id } }) => {
-    const post = await prisma.post.findUnique({ where: { id } });
+    const post = mockPostFixtureFactory({ id });
 
     if (!post) {
       return {
@@ -34,11 +41,10 @@ const completedRouter = s.router(apiBlog, {
     };
   },
   getPosts: async ({ query }) => {
-    const posts = await prisma.post.findMany({
-      where: {
-        ...(query.search ? { title: { contains: query.search } } : {}),
-      },
-    });
+    const posts = [
+      mockPostFixtureFactory({ id: '1' }),
+      mockPostFixtureFactory({ id: '2' }),
+    ];
 
     return {
       status: 200,
@@ -51,9 +57,7 @@ const completedRouter = s.router(apiBlog, {
     };
   },
   createPost: async ({ body }) => {
-    const post = await prisma.post.create({
-      data: body,
-    });
+    const post = mockPostFixtureFactory(body);
 
     return {
       status: 201,
@@ -61,12 +65,7 @@ const completedRouter = s.router(apiBlog, {
     };
   },
   updatePost: async ({ body, params }) => {
-    const post = await prisma.post.update({
-      where: {
-        id: params.id,
-      },
-      data: body,
-    });
+    const post = mockPostFixtureFactory(body);
 
     return {
       status: 200,
@@ -74,12 +73,6 @@ const completedRouter = s.router(apiBlog, {
     };
   },
   deletePost: async ({ params }) => {
-    await prisma.post.delete({
-      where: {
-        id: params.id,
-      },
-    });
-
     return {
       status: 200,
       body: { message: 'Post deleted' },

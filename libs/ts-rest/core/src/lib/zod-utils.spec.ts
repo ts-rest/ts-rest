@@ -1,4 +1,4 @@
-import { checkZodSchema } from '@ts-rest/core';
+import { checkZodSchema } from './zod-utils';
 import { z } from 'zod';
 
 describe('checkZodSchema', () => {
@@ -21,7 +21,7 @@ describe('checkZodSchema', () => {
       throw new Error('This should not happen');
     }
 
-    // @ts-expect-error
+    // @ts-expect-error - This is a test
     expect(result.error.issues).toHaveLength(1);
   });
 

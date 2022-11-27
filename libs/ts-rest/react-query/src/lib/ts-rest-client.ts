@@ -239,7 +239,7 @@ const createNewProxy = (router: AppRouter | AppRoute, args: ClientArgs) => {
   return new Proxy(
     {},
     {
-      get: (_, propKey): any => {
+      get: (_, propKey): unknown => {
         if (isAppRoute(router)) {
           switch (propKey) {
             case 'query':

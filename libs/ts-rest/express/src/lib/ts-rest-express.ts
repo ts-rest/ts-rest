@@ -160,8 +160,10 @@ const transformAppRouteMutationImplementation = (
         body: bodyResult.data,
         query: queryResult.data,
         headers: req.headers,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         files: req.files,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         file: req.file,
         req: req,
