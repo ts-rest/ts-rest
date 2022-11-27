@@ -50,11 +50,7 @@ export function getValue<
     .split(/[.[\]]/)
     .filter(Boolean)
     .reduce<GetFieldType<TData, TPath>>(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       (value, key) => (value as any)?.[key],
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       data as any
     );
 

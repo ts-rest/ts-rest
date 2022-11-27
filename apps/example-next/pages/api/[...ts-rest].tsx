@@ -61,6 +61,12 @@ const postsRouter = createNextRoute(apiNested.posts, {
       },
     };
   },
+  testPathParams: async (args) => {
+    return {
+      status: 200,
+      body: args.params,
+    };
+  },
 });
 
 const healthRouter = createNextRoute(apiNested.health, {

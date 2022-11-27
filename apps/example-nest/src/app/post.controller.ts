@@ -72,4 +72,11 @@ export class PostController implements ControllerShape {
 
     return { status: 200 as const, body: { message: 'Post Deleted' } };
   }
+
+  @Api(s.route.testPathParams)
+  async testPathParams(
+    @ApiDecorator() { params }: RouteShape['testPathParams']
+  ) {
+    return { status: 200 as const, body: params };
+  }
 }

@@ -14,12 +14,12 @@ import {
   checkZodSchema,
   getPathParamsFromArray,
   isAppRoute,
-  PathParamsFromUrl,
+  PathParamsWithCustomValidators,
   ZodInferOrType,
 } from '@ts-rest/core';
 
 type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
-  params: PathParamsFromUrl<T>;
+  params: PathParamsWithCustomValidators<T>;
   query: ZodInferOrType<T['query']>;
   req: NextApiRequest;
   res: NextApiResponse;
@@ -27,7 +27,7 @@ type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
 
 type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
   (args: {
-    params: PathParamsFromUrl<T>;
+    params: PathParamsWithCustomValidators<T>;
     body: ZodInferOrType<T['body']>;
     query: ZodInferOrType<T['query']>;
     req: NextApiRequest;

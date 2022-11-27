@@ -161,10 +161,10 @@ const transformAppRouteMutationImplementation = (
         query: queryResult.data,
         headers: req.headers,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
+        // @ts-ignore
         files: req.files,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
+        // @ts-ignore
         file: req.file,
         req: req,
       });
