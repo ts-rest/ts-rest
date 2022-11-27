@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.7.0
+
+### Minor Changes
+
+- d4d9be5: Add support for pathParams Zod verification
+- 8a19717: Add pathParams transformations
+
 ## 3.6.1
 
 ## 3.6.0

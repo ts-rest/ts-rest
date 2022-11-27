@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.7.0
+
+### Minor Changes
+
+- d4d9be5: Add support for pathParams Zod verification
+
 ## 3.6.1
 
 ## 3.6.0
