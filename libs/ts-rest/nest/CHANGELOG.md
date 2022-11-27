@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.7.0
+
+### Minor Changes
+
+- 8a19717: Add pathParams transformations
+
 ## 3.6.1
 
 ## 3.6.0
