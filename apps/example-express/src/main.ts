@@ -1,10 +1,12 @@
 import * as express from 'express';
-import cors = require('cors');
-import { apiBlog, Post } from '@ts-rest/example-contracts';
+import { apiBlog, contractTs } from '@ts-rest/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import * as bodyParser from 'body-parser';
 import { serve, setup } from 'swagger-ui-express';
 import { generateOpenApi } from '@ts-rest/open-api';
+import { mockPostFixtureFactory } from './fixtures';
+import cors = require('cors');
+import { tsRouter } from './ts-router';
 
 const app = express();
 
@@ -13,16 +15,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const s = initServer();
-
-const mockPostFixtureFactory = (partial: Partial<Post>): Post => ({
-  id: 'mock-id',
-  title: `Post`,
-  content: `Content`,
-  description: `Description`,
-  published: true,
-  tags: ['tag1', 'tag2'],
-  ...partial,
-});
 
 const completedRouter = s.router(apiBlog, {
   getPost: async ({ params: { id } }) => {
@@ -64,7 +56,7 @@ const completedRouter = s.router(apiBlog, {
       body: post,
     };
   },
-  updatePost: async ({ body, params }) => {
+  updatePost: async ({ body }) => {
     const post = mockPostFixtureFactory(body);
 
     return {
@@ -72,7 +64,7 @@ const completedRouter = s.router(apiBlog, {
       body: post,
     };
   },
-  deletePost: async ({ params }) => {
+  deletePost: async () => {
     return {
       status: 200,
       body: { message: 'Post deleted' },
@@ -98,6 +90,7 @@ apiDocs.get('/', setup(openapi));
 app.use('/api-docs', apiDocs);
 
 createExpressEndpoints(apiBlog, completedRouter, app);
+createExpressEndpoints(contractTs, tsRouter, app);
 
 const port = process.env.port || 3333;
 const server = app.listen(port, () => {

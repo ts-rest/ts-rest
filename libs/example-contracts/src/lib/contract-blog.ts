@@ -91,7 +91,6 @@ export const apiBlog = c.router({
     path: '/test/:id/:name',
     pathParams: z.object({
       id: z.string().transform(Number),
-      name: z.string(),
     }),
     responses: {
       200: z.object({
