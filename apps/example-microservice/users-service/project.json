@@ -1,4 +1,5 @@
 {
+  "name": "example-microservice-users-service",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/example-microservice/users-service/src",
   "projectType": "application",
