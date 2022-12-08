@@ -1,5 +1,10 @@
 # Custom Client
 
+:::info
+The `credentials` option has no effect when using a custom client. Make sure you handle credentials in your custom client
+(e.g., setting `withCredentials` in axios).
+:::
+
 ## Using Axios (custom api override)
 
 By default ts-rest ships with an incredibly simple fetch 
