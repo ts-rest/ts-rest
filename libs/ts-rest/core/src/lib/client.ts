@@ -74,6 +74,7 @@ export interface ClientArgs {
   baseUrl: string;
   baseHeaders: Record<string, string>;
   api?: ApiFetcher;
+  credentials?: RequestCredentials;
 }
 
 type ApiFetcher = (args: {
@@ -81,6 +82,7 @@ type ApiFetcher = (args: {
   method: string;
   headers: Record<string, string>;
   body: FormData | string | null | undefined;
+  credentials?: RequestCredentials;
 }) => Promise<{ status: number; body: unknown }>;
 
 export const defaultApi: ApiFetcher = async ({
@@ -88,8 +90,9 @@ export const defaultApi: ApiFetcher = async ({
   method,
   headers,
   body,
+  credentials,
 }) => {
-  const result = await fetch(path, { method, headers, body });
+  const result = await fetch(path, { method, headers, body, credentials });
 
   try {
     return {
@@ -130,6 +133,7 @@ export const fetchApi = (
     return apiFetcher({
       path,
       method: route.method,
+      credentials: clientArgs.credentials,
       headers: {
         ...clientArgs.baseHeaders,
       },
@@ -140,6 +144,7 @@ export const fetchApi = (
   return apiFetcher({
     path,
     method: route.method,
+    credentials: clientArgs.credentials,
     headers: {
       ...clientArgs.baseHeaders,
       'Content-Type': 'application/json',

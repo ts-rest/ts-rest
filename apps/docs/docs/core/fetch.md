@@ -55,3 +55,17 @@ const data: {
 }
 ```
 :::
+
+
+## Credentials (sending cookies)
+
+The `fetch()` function used by ts-rest does not send cookies in cross-origin requests by default unless the `credentials`
+option is set to `include`.
+
+```typescript
+const client = initClient(contract, {
+  baseUrl: "http://localhost:3333/api",
+  baseHeaders: {},
+  credentials: 'include'
+})
+```
