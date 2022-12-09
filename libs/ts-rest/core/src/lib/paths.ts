@@ -1,3 +1,5 @@
+import { stringify } from 'qs';
+
 /**
  * @params T - The URL e.g. /posts/:id
  * @params TAcc - Accumulator object
@@ -64,23 +66,6 @@ export const insertParamsIntoPath = <T extends string>({
  * @param query - The query e.g. { id: string }
  * @returns - The query url segment e.g. ?id=123
  */
-export const convertQueryParamsToUrlString = (
-  query: Record<string, string>
-) => {
-  const queryString =
-    typeof query === 'object'
-      ? Object.keys(query)
-          .map((key) => {
-            if (query[key] === undefined) {
-              return null;
-            }
-            return (
-              encodeURIComponent(key) + '=' + encodeURIComponent(query[key])
-            );
-          })
-          .filter(Boolean)
-          .join('&')
-      : '';
-
-  return queryString?.length > 0 ? '?' + queryString : '';
+export const convertQueryParamsToUrlString = (query: any) => {
+  return stringify(query, { indices: false, addQueryPrefix: true });
 };

@@ -27,6 +27,7 @@
     }
   },
   "peerDependencies": {
+    "qs": "6.x.x",
     "zod": "3.x.x"
   }
 }
