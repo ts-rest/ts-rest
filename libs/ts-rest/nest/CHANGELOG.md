@@ -1,5 +1,7 @@
 # @ts-rest/nest
 
+## 3.8.0
+
 ## 3.7.0
 
 ### Minor Changes
