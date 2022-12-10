@@ -1,5 +1,15 @@
 # @ts-rest/core
 
+## 3.10.0
+
+### Minor Changes
+
+- 046e498: Use Nest.js req.query and req.params instead of parsing from URL
+
+### Patch Changes
+
+- 35c64db: Move next lib utils out of @ts-rest/core to reduce bundle size
+
 ## 3.9.0
 
 ## 3.8.0
