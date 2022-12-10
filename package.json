@@ -12,7 +12,8 @@
     "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app,example-microservice-web-app-solid",
     "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch",
     "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts",
-    "postinstall": "pnpm prisma generate"
+    "postinstall": "pnpm prisma generate",
+    "build-test-all": "pnpm nx run-many --target=lint && pnpm nx run-many --target=test && pnpm nx run-many --target=build"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
