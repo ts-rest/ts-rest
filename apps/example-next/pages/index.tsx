@@ -15,7 +15,10 @@ export function Index() {
     api.getPosts.useInfiniteQuery(
       ['posts'],
       ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
-        query: { skip: pageParam.skip, take: pageParam.take },
+        query: {
+          skip: pageParam.skip,
+          take: pageParam.take,
+        },
       }),
       {
         getNextPageParam: (lastPage, allPages) =>
@@ -28,8 +31,6 @@ export function Index() {
         staleTime: 1000 * 5,
       }
     );
-
-  console.log(isPaused);
 
   if (isLoading) {
     return <div>Loading...</div>;

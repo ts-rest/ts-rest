@@ -67,6 +67,10 @@ export const insertParamsIntoPath = <T extends string>({
 export const convertQueryParamsToUrlString = (
   query: Record<string, unknown>
 ) => {
+  if (!query) {
+    return '';
+  }
+
   const queryString = encodeQueryParams(query);
   return queryString?.length > 0 ? '?' + queryString : '';
 };
