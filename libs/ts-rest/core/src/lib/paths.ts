@@ -67,19 +67,23 @@ export const insertParamsIntoPath = <T extends string>({
 export const convertQueryParamsToUrlString = (
   query: Record<string, unknown>
 ) => {
-  const tokens = Object.keys(query).flatMap((key) =>
-    tokeniseValue(key, query[key])
-  );
-
-  const queryString = tokens.join('&');
-
+  const queryString = encodeQueryParams(query);
   return queryString?.length > 0 ? '?' + queryString : '';
 };
 
+export const encodeQueryParams = (query: Record<string, unknown>) => {
+  return Object.keys(query)
+    .flatMap((key) => tokeniseValue(key, query[key]))
+    .map((pair) => {
+      const [key, ...rhs] = pair.split('=');
+      return `${key}=${rhs.map(encodeURIComponent).join('=')}`;
+    })
+    .join('&');
+};
+
 const tokeniseValue = (key: string, value: unknown): string[] => {
-  // if array, recurse
   if (Array.isArray(value)) {
-    return value.flatMap((v) => tokeniseValue(key, v));
+    return value.flatMap((v, idx) => tokeniseValue(`${key}[${idx}]`, v));
   }
 
   if (value instanceof Date) {
@@ -94,7 +98,6 @@ const tokeniseValue = (key: string, value: unknown): string[] => {
     return [];
   }
 
-  // if object, recurse
   if (typeof value === 'object') {
     return Object.keys(value).flatMap((k) =>
       // @ts-expect-error - accessing object keys

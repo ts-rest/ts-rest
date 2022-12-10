@@ -26,5 +26,5 @@ GET {{host}}/posts?search=great&take=10&skip=0 HTTP/1.1
 
 
 ### Test
-GET {{host}}/test?skip=0&take=10&boolean=true HTTP/1.1
+GET {{host}}/test?nested[array][0]=1&nested[array][1]=2&nested[array][2]=3&nested[id]=1&nested[nestedNested][id]=2 HTTP/1.1
 
