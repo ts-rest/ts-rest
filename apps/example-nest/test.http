@@ -1,0 +1,9 @@
+@host = http://localhost:3334
+@contentType = application/json
+
+  
+### Test
+GET {{host}}/test?skip=0&take=10&filters[status]=draft&filters[status]=submitted HTTP/1.1
+
+### Test
+GET {{host}}/test?input=%7B%22skip%22%3A%220%22%2C%22take%22%3A%2210%22%2C%22filters%22%3A%7B%22status%22%3A%5B%22draft%22%2C%22submitted%22%5D%7D%7D HTTP/1.1

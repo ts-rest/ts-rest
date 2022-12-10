@@ -24,3 +24,7 @@ GET {{host}}/posts HTTP/1.1
 ### Search Posts
 GET {{host}}/posts?search=great&take=10&skip=0 HTTP/1.1
 
+
+### Test
+GET {{host}}/test?skip=0&take=10&boolean=true HTTP/1.1
+

@@ -58,3 +58,49 @@ export const insertParamsIntoPath = <T extends string>({
     })
     .replace(/\/\//g, '/');
 };
+
+/**
+ *
+ * @param query - Any JSON object
+ * @returns - The query url segment, using explode array syntax, and deep object syntax
+ */
+export const convertQueryParamsToUrlString = (
+  query: Record<string, unknown>
+) => {
+  const tokens = Object.keys(query).flatMap((key) =>
+    tokeniseValue(key, query[key])
+  );
+
+  const queryString = tokens.join('&');
+
+  return queryString?.length > 0 ? '?' + queryString : '';
+};
+
+const tokeniseValue = (key: string, value: unknown): string[] => {
+  // if array, recurse
+  if (Array.isArray(value)) {
+    return value.flatMap((v) => tokeniseValue(key, v));
+  }
+
+  if (value instanceof Date) {
+    return [`${key}=${value.toISOString()}`];
+  }
+
+  if (value === null) {
+    return [`${key}=`];
+  }
+
+  if (value === undefined) {
+    return [];
+  }
+
+  // if object, recurse
+  if (typeof value === 'object') {
+    return Object.keys(value).flatMap((k) =>
+      // @ts-expect-error - accessing object keys
+      tokeniseValue(`${key}[${k}]`, value[k])
+    );
+  }
+
+  return [`${key}=${value}`];
+};

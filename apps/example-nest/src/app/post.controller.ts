@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
 import { Api, ApiDecorator, initNestServer } from '@ts-rest/nest';
 import { PostService } from './post.service';
@@ -10,6 +10,11 @@ type RouteShape = typeof s.routeShapes;
 @Controller()
 export class PostController implements ControllerShape {
   constructor(private readonly postService: PostService) {}
+
+  @Get('/test')
+  test(@Query() queryParams: any) {
+    return { queryParams };
+  }
 
   @Api(s.route.getPosts)
   async getPosts(
