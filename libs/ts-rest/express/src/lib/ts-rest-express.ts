@@ -174,9 +174,11 @@ const transformAppRouteMutationImplementation = (
         body: bodyResult.data,
         query: queryResult.data,
         headers: req.headers,
-        // @ts-expect-error - req.files is not defined in the types
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         files: req.files,
-        // @ts-expect-error - req.file is not defined in the types
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         file: req.file,
         req: req,
       });
