@@ -47,7 +47,8 @@ const tokeniseValue = (key: string, value: unknown): string[] => {
 
   if (typeof value === 'object') {
     return Object.keys(value).flatMap((k) =>
-      // @ts-expect-error - accessing object keys
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       tokeniseValue(`${key}[${k}]`, value[k])
     );
   }

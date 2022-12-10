@@ -11,7 +11,7 @@ export const api = initQueryClient(apiBlog, {
 export function Index() {
   const PAGE_SIZE = 5;
 
-  const { isLoading, data, hasNextPage, fetchNextPage, isPaused } =
+  const { isLoading, data, hasNextPage, fetchNextPage } =
     api.getPosts.useInfiniteQuery(
       ['posts'],
       ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
