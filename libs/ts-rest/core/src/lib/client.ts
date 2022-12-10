@@ -152,9 +152,9 @@ export const fetchApi = (
 };
 
 export const getCompleteUrl = (
-  query: any,
+  query: unknown,
   baseUrl: string,
-  params: any,
+  params: unknown,
   route: AppRoute
 ) => {
   const path = insertParamsIntoPath({
