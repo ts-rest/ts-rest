@@ -1,0 +1,27 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "Gabrola",
+      "name": "Youssef Gaber",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1728215?v=4",
+      "profile": "http://gabro.la",
+      "contributions": [
+        "code",
+        "ideas",
+        "test"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "ts-rest",
+  "projectOwner": "ts-rest"
+}
