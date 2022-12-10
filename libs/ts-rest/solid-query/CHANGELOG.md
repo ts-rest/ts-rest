@@ -1,5 +1,13 @@
 # @ts-rest/solid-query
 
+## 3.9.0
+
+## 3.8.0
+
+### Patch Changes
+
+- 1b3faaf: Use z.input for body and query types for clients
+
 ## 3.7.0
 
 ## 3.6.1

@@ -17,6 +17,18 @@ const postsRouter = c.router({
       200: c.response<Post | null>(),
     },
   },
+  findPosts: {
+    method: 'GET',
+    path: `/posts`,
+    query: z.object({
+      search: z.string().optional(),
+      sortBy: z.enum(['title', 'date']).default('date').optional(),
+      sort: z.enum(['asc', 'desc']).default('asc').optional(),
+    }),
+    responses: {
+      200: c.response<Post[]>(),
+    },
+  },
   createPost: {
     method: 'POST',
     path: '/posts',
@@ -29,6 +41,17 @@ const postsRouter = c.router({
       published: z.boolean().optional(),
     }),
   },
+  comments: c.router({
+    getPostComments: {
+      method: 'GET',
+      path: '/posts/:id/comments',
+      responses: {
+        200: z.object({
+          comments: z.array(z.string()),
+        }),
+      },
+    },
+  }),
 });
 
 const router = c.router({
@@ -55,7 +78,7 @@ const expectedApiDoc = {
       get: {
         deprecated: undefined,
         description: "Check the application's health status",
-        parameters: undefined,
+        parameters: [],
         responses: {
           '200': {
             description: '200',
@@ -66,10 +89,46 @@ const expectedApiDoc = {
       },
     },
     '/posts': {
+      get: {
+        deprecated: undefined,
+        description: undefined,
+        parameters: [
+          {
+            name: 'query',
+            in: 'query',
+            schema: {
+              additionalProperties: false,
+              properties: {
+                search: {
+                  type: 'string',
+                },
+                sortBy: {
+                  type: 'string',
+                  default: 'date',
+                  enum: ['title', 'date'],
+                },
+                sort: {
+                  type: 'string',
+                  default: 'asc',
+                  enum: ['asc', 'desc'],
+                },
+              },
+              type: 'object',
+            },
+          },
+        ],
+        responses: {
+          '200': {
+            description: '200',
+          },
+        },
+        summary: undefined,
+        tags: ['posts'],
+      },
       post: {
         deprecated: true,
         description: undefined,
-        parameters: undefined,
+        parameters: [],
         requestBody: {
           content: {
             'application/json': {
@@ -119,6 +178,43 @@ const expectedApiDoc = {
         tags: ['posts'],
       },
     },
+    '/posts/{id}/comments': {
+      get: {
+        deprecated: undefined,
+        description: undefined,
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+          },
+        ],
+        responses: {
+          '200': {
+            content: {
+              'application/json': {
+                schema: {
+                  additionalProperties: false,
+                  properties: {
+                    comments: {
+                      items: {
+                        type: 'string',
+                      },
+                      type: 'array',
+                    },
+                  },
+                  required: ['comments'],
+                  type: 'object',
+                },
+              },
+            },
+            description: '200',
+          },
+        },
+        summary: undefined,
+        tags: ['posts', 'comments'],
+      },
+    },
   },
 };
 
@@ -151,6 +247,10 @@ describe('ts-rest-open-api', () => {
             },
           },
           '/posts': {
+            get: {
+              ...expectedApiDoc.paths['/posts'].get,
+              operationId: 'findPosts',
+            },
             post: {
               ...expectedApiDoc.paths['/posts'].post,
               operationId: 'createPost',
@@ -160,6 +260,12 @@ describe('ts-rest-open-api', () => {
             get: {
               ...expectedApiDoc.paths['/posts/{id}'].get,
               operationId: 'getPost',
+            },
+          },
+          '/posts/{id}/comments': {
+            get: {
+              ...expectedApiDoc.paths['/posts/{id}/comments'].get,
+              operationId: 'getPostComments',
             },
           },
         },

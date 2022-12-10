@@ -1,4 +1,5 @@
 {
+  "name": "ts-rest-solid-query",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/ts-rest/solid-query/src",
   "projectType": "library",

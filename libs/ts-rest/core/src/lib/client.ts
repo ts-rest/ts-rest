@@ -13,7 +13,7 @@ type RecursiveProxyObj<T extends AppRouter> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.infer<T> : T;
+type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
 
 /**
  * Extract the path params from the path in the contract

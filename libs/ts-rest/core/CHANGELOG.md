@@ -1,5 +1,17 @@
 # @ts-rest/core
 
+## 3.9.0
+
+## 3.8.0
+
+### Minor Changes
+
+- 59b8d29: Add credentials option for fetch client
+
+### Patch Changes
+
+- 1b3faaf: Use z.input for body and query types for clients
+
 ## 3.7.0
 
 ### Minor Changes

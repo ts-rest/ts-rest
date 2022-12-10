@@ -1,0 +1,64 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "Gabrola",
+      "name": "Youssef Gaber",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1728215?v=4",
+      "profile": "http://gabro.la",
+      "contributions": [
+        "code",
+        "ideas",
+        "test"
+      ]
+    },
+    {
+      "login": "netiperher",
+      "name": "Per Hermansson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/45091747?v=4",
+      "profile": "https://github.com/netiperher",
+      "contributions": [
+        "doc",
+        "code"
+      ]
+    },
+    {
+      "login": "ghoullier",
+      "name": "Grégory Houllier",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2315749?v=4",
+      "profile": "https://ghoullier.deno.dev/",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "michaelangrivera",
+      "name": "Michael Angelo ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55844504?v=4",
+      "profile": "http://michaelangrivera.com",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "cyrus-za",
+      "name": "Pieter Venter",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1845861?v=4",
+      "profile": "https://pieter.venter.pro",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "ts-rest",
+  "projectOwner": "ts-rest"
+}

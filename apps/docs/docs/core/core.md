@@ -11,6 +11,7 @@ export const contract = c.router({
   createPost: {
     method: 'POST',
     path: '/posts',
+    //     ^ Note! This is the full path on the server, not just the sub-path of a route
     responses: {
       201: c.response<Post>(),
     },
@@ -84,7 +85,7 @@ export const contract = c.router({
       /**
        * @type {string} - UTC timestamp in milliseconds
        */
-      beginDate: z.string(), 
+      beginDate: z.string(),
       /**
        * @type {string} - UTC timestamp in milliseconds
        */
@@ -93,5 +94,4 @@ export const contract = c.router({
     summary: 'Get posts within time-range',
   },
 });
-
 ```

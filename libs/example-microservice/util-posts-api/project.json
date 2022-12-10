@@ -1,4 +1,5 @@
 {
+  "name": "example-microservice-util-posts-api",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/example-microservice/util-posts-api/src",
   "projectType": "library",

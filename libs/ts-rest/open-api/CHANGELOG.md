@@ -1,5 +1,13 @@
 # @ts-rest/open-api
 
+## 3.9.0
+
+## 3.8.0
+
+### Patch Changes
+
+- c716ab5: Fixed missing query parameters in generated OpenAPI
+
 ## 3.7.0
 
 ## 3.6.1

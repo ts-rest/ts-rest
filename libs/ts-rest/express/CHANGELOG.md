@@ -1,5 +1,14 @@
 # @ts-rest/express
 
+## 3.9.0
+
+### Minor Changes
+
+- 020a8c5: Allow optional [ts-rest] ... logging for express endpoints
+- 020a8c5: Pass express errors to next() rather than catching them and handling with ts-rest
+
+## 3.8.0
+
 ## 3.7.0
 
 ### Minor Changes
