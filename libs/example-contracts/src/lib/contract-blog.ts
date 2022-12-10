@@ -80,8 +80,8 @@ export const apiBlog = c.router({
       }),
     },
     query: z.object({
-      take: z.string().transform(Number),
-      skip: z.string().transform(Number),
+      take: z.string().default('20').transform(Number),
+      skip: z.string().default('0').transform(Number),
       search: z.string().optional(),
     }),
     summary: 'Get all posts',

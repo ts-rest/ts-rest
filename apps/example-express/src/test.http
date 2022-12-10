@@ -1,4 +1,5 @@
 @contentType = application/json
+@host = http://localhost:3333
 
 ### Create Post
 POST {{host}}/posts HTTP/1.1
