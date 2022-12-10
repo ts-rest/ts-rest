@@ -94,9 +94,14 @@ const recursivelyApplyExpressRouter = (
 const transformAppRouteQueryImplementation = (
   route: AppRouteQueryImplementation<any>,
   schema: AppRouteQuery,
-  app: IRouter
+  app: IRouter,
+  options: {
+    logInitialization: boolean;
+  }
 ) => {
-  console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
+  if (options.logInitialization) {
+    console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
+  }
 
   app.get(schema.path, async (req, res) => {
     const queryResult = checkZodSchema(req.query, schema.query);
@@ -127,44 +132,45 @@ const transformAppRouteQueryImplementation = (
 const transformAppRouteMutationImplementation = (
   route: AppRouteMutationImplementation<any>,
   schema: AppRouteMutation,
-  app: IRouter
+  app: IRouter,
+  options: {
+    logInitialization: boolean;
+  }
 ) => {
-  console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
+  if (options.logInitialization) {
+    console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
+  }
 
   const method = schema.method;
 
-  const callback = async (req: Request, res: Response) => {
-    try {
-      const queryResult = checkZodSchema(req.query, schema.query);
+    const queryResult = checkZodSchema(req.query, schema.query);
 
-      if (!queryResult.success) {
-        return res.status(400).send(queryResult.error);
-      }
+    if (!queryResult.success) {
+      return res.status(400).send(queryResult.error);
+    }
 
-      const bodyResult = checkZodSchema(req.body, schema.body);
+    const bodyResult = checkZodSchema(req.body, schema.body);
 
-      if (!bodyResult.success) {
-        return res.status(400).send(bodyResult.error);
-      }
+    if (!bodyResult.success) {
+      return res.status(400).send(bodyResult.error);
+    }
 
-      const paramsResult = checkZodSchema(req.params, schema.pathParams, {
-        passThroughExtraKeys: true,
-      });
+    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
+      passThroughExtraKeys: true,
+    });
 
-      if (!paramsResult.success) {
-        return res.status(400).send(paramsResult.error);
-      }
+    if (!paramsResult.success) {
+      return res.status(400).send(paramsResult.error);
+    }
 
       const result = await route({
         params: paramsResult.data,
         body: bodyResult.data,
         query: queryResult.data,
         headers: req.headers,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error - req.files is not defined in the types
         files: req.files,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error - req.file is not defined in the types
         file: req.file,
         req: req,
       });
