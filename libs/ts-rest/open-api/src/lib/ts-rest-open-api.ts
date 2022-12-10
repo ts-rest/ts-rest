@@ -40,13 +40,13 @@ const getPathsFromRouter = (
   return paths;
 };
 
-const getResponseSchemaFromZod = (response: unknown) => {
-  const isZodObj = isZodObject(response);
+const getJsonSchemaFromZod = (zodObject: unknown) => {
+  const isZodObj = isZodObject(zodObject);
 
   if (!isZodObj) {
     return null;
   }
-  const schema = zodToJsonSchema(response, {
+  const schema = zodToJsonSchema(zodObject, {
     name: 'zodObject',
     target: 'openApi3',
   });
@@ -86,15 +86,17 @@ export const generateOpenApi = (
       .match(/{[^}]+}/g)
       ?.map((param) => param.slice(1, -1));
 
+    const querySchema = getJsonSchemaFromZod(path.route.query);
+
     const bodySchema =
       path.route?.method !== 'GET'
-        ? getResponseSchemaFromZod(path.route.body)
+        ? getJsonSchemaFromZod(path.route.body)
         : null;
 
     const responses = Object.keys(path.route.responses).reduce((acc, key) => {
       const keyAsNumber = Number(key);
 
-      const responseSchema = getResponseSchemaFromZod(
+      const responseSchema = getJsonSchemaFromZod(
         path.route.responses[keyAsNumber]
       );
 
@@ -120,11 +122,24 @@ export const generateOpenApi = (
       summary: path.route.summary,
       deprecated: path.route.deprecated,
       tags: path.paths,
-      parameters: paramsFromPath?.map((param) => ({
-        name: param,
-        in: 'path',
-        required: true,
-      })),
+      parameters: [
+        ...(paramsFromPath
+          ? paramsFromPath.map((param) => ({
+              name: param,
+              in: 'path' as const,
+              required: true,
+            }))
+          : []),
+        ...(querySchema
+          ? [
+              {
+                name: 'query',
+                in: 'query' as const,
+                schema: querySchema,
+              },
+            ]
+          : []),
+      ],
       ...(options.setOperationId ? { operationId: path.id } : {}),
       ...(bodySchema
         ? {
