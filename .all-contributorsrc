@@ -16,6 +16,15 @@
         "ideas",
         "test"
       ]
+    },
+    {
+      "login": "michaelangrivera",
+      "name": "Michael Angelo ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55844504?v=4",
+      "profile": "http://michaelangrivera.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
