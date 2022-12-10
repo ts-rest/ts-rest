@@ -1,60 +1,55 @@
-const primitiveToQueryParam = (
-  keyParts: string[],
-  val: number | boolean | string | null
-): string => {
-  const paramKey =
-    keyParts[0] +
-    keyParts
-      .slice(1)
-      .map((keyPart) => `[${keyPart}]`)
-      .join('');
-
-  const paramValue = val === null ? '' : val;
-
-  return `${encodeURIComponent(paramKey)}=${encodeURIComponent(paramValue)}`;
-};
-
-const objectEntryToQueryParams = (
-  key: string,
-  value: any,
-  parents: string[]
-) => {
-  if (value === undefined) {
-    return null;
-  }
-
-  const paramKeyParts = [...parents, key];
-
-  if (Array.isArray(value)) {
-    return value.map((item) => anyToQueryParams(paramKeyParts, item));
-  }
-
-  return anyToQueryParams(paramKeyParts, value);
-};
-
-const anyToQueryParams = (keyParts: string[], obj: any): any[] => {
-  if (typeof obj !== 'object' || obj === null) {
-    return [primitiveToQueryParam(keyParts, obj)];
-  }
-
-  return Object.entries(obj).map(([key, value]: [string, any]) =>
-    objectEntryToQueryParams(key, value, keyParts)
-  );
-};
-
 /**
  *
- * @param query - The query e.g. { id: string }
- * @returns - The query url segment e.g. ?id=123
+ * @param query - Any JSON object
+ * @returns - The query url segment, using explode array syntax, and deep object syntax
  */
-export const convertQueryParamsToUrlString = (query: any) => {
-  if (typeof query !== 'object' || query === null) {
+export const convertQueryParamsToUrlString = (query: unknown) => {
+  const queryString = encodeQueryParams(query);
+  return queryString?.length > 0 ? '?' + queryString : '';
+};
+
+export const encodeQueryParams = (query: unknown) => {
+  if (!query) {
     return '';
   }
 
-  const queryParams = anyToQueryParams([], query).flat(Infinity);
+  return (
+    Object.keys(query)
+      // @ts-expect-error - accessing object keys
+      .flatMap((key) => tokeniseValue(key, query[key]))
+      .map((pair) => {
+        const [key, ...rhs] = pair.split('=');
+        return `${encodeURIComponent(key)}=${rhs
+          .map(encodeURIComponent)
+          .join('=')}`;
+      })
+      .join('&')
+  );
+};
 
-  return queryParams.length > 0
-    ? '?' + queryParams.filter(Boolean).join('&')
-    : '';
+const tokeniseValue = (key: string, value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value.flatMap((v, idx) => tokeniseValue(`${key}[${idx}]`, v));
+  }
+
+  if (value instanceof Date) {
+    return [`${key}=${value.toISOString()}`];
+  }
+
+  if (value === null) {
+    return [`${key}=`];
+  }
+
+  if (value === undefined) {
+    return [];
+  }
+
+  if (typeof value === 'object') {
+    return Object.keys(value).flatMap((k) =>
+      // @ts-expect-error - accessing object keys
+      tokeniseValue(`${key}[${k}]`, value[k])
+    );
+  }
+
+  return [`${key}=${value}`];
 };

@@ -1,4 +1,5 @@
-import { convertQueryParamsToUrlString } from './query';
+import { convertQueryParamsToUrlString, encodeQueryParams } from './query';
+import * as qs from 'qs';
 
 describe('convertQueryParamsToUrlString', () => {
   it('should convert query params to url string', () => {
@@ -19,6 +20,24 @@ describe('convertQueryParamsToUrlString', () => {
     expect(result).toBe('');
   });
 
+  it('should convert query params to url string with primitives', () => {
+    expect(convertQueryParamsToUrlString(null)).toBe('');
+    expect(convertQueryParamsToUrlString(undefined)).toBe('');
+    expect(convertQueryParamsToUrlString(true)).toBe('');
+    expect(convertQueryParamsToUrlString(123)).toBe('');
+  });
+});
+
+describe('encodeQueryParams', () => {
+  it('should be empty if no params', () => {
+    const query = {};
+
+    const result = encodeQueryParams(query);
+
+    expect(result).toBe('');
+    expect(qs.stringify(query)).toBe(result);
+  });
+
   it('should convert query params to url string with many params', () => {
     const query = {
       id: '1',
@@ -26,108 +45,163 @@ describe('convertQueryParamsToUrlString', () => {
       commentId2: '3',
     };
 
-    const result = convertQueryParamsToUrlString(query);
+    const result = encodeQueryParams(query);
 
-    expect(result).toBe('?id=1&commentId=2&commentId2=3');
+    expect(result).toBe(encodeURI('id=1&commentId=2&commentId2=3'));
+
+    expect(qs.parse(result)).toEqual({
+      id: '1',
+      commentId: '2',
+      commentId2: '3',
+    });
+    expect(qs.stringify(query)).toBe(result);
   });
 
-  it('should convert query params to url string with array params', () => {
+  it('should explode arrays', () => {
     const query = {
-      colors: ['blue', 'green'],
+      array: ['1', '2', '3'],
+      id: '1',
     };
 
-    const result = convertQueryParamsToUrlString(query);
+    const result = encodeQueryParams(query);
 
-    expect(result).toBe('?colors=blue&colors=green');
+    expect(result).toBe(encodeURI('array[0]=1&array[1]=2&array[2]=3&id=1'));
+
+    expect(qs.parse(result)).toEqual({
+      array: ['1', '2', '3'],
+      id: '1',
+    });
+    expect(qs.stringify(query)).toBe(result);
   });
 
-  it('should convert query params to url string with array objects', () => {
+  it('should explode nested query strings with arrays and other keys', () => {
     const query = {
-      colors: [{ foo: 'blue' }, { foo: 'green' }],
-    };
-
-    const result = convertQueryParamsToUrlString(query);
-
-    expect(result).toBe(encodeURI('?colors[foo]=blue&colors[foo]=green'));
-  });
-
-  it('should convert query params to url string with nested object', () => {
-    const query = {
-      color: {
-        r: 100,
-        g: 150,
-        b: 200,
-      },
-    };
-
-    const result = convertQueryParamsToUrlString(query);
-
-    expect(result).toBe(encodeURI(`?color[r]=100&color[g]=150&color[b]=200`));
-  });
-
-  it('should convert query params to url string with deeply nested null', () => {
-    const query = {
-      colors: {
-        blue: {
-          r: null,
-          g: 0,
-          b: 255,
+      nested: {
+        array: ['1', '2', '3'],
+        id: '1',
+        nestedNested: {
+          id: '2',
         },
       },
     };
 
-    const result = convertQueryParamsToUrlString(query);
+    const result = encodeQueryParams(query);
 
     expect(result).toBe(
-      encodeURI(`?colors[blue][r]=&colors[blue][g]=0&colors[blue][b]=255`)
+      encodeURI(
+        'nested[array][0]=1&nested[array][1]=2&nested[array][2]=3&nested[id]=1&nested[nestedNested][id]=2'
+      )
     );
+
+    expect(qs.parse(result)).toEqual({
+      nested: {
+        array: ['1', '2', '3'],
+        id: '1',
+        nestedNested: {
+          id: '2',
+        },
+      },
+    });
+    expect(qs.stringify(query)).toBe(result);
   });
 
-  it('should convert query params to url string with null values', () => {
+  it('should work for null, undefined, and NaN', () => {
     const query = {
-      foo: null,
-      bar: 'baz',
+      null: null,
+      undefined: undefined,
+      nan: NaN,
     };
 
-    const result = convertQueryParamsToUrlString(query);
+    const result = encodeQueryParams(query);
 
-    expect(result).toBe(encodeURI(`?foo=&bar=baz`));
+    expect(result).toBe(encodeURI('null=&nan=NaN'));
+
+    // qs compatibility
+    expect(qs.parse(result)).toEqual({
+      null: '',
+      nan: 'NaN',
+    });
+    expect(qs.stringify(query)).toBe(result);
   });
 
-  it('should convert query params to url string with undefined values', () => {
+  it('should format dates as ISO strings', () => {
     const query = {
-      foo: undefined,
-      bar: 'baz',
+      date: new Date('2020-01-01'),
     };
 
-    const result = convertQueryParamsToUrlString(query);
+    const result = encodeQueryParams(query);
 
-    expect(result).toBe(encodeURI(`?bar=baz`));
+    expect(result).toBe('date=2020-01-01T00%3A00%3A00.000Z');
+    expect(qs.parse(result)).toEqual({
+      date: '2020-01-01T00:00:00.000Z',
+    });
+    expect(qs.stringify(query)).toBe(result);
   });
 
-  it('should convert query params to url string with NaN values', () => {
+  it('should parse booleans', () => {
     const query = {
-      foo: NaN,
-      bar: 'baz',
+      bool: true,
+      false: false,
     };
 
-    const result = convertQueryParamsToUrlString(query);
+    const result = encodeQueryParams(query);
 
-    expect(result).toBe(encodeURI(`?foo=NaN&bar=baz`));
+    expect(result).toBe(encodeURI('bool=true&false=false'));
+    expect(qs.parse(result)).toEqual({
+      bool: 'true',
+      false: 'false',
+    });
+    expect(qs.stringify(query)).toBe(result);
   });
 
-  it('should convert query params to url string with array query', () => {
-    const query = ['foo', 'bar'];
+  it('should parse numbers', () => {
+    const query = {
+      number: 1,
+      float: 1.1,
+    };
 
-    const result = convertQueryParamsToUrlString(query);
+    const result = encodeQueryParams(query);
 
-    expect(result).toBe(encodeURI(`?0=foo&1=bar`));
+    expect(result).toBe(encodeURI('number=1&float=1.1'));
+    expect(qs.parse(result)).toEqual({
+      number: '1',
+      float: '1.1',
+    });
+    expect(qs.stringify(query)).toBe(result);
   });
 
-  it('should convert query params to url string with primitives', () => {
-    expect(convertQueryParamsToUrlString(null)).toBe('');
-    expect(convertQueryParamsToUrlString(undefined)).toBe('');
-    expect(convertQueryParamsToUrlString(true)).toBe('');
-    expect(convertQueryParamsToUrlString(123)).toBe('');
+  it('should parse objects', () => {
+    const query = {
+      object: { id: '1' },
+    };
+
+    const result = encodeQueryParams(query);
+    expect(result).toBe(encodeURI('object[id]=1'));
+    expect(qs.parse(result)).toEqual(query);
+    expect(qs.stringify(query)).toBe(result);
+  });
+
+  it('should parse with arrays of objects', () => {
+    const query = {
+      array: [{ id: '1' }, { id: '2' }],
+    };
+
+    const result = encodeQueryParams(query);
+
+    expect(result).toBe(encodeURI('array[0][id]=1&array[1][id]=2'));
+    expect(qs.parse(result)).toEqual(query);
+    expect(qs.stringify(query)).toBe(result);
+  });
+
+  it('should parse arrays in arrays', () => {
+    const query = {
+      array: [['1', '2']],
+    };
+
+    const result = encodeQueryParams(query);
+
+    expect(result).toBe(encodeURI('array[0][0]=1&array[0][1]=2'));
+    expect(qs.parse(result)).toEqual(query);
+    expect(qs.stringify(query)).toBe(result);
   });
 });
