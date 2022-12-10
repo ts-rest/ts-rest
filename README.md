@@ -59,7 +59,7 @@ Create a contract, implement it on your server then consume it in your client. I
 
 ## Stargazers over Time ⭐️
 
-[![Stargazers over time](https://starchart.cc/ts-rest/ts-rest.svg)](https://starchart.cc/pragmaticivan/nestjs-otel)
+[![Stargazers over time](https://starchart.cc/ts-rest/ts-rest.svg)](https://starchart.cc/ts-rest/ts-rest)
 
 ## Contributors ✨
 
