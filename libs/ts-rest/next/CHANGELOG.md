@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.10.0
+
+### Patch Changes
+
+- 35c64db: Move next lib utils out of @ts-rest/core to reduce bundle size
+
 ## 3.9.0
 
 ## 3.8.0

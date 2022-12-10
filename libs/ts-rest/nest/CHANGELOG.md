@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.10.0
+
+### Minor Changes
+
+- 046e498: Use Nest.js req.query and req.params instead of parsing from URL
+
 ## 3.9.0
 
 ## 3.8.0
