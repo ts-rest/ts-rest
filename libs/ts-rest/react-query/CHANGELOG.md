@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.10.1
+
+### Patch Changes
+
+- 7f76c10: Fix missing typings due to new declaration file path
+
 ## 3.10.0
 
 ## 3.9.0
