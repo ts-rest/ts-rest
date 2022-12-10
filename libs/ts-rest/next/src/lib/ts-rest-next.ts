@@ -12,11 +12,11 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
-  getPathParamsFromArray,
   isAppRoute,
   PathParamsWithCustomValidators,
   ZodInferOrType,
 } from '@ts-rest/core';
+import { getPathParamsFromArray } from './path-utils';
 
 type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
   params: PathParamsWithCustomValidators<T>;

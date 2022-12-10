@@ -1,20 +1,4 @@
-import { AppRoute } from './dsl';
-
-/**
- * Extract path params from url
- * @param url e.g. /posts/1/comments/2?unwanted-query-param=true
- * @param appRoute
- * @returns
- */
-export const getPathParamsFromUrl = (
-  url: string,
-  appRoute: AppRoute
-): Record<string, string> => {
-  const baseUrl = url.split('?')[0];
-  const baseUrlAsArr = baseUrl.split('/').slice(1);
-
-  return getPathParamsFromArray(baseUrlAsArr, appRoute);
-};
+import { AppRoute } from '@ts-rest/core';
 
 /**
  * Get path params from array of url segments

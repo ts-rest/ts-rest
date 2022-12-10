@@ -11,11 +11,14 @@ export const api = initQueryClient(apiBlog, {
 export function Index() {
   const PAGE_SIZE = 5;
 
-  const { isLoading, data, hasNextPage, fetchNextPage, isPaused } =
+  const { isLoading, data, hasNextPage, fetchNextPage } =
     api.getPosts.useInfiniteQuery(
       ['posts'],
       ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
-        query: { skip: pageParam.skip, take: pageParam.take },
+        query: {
+          skip: pageParam.skip,
+          take: pageParam.take,
+        },
       }),
       {
         getNextPageParam: (lastPage, allPages) =>
@@ -28,8 +31,6 @@ export function Index() {
         staleTime: 1000 * 5,
       }
     );
-
-  console.log(isPaused);
 
   if (isLoading) {
     return <div>Loading...</div>;

@@ -58,29 +58,3 @@ export const insertParamsIntoPath = <T extends string>({
     })
     .replace(/\/\//g, '/');
 };
-
-/**
- *
- * @param query - The query e.g. { id: string }
- * @returns - The query url segment e.g. ?id=123
- */
-export const convertQueryParamsToUrlString = (
-  query: Record<string, string>
-) => {
-  const queryString =
-    typeof query === 'object'
-      ? Object.keys(query)
-          .map((key) => {
-            if (query[key] === undefined) {
-              return null;
-            }
-            return (
-              encodeURIComponent(key) + '=' + encodeURIComponent(query[key])
-            );
-          })
-          .filter(Boolean)
-          .join('&')
-      : '';
-
-  return queryString?.length > 0 ? '?' + queryString : '';
-};

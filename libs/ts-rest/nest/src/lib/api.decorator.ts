@@ -6,24 +6,26 @@ import {
   Delete,
   ExecutionContext,
   Get,
-  HttpException,
   Injectable,
   NestInterceptor,
   Patch,
   Post,
   Put,
+  SetMetadata,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   AppRoute,
   AppRouteMutation,
   checkZodSchema,
-  getPathParamsFromUrl,
   PathParamsWithCustomValidators,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
 import { map, Observable } from 'rxjs';
+import type { Request, Response } from 'express-serve-static-core';
+
+const tsRestAppRouteMetadataKey = Symbol('ts-rest-app-route');
 
 type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
@@ -41,33 +43,20 @@ export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
   never
 >;
 
-const getQueryParams = (url: string): Record<string, string> => {
-  const searchParams = new URLSearchParams(url.split('?')[1]);
-  const queryParams: Record<string, string> = {};
-
-  for (const [key, value] of searchParams) {
-    queryParams[key] = value;
-  }
-
-  return queryParams;
-};
-
 export const ApiDecorator = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): ApiDecoratorShape<any> => {
-    const req = ctx.switchToHttp().getRequest();
-
-    const appRoute = req.appRoute as AppRoute | undefined;
+    const req: Request = ctx.switchToHttp().getRequest();
+    const appRoute: AppRoute | undefined = Reflect.getMetadata(
+      tsRestAppRouteMetadataKey,
+      ctx.getHandler()
+    );
 
     if (!appRoute) {
-      throw new BadRequestException(
-        'Make sure your route is decorated with @Api()'
-      );
+      // this will respond with a 500 error without revealing this error message in the response body
+      throw new Error('Make sure your route is decorated with @Api()');
     }
 
-    const pathParams = getPathParamsFromUrl(req.url, appRoute);
-    const queryParams = getQueryParams(req.url);
-
-    const queryResult = checkZodSchema(queryParams, appRoute.query);
+    const queryResult = checkZodSchema(req.query, appRoute.query);
 
     if (!queryResult.success) {
       throw new BadRequestException(queryResult.error);
@@ -82,7 +71,7 @@ export const ApiDecorator = createParamDecorator(
       throw new BadRequestException(bodyResult.error);
     }
 
-    const pathParamsResult = checkZodSchema(pathParams, appRoute.pathParams, {
+    const pathParamsResult = checkZodSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
     });
 
@@ -115,12 +104,8 @@ const getMethodDecorator = (appRoute: AppRoute) => {
 
 @Injectable()
 export class ApiRouteInterceptor implements NestInterceptor {
-  constructor(private readonly appRoute: AppRoute) {}
-
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const req = context.switchToHttp().getRequest();
-
-    req.appRoute = this.appRoute;
+    const res: Response = context.switchToHttp().getResponse();
 
     return next.handle().pipe(
       map((value) => {
@@ -129,7 +114,8 @@ export class ApiRouteInterceptor implements NestInterceptor {
           typeof value.status === 'number' &&
           value.body !== undefined
         ) {
-          throw new HttpException(value?.body, value.status);
+          res.status(value.status);
+          return value.body;
         }
 
         return value;
@@ -142,8 +128,8 @@ export const Api = (appRoute: AppRoute): MethodDecorator => {
   const methodDecorator = getMethodDecorator(appRoute);
 
   return applyDecorators(
+    SetMetadata(tsRestAppRouteMetadataKey, appRoute),
     methodDecorator,
-    // Apply the interceptor to populate req.appRoute
-    UseInterceptors(new ApiRouteInterceptor(appRoute))
+    UseInterceptors(ApiRouteInterceptor)
   );
 };

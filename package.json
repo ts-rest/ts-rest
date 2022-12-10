@@ -12,7 +12,8 @@
     "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app,example-microservice-web-app-solid",
     "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch",
     "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts",
-    "postinstall": "pnpm prisma generate"
+    "postinstall": "pnpm prisma generate",
+    "build-test-all": "pnpm nx run-many --target=lint && pnpm nx run-many --target=test && pnpm nx run-many --target=build"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
@@ -45,6 +46,7 @@
     "@tanstack/solid-query": "^4.8.0",
     "@types/body-parser": "^1.19.2",
     "@types/multer": "^1.4.7",
+    "@types/qs": "^6.9.7",
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-react": "^2.1.0",
     "@vitest/coverage-c8": "^0.23.4",
@@ -168,6 +170,7 @@
     "nx": "15.3.0",
     "prettier": "^2.6.2",
     "prisma": "^4.5.0",
+    "qs": "^6.11.0",
     "react-refresh": "^0.10.0",
     "react-test-renderer": "18.2.0",
     "sass": "1.55.0",
