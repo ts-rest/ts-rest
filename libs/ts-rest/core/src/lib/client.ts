@@ -1,10 +1,7 @@
 import { z, ZodTypeAny } from 'zod';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
-import {
-  convertQueryParamsToUrlString,
-  insertParamsIntoPath,
-  ParamsFromUrl,
-} from './paths';
+import { insertParamsIntoPath, ParamsFromUrl } from './paths';
+import { convertQueryParamsToUrlString } from './query';
 import { HTTPStatusCode } from './status-codes';
 import { Merge, Without, ZodInferOrType } from './type-utils';
 
