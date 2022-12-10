@@ -1,5 +1,3 @@
-import { stringify } from 'qs';
-
 /**
  * @params T - The URL e.g. /posts/:id
  * @params TAcc - Accumulator object
@@ -59,13 +57,4 @@ export const insertParamsIntoPath = <T extends string>({
       return params?.[p] || '';
     })
     .replace(/\/\//g, '/');
-};
-
-/**
- *
- * @param query - The query e.g. { id: string }
- * @returns - The query url segment e.g. ?id=123
- */
-export const convertQueryParamsToUrlString = (query: any) => {
-  return stringify(query, { indices: false, addQueryPrefix: true });
 };
