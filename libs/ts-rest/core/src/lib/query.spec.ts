@@ -1,5 +1,5 @@
 import { convertQueryParamsToUrlString, encodeQueryParams } from './query';
-import * as qs from 'qs';
+import { parse as qsParse, stringify as qsStringify } from 'qs';
 
 describe('convertQueryParamsToUrlString', () => {
   it('should convert query params to url string', () => {
@@ -35,7 +35,7 @@ describe('encodeQueryParams', () => {
     const result = encodeQueryParams(query);
 
     expect(result).toBe('');
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should convert query params to url string with many params', () => {
@@ -49,12 +49,12 @@ describe('encodeQueryParams', () => {
 
     expect(result).toBe(encodeURI('id=1&commentId=2&commentId2=3'));
 
-    expect(qs.parse(result)).toEqual({
+    expect(qsParse(result)).toEqual({
       id: '1',
       commentId: '2',
       commentId2: '3',
     });
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should explode arrays', () => {
@@ -67,11 +67,11 @@ describe('encodeQueryParams', () => {
 
     expect(result).toBe(encodeURI('array[0]=1&array[1]=2&array[2]=3&id=1'));
 
-    expect(qs.parse(result)).toEqual({
+    expect(qsParse(result)).toEqual({
       array: ['1', '2', '3'],
       id: '1',
     });
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should explode nested query strings with arrays and other keys', () => {
@@ -93,7 +93,7 @@ describe('encodeQueryParams', () => {
       )
     );
 
-    expect(qs.parse(result)).toEqual({
+    expect(qsParse(result)).toEqual({
       nested: {
         array: ['1', '2', '3'],
         id: '1',
@@ -102,7 +102,7 @@ describe('encodeQueryParams', () => {
         },
       },
     });
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should work for null, undefined, and NaN', () => {
@@ -117,11 +117,11 @@ describe('encodeQueryParams', () => {
     expect(result).toBe(encodeURI('null=&nan=NaN'));
 
     // qs compatibility
-    expect(qs.parse(result)).toEqual({
+    expect(qsParse(result)).toEqual({
       null: '',
       nan: 'NaN',
     });
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should format dates as ISO strings', () => {
@@ -132,10 +132,10 @@ describe('encodeQueryParams', () => {
     const result = encodeQueryParams(query);
 
     expect(result).toBe('date=2020-01-01T00%3A00%3A00.000Z');
-    expect(qs.parse(result)).toEqual({
+    expect(qsParse(result)).toEqual({
       date: '2020-01-01T00:00:00.000Z',
     });
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should parse booleans', () => {
@@ -147,11 +147,11 @@ describe('encodeQueryParams', () => {
     const result = encodeQueryParams(query);
 
     expect(result).toBe(encodeURI('bool=true&false=false'));
-    expect(qs.parse(result)).toEqual({
+    expect(qsParse(result)).toEqual({
       bool: 'true',
       false: 'false',
     });
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should parse numbers', () => {
@@ -163,11 +163,11 @@ describe('encodeQueryParams', () => {
     const result = encodeQueryParams(query);
 
     expect(result).toBe(encodeURI('number=1&float=1.1'));
-    expect(qs.parse(result)).toEqual({
+    expect(qsParse(result)).toEqual({
       number: '1',
       float: '1.1',
     });
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should parse objects', () => {
@@ -177,8 +177,8 @@ describe('encodeQueryParams', () => {
 
     const result = encodeQueryParams(query);
     expect(result).toBe(encodeURI('object[id]=1'));
-    expect(qs.parse(result)).toEqual(query);
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsParse(result)).toEqual(query);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should parse with arrays of objects', () => {
@@ -189,8 +189,8 @@ describe('encodeQueryParams', () => {
     const result = encodeQueryParams(query);
 
     expect(result).toBe(encodeURI('array[0][id]=1&array[1][id]=2'));
-    expect(qs.parse(result)).toEqual(query);
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsParse(result)).toEqual(query);
+    expect(qsStringify(query)).toBe(result);
   });
 
   it('should parse arrays in arrays', () => {
@@ -201,7 +201,7 @@ describe('encodeQueryParams', () => {
     const result = encodeQueryParams(query);
 
     expect(result).toBe(encodeURI('array[0][0]=1&array[0][1]=2'));
-    expect(qs.parse(result)).toEqual(query);
-    expect(qs.stringify(query)).toBe(result);
+    expect(qsParse(result)).toEqual(query);
+    expect(qsStringify(query)).toBe(result);
   });
 });

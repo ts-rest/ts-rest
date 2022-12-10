@@ -15,7 +15,8 @@ export const encodeQueryParams = (query: unknown) => {
 
   return (
     Object.keys(query)
-      // @ts-expect-error - accessing object keys
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       .flatMap((key) => tokeniseValue(key, query[key]))
       .map((pair) => {
         const [key, ...rhs] = pair.split('=');

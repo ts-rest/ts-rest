@@ -369,7 +369,10 @@ importers:
     specifiers: {}
 
   libs/ts-rest/nest:
-    specifiers: {}
+    specifiers:
+      express-serve-static-core: ^0.1.1
+    devDependencies:
+      express-serve-static-core: 0.1.1
 
   libs/ts-rest/next:
     specifiers: {}
@@ -15519,7 +15522,6 @@ packages:
 
   /express-serve-static-core/0.1.1:
     resolution: {integrity: sha512-phQFPo1vVwBLOjDq+EspUY6PpWZIs/s62Lvu6QuReViQ9j9ANBnMqPBRwdxs3zxNmpMJ9KBKrmMqCjMwHnGRyQ==}
-    dev: false
 
   /express/4.16.4:
     resolution: {integrity: sha512-j12Uuyb4FMrd/qQAm6uCHAkPtO8FDTRJZBDd5D2KOL2eLaz1yUNdUB/NOIyq0iU4q4cFarsUCrnFDPBcnksuOg==}
