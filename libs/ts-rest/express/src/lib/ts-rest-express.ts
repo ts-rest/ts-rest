@@ -1,4 +1,4 @@
-import { IRouter, Request, Response } from 'express';
+import { IRouter, NextFunction, Request, Response } from 'express';
 import { IncomingHttpHeaders } from 'http';
 import {
   AppRoute,
@@ -103,7 +103,7 @@ const transformAppRouteQueryImplementation = (
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
   }
 
-  app.get(schema.path, async (req, res) => {
+  app.get(schema.path, async (req, res, next) => {
     const queryResult = checkZodSchema(req.query, schema.query);
 
     if (!queryResult.success) {
@@ -118,14 +118,18 @@ const transformAppRouteQueryImplementation = (
       return res.status(400).send(paramsResult.error);
     }
 
-    const result = await route({
-      params: paramsResult.data,
-      query: queryResult.data,
-      headers: req.headers,
-      req: req,
-    });
+    try {
+      const result = await route({
+        params: paramsResult.data,
+        query: queryResult.data,
+        headers: req.headers,
+        req: req,
+      });
 
-    return res.status(Number(result.status)).json(result.body);
+      return res.status(Number(result.status)).json(result.body);
+    } catch (e) {
+      return next(e);
+    }
   });
 };
 
@@ -143,6 +147,7 @@ const transformAppRouteMutationImplementation = (
 
   const method = schema.method;
 
+  const callback = async (req: Request, res: Response, next: NextFunction) => {
     const queryResult = checkZodSchema(req.query, schema.query);
 
     if (!queryResult.success) {
@@ -163,6 +168,7 @@ const transformAppRouteMutationImplementation = (
       return res.status(400).send(paramsResult.error);
     }
 
+    try {
       const result = await route({
         params: paramsResult.data,
         body: bodyResult.data,
@@ -177,8 +183,7 @@ const transformAppRouteMutationImplementation = (
 
       return res.status(Number(result.status)).json(result.body);
     } catch (e) {
-      console.error(`[ts-rest] Error on ${method} ${schema.path}`, e);
-      return res.status(500).send('Internal Server Error');
+      return next(e);
     }
   };
 
@@ -204,7 +209,10 @@ export const createExpressEndpoints = <
 >(
   schema: TRouter,
   router: T,
-  app: IRouter
+  app: IRouter,
+  options = {
+    logInitialization: true,
+  }
 ) => {
   recursivelyApplyExpressRouter(router, [], (route, path) => {
     const routerViaPath = getValue(schema, path.join('.'));
@@ -214,13 +222,19 @@ export const createExpressEndpoints = <
     }
 
     if (isAppRoute(routerViaPath)) {
-      if (routerViaPath.method !== 'GET') {
-        transformAppRouteMutationImplementation(route, routerViaPath, app);
-      } else {
+      if (routerViaPath.method === 'GET') {
         transformAppRouteQueryImplementation(
           route as AppRouteQueryImplementation<any>,
           routerViaPath,
-          app
+          app,
+          options
+        );
+      } else {
+        transformAppRouteMutationImplementation(
+          route,
+          routerViaPath,
+          app,
+          options
         );
       }
     } else {
