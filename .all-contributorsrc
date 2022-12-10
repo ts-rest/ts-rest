@@ -16,6 +16,15 @@
         "ideas",
         "test"
       ]
+    },
+    {
+      "login": "ghoullier",
+      "name": "Grégory Houllier",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2315749?v=4",
+      "profile": "https://ghoullier.deno.dev/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
