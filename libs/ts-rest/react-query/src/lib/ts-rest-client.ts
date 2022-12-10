@@ -39,7 +39,7 @@ type RecursiveProxyObj<T extends AppRouter> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.infer<T> : T;
+type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
 
 type UseQueryArgs<TAppRoute extends AppRoute> = {
   useQuery: TAppRoute extends AppRouteQuery
