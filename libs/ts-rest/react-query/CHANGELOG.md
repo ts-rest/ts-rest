@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.10.2
+
+### Patch Changes
+
+- fd456fc: Fix CJS export, fixes @ts-rest/react-query 3.10.1
+
 ## 3.10.1
 
 ### Patch Changes
