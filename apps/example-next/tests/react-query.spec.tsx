@@ -4,6 +4,7 @@ import { renderHook } from '@testing-library/react-hooks';
 import { initContract } from '@ts-rest/core';
 import { initQueryClient } from '@ts-rest/react-query';
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import { z } from 'zod';
 
 const c = initContract();
@@ -97,6 +98,15 @@ const postsRouter = c.router({
     },
     body: null,
   },
+  uploadImage: {
+    method: 'POST',
+    path: `/posts/:id/image`,
+    responses: {
+      200: c.response<Post>(),
+    },
+    contentType: 'multipart/form-data',
+    body: c.body<{ image: File }>(),
+  },
 });
 
 // Three endpoints, two for posts, and one for health
@@ -146,10 +156,9 @@ describe('react-query', () => {
   it('useQuery should handle success', async () => {
     api.mockResolvedValue(SUCCESS_RESPONSE);
 
-    const { result } = renderHook(
-      () => client.health.useQuery(['health'], {}),
-      { wrapper }
-    );
+    const { result } = renderHook(() => client.health.useQuery(['health']), {
+      wrapper,
+    });
 
     expect(result.current.data).toStrictEqual(undefined);
 
@@ -199,5 +208,50 @@ describe('react-query', () => {
     expect(result.current.data).toStrictEqual(undefined);
 
     expect(result.current.error).toStrictEqual(ERROR_RESPONSE);
+  });
+
+  it('should handle mutation', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(() => client.posts.createPost.useMutation(), {
+      wrapper,
+    });
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(false);
+
+    expect(result.current.error).toStrictEqual(null);
+
+    await act(() =>
+      result.current.mutateAsync({
+        body: {
+          description: 'test',
+          title: 'test',
+          content: '',
+          authorId: '1',
+        },
+      })
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'POST',
+      path: 'http://api.com/posts',
+      body: JSON.stringify({
+        description: 'test',
+        title: 'test',
+        content: '',
+        authorId: '1',
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).not.toBeUndefined();
+    });
+
+    expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
   });
 });
