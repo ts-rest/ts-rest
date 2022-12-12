@@ -1,5 +1,5 @@
-import { initClient } from './client';
 import { initContract } from '..';
+import { initClient } from './client';
 
 import { z } from 'zod';
 
@@ -136,6 +136,24 @@ describe('client', () => {
       api.mockResolvedValue({ body: value, status: 200 });
 
       const result = await client.posts.getPosts({ query: {} });
+
+      expect(result).toStrictEqual({ body: value, status: 200 });
+
+      expect(api).toHaveBeenCalledWith({
+        method: 'GET',
+        path: 'http://api.com/posts',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: undefined,
+      });
+    });
+
+    it('w/ no parameters (not provided)', async () => {
+      const value = { key: 'value' };
+      api.mockResolvedValue({ body: value, status: 200 });
+
+      const result = await client.posts.getPosts();
 
       expect(result).toStrictEqual({ body: value, status: 200 });
 

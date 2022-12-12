@@ -2,9 +2,7 @@ import React from 'react';
 import { postsClient } from './main';
 
 export const App = () => {
-  const { data } = postsClient.getPosts.useQuery(['posts'], {
-    query: {},
-  });
+  const { data } = postsClient.getPosts.useQuery(['posts']);
 
   const posts = data?.body || [];
 

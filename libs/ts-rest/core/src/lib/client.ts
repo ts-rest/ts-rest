@@ -3,11 +3,16 @@ import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
 import { insertParamsIntoPath, ParamsFromUrl } from './paths';
 import { convertQueryParamsToUrlString } from './query';
 import { HTTPStatusCode } from './status-codes';
-import { Merge, Without, ZodInferOrType } from './type-utils';
+import {
+  AreAllPropertiesOptional,
+  Merge,
+  Without,
+  ZodInferOrType,
+} from './type-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-    ? DataReturn<T[TKey]>
+    ? AppRouteFunction<T[TKey]>
     : T[TKey] extends AppRouter
     ? RecursiveProxyObj<T[TKey]>
     : never;
@@ -43,7 +48,9 @@ interface DataReturnArgs<TRoute extends AppRoute> {
     ? AppRouteBodyOrFormData<TRoute>
     : never;
   params: PathParamsFromUrl<TRoute>;
-  query: TRoute['query'] extends ZodTypeAny
+  query: AreAllPropertiesOptional<
+    AppRouteMutationType<TRoute['query']>
+  > extends false
     ? AppRouteMutationType<TRoute['query']>
     : never;
 }
@@ -63,9 +70,14 @@ export type ApiRouteResponse<T> =
 /**
  * Returned from a mutation or query call
  */
-export type DataReturn<TRoute extends AppRoute> = (
-  args: Without<DataReturnArgs<TRoute>, never>
-) => Promise<ApiRouteResponse<TRoute['responses']>>;
+export type AppRouteFunction<TRoute extends AppRoute> =
+  AreAllPropertiesOptional<Without<DataReturnArgs<TRoute>, never>> extends true
+    ? (
+        args?: Without<DataReturnArgs<TRoute>, never>
+      ) => Promise<ApiRouteResponse<TRoute['responses']>>
+    : (
+        args: Without<DataReturnArgs<TRoute>, never>
+      ) => Promise<ApiRouteResponse<TRoute['responses']>>;
 
 export interface ClientArgs {
   baseUrl: string;

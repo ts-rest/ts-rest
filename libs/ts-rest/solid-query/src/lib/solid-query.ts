@@ -1,25 +1,4 @@
-import { z, ZodTypeAny } from 'zod';
 import {
-  AppRoute,
-  AppRouteMutation,
-  AppRouteQuery,
-  AppRouter,
-  ClientArgs,
-  DataReturn,
-  getRouteQuery,
-  isAppRoute,
-  SuccessfulHttpStatusCode,
-  Without,
-  ZodInferOrType,
-  HTTPStatusCode,
-  PathParamsFromUrl,
-  getCompleteUrl,
-  fetchApi,
-} from '@ts-rest/core';
-import {
-  QueryFunction,
-  QueryFunctionContext,
-  QueryKey,
   createInfiniteQuery,
   CreateInfiniteQueryOptions,
   CreateInfiniteQueryResult,
@@ -29,7 +8,28 @@ import {
   createQuery,
   CreateQueryOptions,
   CreateQueryResult,
+  QueryFunction,
+  QueryFunctionContext,
+  QueryKey,
 } from '@tanstack/solid-query';
+import {
+  AppRoute,
+  AppRouteFunction,
+  AppRouteMutation,
+  AppRouteQuery,
+  AppRouter,
+  ClientArgs,
+  fetchApi,
+  getCompleteUrl,
+  getRouteQuery,
+  HTTPStatusCode,
+  isAppRoute,
+  PathParamsFromUrl,
+  SuccessfulHttpStatusCode,
+  Without,
+  ZodInferOrType,
+} from '@ts-rest/core';
+import { z, ZodTypeAny } from 'zod';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -48,11 +48,13 @@ type UseQueryArgs<TAppRoute extends AppRoute> = {
   createInfiniteQuery: TAppRoute extends AppRouteQuery
     ? DataReturnInfiniteQuery<TAppRoute>
     : never;
-  query: TAppRoute extends AppRouteQuery ? DataReturn<TAppRoute> : never;
+  query: TAppRoute extends AppRouteQuery ? AppRouteFunction<TAppRoute> : never;
   createMutation: TAppRoute extends AppRouteMutation
     ? DataReturnMutation<TAppRoute>
     : never;
-  mutation: TAppRoute extends AppRouteMutation ? DataReturn<TAppRoute> : never;
+  mutation: TAppRoute extends AppRouteMutation
+    ? AppRouteFunction<TAppRoute>
+    : never;
 };
 
 type DataReturnArgs<TRoute extends AppRoute> = {
