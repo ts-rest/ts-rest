@@ -181,15 +181,15 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
-  return async (inputArgs: DataReturnArgs<any>) => {
+  return async (inputArgs?: DataReturnArgs<any>) => {
     const completeUrl = getCompleteUrl(
-      inputArgs.query,
+      inputArgs?.query,
       clientArgs.baseUrl,
-      inputArgs.params,
+      inputArgs?.params,
       route
     );
 
-    return await fetchApi(completeUrl, clientArgs, route, inputArgs.body);
+    return await fetchApi(completeUrl, clientArgs, route, inputArgs?.body);
   };
 };
 
