@@ -88,3 +88,9 @@ type NarrowRaw<T> =
 type NarrowNotZod<T> = Try<T, ZodType, NarrowRaw<T>>;
 
 export type Narrow<T> = Try<T, [], NarrowNotZod<T>>;
+
+export type AreAllPropertiesOptional<T> = {
+  [K in keyof T]-?: undefined extends T[K] ? true : false;
+}[keyof T] extends true
+  ? true
+  : false;

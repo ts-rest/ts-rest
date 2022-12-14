@@ -1,7 +1,7 @@
 import { apiBlog } from '@ts-rest/example-contracts';
 import { initQueryClient } from '@ts-rest/react-query';
-import Link from 'next/link';
 import classNames from 'classnames';
+import Link from 'next/link';
 
 export const api = initQueryClient(apiBlog, {
   baseUrl: 'http://localhost:4200/api',
