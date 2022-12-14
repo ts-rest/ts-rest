@@ -28,6 +28,14 @@ export const encodeQueryParams = (query: unknown) => {
   );
 };
 
+/**
+ * A recursive function to convert an object/string/number/Date/whatever into an array of key=value pairs
+ *
+ * The output of this should be flatMap-able to a string of key=value pairs which can be
+ * joined with & to form a query string
+ *
+ * This should be fully compatible with the "qs" library, but without the need to add a dependency
+ */
 const tokeniseValue = (key: string, value: unknown): string[] => {
   if (Array.isArray(value)) {
     return value.flatMap((v, idx) => tokeniseValue(`${key}[${idx}]`, v));
