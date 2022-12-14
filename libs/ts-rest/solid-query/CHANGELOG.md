@@ -1,5 +1,11 @@
 # @ts-rest/solid-query
 
+## 3.11.0
+
+### Minor Changes
+
+- 57acbad: Added the ability to omit the second parameter if there no required query parameters
+
 ## 3.10.2
 
 ## 3.10.1
