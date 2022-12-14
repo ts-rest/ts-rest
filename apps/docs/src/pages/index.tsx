@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import clsx from 'clsx';
-import Layout from '@theme/Layout';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import styles from './index.module.css';
-import HomepageFeatures from '../components/HomepageFeatures';
 import sdk from '@stackblitz/sdk';
+import Layout from '@theme/Layout';
+import clsx from 'clsx';
+import React, { useEffect } from 'react';
 import { Code } from '../components/Code';
+import HomepageFeatures from '../components/HomepageFeatures';
+import styles from './index.module.css';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -39,7 +39,7 @@ export default function Home(): JSX.Element {
       title={`ts-rest 🪄`}
       description="RPC-like client and server helpers for a magical end to end typed experience"
     >
-      <div className="container my-24 mx-auto text-center">
+      <div className="container my-24 mx-auto">
         <h1 className="text-3xl font-dark text-center dark:text-white md:text-5xl">
           RPC-like client and server for a{' '}
           <span className="bg-clip-text text-transparent  bg-gradient-to-r from-emerald-400 to-sky-500 ">
