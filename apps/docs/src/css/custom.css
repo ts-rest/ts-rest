@@ -11,6 +11,7 @@
 .header-code-blocks > div {
   display: flex;
   flex-direction: column;
+  background-color: ;
 }
 
 .header-code-blocks > div > div:nth-child(2) {
@@ -21,19 +22,14 @@
   height: 100%;
 }
 
-@font-face {
-  font-family: 'Virgil';
-  src: url('/Virgil.woff2') format('woff2');
-}
-
 :root {
-  --ifm-color-primary: #008372;
-  --ifm-color-primary-dark: #007667;
-  --ifm-color-primary-darker: #006f61;
-  --ifm-color-primary-darkest: #005c50;
-  --ifm-color-primary-light: #00907d;
-  --ifm-color-primary-lighter: #009783;
-  --ifm-color-primary-lightest: #00aa94;
+  --ifm-color-primary: #ae57ff;
+  --ifm-color-primary-dark: #9e35ff;
+  --ifm-color-primary-darker: #9524ff;
+  --ifm-color-primary-darkest: #7c00ef;
+  --ifm-color-primary-light: #be79ff;
+  --ifm-color-primary-lighter: #c78aff;
+  --ifm-color-primary-lightest: #dfbeff;
   --ifm-navbar-shadow: none;
   --ifm-color-emphasis-0: #f5f5f5;
   --ifm-color-emphasis-100: #f5f5f5;
@@ -50,6 +46,22 @@
   --ifm-menu-color: black;
   --ifm-font-color-base: black;
   --ifm-heading-color: black;
+}
+
+html[data-theme='dark'] .homepage.main-wrapper {
+  background: linear-gradient(180deg, transparent, #111 300px),
+    radial-gradient(#6b21a89c 1px, transparent 0) 0 0/30px 30px fixed,
+    radial-gradient(#6b21a89c 1px, transparent 0) 15px 15px/30px 30px fixed;
+}
+
+html[data-theme='light'] .homepage.main-wrapper {
+  background: linear-gradient(180deg, transparent, white 300px),
+    radial-gradient(#c39ee09c 1px, transparent 0) 0 0/30px 30px fixed,
+    radial-gradient(#c39ee09c 1px, transparent 0) 15px 15px/30px 30px fixed;
+}
+
+html[data-theme='dark'] .footer--dark {
+  --ifm-footer-background-color: #171717;
 }
 
 :root[data-theme='dark'] {

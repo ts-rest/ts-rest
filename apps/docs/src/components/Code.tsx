@@ -1,5 +1,5 @@
-import React from 'react';
 import CodeBlock from '@theme/CodeBlock';
+import React from 'react';
 
 const sections = [
   {
@@ -60,7 +60,7 @@ createExpressEndpoints(contract, router, app);`,
 
 export const Code = () => {
   return (
-    <div className="container mx-auto my-12 header-code-blocks text-left grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+    <div className="container mx-auto md:my-32 header-code-blocks text-left grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-2">
       <CodeBlock className="w-full" language="jsx" title="client.ts">
         {sections[0].code}
       </CodeBlock>

@@ -1,3 +1,4 @@
+import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import sdk from '@stackblitz/sdk';
 import Layout from '@theme/Layout';
@@ -36,21 +37,57 @@ function HomepageHeader() {
 export default function Home(): JSX.Element {
   return (
     <Layout
-      title={`ts-rest 🪄`}
+      title={`🪄`}
       description="RPC-like client and server helpers for a magical end to end typed experience"
+      wrapperClassName="homepage"
     >
-      <div className="container my-24 mx-auto">
-        <h1 className="text-3xl font-dark text-center dark:text-white md:text-5xl">
+      <div className="container my-16 mx-auto">
+        <div className="flex items-center justify-center mb-6">
+          <svg
+            className={'w-2/3 max-w-2xl dark:fill-white fill-black'}
+            viewBox="0 0 316 70"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="316" height="70" fill="transparent" />
+            <path
+              d="M44.04 55V20.448H57.536V15.8H25.224V20.448H38.72V55H44.04ZM79.6096 55.448C89.8576 55.448 94.6736 50.296 94.6736 44.36C94.6736 29.968 70.8736 36.072 70.8736 26.328C70.8736 22.8 73.7856 19.944 80.5056 19.944C83.9776 19.944 87.8976 20.952 91.3136 23.136L93.0496 18.88C89.8016 16.64 85.0976 15.352 80.5616 15.352C70.2576 15.352 65.6096 20.504 65.6096 26.496C65.6096 41.056 89.4096 34.896 89.4096 44.696C89.4096 48.168 86.4416 50.856 79.6096 50.856C74.5696 50.856 69.5856 48.952 66.6736 46.32L64.6576 50.464C67.7376 53.432 73.6176 55.448 79.6096 55.448ZM121.202 41.896V37.416H106.25V41.896H121.202ZM158.263 41.784C163.751 39.824 166.943 35.512 166.943 29.464C166.943 20.896 160.783 15.8 150.647 15.8H135.471V20.448H150.479C157.759 20.448 161.567 23.752 161.567 29.464C161.567 35.12 157.759 38.424 150.479 38.424H135.471V55H140.791V43.016H150.647C151.543 43.016 152.383 42.96 153.223 42.904L161.735 55H167.615L158.263 41.784ZM181.144 37.36H208.64V32.824H181.144V37.36ZM181.144 20.224H208.64V15.576H181.144V20.224ZM181.144 50.352H208.64V55H181.144V50.352ZM235.012 55.448C245.26 55.448 250.076 50.296 250.076 44.36C250.076 29.968 226.276 36.072 226.276 26.328C226.276 22.8 229.188 19.944 235.908 19.944C239.38 19.944 243.3 20.952 246.716 23.136L248.452 18.88C245.204 16.64 240.5 15.352 235.964 15.352C225.66 15.352 221.012 20.504 221.012 26.496C221.012 41.056 244.812 34.896 244.812 44.696C244.812 48.168 241.844 50.856 235.012 50.856C229.972 50.856 224.988 48.952 222.076 46.32L220.06 50.464C223.14 53.432 229.02 55.448 235.012 55.448ZM275.968 55V20.448H289.464V15.8H257.152V20.448H270.648V55H275.968Z"
+              fill="inherit"
+            />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-dark text-center dark:text-gray-200 md:text-3xl">
           RPC-like client and server for a{' '}
-          <span className="bg-clip-text text-transparent  bg-gradient-to-r from-emerald-400 to-sky-500 ">
+          <span className="bg-clip-text text-transparent  bg-primary">
             magical
           </span>{' '}
           end-to-end-typed experience
         </h1>
-        <h3 className="dark:text-gray-300 text-gray-500">
-          ts-rest makes creating a fully typed API trivial - giving you more
-          time to focus on what matters, your product and your project.
-        </h3>
+      </div>
+
+      <div className="relative w-fit h-fit mx-auto">
+        <Link to="/docs/quickstart">
+          <button
+            className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-800 cursor-pointer hover:bg-purple-700
+          p-4 rounded-xl appearance-none border-none text-2xl font-bold flex flex-row items-center gap-2"
+          >
+            Quickstart Guide{' '}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="feather feather-zap inline"
+            >
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </button>
+        </Link>
       </div>
 
       <Code />
@@ -58,7 +95,7 @@ export default function Home(): JSX.Element {
       <HomepageFeatures />
 
       <div className="my-10 container mx-auto">
-        <div className=" bg-sky-100/40 dark:bg-sky-600/10 p-5 border-solid border-0 border-l-4 border-sky-400 dark:border-sky-700">
+        <div className=" bg-purple-100/40 dark:bg-purple-700/5 p-5 border-solid border-0 border-l-4 border-purple-600 dark:border-purple-700/80">
           <h3>What is this?</h3>
 
           <p>
@@ -86,73 +123,29 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-      <div className="container my-32">
-        <div className="relative w-fit h-fit mx-auto">
-          <a href="https://ts-rest.com/docs/quickstart" target="_blank">
-            <button
-              className="transition-all text-gray-900 bg-emerald-400 cursor-pointer hover:bg-emerald-600
-          p-4 rounded-xl appearance-none border-none text-2xl font-bold"
-            >
-              QuickStart Guide
-            </button>
-          </a>
-          <svg
-            className="w-72 absolute -top-24 sm:-top-20 -right-14 sm:-right-64"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 303.17149471939274 56.38510076466241"
-            width="606.3429894387855"
-            height="112.77020152932482"
-            fill="transparent"
+      <div className="relative w-fit h-fit mx-auto my-24">
+        <Link to="/docs/quickstart">
+          <button
+            className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-800 cursor-pointer hover:bg-purple-700
+          p-4 rounded-xl appearance-none border-none text-2xl font-bold flex flex-row items-center gap-2"
           >
-            <rect
-              x="0"
-              y="0"
-              width="303.17149471939274"
-              height="56.38510076466241"
-            ></rect>
-            <g transform="translate(62.17149471939274 21.38510076466241) rotate(0 115.5 12.5)">
-              <text
-                x="0"
-                y="18"
-                font-family="Virgil"
-                font-size="20px"
-                className="fill-black dark:fill-white"
-                text-anchor="start"
-                style={{ whiteSpace: 'pre' }}
-                direction="ltr"
-              >
-                Ready to get started?
-              </text>
-            </g>
-            <g
-              stroke-linecap="round"
-              className="stroke-black dark:stroke-white"
+            Quickstart Guide{' '}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="feather feather-zap inline"
             >
-              <g transform="translate(82.71890367256765 16.015779965927095) rotate(0 -36.03366031957012 2.9325428898146697)">
-                <path
-                  d="M0.65 0.56 C-3.95 -0.28, -16.61 -7.42, -28.72 -5.77 C-40.82 -4.11, -64.76 7.75, -71.98 10.49 M-0.47 -0.18 C-5.15 -0.83, -17.77 -6.6, -29.81 -4.59 C-41.85 -2.58, -65.72 9.13, -72.72 11.88"
-                  stroke-width="1"
-                  fill="none"
-                ></path>
-              </g>
-              <g transform="translate(82.71890367256765 16.015779965927095) rotate(0 -36.03366031957012 2.9325428898146697)">
-                <path
-                  d="M-55.02 -4.5 C-60.67 -0.56, -62.76 2.65, -72.23 12.81 M-56.68 -3.44 C-61.08 1, -65.9 5.12, -73.45 12.19"
-                  stroke-width="1"
-                  fill="none"
-                ></path>
-              </g>
-              <g transform="translate(82.71890367256765 16.015779965927095) rotate(0 -36.03366031957012 2.9325428898146697)">
-                <path
-                  d="M-48.7 10 C-55.58 10.96, -58.98 11.17, -72.23 12.81 M-50.37 11.06 C-56.69 11.15, -63.4 10.95, -73.45 12.19"
-                  stroke-width="1"
-                  fill="none"
-                ></path>
-              </g>
-            </g>
-          </svg>
-        </div>
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </button>
+        </Link>
       </div>
     </Layout>
   );

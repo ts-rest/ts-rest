@@ -1,9 +1,12 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 5000 5000" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <rect x="-31" y="-37" width="5088" height="5091" style="fill:rgb(0,131,114);"/>
-    <g transform="matrix(1,0,0,1,-131,-212)">
-        <text x="410px" y="3330.62px" style="font-family:'HackNerdFontComplete-Bold', 'Hack Nerd Font', monospace;font-weight:700;font-size:1408px;fill:white;">t</text>
-        <text x="1185.88px" y="3330.62px" style="font-family:'HackNerdFontComplete-Bold', 'Hack Nerd Font', monospace;font-weight:700;font-size:1600px;fill:white;">R<tspan x="2067.56px 2949.24px 3830.92px " y="3330.62px 3330.62px 3330.62px ">EST</tspan></text>
-    </g>
+<svg width="116" height="115" viewBox="0 0 116 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_7_20)">
+<rect width="116" height="116" rx="26" fill="#9333EA"/>
+<path d="M61.59 60.825H95.65V52.96H61.59V60.825ZM61.59 42.625H95.65V34.5H61.59V42.625ZM61.59 71.875H95.65V80H61.59V71.875Z" fill="white"/>
+<path d="M47.295 65.31C53.275 62.775 56.72 57.77 56.72 50.945C56.72 40.74 49.18 34.5 37.025 34.5H17.59V42.755H36.505C43.135 42.755 46.58 45.745 46.58 50.945C46.58 56.08 43.135 59.135 36.505 59.135H17.59V80H27.6V67.195H37.025C37.285 67.195 37.545 67.195 37.805 67.195L46.71 80H57.565L47.295 65.31Z" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_7_20">
+<rect width="116" height="115" fill="white"/>
+</clipPath>
+</defs>
 </svg>
