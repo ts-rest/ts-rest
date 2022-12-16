@@ -76,7 +76,7 @@ const QuickstartButton = () => {
       <iframe
         className="mt-4 ml-7"
         src="https://ghbtns.com/github-btn.html?user=ts-rest&repo=ts-rest&type=star&count=true&size=large"
-        frameborder="0"
+        frameBorder="0"
         scrolling="0"
         width="170"
         height="30"
