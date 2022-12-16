@@ -7,6 +7,20 @@ import React, { useEffect } from 'react';
 import { Code } from '../components/Code';
 import HomepageFeatures from '../components/HomepageFeatures';
 import styles from './index.module.css';
+// @ts-ignore
+import logo from '../../static/img/logo.png';
+// @ts-ignore
+import react from '../../static/img/react.png';
+// @ts-ignore
+import solidJs from '../../static/img/solid.png';
+// @ts-ignore
+import express from '../../static/img/express.png';
+// @ts-ignore
+import nest from '../../static/img/nest.png';
+// @ts-ignore
+import openApi from '../../static/img/swagger.png';
+// @ts-ignore
+import vercel from '../../static/img/vercel.png';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -96,7 +110,7 @@ export default function Home(): JSX.Element {
 
       <div className="my-10 container mx-auto">
         <div className=" bg-purple-100/40 dark:bg-purple-700/5 p-5 border-solid border-0 border-l-4 border-purple-600 dark:border-purple-700/80">
-          <h3>What is this?</h3>
+          <h3>Elevator Pitch</h3>
 
           <p>
             ts-rest was initially designed for TS-first teams, in legacy
@@ -108,8 +122,11 @@ export default function Home(): JSX.Element {
 
           <ul>
             <li>
-              A tiny type-safe wrapper around existing, battle-tested,
-              established tech
+              A{' '}
+              <a href="https://bundlephobia.com/package/@ts-rest/core">
+                seriously tiny
+              </a>{' '}
+              type-safe wrapper around existing, battle-tested, established tech
             </li>
             <li>
               An incrementally adoptable tool, for TS-first teams who care about
@@ -120,6 +137,95 @@ export default function Home(): JSX.Element {
               existing structures
             </li>
           </ul>
+        </div>
+      </div>
+
+      <div className="container my-24">
+        <h4 className="text-primary">We've got you covered.</h4>
+        <h1 className="">Explore ts-rest's Ecosystem</h1>
+        <p>
+          One of the core values of ts-rest, is to be as unobtrusive as possible
+          to your existing tech stack, as such, we've started making official
+          first party integrations for your favourite clients
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4  gap-6">
+          {[
+            {
+              name: '@ts-rest/core',
+              description:
+                'The core package for ts-rest, define contracts and fetch client',
+              image: logo,
+            },
+            {
+              name: '@ts-rest/react-query',
+              description: '@tanstack/react-query integration',
+              image: react,
+            },
+            {
+              name: '@ts-rest/solid-query',
+              description: '@tanstack/solid-query integration',
+              image: solidJs,
+            },
+            {
+              name: '@ts-rest/express',
+              description: 'Express integration',
+              image: express,
+            },
+            {
+              name: '@ts-rest/next',
+              description:
+                'Next.js integration for full stack, simple, type safety',
+              image: vercel,
+            },
+            {
+              name: '@ts-rest/nest',
+              description: 'Nest.js integration',
+              image: nest,
+            },
+            {
+              name: '@ts-rest/open-api',
+              description:
+                'Ability to generate OpenAPI schemas on the fly with your server deployments',
+              image: openApi,
+            },
+          ].map((item) => (
+            <a
+              key={item.name}
+              href={`https://npmjs.com/package/${item.name}`}
+              target={'_blank'}
+              className="no-underline"
+            >
+              <div
+                className="outline rounded-md p-4 outline-gray-600/20 hover:outline-2 hover:outline-purple-600
+            /30 transition-all cursor-pointer"
+              >
+                <img
+                  height={45}
+                  width={45}
+                  className="m-2 object-contain"
+                  src={item.image}
+                ></img>
+                <h4>{item.name}</h4>
+                <small className="text-white">{item.description}</small>
+              </div>
+            </a>
+          ))}
+          <div className="rounded-md p-4  opacity-70 bg-gray-900/50">
+            <img
+              height={45}
+              width={45}
+              className="m-2 object-contain"
+              src={logo}
+            ></img>
+            <h4>Something Missing?</h4>
+            <small className="text-white">
+              Please add an issue to{' '}
+              <a href="https://github.com/ts-rest/ts-rest" target="_blank">
+                GitHub
+              </a>{' '}
+              or consider contributing!
+            </small>
+          </div>
         </div>
       </div>
 

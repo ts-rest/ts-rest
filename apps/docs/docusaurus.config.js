@@ -67,7 +67,6 @@ const config = {
       ],
       image: 'img/banner.jpg',
       navbar: {
-        title: 'ts-rest',
         logo: {
           alt: 'ts-rest logo',
           src: 'img/logo.svg',
@@ -90,6 +89,16 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
+          {
+            href: 'https://www.npmjs.com/package/@ts-rest/core',
+            label: 'NPM',
+            position: 'right',
+          },
+          {
+            href: 'https://bundlephobia.com/package/@ts-rest/core',
+            label: 'Bundlephobia',
+            position: 'right',
+          },
         ],
       },
       footer: {
@@ -102,6 +111,10 @@ const config = {
                 label: 'Introduction',
                 to: '/docs/intro',
               },
+              {
+                label: 'Quickstart',
+                to: '/docs/quickstart',
+              },
             ],
           },
           {
@@ -111,14 +124,18 @@ const config = {
                 label: 'Twitter',
                 href: 'https://twitter.com/_oliverbutler',
               },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
               {
                 label: 'GitHub',
                 href: 'https://github.com/ts-rest/ts-rest',
+              },
+            ],
+          },
+          {
+            title: 'Links',
+            items: [
+              {
+                label: 'NPM @ts-rest/core',
+                href: 'https://npmjs.com/package/@ts-rest/core',
               },
             ],
           },
