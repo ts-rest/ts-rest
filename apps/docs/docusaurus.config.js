@@ -5,7 +5,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/duotoneDark');
 const config = {
   title: 'ts-rest',
   tagline:
-    'RPC-like client and server helpers for a magical end to end typed experience',
+    'Experience the power of type-safe APIs, your way, without the hassle.',
   url: 'https://ts-rest.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',

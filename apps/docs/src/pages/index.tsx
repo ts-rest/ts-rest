@@ -71,15 +71,11 @@ export default function Home(): JSX.Element {
           </svg>
         </div>
         <h1 className="text-2xl font-dark text-center dark:text-gray-200 md:text-3xl">
-          RPC-like client and server for a{' '}
-          <span className="bg-clip-text text-transparent  bg-primary">
-            magical
-          </span>{' '}
-          end-to-end-typed experience
+          Experience the power of type-safe APIs, your way, without the hassle.
         </h1>
       </div>
 
-      <div className="relative w-fit h-fit mx-auto">
+      <div className="relative w-fit h-fit mx-auto my-12">
         <Link to="/docs/quickstart">
           <button
             className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-800 cursor-pointer hover:bg-purple-700
