@@ -49,6 +49,7 @@ const getJsonSchemaFromZod = (zodObject: unknown) => {
   const schema = zodToJsonSchema(zodObject, {
     name: 'zodObject',
     target: 'openApi3',
+    $refStrategy: 'none',
   });
 
   return schema.definitions['zodObject'];
