@@ -48,11 +48,49 @@ function HomepageHeader() {
   );
 }
 
+const QuickstartButton = () => {
+  return (
+    <div className="relative w-fit h-fit mx-auto my-12 items-center flex flex-col">
+      <Link to="/docs/quickstart">
+        <button
+          className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-500 dark:bg-purple-800 cursor-pointer hover:bg-purple-700
+    p-4 rounded-xl appearance-none border-none text-2xl font-bold flex flex-row items-center gap-2"
+        >
+          Quickstart Guide{' '}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="feather feather-zap inline"
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        </button>
+      </Link>
+      <iframe
+        className="mt-4 ml-7"
+        src="https://ghbtns.com/github-btn.html?user=ts-rest&repo=ts-rest&type=star&count=true&size=large"
+        frameborder="0"
+        scrolling="0"
+        width="170"
+        height="30"
+        title="GitHub"
+      ></iframe>
+    </div>
+  );
+};
+
 export default function Home(): JSX.Element {
   return (
     <Layout
       title={`🪄`}
-      description="RPC-like client and server helpers for a magical end to end typed experience"
+      description="Incrementally adoptable type-safety for your new and existing APIs"
       wrapperClassName="homepage"
     >
       <div className="container my-16 mx-auto">
@@ -71,34 +109,11 @@ export default function Home(): JSX.Element {
           </svg>
         </div>
         <h1 className="text-2xl font-dark text-center dark:text-gray-200 md:text-3xl">
-          Experience the power of type-safe APIs, your way, without the hassle.
+          Incrementally adoptable type-safety for your new and existing APIs
         </h1>
       </div>
 
-      <div className="relative w-fit h-fit mx-auto my-12">
-        <Link to="/docs/quickstart">
-          <button
-            className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-800 cursor-pointer hover:bg-purple-700
-          p-4 rounded-xl appearance-none border-none text-2xl font-bold flex flex-row items-center gap-2"
-          >
-            Quickstart Guide{' '}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="feather feather-zap inline"
-            >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-          </button>
-        </Link>
-      </div>
+      <QuickstartButton />
 
       <Code />
 
@@ -172,6 +187,7 @@ export default function Home(): JSX.Element {
               description:
                 'Next.js integration for full stack, simple, type safety',
               image: vercel,
+              classNames: 'dark:invert',
             },
             {
               name: '@ts-rest/nest',
@@ -192,21 +208,23 @@ export default function Home(): JSX.Element {
               className="no-underline"
             >
               <div
-                className="outline rounded-md p-4 outline-gray-600/20 hover:outline-2 hover:outline-purple-600
+                className="outline rounded-md p-4 outline-gray-600/20 hover:outline-2 hover:outline-purple-600 
             /30 transition-all cursor-pointer h-full"
               >
                 <img
                   height={45}
                   width={45}
-                  className="m-2 object-contain"
+                  className={'m-2 object-contain ' + item.classNames}
                   src={item.image}
                 ></img>
                 <h4>{item.name}</h4>
-                <small className="text-white">{item.description}</small>
+                <small className="dark:text-white text-black">
+                  {item.description}
+                </small>
               </div>
             </a>
           ))}
-          <div className="rounded-md p-4  opacity-70 bg-gray-900/50 h-full">
+          <div className="rounded-md p-4  opacity-70 bg-gray-200/50 dark:bg-gray-900/50 h-full">
             <img
               height={45}
               width={45}
@@ -214,7 +232,7 @@ export default function Home(): JSX.Element {
               src={logo}
             ></img>
             <h4>Something Missing?</h4>
-            <small className="text-white">
+            <small className="dark:text-white text-black">
               Please add an issue to{' '}
               <a href="https://github.com/ts-rest/ts-rest" target="_blank">
                 GitHub
@@ -225,30 +243,7 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-      <div className="relative w-fit h-fit mx-auto my-32">
-        <Link to="/docs/quickstart">
-          <button
-            className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-800 cursor-pointer hover:bg-purple-700
-          p-4 rounded-xl appearance-none border-none text-2xl font-bold flex flex-row items-center gap-2"
-          >
-            Quickstart Guide{' '}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="feather feather-zap inline"
-            >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-          </button>
-        </Link>
-      </div>
+      <QuickstartButton />
     </Layout>
   );
 }

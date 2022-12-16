@@ -4,8 +4,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/duotoneDark');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'ts-rest',
-  tagline:
-    'Experience the power of type-safe APIs, your way, without the hassle.',
+  tagline: 'Incrementally adoptable type-safety for your new and existing APIs',
   url: 'https://ts-rest.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
