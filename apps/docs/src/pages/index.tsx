@@ -108,7 +108,7 @@ export default function Home(): JSX.Element {
 
       <HomepageFeatures />
 
-      <div className="my-10 container mx-auto">
+      <div className="my-32 container mx-auto">
         <div className=" bg-purple-100/40 dark:bg-purple-700/5 p-5 border-solid border-0 border-l-4 border-purple-600 dark:border-purple-700/80">
           <h3>Elevator Pitch</h3>
 
@@ -140,7 +140,7 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-      <div className="container my-24">
+      <div className="container my-32">
         <h4 className="text-primary">We've got you covered.</h4>
         <h1 className="">Explore ts-rest's Ecosystem</h1>
         <p>
@@ -197,7 +197,7 @@ export default function Home(): JSX.Element {
             >
               <div
                 className="outline rounded-md p-4 outline-gray-600/20 hover:outline-2 hover:outline-purple-600
-            /30 transition-all cursor-pointer"
+            /30 transition-all cursor-pointer h-full"
               >
                 <img
                   height={45}
@@ -210,7 +210,7 @@ export default function Home(): JSX.Element {
               </div>
             </a>
           ))}
-          <div className="rounded-md p-4  opacity-70 bg-gray-900/50">
+          <div className="rounded-md p-4  opacity-70 bg-gray-900/50 h-full">
             <img
               height={45}
               width={45}
@@ -229,7 +229,7 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-      <div className="relative w-fit h-fit mx-auto my-24">
+      <div className="relative w-fit h-fit mx-auto my-32">
         <Link to="/docs/quickstart">
           <button
             className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-800 cursor-pointer hover:bg-purple-700
