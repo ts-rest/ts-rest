@@ -61,46 +61,46 @@ jobs:
       - id: set-nx-affected
         run: NX_AFFECTED_BASE=${{ steps.last_successful_commit.outputs.commit_hash }} pnpm run ci:nx-affected
 
-  deploy-docs:
-    name: Deploy Docs
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: ${{ contains(needs.build.outputs.nx_affected, 'docs') }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: nrwl/nx-set-shas@v2
+  # deploy-docs:
+  #   name: Deploy Docs
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   if: ${{ contains(needs.build.outputs.nx_affected, 'docs') }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: nrwl/nx-set-shas@v2
 
-      - uses: pnpm/action-setup@v2.0.1
-        name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 7
-          run_install: false
+  #     - uses: pnpm/action-setup@v2.0.1
+  #       name: Install pnpm
+  #       id: pnpm-install
+  #       with:
+  #         version: 7
+  #         run_install: false
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+  #     - name: Get pnpm store directory
+  #       id: pnpm-cache
+  #       run: |
+  #         echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
 
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+  #     - uses: actions/cache@v3
+  #       name: Setup pnpm cache
+  #       with:
+  #         path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+  #         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
-        run: pnpm install
-      - name: Build Docs
-        run: pnpm exec nx run docs:build
-      - name: Set AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2
-      - name: 'Deploy docs to S3'
-        run: 'aws s3 sync dist/apps/docs/ s3://ts-rest-docs-bucket/'
+  #     - name: Install dependencies
+  #       run: pnpm install
+  #     - name: Build Docs
+  #       run: pnpm exec nx run docs:build
+  #     - name: Set AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: eu-west-2
+  #     - name: 'Deploy docs to S3'
+  #       run: 'aws s3 sync dist/apps/docs/ s3://ts-rest-docs-bucket/'
