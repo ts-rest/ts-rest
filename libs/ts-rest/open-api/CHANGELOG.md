@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.11.1
+
+### Patch Changes
+
+- 0427ea3: Don't use $ref in OpenAPI
+
 ## 3.11.0
 
 ## 3.10.2
