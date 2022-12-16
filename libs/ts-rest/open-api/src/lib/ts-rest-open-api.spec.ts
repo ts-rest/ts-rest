@@ -9,6 +9,11 @@ type Post = {
   published: boolean;
 };
 
+const commentSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+});
+
 const postsRouter = c.router({
   getPost: {
     method: 'GET',
@@ -47,7 +52,10 @@ const postsRouter = c.router({
       path: '/posts/:id/comments',
       responses: {
         200: z.object({
-          comments: z.array(z.string()),
+          comments: z.union([
+            z.array(commentSchema),
+            z.array(commentSchema.extend({ author: z.string() })),
+          ]),
         }),
       },
     },
@@ -197,10 +205,43 @@ const expectedApiDoc = {
                   additionalProperties: false,
                   properties: {
                     comments: {
-                      items: {
-                        type: 'string',
-                      },
-                      type: 'array',
+                      anyOf: [
+                        {
+                          items: {
+                            additionalProperties: false,
+                            properties: {
+                              id: {
+                                type: 'number',
+                              },
+                              title: {
+                                type: 'string',
+                              },
+                            },
+                            required: ['id', 'title'],
+                            type: 'object',
+                          },
+                          type: 'array',
+                        },
+                        {
+                          items: {
+                            additionalProperties: false,
+                            properties: {
+                              author: {
+                                type: 'string',
+                              },
+                              id: {
+                                type: 'number',
+                              },
+                              title: {
+                                type: 'string',
+                              },
+                            },
+                            required: ['id', 'title', 'author'],
+                            type: 'object',
+                          },
+                          type: 'array',
+                        },
+                      ],
                     },
                   },
                   required: ['comments'],
