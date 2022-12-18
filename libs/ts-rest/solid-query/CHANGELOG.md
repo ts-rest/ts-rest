@@ -1,5 +1,11 @@
 # @ts-rest/solid-query
 
+## 3.11.2
+
+### Patch Changes
+
+- 7a9a8a1: Fix broken ESM module building for solid-query, was causing build errors with solid, especially solid-start
+
 ## 3.11.1
 
 ## 3.11.0
