@@ -1,1 +1,1 @@
-export * from './lib/ts-rest-client';
+export * from './lib/react-query';
