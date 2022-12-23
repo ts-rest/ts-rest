@@ -5,7 +5,7 @@ This is a client using` @ts-react/react-query`, using `@tanstack/react-query` un
 ## useQuery and useMutation
 
 ```tsx
-export const client = initReactQueryClient(router, {
+export const client = initQueryClient(router, {
   baseUrl: 'http://localhost:3333',
   baseHeaders: {},
 });
@@ -77,7 +77,7 @@ const PAGE_SIZE = 5;
 
 export function Index() {
   const { isLoading, data, hasNextPage, fetchNextPage } =
-    api.getPosts.useInfiniteQuery(
+    client.getPosts.useInfiniteQuery(
       ['posts'],
       ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
         query: { skip: pageParam.skip, take: pageParam.take },
