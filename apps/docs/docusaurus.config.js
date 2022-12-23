@@ -98,6 +98,11 @@ const config = {
             label: 'Bundlephobia',
             position: 'right',
           },
+          {
+            href: 'https://discord.com/invite/2Megk85k5a',
+            label: 'Discord 🆕',
+            position: 'right',
+          },
         ],
       },
       footer: {
