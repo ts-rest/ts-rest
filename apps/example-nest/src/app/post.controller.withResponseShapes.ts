@@ -29,7 +29,7 @@ export class PostController  {
     });
 
     return {
-      status: 200 as const,
+      status: 200,
       body: { posts, count: totalPosts, skip, take },
     };
   }
@@ -40,10 +40,10 @@ export class PostController  {
     const post = await this.postService.getPost(id);
 
     if (!post) {
-      return { status: 404 as const, body: null };
+      return { status: 404, body: null };
     }
 
-    return { status: 200 as const, body: post };
+    return { status: 200, body: post };
   }
 
   @Api(s.route.createPost)
@@ -56,7 +56,7 @@ export class PostController  {
       description: body.description,
     });
 
-    return { status: 201 as const, body: post };
+    return { status: 201, body: post };
   }
 
   @Api(s.route.updatePost)
@@ -70,7 +70,7 @@ export class PostController  {
       description: body.description,
     });
 
-    return { status: 200 as const, body: post };
+    return { status: 200, body: post };
   }
 
   @Api(s.route.deletePost)
@@ -79,13 +79,13 @@ export class PostController  {
   ): Promise<ResponseShapes['deletePost']> {
     await this.postService.deletePost(id);
 
-    return { status: 200 as const, body: { message: 'Post Deleted' } };
+    return { status: 200, body: { message: 'Post Deleted' } };
   }
 
   @Api(s.route.testPathParams)
   async testPathParams(
     @ApiDecorator() { params }: RouteShape['testPathParams']
   ): Promise<ResponseShapes['testPathParams']> {
-    return { status: 200 as const, body: params };
+    return { status: 200, body: params };
   }
 }
