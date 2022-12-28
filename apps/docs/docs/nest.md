@@ -55,10 +55,10 @@ You have two options to ensure HTTP type safety on your Nest Controllers:
         const post = await this.postService.getPost(id);
 
         if (!post) {
-          return { status: 404 as const, body: null };
+          return { status: 404, body: null };
         }
 
-        return { status: 200 as const, body: post };
+        return { status: 200, body: post };
       }
     }
     ```
