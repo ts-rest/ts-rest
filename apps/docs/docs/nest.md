@@ -28,6 +28,34 @@ The `@Api` decorator takes the route, defines the path and method for the contro
 
 It also injects "appRoute" into the req object, allowing the `@ApiDecorator` decorator automatically parse and check the query and body parameters.
 
+### JSON Query Parameters
+
+To handle JSON query parameters, you can use the `@JsonQuery()` decorator on either your Controller classes or individual endpoint methods.
+
+```typescript
+@Controller()
+@JsonQuery()
+export class PostController implements ControllerShape {}
+
+```
+
+The method decorator can be useful to override the controller's behaviour on a per-endpoint basis.
+
+```typescript
+
+@Controller()
+@JsonQuery()
+export class PostController implements ControllerShape {
+  constructor(private readonly postService: PostService) {}
+
+  @Api(s.route.getPost)
+  @JsonQuery(false)
+  async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']) {
+    // ...
+  }
+}
+```
+
 :::caution
 
 Currently any existing Nest global prefix, versioning, or controller prefixes will be ignored, please see https://github.com/ts-rest/ts-rest/issues/70 for more details.

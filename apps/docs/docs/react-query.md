@@ -35,6 +35,18 @@ const App = () => {
 };
 ```
 
+### JSON Query Parameters
+
+To enable encoding query parameters as typed JSON values, you can use the `jsonQuery` option.
+
+```typescript
+export const client = initQueryClient(router, {
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {},
+  jsonQuery: true,
+});
+```
+
 ## Regular Query and Mutations
 
 `@ts-rest/react-query` allows for a regular fetch or mutation if you want, without having to initialise two different clients, one with `@ts-rest/core` and one with `@ts-react/react-query`.

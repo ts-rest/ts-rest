@@ -39,6 +39,27 @@ export const contract = c.router({
 });
 ```
 
+## Query Parameters
+
+All query parameters, by default, need to have an input type of `string` since query strings inherently cannot be typed, however, ts-rest allows you to encode query parameters as JSON values.
+This will allow you to use input types other than strings in your contracts.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+    getPosts: {
+        ...,
+        query: z.object({
+            take: z.number().default(10),
+            skip: z.number().default(0),
+            search: z.string().optional(),
+        }),
+    }
+});
+```
+
+Check the relevant sections to see how to enable JSON query encoding/decoding on the client or server.
+
 ## Combining Contracts
 
 You can combine contracts to create a single contract, helpful if you want many sub contracts, especially if they are huge.

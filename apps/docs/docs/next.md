@@ -30,6 +30,14 @@ export default createNextRouter(api, router);
 
 `createNextRouter` is a function that takes a router and a complete router, and creates endpoints, with the correct methods, paths and callbacks.
 
+### JSON Query Parameters
+
+To handle JSON query parameters, you can use the `jsonQuery` option.
+
+```typescript
+export default createNextRouter(api, router, { jsonQuery: true });
+```
+
 ## Future Work
 
 As this pattern doesn't support a lambda per endpoint, it is planned to provide a helper utility to allow individual endpoints to be created.
