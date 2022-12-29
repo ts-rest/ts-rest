@@ -18,12 +18,14 @@ import {
   AppRoute,
   AppRouteMutation,
   checkZodSchema,
+  parseJsonQueryObject,
   PathParamsWithCustomValidators,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
 import { map, Observable } from 'rxjs';
 import type { Request, Response } from 'express-serve-static-core';
+import { JsonQuerySymbol } from './json-query.decorator';
 
 const tsRestAppRouteMetadataKey = Symbol('ts-rest-app-route');
 
@@ -56,7 +58,16 @@ export const ApiDecorator = createParamDecorator(
       throw new Error('Make sure your route is decorated with @Api()');
     }
 
-    const queryResult = checkZodSchema(req.query, appRoute.query);
+    const isJsonQuery = !!(
+      Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ||
+      Reflect.getMetadata(JsonQuerySymbol, ctx.getClass())
+    );
+
+    const query = isJsonQuery
+      ? parseJsonQueryObject(req.query as Record<string, string>)
+      : req.query;
+
+    const queryResult = checkZodSchema(query, appRoute.query);
 
     if (!queryResult.success) {
       throw new BadRequestException(queryResult.error);
