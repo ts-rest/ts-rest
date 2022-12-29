@@ -28,4 +28,20 @@ export const tsRouter = s.router(contractTs, {
       body: post,
     };
   },
+  getPosts: async ({ query }) => {
+    const posts = [
+      mockPostFixtureFactory({ id: '1' }),
+      mockPostFixtureFactory({ id: '2' }),
+    ];
+
+    return {
+      status: 200,
+      body: {
+        posts,
+        count: 0,
+        skip: query.skip || 0,
+        take: query.take || 50,
+      },
+    };
+  },
 });
