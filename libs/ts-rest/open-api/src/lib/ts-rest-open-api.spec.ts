@@ -80,7 +80,7 @@ const expectedApiDoc = {
     title: 'Blog API',
     version: '0.1',
   },
-  openapi: '3.0.0',
+  openapi: '3.0.2',
   paths: {
     '/health': {
       get: {
@@ -307,6 +307,89 @@ describe('ts-rest-open-api', () => {
             get: {
               ...expectedApiDoc.paths['/posts/{id}/comments'].get,
               operationId: 'getPostComments',
+            },
+          },
+        },
+      });
+    });
+
+    it('should generate doc with json query', async () => {
+      const apiDoc = generateOpenApi(
+        router,
+        {
+          info: { title: 'Blog API', version: '0.1' },
+        },
+        { jsonQuery: true }
+      );
+
+      expect(apiDoc).toEqual({
+        ...expectedApiDoc,
+        paths: {
+          ...expectedApiDoc.paths,
+          '/posts': {
+            ...expectedApiDoc.paths['/posts'],
+            get: {
+              ...expectedApiDoc.paths['/posts'].get,
+              parameters: [
+                {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        anyOf: [
+                          {
+                            not: {},
+                          },
+                          {
+                            type: 'string',
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  in: 'query',
+                  name: 'search',
+                },
+                {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        anyOf: [
+                          {
+                            not: {},
+                          },
+                          {
+                            default: 'date',
+                            enum: ['title', 'date'],
+                            type: 'string',
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  in: 'query',
+                  name: 'sortBy',
+                },
+                {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        anyOf: [
+                          {
+                            not: {},
+                          },
+                          {
+                            default: 'asc',
+                            enum: ['asc', 'desc'],
+                            type: 'string',
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  in: 'query',
+                  name: 'sort',
+                },
+              ],
             },
           },
         },
