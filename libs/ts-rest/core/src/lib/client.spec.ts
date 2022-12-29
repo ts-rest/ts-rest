@@ -37,6 +37,7 @@ const postsRouter = c.router({
     query: z.object({
       take: z.number().optional(),
       skip: z.number().optional(),
+      order: z.string().optional(),
     }),
   },
   createPost: {
@@ -120,7 +121,7 @@ export const router = c.router({
 const api = jest.fn();
 
 const client = initClient(router, {
-  baseUrl: 'http://api.com',
+  baseUrl: 'https://api.com',
   baseHeaders: {},
   api,
 });
@@ -141,7 +142,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
-        path: 'http://api.com/posts',
+        path: 'https://api.com/posts',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -159,7 +160,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
-        path: 'http://api.com/posts',
+        path: 'https://api.com/posts',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -177,7 +178,59 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
-        path: 'http://api.com/posts?take=10',
+        path: 'https://api.com/posts?take=10',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: undefined,
+      });
+    });
+
+    it('w/ json query parameters', async () => {
+      const api = jest.fn();
+      const client = initClient(
+        {
+          ...router,
+          posts: {
+            ...router.posts,
+            getPosts: {
+              ...router.posts.getPosts,
+              query: router.posts.getPosts.query.extend({
+                published: z.boolean(),
+                filter: z.object({
+                  title: z.string(),
+                }),
+              }),
+            },
+          },
+        },
+        {
+          baseUrl: 'https://api.com',
+          baseHeaders: {},
+          jsonQuery: true,
+          api,
+        }
+      );
+
+      const value = { key: 'value' };
+      api.mockResolvedValue({ body: value, status: 200 });
+
+      const result = await client.posts.getPosts({
+        query: {
+          take: 10,
+          order: 'asc',
+          published: true,
+          filter: { title: 'test' },
+        },
+      });
+
+      expect(result).toStrictEqual({ body: value, status: 200 });
+
+      expect(api).toHaveBeenCalledWith({
+        method: 'GET',
+        path: `https://api.com/posts?take=10&order=asc&published=true&filter=${encodeURIComponent(
+          '{"title":"test"}'
+        )}`,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -197,7 +250,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
-        path: 'http://api.com/posts?take=10',
+        path: 'https://api.com/posts?take=10',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -215,7 +268,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
-        path: 'http://api.com/posts/1',
+        path: 'https://api.com/posts/1',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -237,7 +290,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'POST',
-        path: 'http://api.com/posts',
+        path: 'https://api.com/posts',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -262,7 +315,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'PUT',
-        path: 'http://api.com/posts/1',
+        path: 'https://api.com/posts/1',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -286,7 +339,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'POST',
-        path: 'http://api.com/posts?test=test',
+        path: 'https://api.com/posts?test=test',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -309,7 +362,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'PUT',
-        path: 'http://api.com/posts/1',
+        path: 'https://api.com/posts/1',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -336,7 +389,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'PATCH',
-        path: 'http://api.com/posts/1',
+        path: 'https://api.com/posts/1',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -359,7 +412,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'DELETE',
-        path: 'http://api.com/posts/1',
+        path: 'https://api.com/posts/1',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -386,7 +439,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'POST',
-        path: 'http://api.com/upload',
+        path: 'https://api.com/upload',
         headers: {},
         body: expectedFormData,
       });
@@ -408,7 +461,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'POST',
-        path: 'http://api.com/upload',
+        path: 'https://api.com/upload',
         headers: {},
         body: formData,
       });

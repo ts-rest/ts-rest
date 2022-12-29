@@ -84,6 +84,7 @@ export interface ClientArgs {
   baseHeaders: Record<string, string>;
   api?: ApiFetcher;
   credentials?: RequestCredentials;
+  jsonQuery?: boolean;
 }
 
 type ApiFetcher = (args: {
@@ -167,13 +168,14 @@ export const getCompleteUrl = (
   query: unknown,
   baseUrl: string,
   params: unknown,
-  route: AppRoute
+  route: AppRoute,
+  jsonQuery: boolean
 ) => {
   const path = insertParamsIntoPath({
     path: route.path,
     params: params as any,
   });
-  const queryComponent = convertQueryParamsToUrlString(query);
+  const queryComponent = convertQueryParamsToUrlString(query, jsonQuery);
   return `${baseUrl}${path}${queryComponent}`;
 };
 
@@ -186,7 +188,8 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       inputArgs?.query,
       clientArgs.baseUrl,
       inputArgs?.params,
-      route
+      route,
+      !!clientArgs.jsonQuery
     );
 
     return await fetchApi(completeUrl, clientArgs, route, inputArgs?.body);

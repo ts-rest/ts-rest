@@ -1,11 +1,41 @@
 /**
  *
  * @param query - Any JSON object
+ * @param json - Use JSON.stringify to encode the query values
  * @returns - The query url segment, using explode array syntax, and deep object syntax
  */
-export const convertQueryParamsToUrlString = (query: unknown) => {
-  const queryString = encodeQueryParams(query);
+export const convertQueryParamsToUrlString = (query: unknown, json = false) => {
+  const queryString = json
+    ? encodeQueryParamsJson(query)
+    : encodeQueryParams(query);
   return queryString?.length > 0 ? '?' + queryString : '';
+};
+
+export const encodeQueryParamsJson = (query: unknown) => {
+  if (!query) {
+    return '';
+  }
+
+  return Object.entries(query)
+    .map(([key, value]) => {
+      let encodedValue;
+
+      // if value is a string and is not a reserved JSON value or a number, pass it without encoding
+      // this makes strings look nicer in the URL (e.g. ?name=John instead of ?name=%22John%22)
+      // this is also how OpenAPI will pass strings even if they are marked as application/json types
+      if (
+        typeof value === 'string' &&
+        !['true', 'false', 'null'].includes(value.trim()) &&
+        isNaN(Number(value))
+      ) {
+        encodedValue = value;
+      } else {
+        encodedValue = JSON.stringify(value);
+      }
+
+      return `${encodeURIComponent(key)}=${encodeURIComponent(encodedValue)}`;
+    })
+    .join('&');
 };
 
 export const encodeQueryParams = (query: unknown) => {
@@ -62,4 +92,25 @@ const tokeniseValue = (key: string, value: unknown): string[] => {
   }
 
   return [`${key}=${value}`];
+};
+
+/**
+ *
+ * @param query - A server-side query object where values have been encoded as JSON strings
+ * @returns - The same object with the JSON strings decoded. Objects that were encoded using toJSON such as Dates will remain as strings
+ */
+export const parseJsonQueryObject = (query: Record<string, string>) => {
+  return Object.fromEntries(
+    Object.entries(query).map(([key, value]) => {
+      let parsedValue: any;
+      // if json parse fails, treat the value as a string
+      // this allows us to pass strings without having to surround them with quotes
+      try {
+        parsedValue = JSON.parse(value);
+      } catch {
+        parsedValue = value;
+      }
+      return [key, parsedValue];
+    })
+  );
 };
