@@ -13,6 +13,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  parseJsonQueryObject,
   PathParamsWithCustomValidators,
   ZodInferOrType,
 } from '@ts-rest/core';
@@ -191,12 +192,18 @@ export const createNextRoute = <T extends AppRouter>(
  *
  * @param routes
  * @param obj
+ * @param options
  * @returns
  */
 export const createNextRouter =
-  <T extends AppRouter>(routes: T, obj: RecursiveRouterObj<T>) =>
+  <T extends AppRouter>(
+    routes: T,
+    obj: RecursiveRouterObj<T>,
+    options = { jsonQuery: false }
+  ) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
-    const params = (req.query?.['ts-rest'] as string[]) || [];
+    let { 'ts-rest': params, ...query } = req.query;
+    params = (params as string[]) || [];
 
     const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
@@ -213,7 +220,11 @@ export const createNextRouter =
 
     const pathParams = getPathParamsFromArray(params, route);
 
-    const queryResult = checkZodSchema(req.query, route.query);
+    query = options.jsonQuery
+      ? parseJsonQueryObject(query as Record<string, string>)
+      : req.query;
+
+    const queryResult = checkZodSchema(query, route.query);
 
     if (!queryResult.success) {
       return res.status(400).json(queryResult.error);
