@@ -62,7 +62,7 @@ You have two options to ensure HTTP type safety on your Nest Controllers:
       }
     }
     ```
-  - If your controller needs to implement a difference class, or needs extra methods defined outside of a contract, this is option gives that flexibility
+  - If your controller needs to implement a difference class, or needs extra methods defined outside of a contract, this is option gives that flexibility without having to worry about maintaining class extensions. 
 
 
 :::caution
