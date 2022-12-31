@@ -67,18 +67,7 @@ export type ApiRouteResponse<T> =
       body: unknown;
     };
 
-export type ApiResponseForRoute<T extends AppRoute> =
-  | {
-      [K in keyof T['responses']]: {
-        status: K
-        body: ZodInferOrType<T['responses'][K]>
-      }
-    }[keyof T['responses']]
-  & {
-      status: Exclude<HTTPStatusCode, keyof T>
-      body: unknown
-    };
-
+export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<T['responses']>
 
 
 /**
