@@ -21,6 +21,14 @@ const contract = c.router({
       200: c.response<{ id: string }>(),
     },
   },
+  getWithQuery: {
+    method: 'GET',
+    path: `/test-query`,
+    query: c.body<{ test: string; foo: number }>(),
+    responses: {
+      200: c.response<{ test: string; foo: number }>(),
+    },
+  },
   advanced: {
     method: 'POST',
     path: `/advanced/:id`,
@@ -45,6 +53,14 @@ const nextEndpoint = createNextRoute(contract, {
       status: 200,
       body: {
         id,
+      },
+    };
+  },
+  getWithQuery: async ({ query }) => {
+    return {
+      status: 200,
+      body: {
+        ...query,
       },
     };
   },
@@ -77,7 +93,7 @@ describe('createNextRouter', () => {
 
     const req = mockReq('/test', {
       method: 'GET',
-      query: { test: 'test-query-string' },
+      query: { test: 'test-query-string', foo: 123 },
     });
 
     await resultingRouter(req, mockRes);
@@ -134,6 +150,25 @@ describe('createNextRouter', () => {
     });
   });
 
+  it('should send json query correctly', async () => {
+    const resultingRouter = createNextRouter(contract, nextEndpoint, {
+      jsonQuery: true,
+    });
+
+    const req = mockReq('/test-query', {
+      method: 'GET',
+      query: { test: '"test-query-string"', foo: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      test: 'test-query-string',
+      foo: 123,
+    });
+  });
+
   it('should differentiate between /test and /test/id', async () => {
     const resultingRouter = createNextRouter(contract, nextEndpoint);
 
@@ -153,7 +188,7 @@ describe('createNextRouter', () => {
 export const mockReq = (
   url: string,
   args: {
-    query?: Record<string, string>;
+    query?: Record<string, unknown>;
     body?: unknown;
     method: string;
   }

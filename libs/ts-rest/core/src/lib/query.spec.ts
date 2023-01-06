@@ -1,23 +1,26 @@
-import { convertQueryParamsToUrlString, encodeQueryParams } from './query';
+import {
+  convertQueryParamsToUrlString,
+  encodeQueryParams,
+  encodeQueryParamsJson,
+  parseJsonQueryObject,
+} from './query';
 import { parse as qsParse, stringify as qsStringify } from 'qs';
 
 describe('convertQueryParamsToUrlString', () => {
   it('should convert query params to url string', () => {
     const query = {
-      id: '1',
+      id: 'abc',
     };
 
-    const result = convertQueryParamsToUrlString(query);
-
-    expect(result).toBe('?id=1');
+    expect(convertQueryParamsToUrlString(query)).toBe('?id=abc');
+    expect(convertQueryParamsToUrlString(query, true)).toBe(`?id=abc`);
   });
 
   it('should convert query params to url string with no params', () => {
     const query = {};
 
-    const result = convertQueryParamsToUrlString(query);
-
-    expect(result).toBe('');
+    expect(convertQueryParamsToUrlString(query)).toBe('');
+    expect(convertQueryParamsToUrlString(query, true)).toBe('');
   });
 
   it('should convert query params to url string with primitives', () => {
@@ -25,6 +28,11 @@ describe('convertQueryParamsToUrlString', () => {
     expect(convertQueryParamsToUrlString(undefined)).toBe('');
     expect(convertQueryParamsToUrlString(true)).toBe('');
     expect(convertQueryParamsToUrlString(123)).toBe('');
+
+    expect(convertQueryParamsToUrlString(null, true)).toBe('');
+    expect(convertQueryParamsToUrlString(undefined, true)).toBe('');
+    expect(convertQueryParamsToUrlString(true, true)).toBe('');
+    expect(convertQueryParamsToUrlString(123, true)).toBe('');
   });
 });
 
@@ -203,5 +211,94 @@ describe('encodeQueryParams', () => {
     expect(result).toBe(encodeURI('array[0][0]=1&array[0][1]=2'));
     expect(qsParse(result)).toEqual(query);
     expect(qsStringify(query)).toBe(result);
+  });
+});
+
+describe('encodeQueryParamsJson', () => {
+  it('should be empty if no params', () => {
+    const query = {};
+
+    const result = encodeQueryParamsJson(query);
+
+    expect(result).toBe('');
+  });
+
+  it('should convert query params to url string with many params', () => {
+    const query = {
+      id: 123,
+      string: 'ABC',
+      trueString: 'true',
+      falseString: 'false',
+      nullString: 'null',
+      numberString: '123',
+      boolean: true,
+      null: null,
+      sorting: {
+        by: 'date',
+        order: 'asc',
+      },
+      filter: {
+        date: {
+          gt: new Date('2020-01-01'),
+        },
+      },
+    };
+
+    const result = encodeQueryParamsJson(query);
+
+    expect(result).toBe(
+      `id=123&string=ABC&trueString=%22true%22&falseString=%22false%22&nullString=%22null%22&numberString=%22123%22&boolean=true&null=null&sorting=${encodeURIComponent(
+        '{"by":"date","order":"asc"}'
+      )}&filter=${encodeURIComponent(
+        '{"date":{"gt":"2020-01-01T00:00:00.000Z"}}'
+      )}`
+    );
+  });
+});
+
+describe('parseJsonQueryObject', () => {
+  it('should be empty if no params', () => {
+    const query = {};
+
+    const result = parseJsonQueryObject(query);
+
+    expect(result).toEqual({});
+  });
+
+  it('should convert json query object to regular object', () => {
+    const query = {
+      id: '123',
+      string: 'ABC',
+      trueString: '"true"',
+      falseString: '"false"',
+      nullString: '"null"',
+      numberString: '"123"',
+      boolean: 'true',
+      null: 'null',
+      sorting: '{"by":"date","order":"asc"}',
+      filter: '{"date":{"gt":"2020-01-01T00:00:00.000Z"}}',
+    };
+
+    const result = parseJsonQueryObject(query);
+
+    expect(result).toEqual({
+      id: 123,
+      string: 'ABC',
+      trueString: 'true',
+      falseString: 'false',
+      nullString: 'null',
+      numberString: '123',
+      boolean: true,
+      null: null,
+      sorting: {
+        by: 'date',
+        order: 'asc',
+      },
+      filter: {
+        date: {
+          gt: '2020-01-01T00:00:00.000Z',
+        },
+      },
+    });
   });
 });

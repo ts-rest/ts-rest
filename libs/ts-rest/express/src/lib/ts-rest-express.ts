@@ -8,6 +8,7 @@ import {
   checkZodSchema,
   getValue,
   isAppRoute,
+  parseJsonQueryObject,
   PathParamsWithCustomValidators,
   Without,
   ZodInferOrType,
@@ -66,6 +67,11 @@ type RecursiveRouterObj<T extends AppRouter> = {
     : never;
 };
 
+type Options = {
+  logInitialization?: boolean;
+  jsonQuery?: boolean;
+};
+
 export const initServer = () => {
   return {
     router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
@@ -95,16 +101,18 @@ const transformAppRouteQueryImplementation = (
   route: AppRouteQueryImplementation<any>,
   schema: AppRouteQuery,
   app: IRouter,
-  options: {
-    logInitialization: boolean;
-  }
+  options: Options
 ) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
   }
 
   app.get(schema.path, async (req, res, next) => {
-    const queryResult = checkZodSchema(req.query, schema.query);
+    const query = options.jsonQuery
+      ? parseJsonQueryObject(req.query as Record<string, string>)
+      : req.query;
+
+    const queryResult = checkZodSchema(query, schema.query);
 
     if (!queryResult.success) {
       return res.status(400).send(queryResult.error);
@@ -137,9 +145,7 @@ const transformAppRouteMutationImplementation = (
   route: AppRouteMutationImplementation<any>,
   schema: AppRouteMutation,
   app: IRouter,
-  options: {
-    logInitialization: boolean;
-  }
+  options: Options
 ) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
@@ -148,7 +154,11 @@ const transformAppRouteMutationImplementation = (
   const method = schema.method;
 
   const callback = async (req: Request, res: Response, next: NextFunction) => {
-    const queryResult = checkZodSchema(req.query, schema.query);
+    const query = options.jsonQuery
+      ? parseJsonQueryObject(req.query as Record<string, string>)
+      : req.query;
+
+    const queryResult = checkZodSchema(query, schema.query);
 
     if (!queryResult.success) {
       return res.status(400).send(queryResult.error);
@@ -212,8 +222,9 @@ export const createExpressEndpoints = <
   schema: TRouter,
   router: T,
   app: IRouter,
-  options = {
+  options: Options = {
     logInitialization: true,
+    jsonQuery: false,
   }
 ) => {
   recursivelyApplyExpressRouter(router, [], (route, path) => {

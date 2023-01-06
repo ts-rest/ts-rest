@@ -9,7 +9,7 @@ export const client = initClient(router, {
 });
 ```
 
-### Query
+## Query
 
 **Query** against the contract, a _query_ is a function that does a GET request to the api.
 
@@ -17,7 +17,44 @@ export const client = initClient(router, {
 const { data } = await client.posts.get();
 ```
 
-### Mutate
+### Typed Query Parameters
+
+By default, all query parameters are encoded as strings, however, you can use the `jsonQuery` option to encode query parameters as typed JSON values.
+Make sure to enable JSON query handling on the server as well.
+
+```typescript
+const client = initClient(router, {
+  baseUrl: 'http://localhost:3334',
+  baseHeaders: {},
+  jsonQuery: true,
+});
+
+const { data } = await client.posts.get({
+  query: {
+    take: 10,
+    skip: 0,
+    search: 'hello',
+  },
+});
+```
+
+:::caution
+
+Objects implementing `.toJSON()` will irreversibly be converted to JSON, so you will need to use custom zod transforms to convert back to the original object types.
+
+For example, Date objects will be converted ISO strings by default, so you could handle this case like so:
+
+```typescript
+const dateSchema = z
+  .union([z.string().datetime(), z.date()])
+  .transform((date) => (typeof date === 'string' ? new Date(date) : date));
+```
+
+This will ensure that you could pass Date objects in your client queries. They will be converted to ISO strings in the JSON-encoded URL query string, and then converted back to Date objects on the server by zod's parser.
+
+:::
+
+## Mutate
 
 **Mutate** against the contract, a _mutation_ is a function that does a POST, PUT, PATCH or DELETE request to the api.
 
@@ -43,7 +80,7 @@ if (status === 200) {
 }
 ```
 
-### Return type
+## Return type
 
 ```typescript
 const data: {

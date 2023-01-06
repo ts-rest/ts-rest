@@ -94,7 +94,7 @@ app.get('/test', (req, res) => {
 });
 
 createExpressEndpoints(apiBlog, completedRouter, app);
-createExpressEndpoints(contractTs, tsRouter, app);
+createExpressEndpoints(contractTs, tsRouter, app, { jsonQuery: true });
 
 const port = process.env.port || 3333;
 const server = app.listen(port, () => {

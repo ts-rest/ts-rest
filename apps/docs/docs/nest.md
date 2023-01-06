@@ -29,16 +29,43 @@ The `@Api` decorator takes the route, defines the path and method for the contro
 
 It also injects "appRoute" into the req object, allowing the `@ApiDecorator` decorator automatically parse and check the query and body parameters.
 
+## JSON Query Parameters
+
+To handle JSON query parameters, you can use the `@JsonQuery()` decorator on either your Controller classes or individual endpoint methods.
+
+```typescript
+@Controller()
+@JsonQuery()
+export class PostController implements ControllerShape {}
+```
+
+The method decorator can be useful to override the controller's behaviour on a per-endpoint basis.
+
+```typescript
+@Controller()
+@JsonQuery()
+export class PostController implements ControllerShape {
+  constructor(private readonly postService: PostService) {}
+
+  @Api(s.route.getPost)
+  @JsonQuery(false)
+  async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']) {
+    // ...
+  }
+}
+```
 
 ## Response Return Type Safety
 
-You have two options to ensure HTTP type safety on your Nest Controllers: 
+You have two options to ensure HTTP type safety on your Nest Controllers:
 
-- `ControllerShape` as shown above: 
+- `ControllerShape` as shown above:
   - Your controller can implement the `ControllerShape` derived from `typeof s.controllerShape`
   - This ensures your controller methods also align with the base interface shapes
 - `ResponseShapes`:
+
   - Your controller can utilize `typeof s.responseShapes` in the return type. For example:
+
     ```typescript
     const s = initNestServer(apiBlog);
     type ControllerShape = typeof s.controllerShape;
@@ -50,8 +77,10 @@ You have two options to ensure HTTP type safety on your Nest Controllers:
       constructor(private readonly postService: PostService) {}
 
       @Api(s.route.getPost)
-      async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']):
-      Promise<ResponseShapes['getPost']> { // <- return type defined here
+      async getPost(
+        @ApiDecorator() { params: { id } }: RouteShape['getPost']
+      ): Promise<ResponseShapes['getPost']> {
+        // <- return type defined here
         const post = await this.postService.getPost(id);
 
         if (!post) {
@@ -62,8 +91,8 @@ You have two options to ensure HTTP type safety on your Nest Controllers:
       }
     }
     ```
-  - If your controller needs to implement a difference class, or needs extra methods defined outside of a contract, this is option gives that flexibility without having to worry about maintaining class extensions. 
 
+  - If your controller needs to implement a difference class, or needs extra methods defined outside of a contract, this is option gives that flexibility without having to worry about maintaining class extensions.
 
 :::caution
 

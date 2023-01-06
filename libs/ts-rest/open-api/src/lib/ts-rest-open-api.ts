@@ -55,10 +55,41 @@ const getJsonSchemaFromZod = (zodObject: unknown) => {
   return schema.definitions['zodObject'];
 };
 
+const getQuerySchemaFromZod = (zodObject: unknown, jsonQuery = false) => {
+  const isZodObj = isZodObject(zodObject);
+
+  if (!isZodObj) {
+    return [];
+  }
+
+  if (jsonQuery) {
+    return Object.entries(zodObject.shape).map(([key, value]) => {
+      const schema = getJsonSchemaFromZod(value) as object;
+      return {
+        name: key,
+        in: 'query' as const,
+        content: {
+          'application/json': {
+            schema: schema,
+          },
+        },
+      };
+    });
+  }
+
+  return [
+    {
+      name: 'query',
+      in: 'query' as const,
+      schema: getJsonSchemaFromZod(zodObject) as object,
+    },
+  ];
+};
+
 export const generateOpenApi = (
   router: AppRouter,
   apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
-  options: { setOperationId?: boolean } = {}
+  options: { setOperationId?: boolean; jsonQuery?: boolean } = {}
 ): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
@@ -87,7 +118,10 @@ export const generateOpenApi = (
       .match(/{[^}]+}/g)
       ?.map((param) => param.slice(1, -1));
 
-    const querySchema = getJsonSchemaFromZod(path.route.query);
+    const querySchema = getQuerySchemaFromZod(
+      path.route.query,
+      !!options.jsonQuery
+    );
 
     const bodySchema =
       path.route?.method !== 'GET'
@@ -131,15 +165,7 @@ export const generateOpenApi = (
               required: true,
             }))
           : []),
-        ...(querySchema
-          ? [
-              {
-                name: 'query',
-                in: 'query' as const,
-                schema: querySchema,
-              },
-            ]
-          : []),
+        ...querySchema,
       ],
       ...(options.setOperationId ? { operationId: path.id } : {}),
       ...(bodySchema
@@ -166,7 +192,7 @@ export const generateOpenApi = (
   }, {} as PathsObject);
 
   return {
-    openapi: '3.0.0',
+    openapi: '3.0.2',
     paths: pathObject,
     ...apiDoc,
   };

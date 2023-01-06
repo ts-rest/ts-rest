@@ -1,4 +1,5 @@
 import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
 
 export interface PostTs {
   id: string;
@@ -34,5 +35,23 @@ export const contractTs = c.router({
     },
     query: null,
     summary: 'Get a post by id',
+  },
+  getPosts: {
+    method: 'GET',
+    path: `/ts/posts`,
+    responses: {
+      200: c.response<{
+        posts: PostTs[];
+        count: number;
+        skip: number;
+        take: number;
+      }>(),
+    },
+    query: z.object({
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      search: z.string().optional(),
+    }),
+    summary: 'Get all posts',
   },
 });

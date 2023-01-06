@@ -30,13 +30,18 @@ describe('PostController', () => {
 
   describe('GET /posts', () => {
     it('should transform skip and take into numbers', async () => {
-      jest.spyOn(postService, 'getPosts').mockResolvedValue([] as any);
+      jest.spyOn(postService, 'getPosts').mockResolvedValue({
+        posts: [],
+        totalPosts: 0,
+      });
 
       return request(app.getHttpServer())
         .get('/posts')
         .query('skip=0&take=10')
         .expect(200)
         .expect({
+          posts: [],
+          count: 0,
           skip: 0,
           take: 10,
         });

@@ -190,7 +190,8 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
         args?.query,
         clientArgs.baseUrl,
         args?.params,
-        route
+        route,
+        !!clientArgs.jsonQuery
       );
 
       const result = await fetchApi(path, clientArgs, route, args?.body);
@@ -225,7 +226,8 @@ const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
         resultingQueryArgs.query,
         clientArgs.baseUrl,
         resultingQueryArgs.params,
-        route
+        route,
+        !!clientArgs.jsonQuery
       );
 
       const result = await fetchApi(
@@ -257,7 +259,8 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
         args?.query,
         clientArgs.baseUrl,
         args?.params,
-        route
+        route,
+        !!clientArgs.jsonQuery
       );
 
       const result = await fetchApi(path, clientArgs, route, args?.body);
