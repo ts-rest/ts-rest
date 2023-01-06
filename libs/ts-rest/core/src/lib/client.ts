@@ -6,6 +6,7 @@ import { HTTPStatusCode } from './status-codes';
 import {
   AreAllPropertiesOptional,
   Merge,
+  OptionalIfAllOptional,
   Without,
   ZodInferOrType,
 } from './type-utils';
@@ -43,17 +44,19 @@ type AppRouteBodyOrFormData<T extends AppRouteMutation> =
     ? FormData | AppRouteMutationType<T['body']>
     : AppRouteMutationType<T['body']>;
 
-interface DataReturnArgs<TRoute extends AppRoute> {
+interface DataReturnArgsBase<TRoute extends AppRoute> {
   body: TRoute extends AppRouteMutation
     ? AppRouteBodyOrFormData<TRoute>
     : never;
   params: PathParamsFromUrl<TRoute>;
-  query: AreAllPropertiesOptional<
-    AppRouteMutationType<TRoute['query']>
-  > extends false
+  query: 'query' extends keyof TRoute
     ? AppRouteMutationType<TRoute['query']>
     : never;
 }
+
+type DataReturnArgs<TRoute extends AppRoute> = OptionalIfAllOptional<
+  DataReturnArgsBase<TRoute>
+>;
 
 export type ApiRouteResponse<T> =
   | {
@@ -66,6 +69,9 @@ export type ApiRouteResponse<T> =
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
     };
+
+export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<T['responses']>
+
 
 /**
  * Returned from a mutation or query call
@@ -228,3 +234,13 @@ export const initClient = <T extends AppRouter>(
 
   return proxy as InitClientReturn<T>;
 };
+
+// takes a router and returns response types for each AppRoute
+// does not support nested routers, yet
+
+export function getRouteResponses<T extends AppRouter>(router: T) {
+  return {} as {
+     [K in keyof typeof router]: 
+        typeof router[K] extends AppRoute ? ApiResponseForRoute<typeof router[K]> : 'not a route'
+   }
+}

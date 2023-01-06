@@ -1,4 +1,4 @@
-import { AppRoute, AppRouter, ApiRouteResponse, Without } from '@ts-rest/core';
+import { AppRoute, AppRouter, ApiRouteResponse, Without, getRouteResponses } from '@ts-rest/core';
 import { ApiDecoratorShape } from './api.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
@@ -32,6 +32,7 @@ export const initNestServer = <T extends AppRouter>(router: T) => {
   return {
     controllerShape: {} as NestControllerShapeFromAppRouter<T>,
     routeShapes: {} as NestAppRouteShape<T>,
+    responseShapes: getRouteResponses(router),
     route: router,
   };
 };
