@@ -142,7 +142,7 @@ describe('client', () => {
 
       expect(api).toHaveBeenCalledWith({
         method: 'GET',
-        path: 'http://api.com/posts',
+        path: 'https://api.com/posts',
         headers: {
           'Content-Type': 'application/json',
         },
