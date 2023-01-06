@@ -95,3 +95,26 @@ export const contract = c.router({
   },
 });
 ```
+
+## Response Types
+
+If you need to quickly extract the Response types from a given Contract, you can use `getRouteResponses`.
+
+:warning: This does not support nested contracts yet. You need to pass in a defined contract. 
+
+`getRouteResponses(router)` returns an empty object with defined response types for a contract's HTTP method. 
+
+```typescript
+import { getRouteResponses } from '@ts-rest/core'
+import { contract } from './contract'
+
+//  initContract() must called prior
+const contractResponses = getRouteResponses(contract)
+type ResponseShapes = typeof contractResponses
+
+async function someHttpCall(req: Request): Promise<ResponseShapes['getPosts']> {
+  return ...
+}
+```
+
+This is particularly useful for Services/Functions/Lambdas that do not use frameworks like Express or Nestjs. 
