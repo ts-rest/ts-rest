@@ -1,5 +1,12 @@
 # @ts-rest/nest
 
+## 3.12.0
+
+### Minor Changes
+
+- a53a384: Add response shape shape helper to make allow you to extract the response from a Contract route
+- 5a13803: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+
 ## 3.11.2
 
 ## 3.11.1

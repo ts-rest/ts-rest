@@ -1,5 +1,15 @@
 # @ts-rest/react-query
 
+## 3.12.0
+
+### Minor Changes
+
+- 5a13803: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+
+### Patch Changes
+
+- 36e5bd4: Fix typing for query
+
 ## 3.11.2
 
 ## 3.11.1

@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.12.0
+
+### Minor Changes
+
+- 5a13803: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+
 ## 3.11.2
 
 ## 3.11.1
