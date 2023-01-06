@@ -89,8 +89,30 @@ type NarrowNotZod<T> = Try<T, ZodType, NarrowRaw<T>>;
 
 export type Narrow<T> = Try<T, [], NarrowNotZod<T>>;
 
-export type AreAllPropertiesOptional<T> = {
-  [K in keyof T]-?: undefined extends T[K] ? true : false;
-}[keyof T] extends true
-  ? true
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+// https://github.com/ts-essentials/ts-essentials/blob/4c451652ba7c20b0e0b965e0b7755fd4d7844127/lib/types.ts#L228
+type OptionalKeys<T> = T extends unknown
+  ? {
+      [K in keyof T]-?: undefined extends { [K2 in keyof T]: K2 }[K]
+        ? K
+        : never;
+    }[keyof T]
+  : never;
+
+export type AreAllPropertiesOptional<T> = T extends Record<string, unknown>
+  ? Exclude<keyof T, OptionalKeys<T>> extends never
+    ? true
+    : false
   : false;
+
+export type OptionalIfAllOptional<
+  T,
+  Select extends keyof T = keyof T
+> = PartialBy<
+  T,
+  Select &
+    {
+      [K in keyof T]: AreAllPropertiesOptional<T[K]> extends true ? K : never;
+    }[keyof T]
+>;

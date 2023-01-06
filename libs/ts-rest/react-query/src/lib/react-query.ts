@@ -25,6 +25,7 @@ import {
   getRouteQuery,
   HTTPStatusCode,
   isAppRoute,
+  OptionalIfAllOptional,
   PathParamsFromUrl,
   SuccessfulHttpStatusCode,
   Without,
@@ -58,19 +59,23 @@ type UseQueryArgs<TAppRoute extends AppRoute> = {
     : never;
 };
 
-type DataReturnArgs<TRoute extends AppRoute> = {
+type DataReturnArgsBase<TRoute extends AppRoute> = {
   body: TRoute extends AppRouteMutation
     ? AppRouteMutationType<TRoute['body']> extends null
       ? never
       : AppRouteMutationType<TRoute['body']>
     : never;
   params: PathParamsFromUrl<TRoute>;
-  query: AreAllPropertiesOptional<
-    AppRouteMutationType<TRoute['query']>
-  > extends false
-    ? AppRouteMutationType<TRoute['query']>
+  query: 'query' extends keyof TRoute
+    ? AppRouteMutationType<TRoute['query']> extends null
+      ? never
+      : AppRouteMutationType<TRoute['query']>
     : never;
 };
+
+type DataReturnArgs<TRoute extends AppRoute> = OptionalIfAllOptional<
+  DataReturnArgsBase<TRoute>
+>;
 
 /**
  * Split up the data and error to support react-query style
@@ -177,7 +182,7 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
 ) => {
   return (
     queryKey: QueryKey,
-    args?: DataReturnArgs<TAppRoute>,
+    args?: DataReturnArgs<any>,
     options?: UseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
@@ -208,7 +213,7 @@ const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
 ) => {
   return (
     queryKey: QueryKey,
-    args: (context: QueryFunctionContext) => DataReturnArgs<TAppRoute>,
+    args: (context: QueryFunctionContext) => DataReturnArgs<any>,
     options?: UseInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (
@@ -247,7 +252,7 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
   clientArgs: ClientArgs
 ) => {
   return (options?: UseMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (args?: DataReturnArgs<TAppRoute>) => {
+    const mutationFunction = async (args?: DataReturnArgs<any>) => {
       const path = getCompleteUrl(
         args?.query,
         clientArgs.baseUrl,
