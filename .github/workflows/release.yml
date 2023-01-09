@@ -41,6 +41,9 @@ jobs:
       - name: Modify Workspace File
         run: sed -e "s;libs/;dist/libs/;g" package.json > package-new.json && mv package-new.json package.json
 
+      - name: Copy README.md to packages
+        run: find dist/libs/ts-rest -mindepth 1 -maxdepth 1 -type d -exec cp README.md '{}' ';'
+
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@master
         with:
