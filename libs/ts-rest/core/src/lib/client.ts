@@ -235,12 +235,16 @@ export const initClient = <T extends AppRouter>(
   return proxy as InitClientReturn<T>;
 };
 
+export type RouteResponses<T extends AppRouter> = {
+  [K in keyof T]: T[K] extends AppRouter
+    ? RouteResponses<T[K]>
+    : T[K] extends AppRoute
+    ? ApiResponseForRoute<T[K]>
+    : 'not a route';
+};
+
 // takes a router and returns response types for each AppRoute
-// does not support nested routers, yet
 
 export function getRouteResponses<T extends AppRouter>(router: T) {
-  return {} as {
-     [K in keyof typeof router]: 
-        typeof router[K] extends AppRoute ? ApiResponseForRoute<typeof router[K]> : 'not a route'
-   }
+  return {} as RouteResponses<typeof router>;
 }
