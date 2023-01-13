@@ -7,7 +7,7 @@ type AppRouterMethodShape<T extends AppRoute> = (
 
 type AppRouterControllerShape<T extends AppRouter> = {
   [K in keyof T]: T[K] extends AppRouter
-    ? undefined
+    ? AppRouterControllerShape<T[K]>
     : T[K] extends AppRoute
     ? AppRouterMethodShape<T[K]>
     : never;
