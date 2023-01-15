@@ -7,6 +7,7 @@ import {
   ExecutionContext,
   Get,
   Injectable,
+  InternalServerErrorException,
   NestInterceptor,
   Patch,
   Post,
@@ -116,13 +117,11 @@ const getMethodDecorator = (appRoute: AppRoute) => {
 
 @Injectable()
 export class ApiRouteInterceptor implements NestInterceptor {
-  constructor(private readonly appRoute: AppRoute) {}
-
   private isAppRouteResponse(
     value: unknown
   ): value is { status: HTTPStatusCode; body?: any } {
     return (
-      value !== null &&
+      value != null &&
       typeof value === 'object' &&
       'status' in value &&
       typeof value.status === 'number'
@@ -132,6 +131,11 @@ export class ApiRouteInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const res: Response = context.switchToHttp().getResponse();
 
+    const appRoute: AppRoute | undefined = Reflect.getMetadata(
+      tsRestAppRouteMetadataKey,
+      context.getHandler()
+    );
+
     return next.handle().pipe(
       map((value) => {
         if (this.isAppRouteResponse(value)) {
@@ -139,11 +143,11 @@ export class ApiRouteInterceptor implements NestInterceptor {
 
           const responseValidation = checkZodSchema(
             value.body,
-            this.appRoute.responses[statusNumber]
+            appRoute?.responses[statusNumber]
           );
 
           if (!responseValidation.success) {
-            throw new BadRequestException(responseValidation.error);
+            throw new InternalServerErrorException(responseValidation.error);
           }
 
           res.status(statusNumber);
@@ -162,6 +166,6 @@ export const Api = (appRoute: AppRoute): MethodDecorator => {
   return applyDecorators(
     SetMetadata(tsRestAppRouteMetadataKey, appRoute),
     methodDecorator,
-    UseInterceptors(new ApiRouteInterceptor(appRoute))
+    UseInterceptors(ApiRouteInterceptor)
   );
 };
