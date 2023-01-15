@@ -4,6 +4,7 @@ import {
   ApiRouteResponse,
   Without,
   getRouteResponses,
+  RouteResponse,
 } from '@ts-rest/core';
 import { ApiDecoratorShape } from './api.decorator';
 
@@ -44,17 +45,34 @@ export type InitServerOptions = {
   parseResponses: boolean;
 };
 
-export const initNestServer = <T extends AppRouter>(
+export type InitServerReturn<
+  T extends AppRouter,
+  ParseResponses extends boolean
+> = {
+  controllerShape: NestControllerShapeFromAppRouter<T, boolean>;
+  routeShapes: AppRouteShape<T>;
+  responseShapes: RouteResponse<T, ParseResponses>;
+  route: T;
+};
+
+export const initNestServer = <
+  T extends AppRouter,
+  Options extends InitServerOptions
+>(
   router: T,
-  options: InitServerOptions = { parseResponses: true }
-) => {
+  options?: Options
+): Options['parseResponses'] extends true
+  ? InitServerReturn<T, true>
+  : InitServerReturn<T, false> => {
+  const isResponseParsingEnabled = options?.parseResponses ?? false;
+
   return {
     controllerShape: {} as NestControllerShapeFromAppRouter<
       T,
-      typeof options.parseResponses
+      typeof isResponseParsingEnabled
     >,
     routeShapes: {} as NestAppRouteShape<T>,
-    responseShapes: getRouteResponses(router, options.parseResponses),
+    responseShapes: getRouteResponses(router, isResponseParsingEnabled),
     route: router,
   };
 };
