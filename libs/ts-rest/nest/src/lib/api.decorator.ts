@@ -28,6 +28,7 @@ import {
 import { map, Observable } from 'rxjs';
 import type { Request, Response } from 'express-serve-static-core';
 import { JsonQuerySymbol } from './json-query.decorator';
+import { ParseResponsesSymbol } from './parse-responses.decorator';
 
 const tsRestAppRouteMetadataKey = Symbol('ts-rest-app-route');
 
@@ -136,18 +137,34 @@ export class ApiRouteInterceptor implements NestInterceptor {
       context.getHandler()
     );
 
+    if (!appRoute) {
+      // this will respond with a 500 error without revealing this error message in the response body
+      throw new Error('Make sure your route is decorated with @Api()');
+    }
+
     return next.handle().pipe(
       map((value) => {
         if (this.isAppRouteResponse(value)) {
           const statusNumber = value.status;
 
+          const isParsingEnabled = Boolean(
+            Reflect.getMetadata(ParseResponsesSymbol, context.getHandler()) ||
+              Reflect.getMetadata(ParseResponsesSymbol, context.getClass())
+          );
+
           const responseValidation = checkZodSchema(
             value.body,
-            appRoute?.responses[statusNumber]
+            isParsingEnabled ? appRoute.responses[statusNumber] : undefined
           );
 
           if (!responseValidation.success) {
-            throw new InternalServerErrorException(responseValidation.error);
+            const { error } = responseValidation;
+
+            const message = error.errors.map(
+              (error) => `${error.path.join('.')}: ${error.message}`
+            );
+
+            throw new InternalServerErrorException(message);
           }
 
           res.status(statusNumber);

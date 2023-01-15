@@ -1,4 +1,3 @@
-import { z, ZodTypeAny } from 'zod';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
 import { insertParamsIntoPath, ParamsFromUrl } from './paths';
 import { convertQueryParamsToUrlString } from './query';
@@ -9,6 +8,7 @@ import {
   OptionalIfAllOptional,
   Without,
   ZodInferOrType,
+  ZodInputOrType,
 } from './type-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
@@ -19,7 +19,7 @@ type RecursiveProxyObj<T extends AppRouter> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
+type AppRouteMutationType<T> = ZodInputOrType<T>;
 
 /**
  * Extract the path params from the path in the contract
@@ -58,11 +58,13 @@ type DataReturnArgs<TRoute extends AppRoute> = OptionalIfAllOptional<
   DataReturnArgsBase<TRoute>
 >;
 
-export type ApiRouteResponse<T> =
+export type ApiRouteResponse<T, ParseRoute extends boolean> =
   | {
       [K in keyof T]: {
         status: K;
-        body: ZodInferOrType<T[K]>;
+        body: ParseRoute extends true
+          ? ZodInputOrType<T[K]>
+          : ZodInferOrType<T[K]>;
       };
     }[keyof T]
   | {
@@ -70,8 +72,10 @@ export type ApiRouteResponse<T> =
       body: unknown;
     };
 
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<T['responses']>
-
+export type ApiResponseForRoute<
+  T extends AppRoute,
+  ParseRoute extends boolean
+> = ApiRouteResponse<T['responses'], ParseRoute>;
 
 /**
  * Returned from a mutation or query call
@@ -80,10 +84,10 @@ export type AppRouteFunction<TRoute extends AppRoute> =
   AreAllPropertiesOptional<Without<DataReturnArgs<TRoute>, never>> extends true
     ? (
         args?: Without<DataReturnArgs<TRoute>, never>
-      ) => Promise<ApiRouteResponse<TRoute['responses']>>
+      ) => Promise<ApiRouteResponse<TRoute['responses'], false>>
     : (
         args: Without<DataReturnArgs<TRoute>, never>
-      ) => Promise<ApiRouteResponse<TRoute['responses']>>;
+      ) => Promise<ApiRouteResponse<TRoute['responses'], false>>;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -238,9 +242,13 @@ export const initClient = <T extends AppRouter>(
 // takes a router and returns response types for each AppRoute
 // does not support nested routers, yet
 
-export function getRouteResponses<T extends AppRouter>(router: T) {
+export function getRouteResponses<T extends AppRouter>(
+  router: T,
+  parseRoute = false
+) {
   return {} as {
-     [K in keyof typeof router]: 
-        typeof router[K] extends AppRoute ? ApiResponseForRoute<typeof router[K]> : 'not a route'
-   }
+    [K in keyof typeof router]: typeof router[K] extends AppRoute
+      ? ApiResponseForRoute<typeof router[K], typeof parseRoute>
+      : 'not a route';
+  };
 }
