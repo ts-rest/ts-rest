@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.12.1
+
+### Patch Changes
+
+- e0164f6: Publish README
+
 ## 3.12.0
 
 ### Minor Changes
