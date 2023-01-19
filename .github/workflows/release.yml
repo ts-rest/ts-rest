@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build
+        run: pnpm exec nx run-many --target build --all --parallel
+
       - name: Modify Workspace File
         run: sed -e "s;libs/;dist/libs/;g" package.json > package-new.json && mv package-new.json package.json
 
