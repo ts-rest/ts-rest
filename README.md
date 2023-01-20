@@ -1,7 +1,4 @@
 # ts-rest
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 <p align="center">
  <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height=150 />
@@ -18,7 +15,9 @@
      <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/ts-rest/ts-rest">   
    </a>
-   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ts-rest/ts-rest/CI">
+   <img alt="GitHub Workflow Status" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore">
+   <img alt="GitHub Workflow Status" src="https://img.shields.io/discord/1055855205960392724">
+   
  </p>
 
 # Introduction
