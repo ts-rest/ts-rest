@@ -14,5 +14,9 @@
     "zod": "3.x.x",
     "openapi3-ts": "2.x.x",
     "zod-to-json-schema": "^3.x.x"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
   }
 }

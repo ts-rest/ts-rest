@@ -32,3 +32,13 @@ NX will run all of the tests for the affected apps, helping you save some time
 ```bash
 pnpm nx affected:lint
 ```
+
+## Documentation
+
+The documentation is built using [Docusaurus](https://docusaurus.io/). You can find the source code in the `docs` directory.
+
+```
+pnpm nx run docs:serve
+```
+
+Note, when you run this command the TypeDocs (in the `docs/api` directory) will be generated automatically!

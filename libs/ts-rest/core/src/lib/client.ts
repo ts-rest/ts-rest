@@ -31,7 +31,7 @@ export type PathParamsFromUrl<T extends AppRoute> = ParamsFromUrl<
   : never;
 
 /**
- * Merge PathParamsFromUrl<T> with pathParams schema if it exists
+ * Merge `PathParamsFromUrl<T>` with pathParams schema if it exists
  */
 export type PathParamsWithCustomValidators<T extends AppRoute> =
   T['pathParams'] extends undefined

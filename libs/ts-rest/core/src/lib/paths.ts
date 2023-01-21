@@ -24,7 +24,7 @@ type RecursivelyExtractPathParams<
 /**
  * Extract path params from path function
  *
- * { id: string, commentId: string }
+ * `{ id: string, commentId: string }`
  *
  * @params T - The URL e.g. /posts/:id
  */
@@ -42,7 +42,7 @@ export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
 
 /**
  * @param path - The URL e.g. /posts/:id
- * @param params - The params e.g. { id: string }
+ * @param params - The params e.g. `{ id: string }`
  * @returns - The URL with the params e.g. /posts/123
  */
 export const insertParamsIntoPath = <T extends string>({
