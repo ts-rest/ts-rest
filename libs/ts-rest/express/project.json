@@ -11,7 +11,8 @@
         "outputPath": "dist/libs/ts-rest/express",
         "main": "libs/ts-rest/express/src/index.ts",
         "tsConfig": "libs/ts-rest/express/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/express/*.md"]
+        "assets": ["libs/ts-rest/express/*.md"],
+        "rollupConfig": "tools/scripts/rollup.config.js"
       }
     },
     "publish": {

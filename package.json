@@ -175,6 +175,8 @@
     "qs": "^6.11.0",
     "react-refresh": "^0.10.0",
     "react-test-renderer": "18.2.0",
+    "rollup": "^3.10.1",
+    "rollup-plugin-cleanup": "^3.2.1",
     "sass": "1.55.0",
     "style-loader": "^3.3.0",
     "stylus": "^0.55.0",
