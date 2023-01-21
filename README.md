@@ -56,9 +56,9 @@ Create a contract, implement it on your server then consume it in your client. I
 <h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide 👈</h2>
 </div>
 
-## Stargazers over Time ⭐️
+## Star History
 
-[![Stargazers over time](https://starchart.cc/ts-rest/ts-rest.svg)](https://starchart.cc/ts-rest/ts-rest)
+[![Star History Chart](https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline)](https://star-history.com/#ts-rest/ts-rest&Timeline)
 
 ## Contributors ✨
 
