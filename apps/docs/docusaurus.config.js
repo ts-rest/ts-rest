@@ -77,6 +77,9 @@ const config = {
       //   textColor: '#ffffff',
       //   isCloseable: false,
       // },
+      colorMode: {
+        respectPrefersColorScheme: true,
+      },
       metadata: [
         {
           name: 'keywords',
