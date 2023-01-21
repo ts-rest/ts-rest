@@ -14,7 +14,8 @@
         "main": "libs/ts-rest/react-query/src/index.ts",
         "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
         "format": ["esm", "cjs"],
-        "compiler": "tsc"
+        "compiler": "tsc",
+        "rollupConfig": "tools/scripts/rollup.config.js"
       }
     },
     "lint": {
