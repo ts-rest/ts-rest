@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/next",
-  "version": "3.13.0",
+  "version": "3.13.1",
   "peerDependenciesMeta": {
     "zod": {
       "optional": true

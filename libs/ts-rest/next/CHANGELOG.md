@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.13.1
+
+### Patch Changes
+
+- d778e60: Rebuilt without code comments in the compiled JS
+
 ## 3.13.0
 
 ## 3.12.1
