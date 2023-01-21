@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.13.0
+
+### Minor Changes
+
+- 491a32d: Add useQueries capability
+
 ## 3.12.1
 
 ### Patch Changes
