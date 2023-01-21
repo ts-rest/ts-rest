@@ -10,9 +10,11 @@ The below snippet is how you'd create a query client, this is pretty much the sa
 export const client = initQueryClient(router, {
   baseUrl: 'http://localhost:3333',
   baseHeaders: {},
-  api?: () => ... // <- Optional API override function to customise the fetching behaviour
+  api?: () => ... // <- Optional Custom API Fetcher (see below)
 });
 ```
+
+To customise the API, follow the same docs as the core client [here](/docs/core/custom)
 
 :::tip
 
