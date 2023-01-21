@@ -79,7 +79,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Comparisons',
-      collapsed: false,
+      collapsed: true,
       items: [
         {
           type: 'doc',
