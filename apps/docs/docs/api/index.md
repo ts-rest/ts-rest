@@ -1,3 +1,11 @@
+---
+id: "index"
+title: "ts-rest"
+sidebar_label: "Readme"
+sidebar_position: 0
+custom_edit_url: null
+---
+
 # ts-rest
 
 <p align="center">

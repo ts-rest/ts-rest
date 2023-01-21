@@ -11,5 +11,9 @@
   },
   "peerDependencies": {
     "next": "12.x.x"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
   }
 }

@@ -12,7 +12,26 @@ const config = {
   favicon: 'img/favicon.ico',
   organizationName: 'ts-rest', // Usually your GitHub org/user name.
   projectName: 'ts-rest', // Usually your repo name.
-  plugins: [],
+  plugins: [
+    [
+      'docusaurus-plugin-typedoc',
+      {
+        entryPoints: [
+          './libs/ts-rest/core',
+          './libs/ts-rest/express',
+          './libs/ts-rest/nest',
+          './libs/ts-rest/next',
+          './libs/ts-rest/open-api',
+          './libs/ts-rest/react-query',
+          './libs/ts-rest/solid-query',
+        ],
+        entryPointStrategy: 'packages',
+        sidebar: {
+          fullNames: true,
+        },
+      },
+    ],
+  ],
   scripts: [
     {
       defer: true,
@@ -82,6 +101,12 @@ const config = {
             docId: 'quickstart',
             position: 'left',
             label: 'Quickstart',
+          },
+          {
+            type: 'doc',
+            docId: 'api/index',
+            position: 'left',
+            label: 'API Reference',
           },
           {
             href: 'https://github.com/ts-rest/ts-rest',

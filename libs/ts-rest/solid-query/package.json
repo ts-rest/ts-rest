@@ -34,5 +34,9 @@
   "main": "index.cjs",
   "module": "index.js",
   "types": "./src/index.d.ts",
-  "type": "module"
+  "type": "module",
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
+  }
 }

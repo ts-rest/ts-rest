@@ -34,5 +34,9 @@
   },
   "devDependencies": {
     "express-serve-static-core": "^0.1.1"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
   }
 }
