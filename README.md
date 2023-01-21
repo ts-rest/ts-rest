@@ -1,7 +1,4 @@
 # ts-rest
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 <p align="center">
  <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height=150 />
@@ -18,7 +15,9 @@
      <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/ts-rest/ts-rest">   
    </a>
-   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ts-rest/ts-rest/CI">
+   <img alt="GitHub Workflow Status" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore">
+   <img alt="GitHub Workflow Status" src="https://img.shields.io/discord/1055855205960392724">
+   
  </p>
 
 # Introduction
@@ -57,9 +56,9 @@ Create a contract, implement it on your server then consume it in your client. I
 <h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide 👈</h2>
 </div>
 
-## Stargazers over Time ⭐️
+## Star History
 
-[![Stargazers over time](https://starchart.cc/ts-rest/ts-rest.svg)](https://starchart.cc/ts-rest/ts-rest)
+[![Star History Chart](https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline)](https://star-history.com/#ts-rest/ts-rest&Timeline)
 
 ## Contributors ✨
 

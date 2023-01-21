@@ -144,7 +144,9 @@ const SUCCESS_RESPONSE = {
 
 const ERROR_RESPONSE = {
   status: 500,
-  body: null,
+  body: {
+    message: 'Internal Server Error',
+  },
 };
 
 describe('react-query', () => {
@@ -253,5 +255,209 @@ describe('react-query', () => {
     });
 
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
+  });
+
+  it('useQueries should handle success', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQueries({
+          queries: [
+            {
+              queryKey: ['posts', '1'],
+              params: {
+                id: '1',
+              },
+            },
+            {
+              queryKey: ['posts', '2'],
+              params: {
+                id: '2',
+              },
+            },
+          ],
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+
+    expect(result.current[0].isLoading).toStrictEqual(true);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+
+    expect(result.current[1].isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/2',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].isLoading).toStrictEqual(false);
+    });
+
+    await waitFor(() => {
+      expect(result.current[1].isLoading).toStrictEqual(false);
+    });
+
+    expect(result.current[0].data).toStrictEqual(SUCCESS_RESPONSE);
+
+    expect(result.current[1].data).toStrictEqual(SUCCESS_RESPONSE);
+  });
+
+  it('useQueries should handle failure', async () => {
+    api.mockResolvedValue(ERROR_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQueries({
+          queries: [
+            {
+              queryKey: ['posts', '1'],
+              params: {
+                id: '1',
+              },
+              retry: false,
+            },
+            {
+              queryKey: ['posts', '2'],
+              params: {
+                id: '2',
+              },
+              retry: false,
+            },
+          ],
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+
+    expect(result.current[0].isLoading).toStrictEqual(true);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+
+    expect(result.current[1].isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/2',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].failureCount).toStrictEqual(1);
+    });
+
+    await waitFor(() => {
+      expect(result.current[1].failureCount).toStrictEqual(1);
+    });
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+    expect(result.current[0].error).toStrictEqual(ERROR_RESPONSE);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+    expect(result.current[1].error).toStrictEqual(ERROR_RESPONSE);
+  });
+
+  it('useQueries should handle success and failure', async () => {
+    api
+      .mockResolvedValueOnce(SUCCESS_RESPONSE)
+      .mockResolvedValueOnce(ERROR_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQueries({
+          queries: [
+            {
+              queryKey: ['posts', '1'],
+              params: {
+                id: '1',
+              },
+              retry: false,
+            },
+            {
+              queryKey: ['posts', '2'],
+              params: {
+                id: '2',
+              },
+              retry: false,
+            },
+          ],
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+
+    expect(result.current[0].isLoading).toStrictEqual(true);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+
+    expect(result.current[1].isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/2',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].isLoading).toStrictEqual(false);
+    });
+
+    await waitFor(() => {
+      expect(result.current[1].isLoading).toStrictEqual(false);
+    });
+
+    expect(result.current[0].data).toStrictEqual(SUCCESS_RESPONSE);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+    expect(result.current[1].error).toStrictEqual(ERROR_RESPONSE);
   });
 });

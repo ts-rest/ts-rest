@@ -8,6 +8,7 @@ import {
   useMutation,
   UseMutationOptions,
   UseMutationResult,
+  useQueries,
   useQuery,
   UseQueryOptions,
   UseQueryResult,
@@ -49,6 +50,9 @@ type UseQueryArgs<TAppRoute extends AppRoute> = {
     : never;
   useInfiniteQuery: TAppRoute extends AppRouteQuery
     ? DataReturnInfiniteQuery<TAppRoute>
+    : never;
+  useQueries: TAppRoute extends AppRouteQuery
+    ? DataReturnQueries<TAppRoute>
     : never;
   query: TAppRoute extends AppRouteQuery ? AppRouteFunction<TAppRoute> : never;
   useMutation: TAppRoute extends AppRouteMutation
@@ -129,6 +133,22 @@ type DataReturnQuery<TAppRoute extends AppRoute> = AreAllPropertiesOptional<
       >
     ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
 
+type DataReturnQueriesOptions<TAppRoute extends AppRoute> = Without<
+  DataReturnArgs<TAppRoute>,
+  never
+> &
+  Omit<UseQueryOptions<TAppRoute['responses']>, 'queryFn'> & {
+    queryKey: QueryKey;
+  };
+
+type DataReturnQueries<
+  TAppRoute extends AppRoute,
+  TQueries = readonly DataReturnQueriesOptions<TAppRoute>[]
+> = (args: {
+  queries: TQueries;
+  context?: UseQueryOptions['context'];
+}) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>[];
+
 // Used on X.useInfiniteQuery
 type DataReturnInfiniteQuery<TAppRoute extends AppRoute> =
   AreAllPropertiesOptional<
@@ -205,6 +225,46 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
     };
 
     return useQuery(queryKey, dataFn, options);
+  };
+};
+
+const getRouteUseQueries = <TAppRoute extends AppRoute>(
+  route: TAppRoute,
+  clientArgs: ClientArgs
+) => {
+  return (args: Parameters<DataReturnQueries<TAppRoute>>[0]) => {
+    const queries = args.queries.map((query: any) => {
+      const queryFn: QueryFunction<TAppRoute['responses']> = async () => {
+        const path = getCompleteUrl(
+          'query' in query ? query?.query : undefined,
+          clientArgs.baseUrl,
+          'params' in query ? query?.params : undefined,
+          route,
+          !!clientArgs.jsonQuery
+        );
+
+        const result = await fetchApi(
+          path,
+          clientArgs,
+          route,
+          'body' in query ? query?.body : undefined
+        );
+
+        // If the response is not a 2XX, throw an error to be handled by react-query
+        if (!String(result.status).startsWith('2')) {
+          throw result;
+        }
+
+        return result;
+      };
+
+      return {
+        queryFn,
+        ...query,
+      };
+    });
+
+    return useQueries({ queries, context: args.context });
   };
 };
 
@@ -295,6 +355,8 @@ const createNewProxy = (router: AppRouter | AppRoute, args: ClientArgs) => {
               return getRouteUseQuery(router, args);
             case 'useInfiniteQuery':
               return getRouteUseInfiniteQuery(router, args);
+            case 'useQueries':
+              return getRouteUseQueries(router, args);
             case 'useMutation':
               return getRouteUseMutation(router, args);
             default:
