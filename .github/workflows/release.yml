@@ -39,7 +39,7 @@ jobs:
         run: pnpm install
 
       - name: Modify Workspace File
-        run: sed -e "s;libs/;dist/libs/;g" package.json > package-new.json && mv package-new.json package.json
+        run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
 
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@master
