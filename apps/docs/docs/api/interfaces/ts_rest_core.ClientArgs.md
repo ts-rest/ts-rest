@@ -15,7 +15,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:91](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L91)
+[libs/ts-rest/core/src/lib/client.ts:91](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L91)
 
 ___
 
@@ -25,7 +25,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:90](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L90)
+[libs/ts-rest/core/src/lib/client.ts:90](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L90)
 
 ___
 
@@ -35,7 +35,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:89](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L89)
+[libs/ts-rest/core/src/lib/client.ts:89](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L89)
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:92](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L92)
+[libs/ts-rest/core/src/lib/client.ts:92](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L92)
 
 ___
 
@@ -55,4 +55,4 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:93](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L93)
+[libs/ts-rest/core/src/lib/client.ts:93](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L93)

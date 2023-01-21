@@ -24,7 +24,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:73](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L73)
+[libs/ts-rest/core/src/lib/client.ts:73](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L73)
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:61](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L61)
+[libs/ts-rest/core/src/lib/client.ts:61](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L61)
 
 ___
 
@@ -52,7 +52,7 @@ A union of all possible endpoint types.
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/dsl.ts:43](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/dsl.ts#L43)
+[libs/ts-rest/core/src/lib/dsl.ts:43](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/dsl.ts#L43)
 
 ___
 
@@ -70,7 +70,7 @@ Returned from a mutation or query call
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:79](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L79)
+[libs/ts-rest/core/src/lib/client.ts:79](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L79)
 
 ___
 
@@ -98,7 +98,7 @@ PATCH, or DELETE.
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/dsl.ts:27](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/dsl.ts#L27)
+[libs/ts-rest/core/src/lib/dsl.ts:27](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/dsl.ts#L27)
 
 ___
 
@@ -123,7 +123,7 @@ A query endpoint. In REST terms, one using GET.
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/dsl.ts:12](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/dsl.ts#L12)
+[libs/ts-rest/core/src/lib/dsl.ts:12](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/dsl.ts#L12)
 
 ___
 
@@ -140,7 +140,7 @@ individual routes
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/dsl.ts:49](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/dsl.ts#L49)
+[libs/ts-rest/core/src/lib/dsl.ts:49](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/dsl.ts#L49)
 
 ___
 
@@ -156,7 +156,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:103](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L103)
+[libs/ts-rest/core/src/lib/type-utils.ts:103](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L103)
 
 ___
 
@@ -173,7 +173,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:21](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L21)
+[libs/ts-rest/core/src/lib/type-utils.ts:21](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L21)
 
 ___
 
@@ -185,7 +185,7 @@ All available HTTP Status codes
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/status-codes.ts:14](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/status-codes.ts#L14)
+[libs/ts-rest/core/src/lib/status-codes.ts:14](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/status-codes.ts#L14)
 
 ___
 
@@ -201,7 +201,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:227](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L227)
+[libs/ts-rest/core/src/lib/client.ts:227](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L227)
 
 ___
 
@@ -218,7 +218,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:75](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L75)
+[libs/ts-rest/core/src/lib/type-utils.ts:75](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L75)
 
 ___
 
@@ -234,7 +234,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:90](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L90)
+[libs/ts-rest/core/src/lib/type-utils.ts:90](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L90)
 
 ___
 
@@ -251,7 +251,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:109](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L109)
+[libs/ts-rest/core/src/lib/type-utils.ts:109](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L109)
 
 ___
 
@@ -275,7 +275,7 @@ T - The URL e.g. /posts/:id
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/paths.ts:31](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/paths.ts#L31)
+[libs/ts-rest/core/src/lib/paths.ts:31](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/paths.ts#L31)
 
 ___
 
@@ -292,7 +292,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:92](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L92)
+[libs/ts-rest/core/src/lib/type-utils.ts:92](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L92)
 
 ___
 
@@ -310,7 +310,7 @@ Extract the path params from the path in the contract
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:27](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L27)
+[libs/ts-rest/core/src/lib/client.ts:27](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L27)
 
 ___
 
@@ -328,7 +328,7 @@ Merge `PathParamsFromUrl<T>` with pathParams schema if it exists
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:36](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L36)
+[libs/ts-rest/core/src/lib/client.ts:36](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L36)
 
 ___
 
@@ -338,7 +338,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/status-codes.ts:1](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/status-codes.ts#L1)
+[libs/ts-rest/core/src/lib/status-codes.ts:1](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/status-codes.ts#L1)
 
 ___
 
@@ -355,7 +355,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:71](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L71)
+[libs/ts-rest/core/src/lib/type-utils.ts:71](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L71)
 
 ___
 
@@ -372,7 +372,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:70](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L70)
+[libs/ts-rest/core/src/lib/type-utils.ts:70](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L70)
 
 ___
 
@@ -388,7 +388,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:73](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L73)
+[libs/ts-rest/core/src/lib/type-utils.ts:73](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L73)
 
 ## Functions
 
@@ -411,7 +411,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/zod-utils.ts:9](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/zod-utils.ts#L9)
+[libs/ts-rest/core/src/lib/zod-utils.ts:9](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/zod-utils.ts#L9)
 
 ___
 
@@ -434,7 +434,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/query.ts:7](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/query.ts#L7)
+[libs/ts-rest/core/src/lib/query.ts:7](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/query.ts#L7)
 
 ___
 
@@ -459,7 +459,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:96](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L96)
+[libs/ts-rest/core/src/lib/client.ts:96](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L96)
 
 ___
 
@@ -479,7 +479,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/query.ts:41](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/query.ts#L41)
+[libs/ts-rest/core/src/lib/query.ts:41](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/query.ts#L41)
 
 ___
 
@@ -499,7 +499,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/query.ts:14](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/query.ts#L14)
+[libs/ts-rest/core/src/lib/query.ts:14](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/query.ts#L14)
 
 ___
 
@@ -522,7 +522,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:140](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L140)
+[libs/ts-rest/core/src/lib/client.ts:140](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L140)
 
 ___
 
@@ -546,7 +546,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:173](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L173)
+[libs/ts-rest/core/src/lib/client.ts:173](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L173)
 
 ___
 
@@ -585,7 +585,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:188](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L188)
+[libs/ts-rest/core/src/lib/client.ts:188](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L188)
 
 ___
 
@@ -611,7 +611,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:241](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L241)
+[libs/ts-rest/core/src/lib/client.ts:241](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L241)
 
 ___
 
@@ -641,7 +641,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/type-utils.ts:40](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/type-utils.ts#L40)
+[libs/ts-rest/core/src/lib/type-utils.ts:40](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/type-utils.ts#L40)
 
 ___
 
@@ -668,7 +668,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/client.ts:229](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/client.ts#L229)
+[libs/ts-rest/core/src/lib/client.ts:229](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/client.ts#L229)
 
 ___
 
@@ -684,7 +684,7 @@ Instantiate a ts-rest client, primarily to access `router`, `response`, and `bod
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/dsl.ts:102](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/dsl.ts#L102)
+[libs/ts-rest/core/src/lib/dsl.ts:102](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/dsl.ts#L102)
 
 ___
 
@@ -702,7 +702,7 @@ Please use [initContract](ts_rest_core.md#initcontract) instead.
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/dsl.ts:95](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/dsl.ts#L95)
+[libs/ts-rest/core/src/lib/dsl.ts:95](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/dsl.ts#L95)
 
 ___
 
@@ -732,7 +732,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/paths.ts:48](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/paths.ts#L48)
+[libs/ts-rest/core/src/lib/paths.ts:48](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/paths.ts#L48)
 
 ___
 
@@ -754,7 +754,7 @@ obj is AppRoute
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/dsl.ts:59](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/dsl.ts#L59)
+[libs/ts-rest/core/src/lib/dsl.ts:59](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/dsl.ts#L59)
 
 ___
 
@@ -774,7 +774,7 @@ body is ZodObject<any, any, any, any, Object\>
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/zod-utils.ts:3](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/zod-utils.ts#L3)
+[libs/ts-rest/core/src/lib/zod-utils.ts:3](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/zod-utils.ts#L3)
 
 ___
 
@@ -796,4 +796,4 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/core/src/lib/query.ts:102](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/core/src/lib/query.ts#L102)
+[libs/ts-rest/core/src/lib/query.ts:102](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/core/src/lib/query.ts#L102)

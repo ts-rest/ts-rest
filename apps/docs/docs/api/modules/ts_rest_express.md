@@ -20,7 +20,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/express/src/lib/ts-rest-express.ts:17](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/express/src/lib/ts-rest-express.ts#L17)
+[libs/ts-rest/express/src/lib/ts-rest-express.ts:17](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/express/src/lib/ts-rest-express.ts#L17)
 
 ## Functions
 
@@ -50,7 +50,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/express/src/lib/ts-rest-express.ts:218](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/express/src/lib/ts-rest-express.ts#L218)
+[libs/ts-rest/express/src/lib/ts-rest-express.ts:218](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/express/src/lib/ts-rest-express.ts#L218)
 
 ___
 
@@ -68,4 +68,4 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/express/src/lib/ts-rest-express.ts:75](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/express/src/lib/ts-rest-express.ts#L75)
+[libs/ts-rest/express/src/lib/ts-rest-express.ts:75](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/express/src/lib/ts-rest-express.ts#L75)

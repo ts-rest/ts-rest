@@ -20,7 +20,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/solid-query/src/lib/solid-query.ts:279](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/solid-query/src/lib/solid-query.ts#L279)
+[libs/ts-rest/solid-query/src/lib/solid-query.ts:279](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/solid-query/src/lib/solid-query.ts#L279)
 
 ## Functions
 
@@ -47,4 +47,4 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/solid-query/src/lib/solid-query.ts:281](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/solid-query/src/lib/solid-query.ts#L281)
+[libs/ts-rest/solid-query/src/lib/solid-query.ts:281](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/solid-query/src/lib/solid-query.ts#L281)

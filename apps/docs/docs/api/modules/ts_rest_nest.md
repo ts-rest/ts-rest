@@ -24,7 +24,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/api.decorator.ts:37](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/api.decorator.ts#L37)
+[libs/ts-rest/nest/src/lib/api.decorator.ts:37](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/api.decorator.ts#L37)
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/ts-rest-nest.ts:29](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/ts-rest-nest.ts#L29)
+[libs/ts-rest/nest/src/lib/ts-rest-nest.ts:29](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/ts-rest-nest.ts#L29)
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/ts-rest-nest.ts:24](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/ts-rest-nest.ts#L24)
+[libs/ts-rest/nest/src/lib/ts-rest-nest.ts:24](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/ts-rest-nest.ts#L24)
 
 ## Variables
 
@@ -66,7 +66,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/json-query.decorator.ts:1](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/json-query.decorator.ts#L1)
+[libs/ts-rest/nest/src/lib/json-query.decorator.ts:1](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/json-query.decorator.ts#L1)
 
 ## Functions
 
@@ -86,7 +86,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/api.decorator.ts:138](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/api.decorator.ts#L138)
+[libs/ts-rest/nest/src/lib/api.decorator.ts:138](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/api.decorator.ts#L138)
 
 ___
 
@@ -128,7 +128,7 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/json-query.decorator.ts:3](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/json-query.decorator.ts#L3)
+[libs/ts-rest/nest/src/lib/json-query.decorator.ts:3](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/json-query.decorator.ts#L3)
 
 ___
 
@@ -161,4 +161,4 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/ts-rest-nest.ts:31](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/ts-rest-nest.ts#L31)
+[libs/ts-rest/nest/src/lib/ts-rest-nest.ts:31](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/ts-rest-nest.ts#L31)

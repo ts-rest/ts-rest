@@ -20,7 +20,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/react-query/src/lib/react-query.ts:375](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/react-query/src/lib/react-query.ts#L375)
+[libs/ts-rest/react-query/src/lib/react-query.ts:375](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/react-query/src/lib/react-query.ts#L375)
 
 ## Functions
 
@@ -47,4 +47,4 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/react-query/src/lib/react-query.ts:377](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/react-query/src/lib/react-query.ts#L377)
+[libs/ts-rest/react-query/src/lib/react-query.ts:377](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/react-query/src/lib/react-query.ts#L377)

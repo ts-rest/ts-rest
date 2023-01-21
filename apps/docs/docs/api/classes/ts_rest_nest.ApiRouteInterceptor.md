@@ -40,4 +40,4 @@ NestInterceptor.intercept
 
 #### Defined in
 
-[libs/ts-rest/nest/src/lib/api.decorator.ts:118](https://github.com/oliverbutler/tscont/blob/5364df1/libs/ts-rest/nest/src/lib/api.decorator.ts#L118)
+[libs/ts-rest/nest/src/lib/api.decorator.ts:118](https://github.com/oliverbutler/tscont/blob/2b17a44/libs/ts-rest/nest/src/lib/api.decorator.ts#L118)
