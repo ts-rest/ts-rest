@@ -32,14 +32,6 @@ const config = {
       },
     ],
   ],
-  scripts: [
-    {
-      defer: true,
-      'data-domain': 'ts-rest.com',
-      'data-api': 'https://plausible.oliverbutler.uk/api/event',
-      src: 'https://plausible.oliverbutler.uk/js/script.js',
-    },
-  ],
 
   presets: [
     [
@@ -56,6 +48,10 @@ const config = {
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
+        },
+        googleAnalytics: {
+          trackingID: 'G-5HT1M8FM3Z',
+          anonymizeIP: true,
         },
       }),
     ],
