@@ -37,26 +37,6 @@ export type GetFieldType<T, P> = P extends `${infer Left}.${infer Right}`
     : undefined
   : undefined;
 
-export function getValue<
-  TData,
-  TPath extends string,
-  TDefault = GetFieldType<TData, TPath>
->(
-  data: TData,
-  path: TPath,
-  defaultValue?: TDefault
-): GetFieldType<TData, TPath> | TDefault {
-  const value = path
-    .split(/[.[\]]/)
-    .filter(Boolean)
-    .reduce<GetFieldType<TData, TPath>>(
-      (value, key) => (value as any)?.[key],
-      data as any
-    );
-
-  return value !== undefined ? value : (defaultValue as TDefault);
-}
-
 // https://stackoverflow.com/questions/63447660/typescript-remove-all-properties-with-particular-type
 // Nested solution also available ^
 type ExcludeKeysWithTypeOf<T, V> = {
@@ -73,21 +53,6 @@ export type With<T, V> = Pick<T, ExcludeKeysWithoutTypeOf<T, V>>;
 export type ZodInferOrType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 
 export type Merge<T, U> = Omit<T, keyof U> & U;
-
-type Try<A, B, C> = A extends B ? A : C;
-
-type NarrowRaw<T> =
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  | (T extends Function ? T : never)
-  | (T extends string | number | bigint | boolean ? T : never)
-  | (T extends [] ? [] : never)
-  | {
-      [K in keyof T]: K extends 'description' ? T[K] : NarrowNotZod<T[K]>;
-    };
-
-type NarrowNotZod<T> = Try<T, ZodType, NarrowRaw<T>>;
-
-export type Narrow<T> = Try<T, [], NarrowNotZod<T>>;
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
