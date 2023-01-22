@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.14.0
+
+### Minor Changes
+
+- 13ca71b: Enable nested routers without declaring new constants
+
 ## 3.13.1
 
 ### Patch Changes
