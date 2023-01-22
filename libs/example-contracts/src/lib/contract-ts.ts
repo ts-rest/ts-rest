@@ -13,6 +13,16 @@ export interface PostTs {
 const c = initContract();
 
 export const contractTs = c.router({
+  test: {
+    testMethod: {
+      method: 'GET',
+      path: '/ts/posts',
+      responses: {
+        201: c.response<PostTs>(),
+      },
+      summary: 'Create a post',
+    },
+  },
   createPost: {
     method: 'POST',
     path: '/ts/posts',

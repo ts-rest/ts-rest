@@ -74,21 +74,6 @@ export type ZodInferOrType<T> = T extends ZodTypeAny ? z.infer<T> : T;
 
 export type Merge<T, U> = Omit<T, keyof U> & U;
 
-type Try<A, B, C> = A extends B ? A : C;
-
-type NarrowRaw<T> =
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  | (T extends Function ? T : never)
-  | (T extends string | number | bigint | boolean ? T : never)
-  | (T extends [] ? [] : never)
-  | {
-      [K in keyof T]: K extends 'description' ? T[K] : NarrowNotZod<T[K]>;
-    };
-
-type NarrowNotZod<T> = Try<T, ZodType, NarrowRaw<T>>;
-
-export type Narrow<T> = Try<T, [], NarrowNotZod<T>>;
-
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 // https://github.com/ts-essentials/ts-essentials/blob/4c451652ba7c20b0e0b965e0b7755fd4d7844127/lib/types.ts#L228
