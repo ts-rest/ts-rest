@@ -1,5 +1,7 @@
 # @ts-rest/react-query
 
+## 3.14.0
+
 ## 3.13.1
 
 ### Patch Changes
