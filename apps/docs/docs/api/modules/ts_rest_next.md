@@ -33,7 +33,7 @@ Create the implementation for a given AppRouter.
 
 #### Defined in
 
-[libs/ts-rest/next/src/lib/ts-rest-next.ts:177](https://github.com/oliverbutler/tscont/blob/a69280b/libs/ts-rest/next/src/lib/ts-rest-next.ts#L177)
+[libs/ts-rest/next/src/lib/ts-rest-next.ts:177](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/next/src/lib/ts-rest-next.ts#L177)
 
 ___
 
@@ -85,7 +85,7 @@ export default createNextRouter(contract, implementation);
 
 #### Defined in
 
-[libs/ts-rest/next/src/lib/ts-rest-next.ts:199](https://github.com/oliverbutler/tscont/blob/a69280b/libs/ts-rest/next/src/lib/ts-rest-next.ts#L199)
+[libs/ts-rest/next/src/lib/ts-rest-next.ts:199](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/next/src/lib/ts-rest-next.ts#L199)
 
 ___
 
@@ -105,4 +105,4 @@ obj is any
 
 #### Defined in
 
-[libs/ts-rest/next/src/lib/ts-rest-next.ts:98](https://github.com/oliverbutler/tscont/blob/a69280b/libs/ts-rest/next/src/lib/ts-rest-next.ts#L98)
+[libs/ts-rest/next/src/lib/ts-rest-next.ts:98](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/next/src/lib/ts-rest-next.ts#L98)

@@ -28,4 +28,4 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/open-api/src/lib/ts-rest-open-api.ts:89](https://github.com/oliverbutler/tscont/blob/a69280b/libs/ts-rest/open-api/src/lib/ts-rest-open-api.ts#L89)
+[libs/ts-rest/open-api/src/lib/ts-rest-open-api.ts:89](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/open-api/src/lib/ts-rest-open-api.ts#L89)

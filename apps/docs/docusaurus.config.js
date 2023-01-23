@@ -1,6 +1,22 @@
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
+const vercelAttribution = `
+  <div style="padding-top: 25px;">
+    <a
+      href="https://vercel.com/?utm_source=ts-rest&utm_campaign=oss"
+      target="_blank"
+      rel="noreferrer"
+    >
+      <img
+        src="/img/powered-by-vercel.svg"
+        alt="Powered by Vercel"
+        style="height: 40px"
+      />
+    </a>
+  </div>
+`.trim();
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'ts-rest',
@@ -167,7 +183,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} @ts-rest`,
+        copyright: vercelAttribution,
       },
       prism: {
         theme: lightCodeTheme,

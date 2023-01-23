@@ -20,7 +20,7 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/express/src/lib/ts-rest-express.ts:17](https://github.com/oliverbutler/tscont/blob/a69280b/libs/ts-rest/express/src/lib/ts-rest-express.ts#L17)
+[libs/ts-rest/express/src/lib/ts-rest-express.ts:37](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/express/src/lib/ts-rest-express.ts#L37)
 
 ## Functions
 
@@ -50,7 +50,37 @@ custom_edit_url: null
 
 #### Defined in
 
-[libs/ts-rest/express/src/lib/ts-rest-express.ts:218](https://github.com/oliverbutler/tscont/blob/a69280b/libs/ts-rest/express/src/lib/ts-rest-express.ts#L218)
+[libs/ts-rest/express/src/lib/ts-rest-express.ts:238](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/express/src/lib/ts-rest-express.ts#L238)
+
+___
+
+### getValue
+
+▸ **getValue**<`TData`, `TPath`, `TDefault`\>(`data`, `path`, `defaultValue?`): `GetFieldType`<`TData`, `TPath`\> \| `TDefault`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `TData` | `TData` |
+| `TPath` | extends `string` |
+| `TDefault` | `GetFieldType`<`TData`, `TPath`\> |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `data` | `TData` |
+| `path` | `TPath` |
+| `defaultValue?` | `TDefault` |
+
+#### Returns
+
+`GetFieldType`<`TData`, `TPath`\> \| `TDefault`
+
+#### Defined in
+
+[libs/ts-rest/express/src/lib/ts-rest-express.ts:17](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/express/src/lib/ts-rest-express.ts#L17)
 
 ___
 
@@ -68,4 +98,4 @@ ___
 
 #### Defined in
 
-[libs/ts-rest/express/src/lib/ts-rest-express.ts:75](https://github.com/oliverbutler/tscont/blob/a69280b/libs/ts-rest/express/src/lib/ts-rest-express.ts#L75)
+[libs/ts-rest/express/src/lib/ts-rest-express.ts:95](https://github.com/oliverbutler/tscont/blob/c65705a/libs/ts-rest/express/src/lib/ts-rest-express.ts#L95)
