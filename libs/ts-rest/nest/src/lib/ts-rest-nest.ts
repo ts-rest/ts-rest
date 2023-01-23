@@ -41,7 +41,8 @@ type NestControllerShapeFromAppRouter<T extends AppRouter> = Without<
 type NestAppRouteShape<T extends AppRouter> = AppRouterRequestShapes<T>;
 
 /**
- * @deprecated Use `nestControllerContract`, `NestControllerInterface`, `NestRequestShapes`, and `NestResponseShapes` instead. Check the docs for more info.
+ * @deprecated Use `nestControllerContract`, `NestControllerInterface`, `NestRequestShapes`, and `NestResponseShapes` instead
+ * @see {@link https://ts-rest.com/docs/nest|ts-rest docs} for more info.
  */
 export const initNestServer = <T extends AppRouter>(router: T) => {
   return {
