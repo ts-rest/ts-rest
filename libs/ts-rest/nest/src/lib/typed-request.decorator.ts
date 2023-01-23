@@ -47,7 +47,7 @@ export const TypedRequest = createParamDecorator(
     }
 
     const isJsonQuery = !!(
-      Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ||
+      Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ??
       Reflect.getMetadata(JsonQuerySymbol, ctx.getClass())
     );
 
