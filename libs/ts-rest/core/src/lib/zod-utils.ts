@@ -34,7 +34,10 @@ export const checkZodSchema = (
 
     return {
       success: false,
-      error: result.error,
+      error: {
+        name: result.error.name,
+        issues: result.error.issues,
+      },
     };
   }
 
