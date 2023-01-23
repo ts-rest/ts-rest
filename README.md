@@ -84,7 +84,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
-<div style="padding-top: 25px;">
+<div style={{paddingTop: "25px"}}>
   <a
     href="https://vercel.com/?utm_source=ts-rest&utm_campaign=oss"
     target="_blank"
@@ -93,7 +93,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
     <img
       src="https://ts-rest.com/img/powered-by-vercel.svg"
       alt="Powered by Vercel"
-      style="height: 40px"
+      height="40"
     />
   </a>
 </div>

@@ -91,3 +91,17 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+<div style={{paddingTop: "25px"}}>
+  <a
+    href="https://vercel.com/?utm_source=ts-rest&utm_campaign=oss"
+    target="_blank"
+    rel="noreferrer"
+  >
+    <img
+      src="https://ts-rest.com/img/powered-by-vercel.svg"
+      alt="Powered by Vercel"
+      height="40"
+    />
+  </a>
+</div>
