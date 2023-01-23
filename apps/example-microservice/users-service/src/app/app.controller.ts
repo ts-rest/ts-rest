@@ -1,20 +1,25 @@
 import { Controller, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { usersApi } from '@ts-rest/example-microservice/util-users-api';
-import { Api, ApiDecorator, initNestServer } from '@ts-rest/nest';
+import {
+  Api,
+  TypedRequest,
+  nestControllerContract,
+  NestControllerInterface,
+  NestRequestShapes,
+} from '@ts-rest/nest';
 import { AppService } from './app.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import 'multer';
 
-const s = initNestServer(usersApi);
-type ControllerShape = typeof s.controllerShape;
-type RouteShape = typeof s.routeShapes;
+const c = nestControllerContract(usersApi);
+type RequestShapes = NestRequestShapes<typeof c>;
 
 @Controller()
-export class AppController implements ControllerShape {
+export class AppController implements NestControllerInterface<typeof c> {
   constructor(private readonly appService: AppService) {}
 
-  @Api(s.route.getUser)
-  async getUser(@ApiDecorator() { params: { id } }: RouteShape['getUser']) {
+  @Api(c.getUser)
+  async getUser(@TypedRequest() { params: { id } }: RequestShapes['getUser']) {
     return {
       status: 200 as const,
       body: {
@@ -25,10 +30,10 @@ export class AppController implements ControllerShape {
     };
   }
 
-  @Api(s.route.updateUserAvatar)
+  @Api(c.updateUserAvatar)
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUserAvatar(
-    @ApiDecorator() { params: { id } }: RouteShape['updateUserAvatar'],
+    @TypedRequest() { params: { id } }: RequestShapes['updateUserAvatar'],
     @UploadedFile() avatar: Express.Multer.File
   ) {
     return {

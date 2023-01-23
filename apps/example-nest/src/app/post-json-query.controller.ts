@@ -1,10 +1,17 @@
 import { Controller } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
-import { Api, ApiDecorator, initNestServer, JsonQuery } from '@ts-rest/nest';
+import {
+  Api,
+  TypedRequest,
+  JsonQuery,
+  nestControllerContract,
+  NestControllerInterface,
+  NestRequestShapes,
+} from '@ts-rest/nest';
 import { z } from 'zod';
 import { PostService } from './post.service';
 
-const s = initNestServer({
+const c = nestControllerContract({
   getPosts: {
     ...apiBlog.getPosts,
     path: '/posts-json-query',
@@ -15,17 +22,18 @@ const s = initNestServer({
     }),
   },
 });
-type ControllerShape = typeof s.controllerShape;
-type RouteShape = typeof s.routeShapes;
+type RequestShapes = NestRequestShapes<typeof c>;
 
 @JsonQuery()
 @Controller()
-export class PostJsonQueryController implements ControllerShape {
+export class PostJsonQueryController
+  implements NestControllerInterface<typeof c>
+{
   constructor(private readonly postService: PostService) {}
 
-  @Api(s.route.getPosts)
+  @Api(c.getPosts)
   async getPosts(
-    @ApiDecorator() { query: { take, skip, search } }: RouteShape['getPosts']
+    @TypedRequest() { query: { take, skip, search } }: RequestShapes['getPosts']
   ) {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,

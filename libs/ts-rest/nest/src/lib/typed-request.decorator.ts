@@ -1,18 +1,7 @@
 import {
-  applyDecorators,
   BadRequestException,
-  CallHandler,
   createParamDecorator,
-  Delete,
   ExecutionContext,
-  Get,
-  Injectable,
-  NestInterceptor,
-  Patch,
-  Post,
-  Put,
-  SetMetadata,
-  UseInterceptors,
 } from '@nestjs/common';
 import {
   AppRoute,
@@ -23,18 +12,17 @@ import {
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
-import { map, Observable } from 'rxjs';
-import type { Request, Response } from 'express-serve-static-core';
+import type { Request } from 'express-serve-static-core';
 import { JsonQuerySymbol } from './json-query.decorator';
 
-const tsRestAppRouteMetadataKey = Symbol('ts-rest-app-route');
+export const tsRestAppRouteMetadataKey = Symbol('ts-rest-app-route');
 
 type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
     ? Without<ZodInferOrType<T['body']>, File>
     : ZodInferOrType<T['body']>;
 
-export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
+export type TypedRequestShape<TRoute extends AppRoute> = Without<
   {
     params: PathParamsWithCustomValidators<TRoute>;
     body: TRoute extends AppRouteMutation
@@ -45,8 +33,8 @@ export type ApiDecoratorShape<TRoute extends AppRoute> = Without<
   never
 >;
 
-export const ApiDecorator = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext): ApiDecoratorShape<any> => {
+export const TypedRequest = createParamDecorator(
+  (_: unknown, ctx: ExecutionContext): TypedRequestShape<any> => {
     const req: Request = ctx.switchToHttp().getRequest();
     const appRoute: AppRoute | undefined = Reflect.getMetadata(
       tsRestAppRouteMetadataKey,
@@ -98,49 +86,7 @@ export const ApiDecorator = createParamDecorator(
   }
 );
 
-const getMethodDecorator = (appRoute: AppRoute) => {
-  switch (appRoute.method) {
-    case 'DELETE':
-      return Delete(appRoute.path);
-    case 'GET':
-      return Get(appRoute.path);
-    case 'POST':
-      return Post(appRoute.path);
-    case 'PATCH':
-      return Patch(appRoute.path);
-    case 'PUT':
-      return Put(appRoute.path);
-  }
-};
-
-@Injectable()
-export class ApiRouteInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const res: Response = context.switchToHttp().getResponse();
-
-    return next.handle().pipe(
-      map((value) => {
-        if (
-          typeof value === 'object' &&
-          typeof value.status === 'number' &&
-          value.body !== undefined
-        ) {
-          res.status(value.status);
-          return value.body;
-        }
-
-        return value;
-      })
-    );
-  }
-}
-
-export const Api = (appRoute: AppRoute): MethodDecorator => {
-  const methodDecorator = getMethodDecorator(appRoute);
-
-  return applyDecorators(
-    SetMetadata(tsRestAppRouteMetadataKey, appRoute),
-    methodDecorator,
-    UseInterceptors(ApiRouteInterceptor)
-  );
-};
+/**
+ * @deprecated Use `TypedRequest` instead
+ */
+export const ApiDecorator = TypedRequest;

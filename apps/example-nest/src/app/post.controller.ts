@@ -1,15 +1,20 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
-import { Api, ApiDecorator, initNestServer } from '@ts-rest/nest';
+import {
+  Api,
+  nestControllerContract,
+  NestControllerInterface,
+  NestRequestShapes,
+  TypedRequest,
+} from '@ts-rest/nest';
 import { PostService } from './post.service';
 
-const s = initNestServer(apiBlog);
-type ControllerShape = typeof s.controllerShape;
-type RouteShape = typeof s.routeShapes;
+const c = nestControllerContract(apiBlog);
+type RequestShapes = NestRequestShapes<typeof c>;
 
-// You can implement the ControllerShape interface to ensure type safety
+// You can implement the NestControllerInterface interface to ensure type safety
 @Controller()
-export class PostController implements ControllerShape {
+export class PostController implements NestControllerInterface<typeof c> {
   constructor(private readonly postService: PostService) {}
 
   @Get('/test')
@@ -17,9 +22,9 @@ export class PostController implements ControllerShape {
     return { queryParams };
   }
 
-  @Api(s.route.getPosts)
+  @Api(c.getPosts)
   async getPosts(
-    @ApiDecorator() { query: { take, skip, search } }: RouteShape['getPosts']
+    @TypedRequest() { query: { take, skip, search } }: RequestShapes['getPosts']
   ) {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,
@@ -33,8 +38,8 @@ export class PostController implements ControllerShape {
     };
   }
 
-  @Api(s.route.getPost)
-  async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']) {
+  @Api(c.getPost)
+  async getPost(@TypedRequest() { params: { id } }: RequestShapes['getPost']) {
     const post = await this.postService.getPost(id);
 
     if (!post) {
@@ -44,8 +49,8 @@ export class PostController implements ControllerShape {
     return { status: 200 as const, body: post };
   }
 
-  @Api(s.route.createPost)
-  async createPost(@ApiDecorator() { body }: RouteShape['createPost']) {
+  @Api(c.createPost)
+  async createPost(@TypedRequest() { body }: RequestShapes['createPost']) {
     const post = await this.postService.createPost({
       title: body.title,
       content: body.content,
@@ -56,9 +61,9 @@ export class PostController implements ControllerShape {
     return { status: 201 as const, body: post };
   }
 
-  @Api(s.route.updatePost)
+  @Api(c.updatePost)
   async updatePost(
-    @ApiDecorator() { params: { id }, body }: RouteShape['updatePost']
+    @TypedRequest() { params: { id }, body }: RequestShapes['updatePost']
   ) {
     const post = await this.postService.updatePost(id, {
       title: body.title,
@@ -70,18 +75,18 @@ export class PostController implements ControllerShape {
     return { status: 200 as const, body: post };
   }
 
-  @Api(s.route.deletePost)
+  @Api(c.deletePost)
   async deletePost(
-    @ApiDecorator() { params: { id } }: RouteShape['deletePost']
+    @TypedRequest() { params: { id } }: RequestShapes['deletePost']
   ) {
     await this.postService.deletePost(id);
 
     return { status: 200 as const, body: { message: 'Post Deleted' } };
   }
 
-  @Api(s.route.testPathParams)
+  @Api(c.testPathParams)
   async testPathParams(
-    @ApiDecorator() { params }: RouteShape['testPathParams']
+    @TypedRequest() { params }: RequestShapes['testPathParams']
   ) {
     return { status: 200 as const, body: params };
   }

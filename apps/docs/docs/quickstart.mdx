@@ -104,23 +104,22 @@ normally Nest APIs are extremely powerful, but hard to make type safe.</p>
 ```typescript
 // post.controller.ts
 
-const s = initNestServer(contract);
-type ControllerShape = typeof s.controllerShape;
-type RouteShape = typeof s.routeShapes;
+const c = nestControllerContract(apiBlog);
+type RequestShapes = NestRequestShapes<typeof c>;
 
 @Controller()
-export class PostController implements ControllerShape {
+export class PostController implements NestControllerInterface<typeof c> {
   constructor(private readonly postService: PostService) {}
 
-  @Api(s.route.getPost)
-  async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']) {
+  @Api(c.getPost)
+  async getPost(@TypedRequest() { params: { id } }: RequestShapes['getPost']) {
     const post = await this.postService.getPost(id);
 
     return { status: 200 as const, body: post };
   }
 
-  @Api(s.route.createPost)
-  async createPost(@ApiDecorator() { body }: RouteShape['createPost']) {
+  @Api(c.createPost)
+  async createPost(@TypedRequest() { body }: RequestShapes['createPost']) {
     const post = await this.postService.createPost({
       title: body.title,
       body: body.body,
