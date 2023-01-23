@@ -4,19 +4,24 @@
  <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height="150"></img>
 </p>
 
- <p align="center">RPC-like client and server helpers for a magical end to end typed experience</p> 
- <p align="center">
-   <a href="https://www.npmjs.com/package/@ts-rest/core">
-   <img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript"/>
-   </a>
-   <a href="https://www.npmjs.com/package/@ts-rest/core"/>
-   <img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core"/>
-     <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE"></a>
-    <img alt="GitHub" src="https://img.shields.io/github/license/ts-rest/ts-rest"/> 
-   <img alt="GitHub Workflow Status" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore"/>
-   <img alt="GitHub Workflow Status" src="https://img.shields.io/discord/1055855205960392724"/>
-   
- </p>
+<p align="center">RPC-like client and server helpers for a magical end to end typed experience</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@ts-rest/core">
+    <img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript"/>
+  </a>
+  <img alt="Github Workflow Status" src="https://img.shields.io/github/actions/workflow/status/ts-rest/ts-rest/release.yml?branch=main"/>
+  <a href="https://www.npmjs.com/package/@ts-rest/core">
+    <img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core"/>
+  </a>
+  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/ts-rest/ts-rest"/>
+  </a>
+  <img alt="Bundle Size" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore"/>
+  <a href="https://discord.com/invite/2Megk85k5a">  
+    <img alt="Discord" src="https://img.shields.io/discord/1055855205960392724"/>
+  </a>
+</p>
 
 # Introduction
 
