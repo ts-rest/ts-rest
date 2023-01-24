@@ -203,7 +203,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/health',
+      path: 'http://api.com/health?test=test',
       body: undefined,
       headers: {
         'Content-Type': 'application/json',
@@ -282,7 +282,7 @@ describe('react-query', () => {
               params: {
                 id: '2',
               },
-            },
+            }
           ],
         }),
       {
