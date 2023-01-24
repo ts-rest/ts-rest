@@ -54,6 +54,10 @@ const getMethodDecorator = (appRoute: AppRoute) => {
   }
 };
 
+/**
+ * Method decorator used to register a route's path and method from the passed route and handle ts-rest response objects
+ * @param appRoute The route to register
+ */
 export const Api = (appRoute: AppRoute): MethodDecorator => {
   const methodDecorator = getMethodDecorator(appRoute);
 

@@ -33,6 +33,9 @@ export type TsRestRequestShape<TRoute extends AppRoute> = Without<
   never
 >;
 
+/**
+ * Parameter decorator used to parse, validate and return the typed request object
+ */
 export const TsRestRequest = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): TsRestRequestShape<any> => {
     const req: Request = ctx.switchToHttp().getRequest();

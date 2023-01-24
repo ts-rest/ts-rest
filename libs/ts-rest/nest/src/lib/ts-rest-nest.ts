@@ -65,6 +65,9 @@ export type NestRequestShapes<T extends AppRouter> = NestAppRouteShape<T>;
 export type NestResponseShapes<T extends AppRouter> =
   AppRouterResponseShapes<T>;
 
+/**
+ * Returns the contract containing only non-nested routes required by a NestJS controller
+ */
 export const nestControllerContract = <T extends AppRouter>(router: T) => {
   // it's not worth actually filtering the contract at runtime
   // the typing will already ensure that nested routes cannot be used at compile time
