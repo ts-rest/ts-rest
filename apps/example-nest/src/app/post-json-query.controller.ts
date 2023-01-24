@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
 import {
   Api,
-  TypedRequest,
+  TsRestRequest,
   JsonQuery,
   nestControllerContract,
   NestControllerInterface,
@@ -33,7 +33,8 @@ export class PostJsonQueryController
 
   @Api(c.getPosts)
   async getPosts(
-    @TypedRequest() { query: { take, skip, search } }: RequestShapes['getPosts']
+    @TsRestRequest()
+    { query: { take, skip, search } }: RequestShapes['getPosts']
   ) {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,

@@ -22,7 +22,7 @@ type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
     ? Without<ZodInferOrType<T['body']>, File>
     : ZodInferOrType<T['body']>;
 
-export type TypedRequestShape<TRoute extends AppRoute> = Without<
+export type TsRestRequestShape<TRoute extends AppRoute> = Without<
   {
     params: PathParamsWithCustomValidators<TRoute>;
     body: TRoute extends AppRouteMutation
@@ -33,8 +33,8 @@ export type TypedRequestShape<TRoute extends AppRoute> = Without<
   never
 >;
 
-export const TypedRequest = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext): TypedRequestShape<any> => {
+export const TsRestRequest = createParamDecorator(
+  (_: unknown, ctx: ExecutionContext): TsRestRequestShape<any> => {
     const req: Request = ctx.switchToHttp().getRequest();
     const appRoute: AppRoute | undefined = Reflect.getMetadata(
       tsRestAppRouteMetadataKey,
@@ -87,6 +87,6 @@ export const TypedRequest = createParamDecorator(
 );
 
 /**
- * @deprecated Use `TypedRequest` instead
+ * @deprecated Use `TsRestRequest` instead
  */
-export const ApiDecorator = TypedRequest;
+export const ApiDecorator = TsRestRequest;

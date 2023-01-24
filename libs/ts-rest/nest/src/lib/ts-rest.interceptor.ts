@@ -15,7 +15,7 @@ import {
 import { map, Observable } from 'rxjs';
 import { Response } from 'express-serve-static-core';
 import { AppRoute } from '@ts-rest/core';
-import { tsRestAppRouteMetadataKey } from './typed-request.decorator';
+import { tsRestAppRouteMetadataKey } from './ts-rest-request.decorator';
 
 @Injectable()
 export class TsRestInterceptor implements NestInterceptor {

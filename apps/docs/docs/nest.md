@@ -8,7 +8,7 @@ import {
   nestControllerContract,
   NestControllerInterface,
   NestRequestShapes,
-  TypedRequest,
+  TsRestRequest,
 } from '@ts-rest/nest';
 
 const c = nestControllerContract(apiBlog);
@@ -19,7 +19,7 @@ export class PostController implements NestControllerInterface<typeof c> {
   constructor(private readonly postService: PostService) {}
 
   @Api(c.getPost)
-  async getPost(@TypedRequest() { params: { id } }: RequestShapes['getPost']) {
+  async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     const post = await this.postService.getPost(id);
 
     if (!post) {
@@ -39,7 +39,7 @@ Having the controller class implement `NestControllerInterface` ensures that you
 
 The `@Api` decorator takes the route, defines the path and method for the controller route.
 
-The `@TypedRequest` decorator takes the contract route defined in the `@Api` decorator, and returns the parsed and validated (if using Zod) request params, query and body.
+The `@TsRestRequest` decorator takes the contract route defined in the `@Api` decorator, and returns the parsed and validated (if using Zod) request params, query and body.
 
 As Typescript cannot infer class method parameter types from an implemented interface, we need to explicitly define the type for the request parameter using the `NestRequestShapes` type. 
 
@@ -63,7 +63,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @Api(s.route.getPost)
   @JsonQuery(false)
-  async getPost(@TypedRequest() { params: { id } }: RequestShapes['getPost']) {
+  async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     // ...
   }
 }
@@ -80,7 +80,7 @@ import {
   nestControllerContract,
   NestRequestShapes,
   NestResponseShapes,
-  TypedRequest,
+  TsRestRequest,
 } from '@ts-rest/nest';
 
 const c = nestControllerContract(apiBlog);
@@ -93,7 +93,7 @@ export class PostController {
 
   @Api(c.getPost)
   async getPost(
-    @TypedRequest() { params: { id } }: RequestShapes['getPost']
+    @TsRestRequest() { params: { id } }: RequestShapes['getPost']
   ): Promise<ResponseShapes['getPost']> {
     const post = await this.postService.getPost(id);
 

@@ -2,7 +2,7 @@ import { Controller, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { usersApi } from '@ts-rest/example-microservice/util-users-api';
 import {
   Api,
-  TypedRequest,
+  TsRestRequest,
   nestControllerContract,
   NestControllerInterface,
   NestRequestShapes,
@@ -19,7 +19,7 @@ export class AppController implements NestControllerInterface<typeof c> {
   constructor(private readonly appService: AppService) {}
 
   @Api(c.getUser)
-  async getUser(@TypedRequest() { params: { id } }: RequestShapes['getUser']) {
+  async getUser(@TsRestRequest() { params: { id } }: RequestShapes['getUser']) {
     return {
       status: 200 as const,
       body: {
@@ -33,7 +33,7 @@ export class AppController implements NestControllerInterface<typeof c> {
   @Api(c.updateUserAvatar)
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUserAvatar(
-    @TypedRequest() { params: { id } }: RequestShapes['updateUserAvatar'],
+    @TsRestRequest() { params: { id } }: RequestShapes['updateUserAvatar'],
     @UploadedFile() avatar: Express.Multer.File
   ) {
     return {

@@ -6,7 +6,7 @@ import {
   getRouteResponses,
   ApiResponseForRoute,
 } from '@ts-rest/core';
-import { TypedRequestShape } from './typed-request.decorator';
+import { TsRestRequestShape } from './ts-rest-request.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
   ...args: any[]
@@ -21,7 +21,7 @@ type AppRouterControllerShape<T extends AppRouter> = Without<
 
 type AppRouterRequestShapes<T extends AppRouter> = Without<
   {
-    [K in keyof T]: T[K] extends AppRoute ? TypedRequestShape<T[K]> : never;
+    [K in keyof T]: T[K] extends AppRoute ? TsRestRequestShape<T[K]> : never;
   },
   never
 >;

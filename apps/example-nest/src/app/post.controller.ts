@@ -5,7 +5,7 @@ import {
   nestControllerContract,
   NestControllerInterface,
   NestRequestShapes,
-  TypedRequest,
+  TsRestRequest,
 } from '@ts-rest/nest';
 import { PostService } from './post.service';
 
@@ -24,7 +24,8 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @Api(c.getPosts)
   async getPosts(
-    @TypedRequest() { query: { take, skip, search } }: RequestShapes['getPosts']
+    @TsRestRequest()
+    { query: { take, skip, search } }: RequestShapes['getPosts']
   ) {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,
@@ -39,7 +40,7 @@ export class PostController implements NestControllerInterface<typeof c> {
   }
 
   @Api(c.getPost)
-  async getPost(@TypedRequest() { params: { id } }: RequestShapes['getPost']) {
+  async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     const post = await this.postService.getPost(id);
 
     if (!post) {
@@ -50,7 +51,7 @@ export class PostController implements NestControllerInterface<typeof c> {
   }
 
   @Api(c.createPost)
-  async createPost(@TypedRequest() { body }: RequestShapes['createPost']) {
+  async createPost(@TsRestRequest() { body }: RequestShapes['createPost']) {
     const post = await this.postService.createPost({
       title: body.title,
       content: body.content,
@@ -63,7 +64,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @Api(c.updatePost)
   async updatePost(
-    @TypedRequest() { params: { id }, body }: RequestShapes['updatePost']
+    @TsRestRequest() { params: { id }, body }: RequestShapes['updatePost']
   ) {
     const post = await this.postService.updatePost(id, {
       title: body.title,
@@ -77,7 +78,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @Api(c.deletePost)
   async deletePost(
-    @TypedRequest() { params: { id } }: RequestShapes['deletePost']
+    @TsRestRequest() { params: { id } }: RequestShapes['deletePost']
   ) {
     await this.postService.deletePost(id);
 
@@ -86,7 +87,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @Api(c.testPathParams)
   async testPathParams(
-    @TypedRequest() { params }: RequestShapes['testPathParams']
+    @TsRestRequest() { params }: RequestShapes['testPathParams']
   ) {
     return { status: 200 as const, body: params };
   }
