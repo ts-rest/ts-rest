@@ -70,8 +70,9 @@ export type ApiRouteResponse<T> =
       body: unknown;
     };
 
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<T['responses']>
-
+export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
+  T['responses']
+>;
 
 /**
  * Returned from a mutation or query call
@@ -202,37 +203,21 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   };
 };
 
-const createNewProxy = (router: AppRouter, args: ClientArgs) => {
-  return new Proxy(
-    {},
-    {
-      get: (target, propKey): any => {
-        if (typeof propKey === 'string' && propKey in router) {
-          const subRouter = router[propKey];
-
-          if (isAppRoute(subRouter)) {
-            // If the current router.X is a route, return a function to handle the users args
-            return getRouteQuery(subRouter, args);
-          } else {
-            return createNewProxy(subRouter, args);
-          }
-        }
-
-        return createNewProxy(router, args);
-      },
-    }
-  );
-};
-
 export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
 export const initClient = <T extends AppRouter>(
   router: T,
   args: ClientArgs
 ): InitClientReturn<T> => {
-  const proxy = createNewProxy(router, args);
-
-  return proxy as InitClientReturn<T>;
+  return Object.fromEntries(
+    Object.entries(router).map(([key, subRouter]) => {
+      if (isAppRoute(subRouter)) {
+        return [key, getRouteQuery(subRouter, args)];
+      } else {
+        return [key, initClient(subRouter, args)];
+      }
+    })
+  );
 };
 
 // takes a router and returns response types for each AppRoute
@@ -240,7 +225,8 @@ export const initClient = <T extends AppRouter>(
 
 export function getRouteResponses<T extends AppRouter>(router: T) {
   return {} as {
-     [K in keyof typeof router]: 
-        typeof router[K] extends AppRoute ? ApiResponseForRoute<typeof router[K]> : 'not a route'
-   }
+    [K in keyof typeof router]: typeof router[K] extends AppRoute
+      ? ApiResponseForRoute<typeof router[K]>
+      : 'not a route';
+  };
 }

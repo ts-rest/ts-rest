@@ -246,43 +246,28 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
   };
 };
 
-const createNewProxy = (router: AppRouter | AppRoute, args: ClientArgs) => {
-  return new Proxy(
-    {},
-    {
-      get: (_, propKey): any => {
-        if (isAppRoute(router)) {
-          switch (propKey) {
-            case 'query':
-              return getRouteQuery(router, args);
-            case 'mutation':
-              return getRouteQuery(router, args);
-            case 'createQuery':
-              return getRouteUseQuery(router, args);
-            case 'createInfiniteQuery':
-              return getRouteUseInfiniteQuery(router, args);
-            case 'createMutation':
-              return getRouteUseMutation(router, args);
-            default:
-              throw new Error(`Unknown method called on ${String(propKey)}`);
-          }
-        } else {
-          const subRouter = router[propKey as string];
-
-          return createNewProxy(subRouter, args);
-        }
-      },
-    }
-  );
-};
-
 export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
 export const initQueryClient = <T extends AppRouter>(
   router: T,
   args: ClientArgs
 ): InitClientReturn<T> => {
-  const proxy = createNewProxy(router, args);
-
-  return proxy as InitClientReturn<T>;
+  return Object.fromEntries(
+    Object.entries(router).map(([key, subRouter]) => {
+      if (isAppRoute(subRouter)) {
+        return [
+          key,
+          {
+            query: getRouteQuery(subRouter, args),
+            mutation: getRouteQuery(subRouter, args),
+            createQuery: getRouteUseQuery(subRouter, args),
+            createInfiniteQuery: getRouteUseInfiniteQuery(subRouter, args),
+            createMutation: getRouteUseMutation(subRouter, args),
+          },
+        ];
+      } else {
+        return [key, initQueryClient(subRouter, args)];
+      }
+    })
+  );
 };
