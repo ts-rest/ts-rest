@@ -293,6 +293,23 @@ describe('client', () => {
         body: undefined,
       });
     });
+
+    it('w/ a non json response (string)', async () => {
+      api.mockResolvedValue({ body: 'string', status: 200 });
+
+      const result = await client.posts.getPosts({});
+
+      expect(result).toStrictEqual({ body: 'string', status: 200 });
+
+      expect(api).toHaveBeenCalledWith({
+        method: 'GET',
+        path: 'https://api.com/posts',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: undefined,
+      });
+    });
   });
 
   describe('post', () => {

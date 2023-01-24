@@ -114,7 +114,7 @@ export const defaultApi: ApiFetcher = async ({
   try {
     return {
       status: result.status,
-      body: await result.json(),
+      body: await result.clone().json(),
     };
   } catch {
     return {
