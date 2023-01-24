@@ -340,45 +340,29 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
   };
 };
 
-const createNewProxy = (router: AppRouter | AppRoute, args: ClientArgs) => {
-  return new Proxy(
-    {},
-    {
-      get: (_, propKey): unknown => {
-        if (isAppRoute(router)) {
-          switch (propKey) {
-            case 'query':
-              return getRouteQuery(router, args);
-            case 'mutation':
-              return getRouteQuery(router, args);
-            case 'useQuery':
-              return getRouteUseQuery(router, args);
-            case 'useInfiniteQuery':
-              return getRouteUseInfiniteQuery(router, args);
-            case 'useQueries':
-              return getRouteUseQueries(router, args);
-            case 'useMutation':
-              return getRouteUseMutation(router, args);
-            default:
-              throw new Error(`Unknown method called on ${String(propKey)}`);
-          }
-        } else {
-          const subRouter = router[propKey as string];
-
-          return createNewProxy(subRouter, args);
-        }
-      },
-    }
-  );
-};
-
 export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
 export const initQueryClient = <T extends AppRouter>(
   router: T,
   args: ClientArgs
 ): InitClientReturn<T> => {
-  const proxy = createNewProxy(router, args);
-
-  return proxy as InitClientReturn<T>;
+  return Object.fromEntries(
+    Object.entries(router).map(([key, subRouter]) => {
+      if (isAppRoute(subRouter)) {
+        return [
+          key,
+          {
+            query: getRouteQuery(subRouter, args),
+            mutation: getRouteQuery(subRouter, args),
+            useQuery: getRouteUseQuery(subRouter, args),
+            useQueries: getRouteUseQueries(subRouter, args),
+            useInfiniteQuery: getRouteUseInfiniteQuery(subRouter, args),
+            useMutation: getRouteUseMutation(subRouter, args),
+          },
+        ];
+      } else {
+        return [key, initQueryClient(subRouter, args)];
+      }
+    })
+  );
 };
