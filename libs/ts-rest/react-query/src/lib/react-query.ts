@@ -44,24 +44,25 @@ type RecursiveProxyObj<T extends AppRouter> = {
 
 type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
 
-type UseQueryArgs<TAppRoute extends AppRoute> = {
+type UseQueryArgs<TAppRoute extends AppRoute, TDataReturnArgs = DataReturnArgs<TAppRoute>> = {
   useQuery: TAppRoute extends AppRouteQuery
-    ? DataReturnQuery<TAppRoute>
+    ? DataReturnQuery<TAppRoute, TDataReturnArgs>
     : never;
   useInfiniteQuery: TAppRoute extends AppRouteQuery
-    ? DataReturnInfiniteQuery<TAppRoute>
+    ? DataReturnInfiniteQuery<TAppRoute, TDataReturnArgs>
     : never;
   useQueries: TAppRoute extends AppRouteQuery
-    ? DataReturnQueries<TAppRoute>
+    ? DataReturnQueries<TAppRoute, TDataReturnArgs>
     : never;
   query: TAppRoute extends AppRouteQuery ? AppRouteFunction<TAppRoute> : never;
   useMutation: TAppRoute extends AppRouteMutation
-    ? DataReturnMutation<TAppRoute>
+    ? DataReturnMutation<TAppRoute, TDataReturnArgs>
     : never;
   mutation: TAppRoute extends AppRouteMutation
     ? AppRouteFunction<TAppRoute>
     : never;
 };
+
 
 type DataReturnArgsBase<TRoute extends AppRoute> = {
   body: TRoute extends AppRouteMutation
@@ -113,12 +114,12 @@ type DataResponse<T extends AppRoute> = SuccessResponseMapper<T['responses']>;
 type ErrorResponse<T extends AppRoute> = ErrorResponseMapper<T['responses']>;
 
 // Used on X.useQuery
-type DataReturnQuery<TAppRoute extends AppRoute> = AreAllPropertiesOptional<
-  Without<DataReturnArgs<TAppRoute>, never>
+type DataReturnQuery<TAppRoute extends AppRoute, TDataReturnArgs> = AreAllPropertiesOptional<
+  Without<TDataReturnArgs, never>
 > extends true
   ? (
       queryKey: QueryKey,
-      args?: Without<DataReturnArgs<TAppRoute>, never>,
+      args?: Without<TDataReturnArgs, never>,
       options?: UseQueryOptions<
         DataResponse<TAppRoute>,
         ErrorResponse<TAppRoute>
@@ -126,15 +127,16 @@ type DataReturnQuery<TAppRoute extends AppRoute> = AreAllPropertiesOptional<
     ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>
   : (
       queryKey: QueryKey,
-      args: Without<DataReturnArgs<TAppRoute>, never>,
+      args: Without<TDataReturnArgs, never>,
       options?: UseQueryOptions<
         DataResponse<TAppRoute>,
         ErrorResponse<TAppRoute>
       >
     ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
 
-type DataReturnQueriesOptions<TAppRoute extends AppRoute> = Without<
-  DataReturnArgs<TAppRoute>,
+
+type DataReturnQueriesOptions<TAppRoute extends AppRoute, TDataReturnArgs> = Without<
+  TDataReturnArgs,
   never
 > &
   Omit<UseQueryOptions<TAppRoute['responses']>, 'queryFn'> & {
@@ -143,22 +145,23 @@ type DataReturnQueriesOptions<TAppRoute extends AppRoute> = Without<
 
 type DataReturnQueries<
   TAppRoute extends AppRoute,
-  TQueries = readonly DataReturnQueriesOptions<TAppRoute>[]
+  TDataReturnArgs,
+  TQueries = readonly DataReturnQueriesOptions<TAppRoute, TDataReturnArgs>[],
 > = (args: {
   queries: TQueries;
   context?: UseQueryOptions['context'];
 }) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>[];
 
 // Used on X.useInfiniteQuery
-type DataReturnInfiniteQuery<TAppRoute extends AppRoute> =
+type DataReturnInfiniteQuery<TAppRoute extends AppRoute, TDataReturnArgs> =
   AreAllPropertiesOptional<
-    Without<DataReturnArgs<TAppRoute>, never>
+    Without<TDataReturnArgs, never>
   > extends true
     ? (
         queryKey: QueryKey,
         args?: (
           context: QueryFunctionContext<QueryKey>
-        ) => Without<DataReturnArgs<TAppRoute>, never>,
+        ) => Without<TDataReturnArgs, never>,
         options?: UseInfiniteQueryOptions<
           DataResponse<TAppRoute>,
           ErrorResponse<TAppRoute>
@@ -171,7 +174,7 @@ type DataReturnInfiniteQuery<TAppRoute extends AppRoute> =
         queryKey: QueryKey,
         args: (
           context: QueryFunctionContext<QueryKey>
-        ) => Without<DataReturnArgs<TAppRoute>, never>,
+        ) => Without<TDataReturnArgs, never>,
         options?: UseInfiniteQueryOptions<
           DataResponse<TAppRoute>,
           ErrorResponse<TAppRoute>
@@ -182,17 +185,17 @@ type DataReturnInfiniteQuery<TAppRoute extends AppRoute> =
       >;
 
 // Used pn X.useMutation
-type DataReturnMutation<TAppRoute extends AppRoute> = (
+type DataReturnMutation<TAppRoute extends AppRoute, TDataReturnArgs > = (
   options?: UseMutationOptions<
     DataResponse<TAppRoute>,
     ErrorResponse<TAppRoute>,
-    Without<DataReturnArgs<TAppRoute>, never>,
+    Without<TDataReturnArgs, never>,
     unknown
   >
 ) => UseMutationResult<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
-  Without<DataReturnArgs<TAppRoute>, never>,
+  Without<TDataReturnArgs, never>,
   unknown
 >;
 
@@ -228,11 +231,11 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
   };
 };
 
-const getRouteUseQueries = <TAppRoute extends AppRoute>(
+const getRouteUseQueries = <TAppRoute extends AppRoute, TDataReturnArgs>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
-  return (args: Parameters<DataReturnQueries<TAppRoute>>[0]) => {
+  return (args: Parameters<DataReturnQueries<TAppRoute, TDataReturnArgs>>[0]) => {
     const queries = args.queries.map((query: any) => {
       const queryFn: QueryFunction<TAppRoute['responses']> = async () => {
         const path = getCompleteUrl(

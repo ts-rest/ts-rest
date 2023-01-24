@@ -115,6 +115,9 @@ export const router = c.router({
   health: {
     method: 'GET',
     path: '/health',
+    query: z.object({
+      test: z.string()
+    }),
     responses: {
       200: c.response<{ message: string }>(),
     },
@@ -186,7 +189,11 @@ describe('react-query', () => {
     api.mockResolvedValue(ERROR_RESPONSE);
 
     const { result } = renderHook(
-      () => client.health.useQuery(['health'], {}, { retry: () => false }),
+      () => client.health.useQuery(['health'], {
+        query: {
+          'test': 'test'
+        }
+      }, { retry: () => false }),
       { wrapper }
     );
 
