@@ -112,11 +112,11 @@ With Nest this is a pretty simple implementation, due to the extensible Decorato
 ```ts
 // nest
 @Controller()
-export class AppController implements ControllerShape {
+export class AppController implements NestControllerInterface<typeof c> {
   @Api(s.route.updateUserAvatar)
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUserAvatar(
-    @ApiDecorator() { params: { id } }: RouteShape['updateUserAvatar'],
+    @TsRestRequest() { params: { id } }: RequestShapes['updateUserAvatar'],
     @UploadedFile() avatar: Express.Multer.File
   ) {
     return {

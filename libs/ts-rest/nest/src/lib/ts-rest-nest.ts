@@ -1,33 +1,49 @@
-import { AppRoute, AppRouter, ApiRouteResponse, Without, getRouteResponses } from '@ts-rest/core';
-import { ApiDecoratorShape } from './api.decorator';
+import {
+  AppRoute,
+  AppRouter,
+  ApiRouteResponse,
+  Without,
+  getRouteResponses,
+  ApiResponseForRoute,
+} from '@ts-rest/core';
+import { TsRestRequestShape } from './ts-rest-request.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
   ...args: any[]
 ) => Promise<ApiRouteResponse<T['responses']>>;
 
-type AppRouterControllerShape<T extends AppRouter> = {
-  [K in keyof T]: T[K] extends AppRouter
-    ? undefined
-    : T[K] extends AppRoute
-    ? AppRouterMethodShape<T[K]>
-    : never;
-};
+type AppRouterControllerShape<T extends AppRouter> = Without<
+  {
+    [K in keyof T]: T[K] extends AppRoute ? AppRouterMethodShape<T[K]> : never;
+  },
+  never
+>;
 
-type AppRouteShape<T extends AppRouter> = {
-  [K in keyof T]: T[K] extends AppRouter
-    ? AppRouteShape<T[K]>
-    : T[K] extends AppRoute
-    ? ApiDecoratorShape<T[K]>
-    : never;
-};
+type AppRouterRequestShapes<T extends AppRouter> = Without<
+  {
+    [K in keyof T]: T[K] extends AppRoute ? TsRestRequestShape<T[K]> : never;
+  },
+  never
+>;
 
-export type NestControllerShapeFromAppRouter<T extends AppRouter> = Without<
+type AppRouterResponseShapes<T extends AppRouter> = Without<
+  {
+    [K in keyof T]: T[K] extends AppRoute ? ApiResponseForRoute<T[K]> : never;
+  },
+  never
+>;
+
+type NestControllerShapeFromAppRouter<T extends AppRouter> = Without<
   AppRouterControllerShape<T>,
   AppRouter
 >;
 
-export type NestAppRouteShape<T extends AppRouter> = AppRouteShape<T>;
+type NestAppRouteShape<T extends AppRouter> = AppRouterRequestShapes<T>;
 
+/**
+ * @deprecated Use `nestControllerContract`, `NestControllerInterface`, `NestRequestShapes`, and `NestResponseShapes` instead
+ * @see {@link https://ts-rest.com/docs/nest|ts-rest docs} for more info.
+ */
 export const initNestServer = <T extends AppRouter>(router: T) => {
   return {
     controllerShape: {} as NestControllerShapeFromAppRouter<T>,
@@ -35,4 +51,25 @@ export const initNestServer = <T extends AppRouter>(router: T) => {
     responseShapes: getRouteResponses(router),
     route: router,
   };
+};
+
+export type NestControllerContract<T extends AppRouter> = Pick<
+  T,
+  {
+    [K in keyof T]-?: T[K] extends AppRoute ? K : never;
+  }[keyof T]
+>;
+export type NestControllerInterface<T extends AppRouter> =
+  AppRouterControllerShape<T>;
+export type NestRequestShapes<T extends AppRouter> = NestAppRouteShape<T>;
+export type NestResponseShapes<T extends AppRouter> =
+  AppRouterResponseShapes<T>;
+
+/**
+ * Returns the contract containing only non-nested routes required by a NestJS controller
+ */
+export const nestControllerContract = <T extends AppRouter>(router: T) => {
+  // it's not worth actually filtering the contract at runtime
+  // the typing will already ensure that nested routes cannot be used at compile time
+  return router as NestControllerContract<T>;
 };
