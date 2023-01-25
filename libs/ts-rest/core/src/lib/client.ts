@@ -113,13 +113,14 @@ export const defaultApi: ApiFetcher = async ({
   if (!result.headers.get('content-type'))
     throw TypeError('Resource Response missing content-type header');
   const blob = await result.blob();
-  if (blob.type === 'application/json') {
-    return { status: result.status, body: await result.json() };
+  switch (blob.type) {
+    case 'application/json':
+      return { status: result.status, body: await result.json() };
+    case 'text/plain':
+      return { status: result.status, body: await result.text() };
+    default:
+      return { status: result.status, body: blob };
   }
-  if (blob.type === 'text/plain') {
-    return { status: result.status, body: await result.text() };
-  }
-  return { status: result.status, body: blob };
 };
 
 const createFormData = (body: unknown) => {
