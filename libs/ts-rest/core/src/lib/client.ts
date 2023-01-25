@@ -118,12 +118,13 @@ export const defaultApi: ApiFetcher = async ({
     case 'application/json':
       return { status: result.status, body: await result.json() };
     case 'text/plain': {
-      const blob = await result.blob();
-      return { status: result.status, body: await blob.text() };
+      return {
+        status: result.status,
+        body: await result.text(),
+      };
     }
     default: {
-      const blob = await result.blob();
-      return { status: result.status, body: blob };
+      return { status: result.status, body: await result.blob() };
     }
   }
 };
