@@ -182,6 +182,38 @@ describe('react-query', () => {
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
   });
 
+  it('useQuery should accept non-json string response', () => {
+    api.mockResolvedValue({
+      status: 200,
+      body: 'Hello World',
+    });
+
+    const { result } = renderHook(() => client.health.useQuery(['health']), {
+      wrapper,
+    });
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/health',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return waitFor(() => {
+      expect(result.current.isLoading).toStrictEqual(false);
+      expect(result.current.data).toStrictEqual({
+        status: 200,
+        body: 'Hello World',
+      });
+    });
+  });
+
   it('useQuery should handle failure', async () => {
     api.mockResolvedValue(ERROR_RESPONSE);
 
