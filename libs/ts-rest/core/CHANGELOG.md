@@ -1,5 +1,38 @@
 # @ts-rest/core
 
+## 3.15.0
+
+### Patch Changes
+
+- 0f1edf9: Rename some Nest functions and types, and deprecate old names
+
+- Fix Nest deprecation warning when passing Zod error to HttpException (#122)
+
+- Some internal helper types (`NestControllerShapeFromAppRouter` and `NestAppRouteShape`) that were previously exported are now kept internal.
+  You can use `NestControllerInterface` and `NestRequestShapes` instead.
+
+- 3f65909: Drop usage of ES6 Proxy for clients (fixes IE11 support)
+
+## 3.14.0
+
+### Minor Changes
+
+- 13ca71b: Enable nested routers without declaring new constants
+
+## 3.13.1
+
+### Patch Changes
+
+- d778e60: Rebuilt without code comments in the compiled JS
+
+## 3.13.0
+
+## 3.12.1
+
+### Patch Changes
+
+- e0164f6: Publish README
+
 ## 3.12.0
 
 ### Minor Changes

@@ -1,5 +1,23 @@
 # @ts-rest/express
 
+## 3.15.0
+
+## 3.14.0
+
+## 3.13.1
+
+### Patch Changes
+
+- d778e60: Rebuilt without code comments in the compiled JS
+
+## 3.13.0
+
+## 3.12.1
+
+### Patch Changes
+
+- e0164f6: Publish README
+
 ## 3.12.0
 
 ### Minor Changes

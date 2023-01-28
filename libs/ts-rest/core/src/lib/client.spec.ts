@@ -1,3 +1,4 @@
+import * as fetchMock from 'fetch-mock-jest';
 import { initContract } from '..';
 import { initClient } from './client';
 
@@ -118,94 +119,86 @@ export const router = c.router({
   },
 });
 
-const api = jest.fn();
-
 const client = initClient(router, {
   baseUrl: 'https://api.com',
   baseHeaders: {},
-  api,
 });
 
 describe('client', () => {
   beforeEach(() => {
-    api.mockClear();
+    fetchMock.mockReset();
   });
 
   describe('get', () => {
     it('w/ no parameters', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.getOnce(
+        {
+          url: 'https://api.com/posts',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.getPosts({});
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: 'https://api.com/posts',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
 
     it('w/ no query parameters', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.getOnce(
+        {
+          url: 'https://api.com/posts',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.getPosts({ query: {} });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: 'https://api.com/posts',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
 
     it('w/ no parameters (not provided)', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.getOnce(
+        {
+          url: 'https://api.com/posts',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.getPosts();
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: 'https://api.com/posts',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
 
     it('w/ query parameters', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.getOnce(
+        {
+          url: 'https://api.com/posts?take=10',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: 'https://api.com/posts?take=10',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
 
     it('w/ json query parameters', async () => {
-      const api = jest.fn();
       const client = initClient(
         {
           ...router,
@@ -226,12 +219,21 @@ describe('client', () => {
           baseUrl: 'https://api.com',
           baseHeaders: {},
           jsonQuery: true,
-          api,
         }
       );
 
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.getOnce(
+        {
+          url: `https://api.com/posts?take=10&order=asc&published=true&filter=${encodeURIComponent(
+            '{"title":"test"}'
+          )}`,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.getPosts({
         query: {
@@ -243,110 +245,98 @@ describe('client', () => {
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: `https://api.com/posts?take=10&order=asc&published=true&filter=${encodeURIComponent(
-          '{"title":"test"}'
-        )}`,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
 
     it('w/ undefined query parameters', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.getOnce(
+        {
+          url: 'https://api.com/posts?take=10',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.getPosts({
         query: { take: 10, skip: undefined },
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: 'https://api.com/posts?take=10',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
 
     it('w/ sub path', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.getOnce(
+        {
+          url: 'https://api.com/posts/1',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.getPost({ params: { id: '1' } });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
+    });
 
-      expect(api).toHaveBeenCalledWith({
-        method: 'GET',
-        path: 'https://api.com/posts/1',
-        headers: {
-          'Content-Type': 'application/json',
+    it('w/ a non json response (string)', async () => {
+      fetchMock.getOnce(
+        {
+          url: 'https://api.com/posts',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-        body: undefined,
-      });
+        {
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: 'string',
+          status: 200,
+        }
+      );
+
+      const result = await client.posts.getPosts({});
+
+      expect(result).toStrictEqual({ body: 'string', status: 200 });
     });
   });
 
   describe('post', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/posts',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.createPost({
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'POST',
-        path: 'https://api.com/posts',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: 'title',
-          content: 'content',
-          authorId: 'authorId',
-        }),
-      });
-    });
-
-    it('w/ sub path and body', async () => {
-      const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
-
-      const result = await client.posts.updatePost({
-        params: { id: '1' },
-        body: { title: 'title', content: 'content', authorId: 'authorId' },
-      });
-
-      expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'PUT',
-        path: 'https://api.com/posts/1',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: 'title',
-          content: 'content',
-          authorId: 'authorId',
-        }),
-      });
     });
 
     it('w/ query params', async () => {
-      api.mockResolvedValue({ body: {}, status: 200 });
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/posts?test=test',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {},
+        },
+        { body: {}, status: 200 }
+      );
 
       const result = await client.posts.mutationWithQuery({
         query: { test: 'test' },
@@ -354,22 +344,26 @@ describe('client', () => {
       });
 
       expect(result).toStrictEqual({ body: {}, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'POST',
-        path: 'https://api.com/posts?test=test',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      });
     });
   });
 
   describe('put', () => {
-    it('w/ body', async () => {
+    it('w/ sub path and body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.putOnce(
+        {
+          url: 'https://api.com/posts/1',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {
+            title: 'title',
+            content: 'content',
+            authorId: 'authorId',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.updatePost({
         params: { id: '1' },
@@ -377,26 +371,21 @@ describe('client', () => {
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'PUT',
-        path: 'https://api.com/posts/1',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: 'title',
-          content: 'content',
-          authorId: 'authorId',
-        }),
-      });
     });
   });
 
   describe('patch', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.patchOnce(
+        {
+          url: 'https://api.com/posts/1',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.patchPost({
         params: { id: '1' },
@@ -404,22 +393,21 @@ describe('client', () => {
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'PATCH',
-        path: 'https://api.com/posts/1',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
   });
 
   describe('delete', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.deleteOnce(
+        {
+          url: 'https://api.com/posts/1',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        { body: value, status: 200 }
+      );
 
       const result = await client.posts.deletePost({
         params: { id: '1' },
@@ -427,22 +415,18 @@ describe('client', () => {
       });
 
       expect(result).toStrictEqual({ body: value, status: 200 });
-
-      expect(api).toHaveBeenCalledWith({
-        method: 'DELETE',
-        path: 'https://api.com/posts/1',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: undefined,
-      });
     });
   });
 
   describe('multipart/form-data', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/upload',
+        },
+        { body: value, status: 200 }
+      );
 
       const file = new File([''], 'filename', { type: 'text/plain' });
 
@@ -450,25 +434,26 @@ describe('client', () => {
         body: { file },
       });
 
-      const expectedFormData = new FormData();
-      expectedFormData.append('file', file);
-
       expect(result).toStrictEqual({ body: value, status: 200 });
 
-      expect(api).toHaveBeenCalledWith({
-        method: 'POST',
-        path: 'https://api.com/upload',
-        headers: {},
-        body: expectedFormData,
+      expect(fetchMock).toHaveLastFetched(true, {
+        matcher: (_, options) => {
+          const formData = options.body as FormData;
+          return formData.get('file') === file;
+        },
       });
     });
 
     it('w/ FormData', async () => {
       const value = { key: 'value' };
-      api.mockResolvedValue({ body: value, status: 200 });
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/upload',
+        },
+        { body: value, status: 200 }
+      );
 
       const formData = new FormData();
-
       formData.append('test', 'test');
 
       const result = await client.upload({
@@ -477,11 +462,11 @@ describe('client', () => {
 
       expect(result).toStrictEqual({ body: value, status: 200 });
 
-      expect(api).toHaveBeenCalledWith({
-        method: 'POST',
-        path: 'https://api.com/upload',
-        headers: {},
-        body: formData,
+      expect(fetchMock).toHaveLastFetched(true, {
+        matcher: (_, options) => {
+          const formData = options.body as FormData;
+          return formData.get('test') === 'test';
+        },
       });
     });
   });

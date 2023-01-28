@@ -1,5 +1,27 @@
 # @ts-rest/solid-query
 
+## 3.15.0
+
+### Patch Changes
+
+- 3f65909: Drop usage of ES6 Proxy for clients (fixes IE11 support)
+
+## 3.14.0
+
+## 3.13.1
+
+### Patch Changes
+
+- d778e60: Rebuilt without code comments in the compiled JS
+
+## 3.13.0
+
+## 3.12.1
+
+### Patch Changes
+
+- e0164f6: Publish README
+
 ## 3.12.0
 
 ### Minor Changes

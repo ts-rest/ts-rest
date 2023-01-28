@@ -106,3 +106,9 @@ const client = initClient(contract, {
   credentials: 'include'
 })
 ```
+
+## Notes About Basic Fetch Client
+
+We use the [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) API under the hood. 
+
+We support basic fetch calls for application/json and text/plain content types and do not support content-type missing in resource response (per [security standards](https://knowledge-base.secureflag.com/vulnerabilities/security_misconfiguration/lack_of_content_type_headers_vulnerability.html)). If you need to implement custom API logic (like content-type header is missing for some reason, or need to handle different content types), you can implement your own Client: https://ts-rest.com/docs/core/custom

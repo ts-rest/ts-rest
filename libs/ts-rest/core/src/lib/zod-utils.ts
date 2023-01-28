@@ -15,7 +15,7 @@ export const checkZodSchema = (
     }
   | {
       success: false;
-      error: z.ZodError;
+      error: Pick<z.ZodError, 'name' | 'issues'>;
     } => {
   if (isZodObject(schema)) {
     const result = schema.safeParse(data);
@@ -32,7 +32,10 @@ export const checkZodSchema = (
 
     return {
       success: false,
-      error: result.error,
+      error: {
+        name: result.error.name,
+        issues: result.error.issues,
+      },
     };
   }
 

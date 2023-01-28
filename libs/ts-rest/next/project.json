@@ -13,7 +13,8 @@
         "main": "libs/ts-rest/next/src/index.ts",
         "tsConfig": "libs/ts-rest/next/tsconfig.lib.json",
         "format": ["esm", "cjs"],
-        "compiler": "tsc"
+        "compiler": "tsc",
+        "rollupConfig": "tools/scripts/rollup.config.js"
       }
     },
     "publish": {

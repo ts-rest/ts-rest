@@ -1,5 +1,32 @@
 # @ts-rest/nest
 
+## 3.15.0
+
+### Minor Changes
+
+- 0f1edf9: Rename some Nest functions and types, and deprecate old names
+
+- Fix Nest deprecation warning when passing Zod error to HttpException (#122)
+
+- Some internal helper types (`NestControllerShapeFromAppRouter` and `NestAppRouteShape`) that were previously exported are now kept internal.
+  You can use `NestControllerInterface` and `NestRequestShapes` instead.
+
+## 3.14.0
+
+## 3.13.1
+
+### Patch Changes
+
+- d778e60: Rebuilt without code comments in the compiled JS
+
+## 3.13.0
+
+## 3.12.1
+
+### Patch Changes
+
+- e0164f6: Publish README
+
 ## 3.12.0
 
 ### Minor Changes

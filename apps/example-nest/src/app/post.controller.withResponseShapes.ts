@@ -1,16 +1,21 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
-import { Api, ApiDecorator, initNestServer } from '@ts-rest/nest';
+import {
+  Api,
+  nestControllerContract,
+  NestRequestShapes,
+  NestResponseShapes,
+  TsRestRequest,
+} from '@ts-rest/nest';
 import { PostService } from './post.service';
 
-const s = initNestServer(apiBlog);
-type RouteShape = typeof s.routeShapes;
-type ResponseShapes = typeof s.responseShapes;
+const c = nestControllerContract(apiBlog);
+type RequestShapes = NestRequestShapes<typeof c>;
+type ResponseShapes = NestResponseShapes<typeof c>;
 
 // Alternatively, you can the use the ResponseShapes type to ensure type safety
-
 @Controller()
-export class PostController  {
+export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Get('/test')
@@ -18,9 +23,10 @@ export class PostController  {
     return { queryParams };
   }
 
-  @Api(s.route.getPosts)
+  @Api(c.getPosts)
   async getPosts(
-    @ApiDecorator() { query: { take, skip, search } }: RouteShape['getPosts']
+    @TsRestRequest()
+    { query: { take, skip, search } }: RequestShapes['getPosts']
   ): Promise<ResponseShapes['getPosts']> {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,
@@ -34,9 +40,10 @@ export class PostController  {
     };
   }
 
-  @Api(s.route.getPost)
-  async getPost(@ApiDecorator() { params: { id } }: RouteShape['getPost']):
-    Promise<ResponseShapes['getPost']> {
+  @Api(c.getPost)
+  async getPost(
+    @TsRestRequest() { params: { id } }: RequestShapes['getPost']
+  ): Promise<ResponseShapes['getPost']> {
     const post = await this.postService.getPost(id);
 
     if (!post) {
@@ -46,9 +53,10 @@ export class PostController  {
     return { status: 200, body: post };
   }
 
-  @Api(s.route.createPost)
-  async createPost(@ApiDecorator() { body }: RouteShape['createPost']): 
-    Promise<ResponseShapes['createPost']> {
+  @Api(c.createPost)
+  async createPost(
+    @TsRestRequest() { body }: RequestShapes['createPost']
+  ): Promise<ResponseShapes['createPost']> {
     const post = await this.postService.createPost({
       title: body.title,
       content: body.content,
@@ -59,9 +67,9 @@ export class PostController  {
     return { status: 201, body: post };
   }
 
-  @Api(s.route.updatePost)
+  @Api(c.updatePost)
   async updatePost(
-    @ApiDecorator() { params: { id }, body }: RouteShape['updatePost']
+    @TsRestRequest() { params: { id }, body }: RequestShapes['updatePost']
   ): Promise<ResponseShapes['updatePost']> {
     const post = await this.postService.updatePost(id, {
       title: body.title,
@@ -73,18 +81,18 @@ export class PostController  {
     return { status: 200, body: post };
   }
 
-  @Api(s.route.deletePost)
+  @Api(c.deletePost)
   async deletePost(
-    @ApiDecorator() { params: { id } }: RouteShape['deletePost']
+    @TsRestRequest() { params: { id } }: RequestShapes['deletePost']
   ): Promise<ResponseShapes['deletePost']> {
     await this.postService.deletePost(id);
 
     return { status: 200, body: { message: 'Post Deleted' } };
   }
 
-  @Api(s.route.testPathParams)
+  @Api(c.testPathParams)
   async testPathParams(
-    @ApiDecorator() { params }: RouteShape['testPathParams']
+    @TsRestRequest() { params }: RequestShapes['testPathParams']
   ): Promise<ResponseShapes['testPathParams']> {
     return { status: 200, body: params };
   }

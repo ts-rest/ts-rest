@@ -1,5 +1,21 @@
 const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/duotoneDark');
+const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+
+const vercelAttribution = `
+  <div style="padding-top: 25px;">
+    <a
+      href="https://vercel.com/?utm_source=ts-rest&utm_campaign=oss"
+      target="_blank"
+      rel="noreferrer"
+    >
+      <img
+        src="/img/powered-by-vercel.svg"
+        alt="Powered by Vercel"
+        style="height: 40px"
+      />
+    </a>
+  </div>
+`.trim();
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -12,14 +28,25 @@ const config = {
   favicon: 'img/favicon.ico',
   organizationName: 'ts-rest', // Usually your GitHub org/user name.
   projectName: 'ts-rest', // Usually your repo name.
-  plugins: [],
-  scripts: [
-    {
-      defer: true,
-      'data-domain': 'ts-rest.com',
-      'data-api': 'https://plausible.oliverbutler.uk/api/event',
-      src: 'https://plausible.oliverbutler.uk/js/script.js',
-    },
+  plugins: [
+    [
+      'docusaurus-plugin-typedoc',
+      {
+        entryPoints: [
+          './libs/ts-rest/core',
+          './libs/ts-rest/express',
+          './libs/ts-rest/nest',
+          './libs/ts-rest/next',
+          './libs/ts-rest/open-api',
+          './libs/ts-rest/react-query',
+          './libs/ts-rest/solid-query',
+        ],
+        entryPointStrategy: 'packages',
+        sidebar: {
+          fullNames: true,
+        },
+      },
+    ],
   ],
 
   presets: [
@@ -37,6 +64,9 @@ const config = {
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
+        },
+        gtag: {
+          trackingID: 'G-5HT1M8FM3Z',
         },
       }),
     ],
@@ -58,6 +88,9 @@ const config = {
       //   textColor: '#ffffff',
       //   isCloseable: false,
       // },
+      colorMode: {
+        respectPrefersColorScheme: true,
+      },
       metadata: [
         {
           name: 'keywords',
@@ -82,6 +115,12 @@ const config = {
             docId: 'quickstart',
             position: 'left',
             label: 'Quickstart',
+          },
+          {
+            type: 'doc',
+            docId: 'api/index',
+            position: 'left',
+            label: 'API Reference',
           },
           {
             href: 'https://github.com/ts-rest/ts-rest',
@@ -144,7 +183,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} @ts-rest`,
+        copyright: vercelAttribution,
       },
       prism: {
         theme: lightCodeTheme,

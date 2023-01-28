@@ -1,25 +1,27 @@
 # ts-rest
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 <p align="center">
- <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height=150 />
+ <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height="150"></img>
 </p>
 
- <p align="center">RPC-like client and server helpers for a magical end to end typed experience</p> 
- <p align="center">
-   <a href="https://www.npmjs.com/package/@ts-rest/core">
-   <img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript">
-   </a>
-   <a href="https://www.npmjs.com/package/@ts-rest/core">
-   <img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core">
-   </a>
-     <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
-    <img alt="GitHub" src="https://img.shields.io/github/license/ts-rest/ts-rest">   
-   </a>
-   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/ts-rest/ts-rest/CI">
- </p>
+<p align="center">RPC-like client and server helpers for a magical end to end typed experience</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@ts-rest/core">
+    <img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript"/>
+  </a>
+  <img alt="Github Workflow Status" src="https://img.shields.io/github/actions/workflow/status/ts-rest/ts-rest/release.yml?branch=main"/>
+  <a href="https://www.npmjs.com/package/@ts-rest/core">
+    <img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core"/>
+  </a>
+  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/ts-rest/ts-rest"/>
+  </a>
+  <img alt="Bundle Size" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore"/>
+  <a href="https://discord.com/invite/2Megk85k5a">  
+    <img alt="Discord" src="https://img.shields.io/discord/1055855205960392724"/>
+  </a>
+</p>
 
 # Introduction
 
@@ -53,13 +55,13 @@ yarn add @ts-rest/open-api
 
 Create a contract, implement it on your server then consume it in your client. Incrementally adopt, trial it with your team, then get shipping faster.
 
-<div align="center" style="margin:50px">
-<h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide 👈</h2>
+<div align="center" style={{margin: "50px"}}>
+<h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a>👈</h2>
 </div>
 
-## Stargazers over Time ⭐️
+## Star History
 
-[![Stargazers over time](https://starchart.cc/ts-rest/ts-rest.svg)](https://starchart.cc/ts-rest/ts-rest)
+[![Star History Chart](https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline)](https://star-history.com/#ts-rest/ts-rest&Timeline)
 
 ## Contributors ✨
 
@@ -86,3 +88,17 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+<div style={{paddingTop: "25px"}}>
+  <a
+    href="https://vercel.com/?utm_source=ts-rest&utm_campaign=oss"
+    target="_blank"
+    rel="noreferrer"
+  >
+    <img
+      src="https://ts-rest.com/img/powered-by-vercel.svg"
+      alt="Powered by Vercel"
+      height="40"
+    />
+  </a>
+</div>

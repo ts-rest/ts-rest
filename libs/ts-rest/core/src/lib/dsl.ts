@@ -1,5 +1,3 @@
-import { Narrow } from './type-utils';
-
 /**
  * The path with colon-prefixed parameters
  * e.g. "/posts/:id".
@@ -38,6 +36,19 @@ export type AppRouteMutation = {
 };
 
 /**
+ * Recursively process a router, allowing for you to define nested routers.
+ *
+ * The main purpose of this is to convert all path strings into string constants so we can infer the path
+ */
+type RecursivelyProcessAppRouter<T extends AppRouter> = {
+  [K in keyof T]: T[K] extends AppRoute
+    ? T[K]
+    : T[K] extends AppRouter
+    ? RecursivelyProcessAppRouter<T[K]>
+    : T[K];
+};
+
+/**
  * A union of all possible endpoint types.
  */
 export type AppRoute = AppRouteQuery | AppRouteMutation;
@@ -67,17 +78,17 @@ type ContractInstance = {
   /**
    * A collection of routes or routers
    */
-  router: <T extends AppRouter>(endpoints: Narrow<T>) => T;
+  router: <T extends AppRouter>(endpoints: RecursivelyProcessAppRouter<T>) => T;
   /**
    * A single query route, should exist within
    * a {@link AppRouter}
    */
-  query: <T extends AppRouteQuery>(query: Narrow<T>) => T;
+  query: <T extends AppRouteQuery>(query: T) => T;
   /**
    * A single mutation route, should exist within
    * a {@link AppRouter}
    */
-  mutation: <T extends AppRouteMutation>(mutation: Narrow<T>) => T;
+  mutation: <T extends AppRouteMutation>(mutation: T) => T;
   /**
    * Exists to allow storing a Type in the contract (at compile time only)
    */
@@ -103,9 +114,7 @@ export const initContract = (): ContractInstance => {
   return {
     // @ts-expect-error - this is a type error, but it's not clear how to fix it
     router: (args) => args,
-    // @ts-expect-error - this is a type error, but it's not clear how to fix it
     query: (args) => args,
-    // @ts-expect-error - this is a type error, but it's not clear how to fix it
     mutation: (args) => args,
     response: <T>() => undefined as unknown as T,
     body: <T>() => undefined as unknown as T,

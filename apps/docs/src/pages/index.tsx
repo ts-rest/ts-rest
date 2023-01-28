@@ -5,6 +5,7 @@ import Layout from '@theme/Layout';
 import clsx from 'clsx';
 import React, { useEffect } from 'react';
 import { Code } from '../components/Code';
+import { CodeVideo } from '../components/CodeVideo';
 import HomepageFeatures from '../components/HomepageFeatures';
 import styles from './index.module.css';
 // @ts-ignore
@@ -50,7 +51,7 @@ function HomepageHeader() {
 
 const QuickstartButton = () => {
   return (
-    <div className="relative w-fit h-fit mx-auto my-12 items-center flex flex-col">
+    <div className="relative w-fit h-fit mx-auto items-center flex flex-col">
       <Link to="/docs/quickstart">
         <button
           className="transition-all text-white shadow-xl shadow-purple-600/10 bg-purple-500 dark:bg-purple-800 cursor-pointer hover:bg-purple-700
@@ -93,7 +94,7 @@ export default function Home(): JSX.Element {
       description="Incrementally adoptable type-safety for your new and existing APIs"
       wrapperClassName="homepage"
     >
-      <div className="container my-16 mx-auto">
+      <div className="container mt-12 md:mt-24 mx-auto">
         <div className="flex items-center justify-center mb-6">
           <svg
             className={'w-2/3 max-w-2xl dark:fill-white fill-black'}
@@ -108,18 +109,29 @@ export default function Home(): JSX.Element {
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-dark text-center dark:text-gray-200 md:text-3xl">
+        <h1 className="text-2xl font-dark text-center dark:text-gray-200 md:text-3xl mb-0">
           Incrementally adoptable type-safety for your new and existing APIs
         </h1>
       </div>
 
-      <QuickstartButton />
+      <div className="mt-6">
+        <QuickstartButton />
+      </div>
 
-      <Code />
+      <div className="mt-12">
+        <div className="md:hidden">
+          <Code />
+        </div>
+        <div className="hidden md:block">
+          <CodeVideo />
+        </div>
+      </div>
 
-      <HomepageFeatures />
+      <div className="mt-24">
+        <HomepageFeatures />
+      </div>
 
-      <div className="my-32 container mx-auto">
+      <div className="mt-24 container mx-auto">
         <div className=" bg-purple-100/40 dark:bg-purple-700/5 p-5 border-solid border-0 border-l-4 border-purple-600 dark:border-purple-700/80">
           <h3>Elevator Pitch</h3>
 
@@ -151,7 +163,7 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-      <div className="container my-32">
+      <div className="container mt-24">
         <h4 className="text-primary">We've got you covered.</h4>
         <h1 className="">Explore ts-rest's Ecosystem</h1>
         <p>
@@ -208,7 +220,7 @@ export default function Home(): JSX.Element {
               className="no-underline"
             >
               <div
-                className="outline rounded-md p-4 outline-gray-600/20 hover:outline-2 hover:outline-purple-600 
+                className="outline rounded-md p-4 outline-gray-600/20 hover:outline-2 hover:outline-purple-600
             /30 transition-all cursor-pointer h-full"
               >
                 <img
@@ -243,7 +255,9 @@ export default function Home(): JSX.Element {
         </div>
       </div>
 
-      <QuickstartButton />
+      <div className="my-12">
+        <QuickstartButton />
+      </div>
     </Layout>
   );
 }

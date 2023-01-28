@@ -31,7 +31,7 @@ export type PathParamsFromUrl<T extends AppRoute> = ParamsFromUrl<
   : never;
 
 /**
- * Merge PathParamsFromUrl<T> with pathParams schema if it exists
+ * Merge `PathParamsFromUrl<T>` with pathParams schema if it exists
  */
 export type PathParamsWithCustomValidators<T extends AppRoute> =
   T['pathParams'] extends undefined
@@ -58,13 +58,11 @@ type DataReturnArgs<TRoute extends AppRoute> = OptionalIfAllOptional<
   DataReturnArgsBase<TRoute>
 >;
 
-export type ApiRouteResponse<T, ParseRoute extends boolean> =
+export type ApiRouteResponse<T> =
   | {
       [K in keyof T]: {
         status: K;
-        body: ParseRoute extends true
-          ? ZodInputOrType<T[K]>
-          : ZodInferOrType<T[K]>;
+        body: ZodInferOrType<T[K]>;
       };
     }[keyof T]
   | {
@@ -72,10 +70,9 @@ export type ApiRouteResponse<T, ParseRoute extends boolean> =
       body: unknown;
     };
 
-export type ApiResponseForRoute<
-  T extends AppRoute,
-  ParseRoute extends boolean
-> = ApiRouteResponse<T['responses'], ParseRoute>;
+export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
+  T['responses']
+>;
 
 /**
  * Returned from a mutation or query call
@@ -84,10 +81,10 @@ export type AppRouteFunction<TRoute extends AppRoute> =
   AreAllPropertiesOptional<Without<DataReturnArgs<TRoute>, never>> extends true
     ? (
         args?: Without<DataReturnArgs<TRoute>, never>
-      ) => Promise<ApiRouteResponse<TRoute['responses'], false>>
+      ) => Promise<ApiRouteResponse<TRoute['responses']>>
     : (
         args: Without<DataReturnArgs<TRoute>, never>
-      ) => Promise<ApiRouteResponse<TRoute['responses'], false>>;
+      ) => Promise<ApiRouteResponse<TRoute['responses']>>;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -113,17 +110,20 @@ export const defaultApi: ApiFetcher = async ({
   credentials,
 }) => {
   const result = await fetch(path, { method, headers, body, credentials });
-
-  try {
-    return {
-      status: result.status,
-      body: await result.json(),
-    };
-  } catch {
-    return {
-      status: result.status,
-      body: await result.text(),
-    };
+  const contentType = result.headers.get('content-type');
+  if (!contentType) {
+    throw TypeError('Resource Response missing content-type header');
+  }
+  switch (contentType) {
+    case 'application/json': {
+      return { status: result.status, body: await result.json() };
+    }
+    case 'text/plain': {
+      return { status: result.status, body: await result.text() };
+    }
+    default: {
+      return { status: result.status, body: await result.blob() };
+    }
   }
 };
 
@@ -206,51 +206,32 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   };
 };
 
-const createNewProxy = (router: AppRouter, args: ClientArgs) => {
-  return new Proxy(
-    {},
-    {
-      get: (target, propKey): any => {
-        if (typeof propKey === 'string' && propKey in router) {
-          const subRouter = router[propKey];
-
-          if (isAppRoute(subRouter)) {
-            // If the current router.X is a route, return a function to handle the users args
-            return getRouteQuery(subRouter, args);
-          } else {
-            return createNewProxy(subRouter, args);
-          }
-        }
-
-        return createNewProxy(router, args);
-      },
-    }
-  );
-};
-
 export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
 
 export const initClient = <T extends AppRouter>(
   router: T,
   args: ClientArgs
 ): InitClientReturn<T> => {
-  const proxy = createNewProxy(router, args);
-
-  return proxy as InitClientReturn<T>;
+  return Object.fromEntries(
+    Object.entries(router).map(([key, subRouter]) => {
+      if (isAppRoute(subRouter)) {
+        return [key, getRouteQuery(subRouter, args)];
+      } else {
+        return [key, initClient(subRouter, args)];
+      }
+    })
+  );
 };
 
 // takes a router and returns response types for each AppRoute
 // does not support nested routers, yet
 
-export type RouteResponse<T extends AppRouter, ParseResponses extends boolean = false> = {
+export type RouteResponse<T extends AppRouter> = {
   [K in keyof T]: T[K] extends AppRoute
-    ? ApiResponseForRoute<T[K], ParseResponses>
+    ? ApiResponseForRoute<T[K]>
     : 'not a route';
 };
 
-export function getRouteResponses<T extends AppRouter>(
-  router: T,
-  parseRoute = false
-) {
-  return {} as RouteResponse<typeof router, typeof parseRoute>;
+export function getRouteResponses<T extends AppRouter>(router: T) {
+  return {} as RouteResponse<typeof router>;
 }

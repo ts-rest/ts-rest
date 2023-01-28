@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/open-api",
-  "version": "3.12.0",
+  "version": "3.15.0",
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
@@ -14,5 +14,9 @@
     "zod": "3.x.x",
     "openapi3-ts": "2.x.x",
     "zod-to-json-schema": "^3.x.x"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
   }
 }
