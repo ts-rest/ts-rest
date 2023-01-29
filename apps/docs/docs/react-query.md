@@ -1,6 +1,6 @@
 # React Query
 
-This is a client using` @ts-rest/react-query`, using `@tanstack/react-query` under the hood.
+This is a client using `@ts-rest/react-query`, using `@tanstack/react-query` under the hood.
 
 ## initQueryClient
 
