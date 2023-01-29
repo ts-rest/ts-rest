@@ -38,11 +38,21 @@ const sidebars = {
       label: 'Examples',
     },
     {
-      type: 'doc',
-      id: 'nx',
-      label: 'NX Monorepo',
+      type: 'category',
+      label: 'Guides',
+      items: [
+        {
+          type: 'doc',
+          id: 'guides/nx',
+          label: 'NX Monorepo',
+        },
+        {
+          type: 'doc',
+          id: 'guides/without-backend',
+          label: 'Without a Backend',
+        },
+      ],
     },
-
     {
       type: 'category',
       label: '@ts-rest/core',
