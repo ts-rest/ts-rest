@@ -21,7 +21,6 @@ describe('checkZodSchema', () => {
       throw new Error('This should not happen');
     }
 
-    // @ts-expect-error - This is a test
     expect(result.error.issues).toHaveLength(1);
   });
 

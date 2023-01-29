@@ -16,8 +16,8 @@ import { map, Observable } from 'rxjs';
 import { Response } from 'express-serve-static-core';
 import { AppRoute, isAppRouteResponse, validateResponse } from '@ts-rest/core';
 import { tsRestAppRouteMetadataKey } from './ts-rest-request.decorator';
-import { ValidateResponsesSymbol } from './validate-responses.decorator';
 import { Reflector } from '@nestjs/core';
+import { ValidateResponsesSymbol } from './ts-rest.decorator';
 
 @Injectable()
 export class TsRestInterceptor implements NestInterceptor {

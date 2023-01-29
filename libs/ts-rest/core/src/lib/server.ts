@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { ZodInputOrType } from './type-utils';
 import { HTTPStatusCode } from './status-codes';
 import { checkZodSchema } from './zod-utils';
