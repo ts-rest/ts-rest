@@ -78,7 +78,7 @@ describe('PostValidateResponsesController', () => {
       return request(app.getHttpServer())
         .get('/posts')
         .expect(500)
-        .expect({ statusCode: 500, message: 'Internal Server Error' });
+        .expect({ statusCode: 500, message: 'Internal server error' });
     });
   });
 

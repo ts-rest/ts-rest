@@ -6,7 +6,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
  */
 
 import {
-  ApiRouteResponse,
+  ApiRouteServerResponse,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
@@ -15,6 +15,7 @@ import {
   isAppRoute,
   parseJsonQueryObject,
   PathParamsWithCustomValidators,
+  validateResponse,
   ZodInferOrType,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
@@ -24,7 +25,7 @@ type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
   query: ZodInferOrType<T['query']>;
   req: NextApiRequest;
   res: NextApiResponse;
-}) => Promise<ApiRouteResponse<T['responses']>>;
+}) => Promise<ApiRouteServerResponse<T['responses']>>;
 
 type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
   (args: {
@@ -33,7 +34,7 @@ type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
     query: ZodInferOrType<T['query']>;
     req: NextApiRequest;
     res: NextApiResponse;
-  }) => Promise<ApiRouteResponse<T['responses']>>;
+  }) => Promise<ApiRouteServerResponse<T['responses']>>;
 
 type RouteToFunctionImplementation<T extends AppRoute> = T extends AppRouteQuery
   ? RouteToQueryFunctionImplementation<T>
@@ -195,17 +196,26 @@ export const createNextRoute = <T extends AppRouter>(
  * @param options
  * @returns
  */
-export const createNextRouter =
-  <T extends AppRouter>(
-    routes: T,
-    obj: RecursiveRouterObj<T>,
-    options = { jsonQuery: false }
-  ) =>
-  async (req: NextApiRequest, res: NextApiResponse) => {
+export const createNextRouter = <T extends AppRouter>(
+  routes: T,
+  obj: RecursiveRouterObj<T>,
+  options?: {
+    jsonQuery?: boolean;
+    responseValidation?: boolean;
+    errorHandler?: (
+      err: unknown,
+      req: NextApiRequest,
+      res: NextApiResponse
+    ) => void;
+  }
+) => {
+  const { jsonQuery = false, responseValidation = false } = options || {};
+
+  const combinedRouter = mergeRouterAndImplementation(routes, obj);
+
+  return async (req: NextApiRequest, res: NextApiResponse) => {
     let { 'ts-rest': params, ...query } = req.query;
     params = (params as string[]) || [];
-
-    const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
     const route = getRouteImplementation(
       combinedRouter,
@@ -220,7 +230,7 @@ export const createNextRouter =
 
     const pathParams = getPathParamsFromArray(params, route);
 
-    query = options.jsonQuery
+    query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
 
@@ -244,13 +254,37 @@ export const createNextRouter =
       return res.status(400).json(pathParamsResult.error);
     }
 
-    const { body, status } = await route.implementation({
-      body: bodyResult.data,
-      query: queryResult.data,
-      params: pathParamsResult.data,
-      req,
-      res,
-    });
+    try {
+      const { body, status } = await route.implementation({
+        body: bodyResult.data,
+        query: queryResult.data,
+        params: pathParamsResult.data,
+        req,
+        res,
+      });
 
-    res.status(Number(status)).json(body);
+      const statusCode = Number(status);
+
+      if (responseValidation) {
+        const response = validateResponse({
+          responseType: route.responses[statusCode],
+          response: {
+            status: statusCode,
+            body: body,
+          },
+        });
+
+        return res.status(statusCode).json(response.body);
+      }
+
+      return res.status(statusCode).json(body);
+    } catch (e) {
+      if (options?.errorHandler) {
+        options.errorHandler(e, req, res);
+        return;
+      }
+
+      throw e;
+    }
   };
+};

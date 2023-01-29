@@ -1,6 +1,7 @@
 import { initContract } from '@ts-rest/core';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createNextRoute, createNextRouter } from './ts-rest-next';
+import { z } from 'zod';
 
 const c = initContract();
 
@@ -37,6 +38,23 @@ const contract = c.router({
       200: c.response<{ id: string; test: string }>(),
     },
   },
+  getZodQuery: {
+    method: 'GET',
+    path: '/test/:id/:name',
+    pathParams: z.object({
+      id: z.string().transform(Number),
+    }),
+    query: z.object({
+      field: z.string().optional(),
+    }),
+    responses: {
+      200: z.object({
+        id: z.number().lt(1000),
+        name: z.string(),
+        defaultValue: z.string().default('hello world'),
+      }),
+    },
+  },
 });
 
 const nextEndpoint = createNextRoute(contract, {
@@ -70,6 +88,15 @@ const nextEndpoint = createNextRoute(contract, {
       body: {
         id,
         test,
+      },
+    };
+  },
+  getZodQuery: async ({ params, query }) => {
+    return {
+      status: 200,
+      body: {
+        ...params,
+        ...query,
       },
     };
   },
@@ -181,6 +208,44 @@ describe('createNextRouter', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(jsonMock).toHaveBeenCalledWith({
       id: '3',
+    });
+  });
+
+  describe('response validation', () => {
+    it('should include default value and removes extra field', async () => {
+      const resultingRouter = createNextRouter(contract, nextEndpoint, {
+        responseValidation: true,
+      });
+
+      const req = mockReq('/test/123/name', {
+        method: 'GET',
+        query: { field: 'foo' },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith({
+        id: 123,
+        name: 'name',
+        defaultValue: 'hello world',
+      });
+    });
+
+    it('fails with invalid field', async () => {
+      const errorHandler = jest.fn();
+      const resultingRouter = createNextRouter(contract, nextEndpoint, {
+        responseValidation: true,
+        errorHandler,
+      });
+
+      const req = mockReq('/test/2000/name', {
+        method: 'GET',
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(errorHandler).toHaveBeenCalled();
     });
   });
 });

@@ -6,3 +6,4 @@ export * from './lib/status-codes';
 export * from './lib/type-utils';
 export * from './lib/zod-utils';
 export * from './lib/server';
+export * from './lib/response-validation-error';
