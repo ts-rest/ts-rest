@@ -1,7 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
 import {
-  Api,
   TsRestRequest,
   TsRest,
   nestControllerContract,
@@ -37,7 +36,7 @@ export class PostValidateResponsesController
 {
   constructor(private readonly postService: PostService) {}
 
-  @Api(c.getPosts)
+  @TsRest(c.getPosts)
   async getPosts(
     @TsRestRequest()
     { query: { take, skip, search } }: RequestShapes['getPosts']

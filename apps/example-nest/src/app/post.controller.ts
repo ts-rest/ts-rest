@@ -1,10 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
 import {
-  Api,
   nestControllerContract,
   NestControllerInterface,
   NestRequestShapes,
+  TsRest,
   TsRestRequest,
 } from '@ts-rest/nest';
 import { PostService } from './post.service';
@@ -22,7 +22,7 @@ export class PostController implements NestControllerInterface<typeof c> {
     return { queryParams };
   }
 
-  @Api(c.getPosts)
+  @TsRest(c.getPosts)
   async getPosts(
     @TsRestRequest()
     { query: { take, skip, search } }: RequestShapes['getPosts']
@@ -39,7 +39,7 @@ export class PostController implements NestControllerInterface<typeof c> {
     };
   }
 
-  @Api(c.getPost)
+  @TsRest(c.getPost)
   async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     const post = await this.postService.getPost(id);
 
@@ -50,7 +50,7 @@ export class PostController implements NestControllerInterface<typeof c> {
     return { status: 200 as const, body: post };
   }
 
-  @Api(c.createPost)
+  @TsRest(c.createPost)
   async createPost(@TsRestRequest() { body }: RequestShapes['createPost']) {
     const post = await this.postService.createPost({
       title: body.title,
@@ -62,7 +62,7 @@ export class PostController implements NestControllerInterface<typeof c> {
     return { status: 201 as const, body: post };
   }
 
-  @Api(c.updatePost)
+  @TsRest(c.updatePost)
   async updatePost(
     @TsRestRequest() { params: { id }, body }: RequestShapes['updatePost']
   ) {
@@ -76,7 +76,7 @@ export class PostController implements NestControllerInterface<typeof c> {
     return { status: 200 as const, body: post };
   }
 
-  @Api(c.deletePost)
+  @TsRest(c.deletePost)
   async deletePost(
     @TsRestRequest() { params: { id } }: RequestShapes['deletePost']
   ) {
@@ -85,7 +85,7 @@ export class PostController implements NestControllerInterface<typeof c> {
     return { status: 200 as const, body: { message: 'Post Deleted' } };
   }
 
-  @Api(c.testPathParams)
+  @TsRest(c.testPathParams)
   async testPathParams(
     @TsRestRequest() { params }: RequestShapes['testPathParams']
   ) {

@@ -48,7 +48,7 @@ export const TsRestRequest = createParamDecorator(
 
     if (!appRoute) {
       // this will respond with a 500 error without revealing this error message in the response body
-      throw new Error('Make sure your route is decorated with @Api()');
+      throw new Error('Make sure your route is decorated with @TsRest()');
     }
 
     const isJsonQuery = !!(

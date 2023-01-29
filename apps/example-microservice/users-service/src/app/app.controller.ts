@@ -1,11 +1,11 @@
 import { Controller, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { usersApi } from '@ts-rest/example-microservice/util-users-api';
 import {
-  Api,
   TsRestRequest,
   nestControllerContract,
   NestControllerInterface,
   NestRequestShapes,
+  TsRest,
 } from '@ts-rest/nest';
 import { AppService } from './app.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -18,7 +18,7 @@ type RequestShapes = NestRequestShapes<typeof c>;
 export class AppController implements NestControllerInterface<typeof c> {
   constructor(private readonly appService: AppService) {}
 
-  @Api(c.getUser)
+  @TsRest(c.getUser)
   async getUser(@TsRestRequest() { params: { id } }: RequestShapes['getUser']) {
     return {
       status: 200 as const,
@@ -30,7 +30,7 @@ export class AppController implements NestControllerInterface<typeof c> {
     };
   }
 
-  @Api(c.updateUserAvatar)
+  @TsRest(c.updateUserAvatar)
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUserAvatar(
     @TsRestRequest() { params: { id } }: RequestShapes['updateUserAvatar'],

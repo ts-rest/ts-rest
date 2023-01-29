@@ -111,14 +111,14 @@ type RequestShapes = NestRequestShapes<typeof c>;
 export class PostController implements NestControllerInterface<typeof c> {
   constructor(private readonly postService: PostService) {}
 
-  @Api(c.getPost)
+  @TsRest(c.getPost)
   async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     const post = await this.postService.getPost(id);
 
     return { status: 200 as const, body: post };
   }
 
-  @Api(c.createPost)
+  @TsRest(c.createPost)
   async createPost(@TsRestRequest() { body }: RequestShapes['createPost']) {
     const post = await this.postService.createPost({
       title: body.title,
