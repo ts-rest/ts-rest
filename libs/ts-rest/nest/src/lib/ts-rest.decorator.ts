@@ -1,6 +1,7 @@
-import { applyDecorators } from '@nestjs/common';
+import { applyDecorators, SetMetadata } from '@nestjs/common';
 import { JsonQuery } from './json-query.decorator';
-import { ValidateResponses } from './validate-responses.decorator';
+
+export const ValidateResponsesSymbol = Symbol('ts-rest-validate-responses');
 
 /**
  * TsRest NestJS options
@@ -16,7 +17,9 @@ export const TsRest = (options: {
   }
 
   if (options.validateResponses !== undefined) {
-    decorators.push(ValidateResponses(options.validateResponses));
+    decorators.push(
+      SetMetadata(ValidateResponsesSymbol, options.validateResponses)
+    );
   }
 
   return applyDecorators(...decorators);

@@ -43,13 +43,17 @@ The `@TsRestRequest` decorator takes the contract route defined in the `@Api` de
 
 As Typescript cannot infer class method parameter types from an implemented interface, we need to explicitly define the type for the request parameter using the `NestRequestShapes` type. 
 
-## JSON Query Parameters
+## Configuration
 
-To handle JSON query parameters, you can use the `@JsonQuery()` decorator on either your Controller classes or individual endpoint methods.
+To configure certain ts-rest options you can use the `@TsRest()` decorator on either your Controller classes or individual endpoint methods.
+
+### JSON Query Parameters
+
+To handle JSON query parameters, pass the `jsonQuery` option to the `@TsRest()` decorator.
 
 ```typescript
 @Controller()
-@JsonQuery()
+@TsRest({ jsonQuery: true })
 export class PostController implements NestControllerInterface<typeof c> {}
 ```
 
@@ -57,17 +61,32 @@ The method decorator can be useful to override the controller's behaviour on a p
 
 ```typescript
 @Controller()
-@JsonQuery()
+@TsRest({ jsonQuery: true })
 export class PostController implements NestControllerInterface<typeof c> {
   constructor(private readonly postService: PostService) {}
 
   @Api(s.route.getPost)
-  @JsonQuery(false)
+  @TsRest({ jsonQuery: false })
   async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     // ...
   }
 }
 ```
+
+### Response Validation
+
+You can enable response validation by passing the `validateResponses` option to the `@TsRest()` decorator.
+This will enable response parsing and validation for a returned status code, if there is a corresponding response Zod schema defined in the contract.
+This is useful for ensuring absolute safety that your controller is returning the correct response types as well as stripping any extra properties.
+
+```typescript
+@Controller()
+@TsRest({ validateResponses: true })
+export class PostController implements NestControllerInterface<typeof c> {}
+```
+
+If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
+You can catch this error and handle it as you wish by using a [NestJS exception filter](https://docs.nestjs.com/exception-filters).
 
 ## Explicit Response Type Safety
 

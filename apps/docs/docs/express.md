@@ -26,3 +26,13 @@ To handle JSON query parameters, you can use the `jsonQuery` option.
 ```typescript
 createExpressEndpoints(router, completeRouter, app, { jsonQuery: true });
 ```
+
+### Response Validation
+
+To enable response parsing and validation, you can use the `validateResponses` option.
+If there is a corresponding response Zod schema defined in the contract for the returned status code, the response will be parsed and validated.
+If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
+
+```typescript
+createExpressEndpoints(router, completeRouter, app, { validateResponses: true });
+```
