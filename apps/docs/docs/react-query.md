@@ -1,6 +1,6 @@
 # React Query
 
-This is a client using` @ts-react/react-query`, using `@tanstack/react-query` under the hood.
+This is a client using `@ts-rest/react-query`, using `@tanstack/react-query` under the hood.
 
 ## initQueryClient
 
@@ -86,7 +86,7 @@ The reason for this is error handling! Please see the [Relevant Docs](/docs/core
 
 ## Regular Query and Mutations
 
-`@ts-rest/react-query` allows for a regular fetch or mutation if you want, without having to initialise two different clients, one with `@ts-rest/core` and one with `@ts-react/react-query`.
+`@ts-rest/react-query` allows for a regular fetch or mutation if you want, without having to initialise two different clients, one with `@ts-rest/core` and one with `@ts-rest/react-query`.
 
 ```typescript
 // Normal fetch
