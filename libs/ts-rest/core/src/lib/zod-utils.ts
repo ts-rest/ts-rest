@@ -15,7 +15,7 @@ export const checkZodSchema = (
     }
   | {
       success: false;
-      error: Pick<z.ZodError, 'name' | 'issues'>;
+      error: z.ZodError;
     } => {
   if (isZodObject(schema)) {
     const result = schema.safeParse(data);
@@ -32,15 +32,22 @@ export const checkZodSchema = (
 
     return {
       success: false,
-      error: {
-        name: result.error.name,
-        issues: result.error.issues,
-      },
+      error: result.error,
     };
   }
 
   return {
     success: true,
     data: data,
+  };
+};
+
+// Convert a ZodError to a plain object because ZodError extends Error and causes problems with NestJS
+export const zodErrorResponse = (
+  error: z.ZodError
+): Pick<z.ZodError, 'name' | 'issues'> => {
+  return {
+    name: error.name,
+    issues: error.issues,
   };
 };

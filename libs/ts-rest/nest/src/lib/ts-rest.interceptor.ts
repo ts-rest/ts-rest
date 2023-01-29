@@ -5,7 +5,6 @@ import {
   ExecutionContext,
   Get,
   Injectable,
-  InternalServerErrorException,
   NestInterceptor,
   Patch,
   Post,
@@ -17,10 +16,14 @@ import { map, Observable } from 'rxjs';
 import { Response } from 'express-serve-static-core';
 import { AppRoute, checkZodSchema, HTTPStatusCode } from '@ts-rest/core';
 import { tsRestAppRouteMetadataKey } from './ts-rest-request.decorator';
-import { ParseResponsesSymbol } from './parse-responses.decorator';
+import { ValidateResponsesSymbol } from './validate-responses.decorator';
+import { ResponseValidationError } from './response-validation-error';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class TsRestInterceptor implements NestInterceptor {
+  constructor(private reflector: Reflector) {}
+
   private isAppRouteResponse(
     value: unknown
   ): value is { status: HTTPStatusCode; body?: any } {
@@ -31,10 +34,11 @@ export class TsRestInterceptor implements NestInterceptor {
       typeof value.status === 'number'
     );
   }
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const res: Response = context.switchToHttp().getResponse();
 
-    const appRoute: AppRoute | undefined = Reflect.getMetadata(
+    const appRoute = this.reflector.get<AppRoute | undefined>(
       tsRestAppRouteMetadataKey,
       context.getHandler()
     );
@@ -44,35 +48,38 @@ export class TsRestInterceptor implements NestInterceptor {
       throw new Error('Make sure your route is decorated with @Api()');
     }
 
+    const isValidationEnabled = Boolean(
+      this.reflector.getAllAndOverride<boolean | undefined>(
+        ValidateResponsesSymbol,
+        [context.getHandler(), context.getClass()]
+      )
+    );
+
     return next.handle().pipe(
-      map((value) => {
-        if (this.isAppRouteResponse(value)) {
-          const statusNumber = value.status;
+      map((response) => {
+        if (this.isAppRouteResponse(response)) {
+          let { body } = response;
 
-          const isParsingEnabled = Boolean(
-            Reflect.getMetadata(ParseResponsesSymbol, context.getHandler()) ||
-              Reflect.getMetadata(ParseResponsesSymbol, context.getClass())
-          );
-
-          const responseValidation = checkZodSchema(
-            value.body,
-            isParsingEnabled ? appRoute.responses[statusNumber] : undefined
-          );
-
-          if (!responseValidation.success) {
-            const { error } = responseValidation;
-
-            const message = error.errors.map(
-              (error) => `${error.path.join('.')}: ${error.message}`
+          if (isValidationEnabled) {
+            const responseValidation = checkZodSchema(
+              body,
+              appRoute.responses[response.status]
             );
-            throw new InternalServerErrorException(message);
+
+            if (!responseValidation.success) {
+              const { error } = responseValidation;
+
+              throw new ResponseValidationError(error);
+            }
+
+            body = responseValidation.data;
           }
 
-          res.status(statusNumber);
-          return responseValidation.data;
+          res.status(response.status);
+          return body;
         }
 
-        return value;
+        return response;
       })
     );
   }

@@ -14,19 +14,25 @@ import { PostService } from './post.service';
 const c = nestControllerContract({
   getPosts: {
     ...apiBlog.getPosts,
-    path: '/posts-json-query',
+    path: '/posts',
     query: z.object({
       take: z.number().default(50),
       skip: z.number().default(0),
       search: z.string().optional(),
     }),
+    responses: {
+      ...apiBlog.getPosts.responses,
+      200: apiBlog.getPosts.responses['200'].extend({
+        extra: z.string().default('hello world'),
+      }),
+    },
   },
 });
 type RequestShapes = NestRequestShapes<typeof c>;
 
-@TsRest({ jsonQuery: true })
+@TsRest({ jsonQuery: true, validateResponses: true })
 @Controller()
-export class PostJsonQueryController
+export class PostValidateResponsesController
   implements NestControllerInterface<typeof c>
 {
   constructor(private readonly postService: PostService) {}

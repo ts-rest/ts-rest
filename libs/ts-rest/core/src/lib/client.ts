@@ -70,10 +70,6 @@ export type ApiRouteResponse<T> =
       body: unknown;
     };
 
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
-  T['responses']
->;
-
 /**
  * Returned from a mutation or query call
  */
@@ -222,16 +218,3 @@ export const initClient = <T extends AppRouter>(
     })
   );
 };
-
-// takes a router and returns response types for each AppRoute
-// does not support nested routers, yet
-
-export type RouteResponse<T extends AppRouter> = {
-  [K in keyof T]: T[K] extends AppRoute
-    ? ApiResponseForRoute<T[K]>
-    : 'not a route';
-};
-
-export function getRouteResponses<T extends AppRouter>(router: T) {
-  return {} as RouteResponse<typeof router>;
-}
