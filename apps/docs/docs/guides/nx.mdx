@@ -12,7 +12,7 @@ Using ts-rest you declare a contract as a seperate lib, which is shared between 
 
 This is because we want to enable NX to correctly mark projects as affected, thus enabling NX to only lint/test/build/deploy the affected projects.
 
-![Lib Structure](../static/img/ts-rest-1.png)
+![Lib Structure](../../static/img/ts-rest-1.png)
 
 ## Affected Builds
 
@@ -20,16 +20,16 @@ In a situation where you've only updated the server, having the API as a lib wil
 
 Without a seperate lib, NX will always rebuild the dependencies, in this case, the whole frontend - unecessarily.
 
-![Lib Structure](../static/img/ts-rest-affected-multi.png)
+![Lib Structure](../../static/img/ts-rest-affected-multi.png)
 
 ### Optimising Even Further
 
 You can further improve this model when you have many consumers per API. It's possible to split the API into multiple libs, allowing you to reduce the blast radius of any changes.
 
-![Lib Structure](../static/img/ts-rest-affected-api-1.png)
+![Lib Structure](../../static/img/ts-rest-affected-api-1.png)
 
 ## Example Library
 
 Below is an example lib is an example of a contract in a shared lib, shared between many libraries (in the ts-rest example repo)
 
-![Example Lib](../static/img/nx-example-lib.png)
+![Example Lib](../../static/img/nx-example-lib.png)
