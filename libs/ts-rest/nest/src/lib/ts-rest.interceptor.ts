@@ -9,7 +9,7 @@ import { Response } from 'express-serve-static-core';
 import { AppRoute, isAppRouteResponse, validateResponse } from '@ts-rest/core';
 import { tsRestAppRouteMetadataKey } from './ts-rest-request.decorator';
 import { Reflector } from '@nestjs/core';
-import { TsRest, ValidateResponsesSymbol } from './ts-rest.decorator';
+import { ValidateResponsesSymbol } from './ts-rest.decorator';
 
 @Injectable()
 export class TsRestInterceptor implements NestInterceptor {
