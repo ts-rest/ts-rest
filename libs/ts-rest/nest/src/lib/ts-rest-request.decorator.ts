@@ -10,6 +10,7 @@ import {
   parseJsonQueryObject,
   PathParamsWithCustomValidators,
   Without,
+  zodErrorResponse,
   ZodInferOrType,
 } from '@ts-rest/core';
 import type { Request } from 'express-serve-static-core';
@@ -39,6 +40,7 @@ export type TsRestRequestShape<TRoute extends AppRoute> = Without<
 export const TsRestRequest = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): TsRestRequestShape<any> => {
     const req: Request = ctx.switchToHttp().getRequest();
+
     const appRoute: AppRoute | undefined = Reflect.getMetadata(
       tsRestAppRouteMetadataKey,
       ctx.getHandler()
@@ -46,7 +48,7 @@ export const TsRestRequest = createParamDecorator(
 
     if (!appRoute) {
       // this will respond with a 500 error without revealing this error message in the response body
-      throw new Error('Make sure your route is decorated with @Api()');
+      throw new Error('Make sure your route is decorated with @TsRest()');
     }
 
     const isJsonQuery = !!(
@@ -61,7 +63,7 @@ export const TsRestRequest = createParamDecorator(
     const queryResult = checkZodSchema(query, appRoute.query);
 
     if (!queryResult.success) {
-      throw new BadRequestException(queryResult.error);
+      throw new BadRequestException(zodErrorResponse(queryResult.error));
     }
 
     const bodyResult = checkZodSchema(
@@ -70,7 +72,7 @@ export const TsRestRequest = createParamDecorator(
     );
 
     if (!bodyResult.success) {
-      throw new BadRequestException(bodyResult.error);
+      throw new BadRequestException(zodErrorResponse(bodyResult.error));
     }
 
     const pathParamsResult = checkZodSchema(req.params, appRoute.pathParams, {
@@ -78,7 +80,7 @@ export const TsRestRequest = createParamDecorator(
     });
 
     if (!pathParamsResult.success) {
-      throw new BadRequestException(pathParamsResult.error);
+      throw new BadRequestException(zodErrorResponse(pathParamsResult.error));
     }
 
     return {

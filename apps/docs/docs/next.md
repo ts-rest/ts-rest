@@ -38,6 +38,34 @@ To handle JSON query parameters, you can use the `jsonQuery` option.
 export default createNextRouter(api, router, { jsonQuery: true });
 ```
 
+### Response Validation
+
+To enable response parsing and validation, you can use the `validateResponses` option.
+If there is a corresponding response Zod schema defined in the contract for the returned status code, the response will be parsed and validated.
+If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
+
+```typescript
+export default createNextRouter(api, router, { validateResponses: true });
+```
+
+### Error Handling
+
+You can create a global error handler to handle any thrown errors by using the `errorHandler` option.
+This includes response validation errors.
+
+```typescript
+export default createNextRouter(api, router, {
+  responseValidation: true,
+  errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
+    if (error instanceof ResponseValidationError) {
+      console.log(error.cause);
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+  },
+});
+```
+
+
 ## Future Work
 
 As this pattern doesn't support a lambda per endpoint, it is planned to provide a helper utility to allow individual endpoints to be created.

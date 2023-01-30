@@ -1,9 +1,11 @@
 import * as express from 'express';
+import { initContract, ResponseValidationError } from '@ts-rest/core';
 import { apiBlog, contractTs } from '@ts-rest/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
-import * as bodyParser from 'body-parser';
-import { serve, setup } from 'swagger-ui-express';
 import { generateOpenApi } from '@ts-rest/open-api';
+import * as bodyParser from 'body-parser';
+import { Request, Response, NextFunction } from 'express';
+import { serve, setup } from 'swagger-ui-express';
 import { mockPostFixtureFactory } from './fixtures';
 import cors = require('cors');
 import { tsRouter } from './ts-router';
@@ -78,6 +80,13 @@ const completedRouter = s.router(apiBlog, {
   },
 });
 
+const validateResponseContact = initContract().router({
+  testPathParams: {
+    ...apiBlog.testPathParams,
+    path: '/validate-response/:id/:name',
+  },
+});
+
 const openapi = generateOpenApi(apiBlog, {
   info: { title: 'Play API', version: '0.1' },
 });
@@ -95,6 +104,30 @@ app.get('/test', (req, res) => {
 
 createExpressEndpoints(apiBlog, completedRouter, app);
 createExpressEndpoints(contractTs, tsRouter, app, { jsonQuery: true });
+createExpressEndpoints(
+  validateResponseContact,
+  s.router(validateResponseContact, {
+    testPathParams: async ({ params, query }) => {
+      return {
+        status: 200,
+        body: {
+          ...params,
+          ...query,
+        },
+      };
+    },
+  }),
+  app,
+  { responseValidation: true }
+);
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof ResponseValidationError) {
+    console.error(err.cause);
+  }
+
+  next(err);
+});
 
 const port = process.env.port || 3333;
 const server = app.listen(port, () => {

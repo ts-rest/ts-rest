@@ -113,7 +113,7 @@ With Nest this is a pretty simple implementation, due to the extensible Decorato
 // nest
 @Controller()
 export class AppController implements NestControllerInterface<typeof c> {
-  @Api(s.route.updateUserAvatar)
+  @TsRest(s.route.updateUserAvatar)
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUserAvatar(
     @TsRestRequest() { params: { id } }: RequestShapes['updateUserAvatar'],

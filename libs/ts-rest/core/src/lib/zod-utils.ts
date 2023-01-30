@@ -1,9 +1,7 @@
 import { z } from 'zod';
 
-export const isZodObject = (
-  body: unknown
-): body is z.ZodObject<any, any, any, any> => {
-  return (body as z.ZodObject<any, any, any, any>)?.safeParse !== undefined;
+export const isZodObject = (body: unknown): body is z.AnyZodObject => {
+  return (body as z.AnyZodObject)?.safeParse !== undefined;
 };
 
 export const checkZodSchema = (
@@ -17,7 +15,7 @@ export const checkZodSchema = (
     }
   | {
       success: false;
-      error: unknown;
+      error: z.ZodError;
     } => {
   if (isZodObject(schema)) {
     const result = schema.safeParse(data);
@@ -34,15 +32,22 @@ export const checkZodSchema = (
 
     return {
       success: false,
-      error: {
-        name: result.error.name,
-        issues: result.error.issues,
-      },
+      error: result.error,
     };
   }
 
   return {
     success: true,
     data: data,
+  };
+};
+
+// Convert a ZodError to a plain object because ZodError extends Error and causes problems with NestJS
+export const zodErrorResponse = (
+  error: z.ZodError
+): Pick<z.ZodError, 'name' | 'issues'> => {
+  return {
+    name: error.name,
+    issues: error.issues,
   };
 };

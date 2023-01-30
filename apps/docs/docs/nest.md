@@ -4,10 +4,10 @@ As opposed to the Express implementation, where we can infer types from a functi
 
 ```typescript
 import {
-  Api,
   nestControllerContract,
   NestControllerInterface,
   NestRequestShapes,
+  TsRest,
   TsRestRequest,
 } from '@ts-rest/nest';
 
@@ -18,7 +18,7 @@ type RequestShapes = NestRequestShapes<typeof c>;
 export class PostController implements NestControllerInterface<typeof c> {
   constructor(private readonly postService: PostService) {}
 
-  @Api(c.getPost)
+  @TsRest(c.getPost)
   async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     const post = await this.postService.getPost(id);
 
@@ -37,37 +37,55 @@ To implement a nested contract, you can simply call `nestControllerContract(cont
 
 Having the controller class implement `NestControllerInterface` ensures that your controller implements all the routes defined in the contract. In addition, it ensures the type safety of the responses returned.
 
-The `@Api` decorator takes the route, defines the path and method for the controller route.
+The `@TsRest` decorator takes the route, defines the path and method for the controller route and also configures ts-rest options.
 
 The `@TsRestRequest` decorator takes the contract route defined in the `@Api` decorator, and returns the parsed and validated (if using Zod) request params, query and body.
 
 As Typescript cannot infer class method parameter types from an implemented interface, we need to explicitly define the type for the request parameter using the `NestRequestShapes` type. 
 
-## JSON Query Parameters
+## Configuration
 
-To handle JSON query parameters, you can use the `@JsonQuery()` decorator on either your Controller classes or individual endpoint methods.
+To configure certain ts-rest options you can use the `@TsRest` decorator on either your Controller or use the existing `@Api` decorator.
+
+### JSON Query Parameters
+
+To handle JSON query parameters, pass the `jsonQuery` option to the `@TsRest` decorator on your entire controller.
 
 ```typescript
 @Controller()
-@JsonQuery()
+@TsRest({ jsonQuery: true })
 export class PostController implements NestControllerInterface<typeof c> {}
 ```
 
-The method decorator can be useful to override the controller's behaviour on a per-endpoint basis.
+You can also use the method decorator to override or configure options for a specific route.
 
 ```typescript
 @Controller()
-@JsonQuery()
+@TsRest({ jsonQuery: true })
 export class PostController implements NestControllerInterface<typeof c> {
   constructor(private readonly postService: PostService) {}
 
-  @Api(s.route.getPost)
-  @JsonQuery(false)
+  @TsRest(s.route.getPost, { jsonQuery: false })
   async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
     // ...
   }
 }
 ```
+
+### Response Validation
+
+You can enable response validation by passing the `validateResponses` option to the `@TsRest()` decorator.
+This will enable response parsing and validation for a returned status code, if there is a corresponding response Zod schema defined in the contract.
+This is useful for ensuring absolute safety that your controller is returning the correct response types as well as stripping any extra properties.
+
+```typescript
+@Controller()
+@TsRest({ validateResponses: true })
+export class PostController implements NestControllerInterface<typeof c> {}
+```
+
+If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
+You can catch this error and handle it as you wish by using a [NestJS exception filter](https://docs.nestjs.com/exception-filters).
 
 ## Explicit Response Type Safety
 
@@ -91,7 +109,7 @@ type ResponseShapes = NestResponseShapes<typeof c>;
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @Api(c.getPost)
+  @TsRest(c.getPost)
   async getPost(
     @TsRestRequest() { params: { id } }: RequestShapes['getPost']
   ): Promise<ResponseShapes['getPost']> {

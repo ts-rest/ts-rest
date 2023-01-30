@@ -1,10 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
 import {
-  Api,
   nestControllerContract,
   NestRequestShapes,
   NestResponseShapes,
+  TsRest,
   TsRestRequest,
 } from '@ts-rest/nest';
 import { PostService } from './post.service';
@@ -23,7 +23,7 @@ export class PostController {
     return { queryParams };
   }
 
-  @Api(c.getPosts)
+  @TsRest(c.getPosts)
   async getPosts(
     @TsRestRequest()
     { query: { take, skip, search } }: RequestShapes['getPosts']
@@ -40,7 +40,7 @@ export class PostController {
     };
   }
 
-  @Api(c.getPost)
+  @TsRest(c.getPost)
   async getPost(
     @TsRestRequest() { params: { id } }: RequestShapes['getPost']
   ): Promise<ResponseShapes['getPost']> {
@@ -53,7 +53,7 @@ export class PostController {
     return { status: 200, body: post };
   }
 
-  @Api(c.createPost)
+  @TsRest(c.createPost)
   async createPost(
     @TsRestRequest() { body }: RequestShapes['createPost']
   ): Promise<ResponseShapes['createPost']> {
@@ -67,7 +67,7 @@ export class PostController {
     return { status: 201, body: post };
   }
 
-  @Api(c.updatePost)
+  @TsRest(c.updatePost)
   async updatePost(
     @TsRestRequest() { params: { id }, body }: RequestShapes['updatePost']
   ): Promise<ResponseShapes['updatePost']> {
@@ -81,7 +81,7 @@ export class PostController {
     return { status: 200, body: post };
   }
 
-  @Api(c.deletePost)
+  @TsRest(c.deletePost)
   async deletePost(
     @TsRestRequest() { params: { id } }: RequestShapes['deletePost']
   ): Promise<ResponseShapes['deletePost']> {
@@ -90,7 +90,7 @@ export class PostController {
     return { status: 200, body: { message: 'Post Deleted' } };
   }
 
-  @Api(c.testPathParams)
+  @TsRest(c.testPathParams)
   async testPathParams(
     @TsRestRequest() { params }: RequestShapes['testPathParams']
   ): Promise<ResponseShapes['testPathParams']> {

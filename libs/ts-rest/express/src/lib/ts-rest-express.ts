@@ -1,6 +1,7 @@
 import { IRouter, NextFunction, Request, Response } from 'express';
 import { IncomingHttpHeaders } from 'http';
 import {
+  ApiRouteServerResponse,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
@@ -10,6 +11,7 @@ import {
   isAppRoute,
   parseJsonQueryObject,
   PathParamsWithCustomValidators,
+  validateResponse,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
@@ -34,13 +36,6 @@ export function getValue<
   return value !== undefined ? value : (defaultValue as TDefault);
 }
 
-export type ApiRouteResponse<T> = {
-  [K in keyof T]: {
-    status: K;
-    body: ZodInferOrType<T[K]>;
-  };
-}[keyof T];
-
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
     {
@@ -51,7 +46,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     },
     never
   >
-) => Promise<ApiRouteResponse<T['responses']>>;
+) => Promise<ApiRouteServerResponse<T['responses']>>;
 
 type WithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
@@ -71,7 +66,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
     },
     never
   >
-) => Promise<ApiRouteResponse<T['responses']>>;
+) => Promise<ApiRouteServerResponse<T['responses']>>;
 
 type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteMutationImplementation<T>
@@ -90,6 +85,7 @@ type RecursiveRouterObj<T extends AppRouter> = {
 type Options = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
+  responseValidation?: boolean;
 };
 
 export const initServer = () => {
@@ -154,7 +150,21 @@ const transformAppRouteQueryImplementation = (
         req: req,
       });
 
-      return res.status(Number(result.status)).json(result.body);
+      const statusCode = Number(result.status);
+
+      if (options.responseValidation) {
+        const response = validateResponse({
+          responseType: schema.responses[statusCode],
+          response: {
+            status: statusCode,
+            body: result.body,
+          },
+        });
+
+        return res.status(statusCode).json(response.body);
+      }
+
+      return res.status(statusCode).json(result.body);
     } catch (e) {
       return next(e);
     }
@@ -213,7 +223,21 @@ const transformAppRouteMutationImplementation = (
         req: req,
       });
 
-      return res.status(Number(result.status)).json(result.body);
+      const statusCode = Number(result.status);
+
+      if (options.responseValidation) {
+        const response = validateResponse({
+          responseType: schema.responses[statusCode],
+          response: {
+            status: statusCode,
+            body: result.body,
+          },
+        });
+
+        return res.status(statusCode).json(response.body);
+      }
+
+      return res.status(statusCode).json(result.body);
     } catch (e) {
       return next(e);
     }
@@ -245,6 +269,7 @@ export const createExpressEndpoints = <
   options: Options = {
     logInitialization: true,
     jsonQuery: false,
+    responseValidation: false,
   }
 ) => {
   recursivelyApplyExpressRouter(router, [], (route, path) => {

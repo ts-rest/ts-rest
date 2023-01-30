@@ -1,16 +1,14 @@
 import {
   AppRoute,
   AppRouter,
-  ApiRouteResponse,
   Without,
-  getRouteResponses,
-  ApiResponseForRoute,
+  ApiRouteServerResponse,
 } from '@ts-rest/core';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
   ...args: any[]
-) => Promise<ApiRouteResponse<T['responses']>>;
+) => Promise<ApiRouteServerResponse<T['responses']>>;
 
 type AppRouterControllerShape<T extends AppRouter> = Without<
   {
@@ -28,17 +26,12 @@ type AppRouterRequestShapes<T extends AppRouter> = Without<
 
 type AppRouterResponseShapes<T extends AppRouter> = Without<
   {
-    [K in keyof T]: T[K] extends AppRoute ? ApiResponseForRoute<T[K]> : never;
+    [K in keyof T]: T[K] extends AppRoute
+      ? ApiRouteServerResponse<T[K]['responses']>
+      : never;
   },
   never
 >;
-
-type NestControllerShapeFromAppRouter<T extends AppRouter> = Without<
-  AppRouterControllerShape<T>,
-  AppRouter
->;
-
-type NestAppRouteShape<T extends AppRouter> = AppRouterRequestShapes<T>;
 
 /**
  * @deprecated Use `nestControllerContract`, `NestControllerInterface`, `NestRequestShapes`, and `NestResponseShapes` instead
@@ -46,9 +39,9 @@ type NestAppRouteShape<T extends AppRouter> = AppRouterRequestShapes<T>;
  */
 export const initNestServer = <T extends AppRouter>(router: T) => {
   return {
-    controllerShape: {} as NestControllerShapeFromAppRouter<T>,
-    routeShapes: {} as NestAppRouteShape<T>,
-    responseShapes: getRouteResponses(router),
+    controllerShape: {} as AppRouterControllerShape<T>,
+    routeShapes: {} as AppRouterRequestShapes<T>,
+    responseShapes: {} as AppRouterResponseShapes<T>,
     route: router,
   };
 };
@@ -61,7 +54,7 @@ export type NestControllerContract<T extends AppRouter> = Pick<
 >;
 export type NestControllerInterface<T extends AppRouter> =
   AppRouterControllerShape<T>;
-export type NestRequestShapes<T extends AppRouter> = NestAppRouteShape<T>;
+export type NestRequestShapes<T extends AppRouter> = AppRouterRequestShapes<T>;
 export type NestResponseShapes<T extends AppRouter> =
   AppRouterResponseShapes<T>;
 

@@ -92,10 +92,14 @@ export const apiBlog = c.router({
     pathParams: z.object({
       id: z.string().transform(Number),
     }),
+    query: z.object({
+      field: z.string().optional(),
+    }),
     responses: {
       200: z.object({
-        id: z.number(),
+        id: z.number().lt(1000),
         name: z.string(),
+        defaultValue: z.string().default('hello world'),
       }),
     },
   },

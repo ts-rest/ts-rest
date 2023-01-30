@@ -1,4 +1,3 @@
-import { z, ZodTypeAny } from 'zod';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
 import { insertParamsIntoPath, ParamsFromUrl } from './paths';
 import { convertQueryParamsToUrlString } from './query';
@@ -9,6 +8,7 @@ import {
   OptionalIfAllOptional,
   Without,
   ZodInferOrType,
+  ZodInputOrType,
 } from './type-utils';
 
 type RecursiveProxyObj<T extends AppRouter> = {
@@ -19,7 +19,7 @@ type RecursiveProxyObj<T extends AppRouter> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
+type AppRouteMutationType<T> = ZodInputOrType<T>;
 
 /**
  * Extract the path params from the path in the contract
@@ -69,10 +69,6 @@ export type ApiRouteResponse<T> =
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
     };
-
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
-  T['responses']
->;
 
 /**
  * Returned from a mutation or query call
@@ -222,14 +218,3 @@ export const initClient = <T extends AppRouter>(
     })
   );
 };
-
-// takes a router and returns response types for each AppRoute
-// does not support nested routers, yet
-
-export function getRouteResponses<T extends AppRouter>(router: T) {
-  return {} as {
-    [K in keyof typeof router]: typeof router[K] extends AppRoute
-      ? ApiResponseForRoute<typeof router[K]>
-      : 'not a route';
-  };
-}
