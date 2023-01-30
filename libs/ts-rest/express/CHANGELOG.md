@@ -1,5 +1,12 @@
 # @ts-rest/express
 
+## 3.16.0
+
+### Minor Changes
+
+- e490cf3: - Added server-side response validation feature
+- Deprecated `@Api` decorator, use `@TsRest` instead
+
 ## 3.15.0
 
 ## 3.14.0
