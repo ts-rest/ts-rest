@@ -1,6 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-
-export const JsonQuerySymbol = Symbol('JsonQuery');
+import { JsonQuerySymbol } from './constants';
 
 /**
  * Enable JSON query mode for a controller or a single route

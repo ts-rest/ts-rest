@@ -14,7 +14,8 @@
         "tsConfig": "libs/ts-rest/open-api/tsconfig.lib.json",
         "format": ["esm", "cjs"],
         "compiler": "tsc",
-        "rollupConfig": "tools/scripts/rollup.config.js"
+        "rollupConfig": "tools/scripts/rollup.config.js",
+        "generateExportsField": true
       }
     },
     "publish": {

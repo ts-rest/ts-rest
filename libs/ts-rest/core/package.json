@@ -21,13 +21,10 @@
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
-    },
-    "tslib": {
-      "optional": true
     }
   },
   "peerDependencies": {
-    "zod": "3.x.x"
+    "zod": "^3.0.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

@@ -12,7 +12,8 @@
         "main": "libs/ts-rest/express/src/index.ts",
         "tsConfig": "libs/ts-rest/express/tsconfig.lib.json",
         "assets": ["libs/ts-rest/express/*.md"],
-        "rollupConfig": "tools/scripts/rollup.config.js"
+        "rollupConfig": "tools/scripts/rollup.config.js",
+        "generateExportsField": true
       }
     },
     "publish": {

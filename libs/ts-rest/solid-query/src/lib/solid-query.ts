@@ -28,8 +28,8 @@ import {
   SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
+  ZodInputOrType,
 } from '@ts-rest/core';
-import { z, ZodTypeAny } from 'zod';
 
 type RecursiveProxyObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -39,7 +39,7 @@ type RecursiveProxyObj<T extends AppRouter> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
+type AppRouteMutationType<T> = ZodInputOrType<T>;
 
 type UseQueryArgs<TAppRoute extends AppRoute> = {
   createQuery: TAppRoute extends AppRouteQuery
@@ -64,7 +64,7 @@ type DataReturnArgs<TRoute extends AppRoute> = {
       : AppRouteMutationType<TRoute['body']>
     : never;
   params: PathParamsFromUrl<TRoute>;
-  query: TRoute['query'] extends ZodTypeAny
+  query: 'query' extends keyof TRoute
     ? AppRouteMutationType<TRoute['query']> extends null
       ? never
       : AppRouteMutationType<TRoute['query']>

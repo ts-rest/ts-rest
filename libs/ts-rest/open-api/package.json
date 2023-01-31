@@ -1,19 +1,17 @@
 {
   "name": "@ts-rest/open-api",
   "version": "3.16.0",
+  "dependencies": {
+    "openapi3-ts": "^2.0.2",
+    "zod-to-json-schema": "^3.17.1"
+  },
+  "peerDependencies": {
+    "zod": "^3.0.0"
+  },
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
-    },
-    "@swc/helpers": {
-      "optional": true
     }
-  },
-  "peerDependencies": {
-    "react": "16.x.x || 17.x.x || 18.x.x",
-    "zod": "3.x.x",
-    "openapi3-ts": "2.x.x",
-    "zod-to-json-schema": "^3.x.x"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

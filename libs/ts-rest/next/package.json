@@ -1,16 +1,14 @@
 {
   "name": "@ts-rest/next",
   "version": "3.16.0",
+  "peerDependencies": {
+    "next": "^12.0.0 || ^13.0.0",
+    "zod": "^3.0.0"
+  },
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
-    },
-    "@swc/helpers": {
-      "optional": true
     }
-  },
-  "peerDependencies": {
-    "next": "12.x.x"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",
