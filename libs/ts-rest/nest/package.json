@@ -19,21 +19,16 @@
     "url": "https://github.com/ts-rest/ts-rest.git",
     "directory": "libs/ts-rest/nest"
   },
+  "peerDependencies": {
+    "@nestjs/common": "^9.0.0",
+    "@nestjs/core": "^9.0.0",
+    "rxjs": "^7.1.0",
+    "zod": "^3.0.0"
+  },
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
-    },
-    "rxjs": {
-      "optional": true
     }
-  },
-  "peerDependencies": {
-    "@nestjs/common": "9.x.x",
-    "rxjs": "7.x.x",
-    "zod": "3.x.x"
-  },
-  "devDependencies": {
-    "express-serve-static-core": "^0.1.1"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

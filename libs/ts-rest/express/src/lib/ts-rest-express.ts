@@ -1,5 +1,3 @@
-import { IRouter, NextFunction, Request, Response } from 'express';
-import { IncomingHttpHeaders } from 'http';
 import {
   ApiRouteServerResponse,
   AppRoute,
@@ -15,6 +13,8 @@ import {
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
+import type { IRouter, NextFunction, Request, Response } from 'express';
+import type { IncomingHttpHeaders } from 'http';
 
 export function getValue<
   TData,

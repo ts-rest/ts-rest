@@ -14,9 +14,7 @@ import {
   ZodInferOrType,
 } from '@ts-rest/core';
 import type { Request } from 'express-serve-static-core';
-import { JsonQuerySymbol } from './json-query.decorator';
-
-export const tsRestAppRouteMetadataKey = Symbol('ts-rest-app-route');
+import { JsonQuerySymbol, TsRestAppRouteMetadataKey } from './constants';
 
 type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
@@ -42,7 +40,7 @@ export const TsRestRequest = createParamDecorator(
     const req: Request = ctx.switchToHttp().getRequest();
 
     const appRoute: AppRoute | undefined = Reflect.getMetadata(
-      tsRestAppRouteMetadataKey,
+      TsRestAppRouteMetadataKey,
       ctx.getHandler()
     );
 

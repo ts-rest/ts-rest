@@ -5,11 +5,13 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { Response } from 'express-serve-static-core';
 import { AppRoute, isAppRouteResponse, validateResponse } from '@ts-rest/core';
-import { tsRestAppRouteMetadataKey } from './ts-rest-request.decorator';
 import { Reflector } from '@nestjs/core';
-import { ValidateResponsesSymbol } from './ts-rest.decorator';
+import {
+  TsRestAppRouteMetadataKey,
+  ValidateResponsesSymbol,
+} from './constants';
+import type { Response } from 'express-serve-static-core';
 
 @Injectable()
 export class TsRestInterceptor implements NestInterceptor {
@@ -19,7 +21,7 @@ export class TsRestInterceptor implements NestInterceptor {
     const res: Response = context.switchToHttp().getResponse();
 
     const appRoute = this.reflector.get<AppRoute | undefined>(
-      tsRestAppRouteMetadataKey,
+      TsRestAppRouteMetadataKey,
       context.getHandler()
     );
 

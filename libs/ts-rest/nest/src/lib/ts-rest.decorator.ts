@@ -10,10 +10,11 @@ import {
 } from '@nestjs/common';
 import { JsonQuery } from './json-query.decorator';
 import { AppRoute } from '@ts-rest/core';
-import { tsRestAppRouteMetadataKey } from './ts-rest-request.decorator';
 import { TsRestInterceptor } from './ts-rest.interceptor';
-
-export const ValidateResponsesSymbol = Symbol('ts-rest-validate-responses');
+import {
+  TsRestAppRouteMetadataKey,
+  ValidateResponsesSymbol,
+} from './constants';
 
 export type TsRestOptions = {
   jsonQuery?: boolean;
@@ -37,7 +38,7 @@ export const TsRest = (
   if (isMethodDecorator) {
     decorators.push(
       ...[
-        SetMetadata(tsRestAppRouteMetadataKey, appRouteOrOptions),
+        SetMetadata(TsRestAppRouteMetadataKey, appRouteOrOptions),
         getMethodDecorator(appRouteOrOptions),
         UseInterceptors(TsRestInterceptor),
       ]
