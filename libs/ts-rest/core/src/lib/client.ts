@@ -107,20 +107,20 @@ export const defaultApi: ApiFetcher = async ({
 }) => {
   const result = await fetch(path, { method, headers, body, credentials });
   const contentType = result.headers.get('content-type');
+
   if (!contentType) {
     throw TypeError('Resource Response missing content-type header');
   }
-  switch (contentType) {
-    case 'application/json': {
-      return { status: result.status, body: await result.json() };
-    }
-    case 'text/plain': {
-      return { status: result.status, body: await result.text() };
-    }
-    default: {
-      return { status: result.status, body: await result.blob() };
-    }
+
+  if (contentType.includes('application/json')) {
+    return { status: result.status, body: await result.json() };
   }
+
+  if (contentType.includes('text/plain')) {
+    return { status: result.status, body: await result.text() };
+  }
+
+  return { status: result.status, body: await result.blob() };
 };
 
 const createFormData = (body: unknown) => {
