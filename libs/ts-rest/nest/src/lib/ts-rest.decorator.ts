@@ -21,12 +21,17 @@ export type TsRestOptions = {
   validateResponses?: boolean;
 };
 
+type TsRestType = {
+  (appRoute: AppRoute, options?: TsRestOptions): MethodDecorator;
+  (options: TsRestOptions): ClassDecorator;
+};
+
 /**
  * As a class decorator, you can configure ts-rest options. As a method decorator, you can assign the route and also configure options
  * @param appRouteOrOptions For a method decorator, this is the route. For a class decorator, this is the options
  * @param options For a method decorator, this is the options
  */
-export const TsRest = (
+export const TsRest: TsRestType = (
   appRouteOrOptions: AppRoute | TsRestOptions,
   options: TsRestOptions = {}
 ) => {
