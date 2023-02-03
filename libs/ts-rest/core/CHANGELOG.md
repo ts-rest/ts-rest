@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.16.1
+
+### Patch Changes
+
+- 832b645: fix(core): wrong "content-type" detection
+
 ## 3.16.0
 
 ### Minor Changes

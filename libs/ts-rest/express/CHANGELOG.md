@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.16.1
+
+### Patch Changes
+
+- 41a5fbb: Make @ts-rest/express ESM compatible
+
 ## 3.16.0
 
 ### Minor Changes

@@ -1,5 +1,7 @@
 # @ts-rest/next
 
+## 3.16.1
+
 ## 3.16.0
 
 ### Minor Changes

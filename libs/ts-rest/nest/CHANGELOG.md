@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.16.1
+
+### Patch Changes
+
+- 8a8b606: Increased type safety for the @TsRest decorator
+
 ## 3.16.0
 
 ### Minor Changes
