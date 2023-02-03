@@ -13,7 +13,12 @@ import {
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
-import type { IRouter, NextFunction, Request, Response } from 'express';
+import type {
+  IRouter,
+  NextFunction,
+  Request,
+  Response,
+} from 'express-serve-static-core';
 import type { IncomingHttpHeaders } from 'http';
 
 export function getValue<
