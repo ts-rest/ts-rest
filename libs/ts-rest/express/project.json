@@ -5,13 +5,15 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:swc",
+      "executor": "@nrwl/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "project": "libs/ts-rest/express/package.json",
         "outputPath": "dist/libs/ts-rest/express",
         "main": "libs/ts-rest/express/src/index.ts",
         "tsConfig": "libs/ts-rest/express/tsconfig.lib.json",
-        "assets": ["libs/ts-rest/express/*.md"],
+        "format": ["esm", "cjs"],
+        "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
         "generateExportsField": true
       }
