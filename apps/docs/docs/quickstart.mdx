@@ -3,13 +3,29 @@ import TabItem from '@theme/TabItem';
 
 # Quickstart
 
+Setup is easy. 
+
+Once you understand how to use `ts-rest`, developer experience is like butter.  🧈
+
 ## Installation
 
-Install the core package
+1. Install the core package
 
 ```bash
-yarn add @ts-rest/core
+yarn add @ts-rest/core 
+--
+npm i @ts-rest/core
 ```
+
+2. Enable `strictNullChecks` in your `tsconfig.json`:
+```
+  "compilerOptions": {
+    ...
+    "strictNullChecks": true
+  }
+```
+This is required as part of [Zod](https://github.com/colinhacks/zod/issues/1750).
+
 
 ## Create a contract
 
