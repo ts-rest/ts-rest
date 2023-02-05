@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/open-api",
-  "version": "3.16.1",
+  "version": "3.16.2",
   "dependencies": {
     "openapi3-ts": "^2.0.2",
     "zod-to-json-schema": "^3.17.1"
