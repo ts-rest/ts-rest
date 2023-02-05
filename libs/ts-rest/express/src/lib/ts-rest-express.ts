@@ -243,7 +243,7 @@ const transformAppRouteMutationImplementation = (
 
       return res.status(statusCode).json(result.body);
     } catch (e) {
-      return next?.(e);
+      return next(e);
     }
   };
 

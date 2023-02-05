@@ -108,15 +108,11 @@ export const defaultApi: ApiFetcher = async ({
   const result = await fetch(path, { method, headers, body, credentials });
   const contentType = result.headers.get('content-type');
 
-  if (!contentType) {
-    throw TypeError('Resource Response missing content-type header');
-  }
-
-  if (contentType.includes('application/json')) {
+  if (contentType?.includes('application/json')) {
     return { status: result.status, body: await result.json() };
   }
 
-  if (contentType.includes('text/plain')) {
+  if (contentType?.includes('text/plain')) {
     return { status: result.status, body: await result.text() };
   }
 
