@@ -14,6 +14,7 @@ Install the core package
 
 <Tabs groupId="contract">
   <TabItem value="zod" label="Zod">
+  <InstallTabs packageName="zod" />
 <p>Create a contract, this should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package.</p>
 
 <p>
@@ -25,6 +26,7 @@ Install the core package
 // contract.ts
 
 import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
 
 const c = initContract();
 
@@ -97,6 +99,7 @@ export const contract = c.router({
 
 <Tabs groupId="library">
   <TabItem value="nest" label="Nest.js">
+  <InstallTabs packageName="@ts-rest/nest" />
 <p>ts-rest offers a unique way to create a fully type safe REST API server,
 normally Nest APIs are extremely powerful, but hard to make type safe.</p>
 
@@ -131,6 +134,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   </TabItem>
   <TabItem value="express" label="Express">
+  <InstallTabs packageName="@ts-rest/express" />
 <p>The express implementaton allows full type safety, offering; body parsing, query parsing, param parsing and full error handling</p>
 
 ```typescript
@@ -175,6 +179,7 @@ const server = app.listen(port, () => {
 
   </TabItem>
   <TabItem value="next" label="Next.js">
+  <InstallTabs packageName="@ts-rest/next" />
 
 ```typescript
 // pages/api/[...ts-rest].tsx
@@ -236,6 +241,7 @@ if (status === 201) {
 
   </TabItem>
   <TabItem value="react-query" label="React Query">
+  <InstallTabs packageName="@ts-rest/react-query" />
 
 ```tsx
 export const client = initQueryClient(contract, {
