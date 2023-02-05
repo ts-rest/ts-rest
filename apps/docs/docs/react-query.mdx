@@ -1,4 +1,10 @@
+import { InstallTabs } from '@site/src/components/InstallTabs';
+
 # React Query
+
+## Installation
+
+<InstallTabs packageName="@ts-rest/react-query" />
 
 This is a client using `@ts-rest/react-query`, using `@tanstack/react-query` under the hood.
 
@@ -7,6 +13,8 @@ This is a client using `@ts-rest/react-query`, using `@tanstack/react-query` und
 The below snippet is how you'd create a query client, this is pretty much the same structure as the `@ts-rest/core` client.
 
 ```tsx
+import { initQueryClient } from '@ts-rest/react-query';
+
 export const client = initQueryClient(router, {
   baseUrl: 'http://localhost:3333',
   baseHeaders: {},

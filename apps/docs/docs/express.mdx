@@ -1,6 +1,16 @@
+import { InstallTabs } from '@site/src/components/InstallTabs';
+
 # Express Server
 
+## Installation
+
+<InstallTabs packageName="@ts-rest/express" />
+
+## Usage
+
 ```typescript
+import { initServer } from '@ts-rest/express';
+
 const s = initServer();
 
 const router = s.router(router, {
@@ -34,5 +44,7 @@ If there is a corresponding response Zod schema defined in the contract for the 
 If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
 
 ```typescript
-createExpressEndpoints(router, completeRouter, app, { validateResponses: true });
+createExpressEndpoints(router, completeRouter, app, {
+  validateResponses: true,
+});
 ```

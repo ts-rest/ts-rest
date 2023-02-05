@@ -1,14 +1,12 @@
+import { InstallTabs } from '@site/src/components/InstallTabs';
+
 # Without a Backend (Gradual Migration)
 
 The ideal way to use `ts-rest` is to control both the client and server, however, we don't live in a perfect world where we can afford to rewrite everything at once! This guide will show you how to use `ts-rest` without a backend, commonly utilised to help migrate an existing application to `ts-rest`.
 
 ## Adding `@ts-rest` to your project
 
-If you're using `pnpm` you can add `@ts-rest` to your project with the following command:
-
-```bash
-pnpm add @ts-rest/core @ts-rest/react-query
-```
+<InstallTabs packageName="@ts-rest/core @ts-rest/react-query" />
 
 This command installs the core, and the `react-query` adapter. We strongly recommend using `react-query` as it is a fantastic way to handle many common problems with data fetching in react, and ts-rest provides first class support for it.
 
