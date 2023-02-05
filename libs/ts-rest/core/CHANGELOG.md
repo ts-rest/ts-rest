@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.16.2
+
+### Patch Changes
+
+- 3fa8679: Do not throw error for missing content-type header
+
 ## 3.16.1
 
 ### Patch Changes
