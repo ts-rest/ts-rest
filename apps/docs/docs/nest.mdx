@@ -1,4 +1,12 @@
+import { InstallTabs } from '@site/src/components/InstallTabs';
+
 # Nest
+
+## Installation
+
+<InstallTabs packageName="@ts-rest/nest" />
+
+## Usage
 
 As opposed to the Express implementation, where we can infer types from a function signature, we need to explicitly define our types since Nest controllers are implemented as classes.
 
@@ -41,7 +49,7 @@ The `@TsRest` decorator takes the route, defines the path and method for the con
 
 The `@TsRestRequest` decorator takes the contract route defined in the `@Api` decorator, and returns the parsed and validated (if using Zod) request params, query and body.
 
-As Typescript cannot infer class method parameter types from an implemented interface, we need to explicitly define the type for the request parameter using the `NestRequestShapes` type. 
+As Typescript cannot infer class method parameter types from an implemented interface, we need to explicitly define the type for the request parameter using the `NestRequestShapes` type.
 
 ## Configuration
 

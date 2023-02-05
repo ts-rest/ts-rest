@@ -15,9 +15,8 @@ import {
 } from '@ts-rest/core';
 import type {
   IRouter,
-  NextFunction,
   Request,
-  Response,
+  RequestHandler,
 } from 'express-serve-static-core';
 import type { IncomingHttpHeaders } from 'http';
 
@@ -171,7 +170,7 @@ const transformAppRouteQueryImplementation = (
 
       return res.status(statusCode).json(result.body);
     } catch (e) {
-      return next(e);
+      return next?.(e);
     }
   });
 };
@@ -188,7 +187,7 @@ const transformAppRouteMutationImplementation = (
 
   const method = schema.method;
 
-  const callback = async (req: Request, res: Response, next: NextFunction) => {
+  const reqHandler: RequestHandler = async (req, res, next) => {
     const query = options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
@@ -244,22 +243,22 @@ const transformAppRouteMutationImplementation = (
 
       return res.status(statusCode).json(result.body);
     } catch (e) {
-      return next(e);
+      return next?.(e);
     }
   };
 
   switch (method) {
     case 'DELETE':
-      app.delete(schema.path, callback);
+      app.delete(schema.path, reqHandler);
       break;
     case 'POST':
-      app.post(schema.path, callback);
+      app.post(schema.path, reqHandler);
       break;
     case 'PUT':
-      app.put(schema.path, callback);
+      app.put(schema.path, reqHandler);
       break;
     case 'PATCH':
-      app.patch(schema.path, callback);
+      app.patch(schema.path, reqHandler);
       break;
   }
 };
