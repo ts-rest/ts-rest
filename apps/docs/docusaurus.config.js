@@ -129,7 +129,7 @@ const config = {
             position: 'right',
           },
           {
-            href: 'https://discord.com/invite/2Megk85k5a',
+            href: 'https://twitter.com/ts_rest',
             className: 'header-social-link header-twitter-link',
             'aria-label': 'Twitter',
             position: 'right',
