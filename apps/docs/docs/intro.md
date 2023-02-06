@@ -8,7 +8,7 @@ If you have non typescript consumers, a public API, or maybe want to add type sa
 
 - End to end type safety 🛟
 - Magic RPC-like API 🪄
-- Tiny bundle size 🌟 (1kb!)
+- [Tiny bundle size 🌟](https://bundlephobia.com/package/@ts-rest/core) (1kb!)
 - Well-tested and production ready ✅
 - No Code Generation 🏃‍♀️
 - Zod support for body parsing 👮‍♀️

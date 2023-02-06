@@ -170,7 +170,7 @@ const transformAppRouteQueryImplementation = (
 
       return res.status(statusCode).json(result.body);
     } catch (e) {
-      return next?.(e);
+      return next(e);
     }
   });
 };

@@ -124,22 +124,20 @@ const config = {
           },
           {
             href: 'https://github.com/ts-rest/ts-rest',
-            label: 'GitHub',
-            position: 'right',
-          },
-          {
-            href: 'https://www.npmjs.com/package/@ts-rest/core',
-            label: 'NPM',
-            position: 'right',
-          },
-          {
-            href: 'https://bundlephobia.com/package/@ts-rest/core',
-            label: 'Bundlephobia',
+            className: 'header-social-link header-github-link',
+            'aria-label': 'GitHub Repository',
             position: 'right',
           },
           {
             href: 'https://discord.com/invite/2Megk85k5a',
-            label: 'Discord 🆕',
+            className: 'header-social-link header-twitter-link',
+            'aria-label': 'Twitter',
+            position: 'right',
+          },
+          {
+            href: 'https://discord.com/invite/2Megk85k5a',
+            className: 'header-social-link header-discord-link',
+            'aria-label': 'Discord',
             position: 'right',
           },
         ],
@@ -164,12 +162,16 @@ const config = {
             title: 'Community',
             items: [
               {
+                label: 'GitHub',
+                href: 'https://github.com/ts-rest/ts-rest',
+              },
+              {
                 label: 'Twitter',
                 href: 'https://twitter.com/_oliverbutler',
               },
               {
-                label: 'GitHub',
-                href: 'https://github.com/ts-rest/ts-rest',
+                label: 'Discord',
+                href: 'https://discord.com/invite/2Megk85k5a',
               },
             ],
           },

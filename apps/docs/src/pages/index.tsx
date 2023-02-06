@@ -146,7 +146,11 @@ export default function Home(): JSX.Element {
           <ul>
             <li>
               A{' '}
-              <a href="https://bundlephobia.com/package/@ts-rest/core">
+              <a
+                href="https://bundlephobia.com/package/@ts-rest/core"
+                target="blank"
+                rel="noopener noreferrer"
+              >
                 seriously tiny
               </a>{' '}
               type-safe wrapper around existing, battle-tested, established tech
