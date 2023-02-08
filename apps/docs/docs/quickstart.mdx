@@ -123,10 +123,7 @@ export const contract = c.router({
 <p>ts-rest offers a unique way to create a fully type safe REST API server,
 normally Nest APIs are extremely powerful, but hard to make type safe.</p>
 
-You can see that we're using the *runtime* object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route. 
-We're also using the `RequestShapes` *Typescript Types* (which comes from the runtime object `c`) to ensure type safety of your contract *on* the Nest controller.
-
-If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an *object* in the contract above, not boolean!
+Let's add `@ts-rest/nest` to a basic Nest controller:
 
 ```typescript
 // post.controller.ts
@@ -156,6 +153,12 @@ export class PostController implements NestControllerInterface<typeof c> {
   }
 }
 ```
+
+You can see that we're using the *runtime* object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route. 
+We're also using the `RequestShapes` *Typescript Types* (which comes from the runtime object `c`) to ensure type safety of your contract *on* the Nest controller.
+
+If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an *object* in the contract above, not boolean!
+
 
   </TabItem>
   <TabItem value="express" label="Express">
