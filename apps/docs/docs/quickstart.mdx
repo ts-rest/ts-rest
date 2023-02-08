@@ -19,25 +19,22 @@ Install the core package
 
 <Tabs groupId="contract">
   <TabItem value="zod" label="Zod">
-1. Install Zod
-  <InstallTabs packageName="zod" />
 
-2. Enable `strict` in your `tsconfig.json`:
-```
-  "compilerOptions": {
-    ...
-    "strictNullChecks": true
-  }
-```
-This is required as part of [Zod](https://github.com/colinhacks/zod#requirements).
+1. **Install Zod** <InstallTabs packageName="zod" />
+
+2. **Enable `strict` in your `tsconfig.json`**
+  ```
+    "compilerOptions": {
+      ...
+      "strictNullChecks": true
+    }
+  ```
+- *This is required as part of [Zod](https://github.com/colinhacks/zod#requirements).*
 
 
-<p>Create a contract, this should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package.</p>
+3. **Create a contract!**
 
-<p>
-  In this case we're using Zod, this has some nice features, like enabling body
-  parsing and OpenAPI type generation.
-</p>
+<p>This should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package. Think of this as your HTTP Schema that both your client and backend can use.</p>
 
 ```typescript
 // contract.ts
@@ -76,6 +73,10 @@ export const contract = c.router({
   },
 });
 ```
+<p>
+  Zod also has some nice features, like enabling body
+  parsing and OpenAPI type generation.
+</p>
 
   </TabItem>
   <TabItem value="basic" label="Basic">
@@ -119,6 +120,11 @@ export const contract = c.router({
   <InstallTabs packageName="@ts-rest/nest" />
 <p>ts-rest offers a unique way to create a fully type safe REST API server,
 normally Nest APIs are extremely powerful, but hard to make type safe.</p>
+
+You can see that we're using the *runtime* object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route. 
+We're also using the `RequestShapes` *Typescript Types* (which comes from the runtime object `c`) to ensure type safety of your contract *on* the Nest controller.
+
+If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an *object* in the contract above, not boolean!
 
 ```typescript
 // post.controller.ts
