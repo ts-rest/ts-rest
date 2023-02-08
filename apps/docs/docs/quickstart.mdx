@@ -4,23 +4,39 @@ import { InstallTabs } from '@site/src/components/InstallTabs';
 
 # Quickstart
 
+Setup is easy. 
+
+Once you understand how to use `ts-rest`, the developer experience is like butter.  🧈🪄✨
+
 ## Installation
 
 Install the core package
 
 <InstallTabs packageName="@ts-rest/core" />
 
+
 ## Create a contract
 
 <Tabs groupId="contract">
   <TabItem value="zod" label="Zod">
-  <InstallTabs packageName="zod" />
-<p>Create a contract, this should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package.</p>
 
-<p>
-  In this case we're using Zod, this has some nice features, like enabling body
-  parsing and OpenAPI type generation.
-</p>
+### **Install Zod** 
+
+<InstallTabs packageName="zod" />
+
+### **Enable `strict` in your `tsconfig.json`**
+  ```
+    "compilerOptions": {
+      ...
+      "strict": true
+    }
+  ```
+- *This is required as part of [Zod](https://github.com/colinhacks/zod#requirements).*
+
+
+### **Create a contract!**
+
+<p>This should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package. Think of this as your HTTP Schema that both your client and backend can use.</p>
 
 ```typescript
 // contract.ts
@@ -59,6 +75,10 @@ export const contract = c.router({
   },
 });
 ```
+<p>
+  Zod also has some nice features, like enabling body
+  parsing and OpenAPI type generation.
+</p>
 
   </TabItem>
   <TabItem value="basic" label="Basic">
@@ -103,6 +123,8 @@ export const contract = c.router({
 <p>ts-rest offers a unique way to create a fully type safe REST API server,
 normally Nest APIs are extremely powerful, but hard to make type safe.</p>
 
+Let's add `@ts-rest/nest` to a basic Nest controller:
+
 ```typescript
 // post.controller.ts
 
@@ -131,6 +153,12 @@ export class PostController implements NestControllerInterface<typeof c> {
   }
 }
 ```
+
+You can see that we're using the *runtime* object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route. 
+We're also using the `RequestShapes` *Typescript Types* (which comes from the runtime object `c`) to ensure type safety of your contract *on* the Nest controller.
+
+If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an *object* in the contract above, not boolean!
+
 
   </TabItem>
   <TabItem value="express" label="Express">

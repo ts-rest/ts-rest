@@ -44,6 +44,7 @@ const config = {
         entryPointStrategy: 'packages',
         sidebar: {
           fullNames: true,
+          
         },
       },
     ],
@@ -118,7 +119,7 @@ const config = {
           },
           {
             type: 'doc',
-            docId: 'api/index',
+            docId: 'api/modules',
             position: 'left',
             label: 'API Reference',
           },
