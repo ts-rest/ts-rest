@@ -26,9 +26,12 @@ const postsRouter = c.router({
     method: 'GET',
     path: `/posts`,
     query: z.object({
-      search: z.string().optional(),
+      search: z.string().nullish(),
       sortBy: z.enum(['title', 'date']).default('date').optional(),
       sort: z.enum(['asc', 'desc']).default('asc').optional(),
+      obj: z.object({
+        a: z.string(),
+      }),
     }),
     responses: {
       200: c.response<Post[]>(),
@@ -52,6 +55,7 @@ const postsRouter = c.router({
       path: '/posts/:id/comments',
       responses: {
         200: z.object({
+          booleanString: z.boolean().transform((v) => v.toString()),
           comments: z.union([
             z.array(commentSchema),
             z.array(commentSchema.extend({ author: z.string() })),
@@ -60,6 +64,16 @@ const postsRouter = c.router({
       },
     },
   }),
+  getPostComment: {
+    method: 'GET',
+    path: `/posts/:id/comments/:commentId`,
+    pathParams: z.object({
+      commentId: z.string().length(5),
+    }),
+    responses: {
+      200: c.response<Post | null>(),
+    },
+  },
 });
 
 const router = c.router({
@@ -102,25 +116,43 @@ const expectedApiDoc = {
         description: undefined,
         parameters: [
           {
-            name: 'query',
+            name: 'search',
             in: 'query',
             schema: {
-              additionalProperties: false,
+              nullable: true,
+              type: 'string',
+            },
+          },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: {
+              type: 'string',
+              default: 'date',
+              enum: ['title', 'date'],
+            },
+          },
+          {
+            name: 'sort',
+            in: 'query',
+            schema: {
+              type: 'string',
+              default: 'asc',
+              enum: ['asc', 'desc'],
+            },
+          },
+          {
+            in: 'query',
+            name: 'obj',
+            required: true,
+            style: 'deepObject',
+            schema: {
               properties: {
-                search: {
+                a: {
                   type: 'string',
-                },
-                sortBy: {
-                  type: 'string',
-                  default: 'date',
-                  enum: ['title', 'date'],
-                },
-                sort: {
-                  type: 'string',
-                  default: 'asc',
-                  enum: ['asc', 'desc'],
                 },
               },
+              required: ['a'],
               type: 'object',
             },
           },
@@ -141,7 +173,6 @@ const expectedApiDoc = {
           content: {
             'application/json': {
               schema: {
-                additionalProperties: false,
                 properties: {
                   published: {
                     type: 'boolean',
@@ -175,6 +206,9 @@ const expectedApiDoc = {
             in: 'path',
             name: 'id',
             required: true,
+            schema: {
+              type: 'string',
+            },
           },
         ],
         responses: {
@@ -195,6 +229,9 @@ const expectedApiDoc = {
             in: 'path',
             name: 'id',
             required: true,
+            schema: {
+              type: 'string',
+            },
           },
         ],
         responses: {
@@ -202,13 +239,11 @@ const expectedApiDoc = {
             content: {
               'application/json': {
                 schema: {
-                  additionalProperties: false,
                   properties: {
                     comments: {
-                      anyOf: [
+                      oneOf: [
                         {
                           items: {
-                            additionalProperties: false,
                             properties: {
                               id: {
                                 type: 'number',
@@ -224,7 +259,6 @@ const expectedApiDoc = {
                         },
                         {
                           items: {
-                            additionalProperties: false,
                             properties: {
                               author: {
                                 type: 'string',
@@ -243,8 +277,11 @@ const expectedApiDoc = {
                         },
                       ],
                     },
+                    booleanString: {
+                      type: 'string',
+                    },
                   },
-                  required: ['comments'],
+                  required: ['booleanString', 'comments'],
                   type: 'object',
                 },
               },
@@ -254,6 +291,39 @@ const expectedApiDoc = {
         },
         summary: undefined,
         tags: ['posts', 'comments'],
+      },
+    },
+    '/posts/{id}/comments/{commentId}': {
+      get: {
+        deprecated: undefined,
+        description: undefined,
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: {
+              type: 'string',
+            },
+          },
+          {
+            in: 'path',
+            name: 'commentId',
+            required: true,
+            schema: {
+              type: 'string',
+              minLength: 5,
+              maxLength: 5,
+            },
+          },
+        ],
+        responses: {
+          '200': {
+            description: '200',
+          },
+        },
+        summary: undefined,
+        tags: ['posts'],
       },
     },
   },
@@ -309,6 +379,12 @@ describe('ts-rest-open-api', () => {
               operationId: 'getPostComments',
             },
           },
+          '/posts/{id}/comments/{commentId}': {
+            get: {
+              ...expectedApiDoc.paths['/posts/{id}/comments/{commentId}'].get,
+              operationId: 'getPostComment',
+            },
+          },
         },
       });
     });
@@ -335,14 +411,8 @@ describe('ts-rest-open-api', () => {
                   content: {
                     'application/json': {
                       schema: {
-                        anyOf: [
-                          {
-                            not: {},
-                          },
-                          {
-                            type: 'string',
-                          },
-                        ],
+                        type: 'string',
+                        nullable: true,
                       },
                     },
                   },
@@ -353,16 +423,9 @@ describe('ts-rest-open-api', () => {
                   content: {
                     'application/json': {
                       schema: {
-                        anyOf: [
-                          {
-                            not: {},
-                          },
-                          {
-                            default: 'date',
-                            enum: ['title', 'date'],
-                            type: 'string',
-                          },
-                        ],
+                        default: 'date',
+                        enum: ['title', 'date'],
+                        type: 'string',
                       },
                     },
                   },
@@ -373,21 +436,32 @@ describe('ts-rest-open-api', () => {
                   content: {
                     'application/json': {
                       schema: {
-                        anyOf: [
-                          {
-                            not: {},
-                          },
-                          {
-                            default: 'asc',
-                            enum: ['asc', 'desc'],
-                            type: 'string',
-                          },
-                        ],
+                        default: 'asc',
+                        enum: ['asc', 'desc'],
+                        type: 'string',
                       },
                     },
                   },
                   in: 'query',
                   name: 'sort',
+                },
+                {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        properties: {
+                          a: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['a'],
+                        type: 'object',
+                      },
+                    },
+                  },
+                  in: 'query',
+                  name: 'obj',
+                  required: true,
                 },
               ],
             },

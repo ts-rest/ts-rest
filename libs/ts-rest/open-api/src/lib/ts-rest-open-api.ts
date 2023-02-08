@@ -5,7 +5,8 @@ import {
   OperationObject,
   PathsObject,
 } from 'openapi3-ts';
-import zodToJsonSchema from 'zod-to-json-schema';
+import { generateSchema } from '@anatine/zod-openapi';
+import { z } from 'zod';
 
 type RouterPath = {
   id: string;
@@ -40,50 +41,82 @@ const getPathsFromRouter = (
   return paths;
 };
 
-const getJsonSchemaFromZod = (zodObject: unknown) => {
+const getOpenApiSchemaFromZod = (zodObject: unknown, useOutput = false) => {
   const isZodObj = isZodObject(zodObject);
 
   if (!isZodObj) {
     return null;
   }
-  const schema = zodToJsonSchema(zodObject, {
-    name: 'zodObject',
-    target: 'openApi3',
-    $refStrategy: 'none',
-  });
 
-  return schema.definitions['zodObject'];
+  return generateSchema(zodObject, useOutput);
 };
 
-const getQuerySchemaFromZod = (zodObject: unknown, jsonQuery = false) => {
+const getPathParameters = (path: string, zodObject?: unknown) => {
+  const isZodObj = isZodObject(zodObject);
+
+  const paramsFromPath = path
+    .match(/{[^}]+}/g)
+    ?.map((param) => param.slice(1, -1))
+    .filter((param) => {
+      return !isZodObj || !zodObject.shape[param];
+    });
+
+  const params: any[] =
+    paramsFromPath?.map((param) => ({
+      name: param,
+      in: 'path' as const,
+      required: true,
+      schema: {
+        type: 'string',
+      },
+    })) || [];
+
+  if (isZodObj) {
+    const paramsFromZod = Object.entries(zodObject.shape).map(
+      ([key, value]) => ({
+        name: key,
+        in: 'path' as const,
+        required: true,
+        schema: getOpenApiSchemaFromZod(value),
+      })
+    );
+
+    params.push(...paramsFromZod);
+  }
+
+  return params;
+};
+
+const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   const isZodObj = isZodObject(zodObject);
 
   if (!isZodObj) {
     return [];
   }
 
-  if (jsonQuery) {
-    return Object.entries(zodObject.shape).map(([key, value]) => {
-      const schema = getJsonSchemaFromZod(value) as object;
-      return {
-        name: key,
-        in: 'query' as const,
-        content: {
-          'application/json': {
-            schema: schema,
-          },
-        },
-      };
-    });
-  }
+  return Object.entries(zodObject.shape).map(([key, value]) => {
+    const schema = getOpenApiSchemaFromZod(value)!;
+    const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
+    const isRequired = !(value as z.ZodTypeAny).isOptional();
 
-  return [
-    {
-      name: 'query',
+    return {
+      name: key,
       in: 'query' as const,
-      schema: getJsonSchemaFromZod(zodObject) as object,
-    },
-  ];
+      ...(isRequired && { required: true }),
+      ...(jsonQuery
+        ? {
+            content: {
+              'application/json': {
+                schema: schema,
+              },
+            },
+          }
+        : {
+            ...(isObject && { style: 'deepObject' as const }),
+            schema: schema,
+          }),
+    };
+  });
 };
 
 export const generateOpenApi = (
@@ -114,25 +147,24 @@ export const generateOpenApi = (
       operationIds.set(path.id, path.paths);
     }
 
-    const paramsFromPath = path.path
-      .match(/{[^}]+}/g)
-      ?.map((param) => param.slice(1, -1));
+    const pathParams = getPathParameters(path.path, path.route.pathParams);
 
-    const querySchema = getQuerySchemaFromZod(
+    const querySchema = getQueryParametersFromZod(
       path.route.query,
       !!options.jsonQuery
     );
 
     const bodySchema =
       path.route?.method !== 'GET'
-        ? getJsonSchemaFromZod(path.route.body)
+        ? getOpenApiSchemaFromZod(path.route.body)
         : null;
 
     const responses = Object.keys(path.route.responses).reduce((acc, key) => {
       const keyAsNumber = Number(key);
 
-      const responseSchema = getJsonSchemaFromZod(
-        path.route.responses[keyAsNumber]
+      const responseSchema = getOpenApiSchemaFromZod(
+        path.route.responses[keyAsNumber],
+        true
       );
 
       return {
@@ -157,16 +189,7 @@ export const generateOpenApi = (
       summary: path.route.summary,
       deprecated: path.route.deprecated,
       tags: path.paths,
-      parameters: [
-        ...(paramsFromPath
-          ? paramsFromPath.map((param) => ({
-              name: param,
-              in: 'path' as const,
-              required: true,
-            }))
-          : []),
-        ...querySchema,
-      ],
+      parameters: [...pathParams, ...querySchema],
       ...(options.setOperationId ? { operationId: path.id } : {}),
       ...(bodySchema
         ? {
