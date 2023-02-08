@@ -1,7 +1,7 @@
 # Troubleshoot 
 ##  Why is my Typescript intellisense *slow*? 
 
-You'll need to enable `strictNullChecks` in your `tsconfig.json`:
+You'll need to enable `strict` in your `tsconfig.json`:
 ```json
   "compilerOptions": {
     ...
@@ -13,10 +13,10 @@ If you're using a monorepo, make sure this is applied at the `project` level. Ex
 ```
 ./apps/some-app/tsconfig.json
 ```
- ^ make sure `strictNullChecks` is `true` here
+ ^ make sure `strict` is `true` here
 
 
-This is required as part of [Zod](https://github.com/colinhacks/zod#requirements). 
+If you cannot use `strict` entirely, you'll need to at least enable `strictNullChecks`. 
 
-See why [here](https://github.com/colinhacks/zod/issues/1750)
+This is required as part of [Zod](https://github.com/colinhacks/zod#requirements). See why [here](https://github.com/colinhacks/zod/issues/1750).
 

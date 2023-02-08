@@ -6,7 +6,7 @@ import { InstallTabs } from '@site/src/components/InstallTabs';
 
 Setup is easy. 
 
-Once you understand how to use `ts-rest`, developer experience is like butter.  🧈
+Once you understand how to use `ts-rest`, the developer experience is like butter.  🧈🪄✨
 
 ## Installation
 
@@ -20,19 +20,21 @@ Install the core package
 <Tabs groupId="contract">
   <TabItem value="zod" label="Zod">
 
-1. **Install Zod** <InstallTabs packageName="zod" />
+### **Install Zod** 
 
-2. **Enable `strict` in your `tsconfig.json`**
+<InstallTabs packageName="zod" />
+
+### **Enable `strict` in your `tsconfig.json`**
   ```
     "compilerOptions": {
       ...
-      "strictNullChecks": true
+      "strict": true
     }
   ```
 - *This is required as part of [Zod](https://github.com/colinhacks/zod#requirements).*
 
 
-3. **Create a contract!**
+### **Create a contract!**
 
 <p>This should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package. Think of this as your HTTP Schema that both your client and backend can use.</p>
 
