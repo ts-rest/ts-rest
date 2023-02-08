@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.17.0
+
+### Minor Changes
+
+- cb2a794: Improved OpenAPI generation
+
 ## 3.16.2
 
 ## 3.16.1
