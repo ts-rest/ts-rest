@@ -16,5 +16,7 @@ If you're using a monorepo, make sure this is applied at the `project` level. Ex
  ^ make sure `strictNullChecks` is `true` here
 
 
-This is required as part of [Zod](https://github.com/colinhacks/zod/issues/1750).
+This is required as part of [Zod](https://github.com/colinhacks/zod#requirements). 
+
+See why [here](https://github.com/colinhacks/zod/issues/1750)
 
