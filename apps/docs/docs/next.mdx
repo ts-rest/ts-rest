@@ -1,4 +1,12 @@
+import { InstallTabs } from '@site/src/components/InstallTabs';
+
 # Next.js Server
+
+## Installation
+
+<InstallTabs packageName="@ts-rest/next" />
+
+## Usage
 
 For maximum type safety, by default `@ts-rest/next` uses a single endpoint for all routes.
 
@@ -8,6 +16,7 @@ It is possible to split out to multiple endpoints by having multiple [...ts-rest
 
 ```typescript
 // pages/api/[...ts-rest].tsx
+import { createNextRoute, createNextRouter } from '@ts-rest/next';
 
 const postsRouter = createNextRoute(api.posts, {
   createPost: async (args) => {
@@ -64,7 +73,6 @@ export default createNextRouter(api, router, {
   },
 });
 ```
-
 
 ## Future Work
 
