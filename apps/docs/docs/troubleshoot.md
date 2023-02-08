@@ -5,7 +5,7 @@ You'll need to enable `strictNullChecks` in your `tsconfig.json`:
 ```json
   "compilerOptions": {
     ...
-    "strictNullChecks": true
+    "strict": true
   }
 ```
 If you're using a monorepo, make sure this is applied at the `project` level. Example:
