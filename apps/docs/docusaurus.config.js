@@ -44,7 +44,6 @@ const config = {
         entryPointStrategy: 'packages',
         sidebar: {
           fullNames: true,
-          
         },
       },
     ],

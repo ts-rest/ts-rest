@@ -119,6 +119,11 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   });
 };
 
+/**
+ *
+ * @param options.jsonQuery - Enable JSON query parameters, [see](/docs/open-api#json-query-params)
+ * @returns
+ */
 export const generateOpenApi = (
   router: AppRouter,
   apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
