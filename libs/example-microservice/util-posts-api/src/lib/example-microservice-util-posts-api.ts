@@ -32,6 +32,7 @@ export const postsApi = c.router({
         message: z.string(),
       }),
     },
+    description: 'Get all posts',
   },
 
   updatePostThumbnail: {
@@ -47,5 +48,6 @@ export const postsApi = c.router({
         message: z.string(),
       }),
     },
+    description: 'Update post thumbnail',
   },
 });

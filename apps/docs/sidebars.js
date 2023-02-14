@@ -86,6 +86,11 @@ const sidebars = {
       id: 'express',
     },
     {
+      type: 'doc',
+      label: '@ts-rest/open-api',
+      id: 'open-api',
+    },
+    {
       type: 'category',
       label: 'Comparisons',
       collapsed: true,
