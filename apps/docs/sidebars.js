@@ -41,6 +41,11 @@ const sidebars = {
           id: 'guides/without-backend',
           label: 'Without a Backend',
         },
+        {
+          type: 'doc',
+          id: 'guides/non-ts-clients',
+          label: 'Non-TypeScript Clients',
+        },
       ],
     },
     {
@@ -84,6 +89,11 @@ const sidebars = {
       type: 'doc',
       label: '@ts-rest/express',
       id: 'express',
+    },
+    {
+      type: 'doc',
+      label: '@ts-rest/open-api',
+      id: 'open-api',
     },
     {
       type: 'category',

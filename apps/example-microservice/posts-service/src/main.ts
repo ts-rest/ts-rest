@@ -12,6 +12,8 @@ const upload = multer({ dest: 'uploads/' });
 import { postsApi } from '@ts-rest/example-microservice/util-posts-api';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import { userAdapter } from './app/userAdapter';
+import { generateOpenApi } from '@ts-rest/open-api';
+import * as swaggerUi from 'swagger-ui-express';
 
 const s = initServer();
 
@@ -67,6 +69,25 @@ app.use(cors());
 app.post(postsApi.updatePostThumbnail.path, upload.single('thumbnail'));
 
 createExpressEndpoints(postsApi, postsRouter, app);
+
+const openApiSchema = generateOpenApi(
+  postsApi,
+  {
+    info: {
+      title: 'Posts API',
+      version: '1.0.0',
+    },
+  },
+  {
+    jsonQuery: true,
+  }
+);
+
+app.use('/api', swaggerUi.serve, swaggerUi.setup(openApiSchema));
+
+app.get('/api.json', (req, res) => {
+  res.json(openApiSchema);
+});
 
 const port = process.env.port || 5003;
 const server = app.listen(port, () => {

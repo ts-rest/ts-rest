@@ -166,6 +166,9 @@ export const fetchApi = (
   });
 };
 
+/**
+ * @hidden
+ */
 export const getCompleteUrl = (
   query: unknown,
   baseUrl: string,
