@@ -1,0 +1,65 @@
+{
+  "name": "example-fastify",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/example-fastify/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/example-fastify",
+        "format": ["cjs"],
+        "main": "apps/example-fastify/src/main.ts",
+        "tsConfig": "apps/example-fastify/tsconfig.app.json",
+        "assets": ["apps/example-fastify/src/assets"],
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/js:node",
+      "options": {
+        "buildTarget": "example-fastify:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "example-fastify:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/example-fastify/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/example-fastify/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    }
+  },
+  "tags": []
+}
