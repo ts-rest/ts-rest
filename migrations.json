@@ -1,52 +1,44 @@
 {
   "migrations": [
     {
+      "version": "15.7.0-beta.0",
+      "description": "Split global configuration files into individual project.json files. This migration has been added automatically to the beginning of your migration set to retroactively make them work with the new version of Nx.",
       "cli": "nx",
-      "version": "15.0.12-beta.1",
-      "description": "Set project names in project.json files",
-      "implementation": "./src/migrations/update-15-1-0/set-project-names",
-      "package": "nx",
-      "name": "15.1.0-set-project-names"
+      "implementation": "./src/migrations/update-15-7-0/split-configuration-into-project-json-files",
+      "package": "@nrwl/workspace",
+      "name": "15-7-0-split-configuration-into-project-json-files"
+    },
+    {
+      "version": "15.7.0-beta.0",
+      "description": "Split global configuration files (e.g., workspace.json) into individual project.json files.",
+      "cli": "nx",
+      "implementation": "./src/migrations/update-15-7-0/split-configuration-into-project-json-files",
+      "package": "@nrwl/workspace",
+      "name": "15-7-0-split-configuration-into-project-json-files"
     },
     {
       "cli": "nx",
-      "version": "15.1.0-beta.0",
-      "description": "Update to Cypress v11. This migration will only update if the workspace is already on v10. https://www.cypress.io/blog/2022/11/04/upcoming-changes-to-component-testing/",
-      "factory": "./src/migrations/update-15-1-0/cypress-11",
+      "version": "15.5.0-beta.0",
+      "description": "Update to Cypress v12. Cypress 12 contains a handful of breaking changes that might causes tests to start failing that nx cannot directly fix. Read more Cypress 12 changes: https://docs.cypress.io/guides/references/migration-guide#Migrating-to-Cypress-12-0.This migration will only run if you are already using Cypress v11.",
+      "factory": "./src/migrations/update-15-5-0/update-to-cypress-12",
       "package": "@nrwl/cypress",
-      "name": "update-to-cypress-11"
-    },
-    {
-      "version": "15.0.3-beta.0",
-      "cli": "nx",
-      "description": "Change jest config preset tof expo projects",
-      "factory": "./src/migrations/update-15-0-3/change-jest-preset",
-      "package": "@nrwl/expo",
-      "name": "change-expo-jest-preset"
-    },
-    {
-      "version": "15.0.3-beta.0",
-      "cli": "nx",
-      "description": "Add targets for @expo/cli and replace eject target",
-      "factory": "./src/migrations/update-15-0-3/add-new-expo-cli-targets",
-      "package": "@nrwl/expo",
-      "name": "add-new-expo-cli-targets"
+      "name": "update-to-cypress-12"
     },
     {
       "cli": "nx",
-      "version": "15.3.0-beta.0",
-      "description": "Update projects using @nrwl/web:rollup to @nrwl/rollup:rollup for build.",
-      "factory": "./src/migrations/update-15-3-0/update-rollup-executor",
+      "version": "15.6.3-beta.0",
+      "description": "Creates or updates webpack.config.js file with the new options for webpack.",
+      "factory": "./src/migrations/update-15-6-3/webpack-config-setup",
       "package": "@nrwl/react",
-      "name": "update-rollup-executor"
+      "name": "react-webpack-config-setup"
     },
     {
       "cli": "nx",
-      "version": "15.3.0-beta.0",
-      "description": "Install new dependencies for React projects using Webpack or Rollup.",
-      "factory": "./src/migrations/update-15-3-0/install-webpack-rollup-dependencies",
-      "package": "@nrwl/react",
-      "name": "install-webpack-rollup-dependencies"
+      "version": "15.5.4-beta.0",
+      "description": "Update `@nrwl/web/babel` preset to `@nrwl/js/babel` for projects that have a .babelrc file.",
+      "factory": "./src/migrations/update-15-5-4/update-babel-preset",
+      "package": "@nrwl/web",
+      "name": "update-babel-preset"
     }
   ]
 }
