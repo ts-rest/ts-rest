@@ -11,19 +11,14 @@
         "outputPath": "dist/apps/example-nest",
         "main": "apps/example-nest/src/main.ts",
         "tsConfig": "apps/example-nest/tsconfig.app.json",
-        "assets": ["apps/example-nest/src/assets"]
+        "assets": ["apps/example-nest/src/assets"],
+        "generatePackageJson": true
       },
       "configurations": {
         "production": {
           "optimization": true,
           "extractLicenses": true,
-          "inspect": false,
-          "fileReplacements": [
-            {
-              "replace": "apps/example-nest/src/environments/environment.ts",
-              "with": "apps/example-nest/src/environments/environment.prod.ts"
-            }
-          ]
+          "inspect": false
         }
       }
     },

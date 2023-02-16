@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import { apiBlog } from '@ts-rest/example-contracts';
 import { generateOpenApi } from '@ts-rest/open-api';
-import cors = require('cors');
+import * as cors from 'cors';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
