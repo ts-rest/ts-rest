@@ -9,7 +9,7 @@
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/example-fastify",
-        "format": ["esm"],
+        "format": ["cjs"],
         "main": "apps/example-fastify/src/main.ts",
         "tsConfig": "apps/example-fastify/tsconfig.app.json",
         "assets": ["apps/example-fastify/src/assets"],

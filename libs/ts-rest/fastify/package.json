@@ -1,0 +1,16 @@
+{
+  "name": "@ts-rest/fastify",
+  "version": "3.17.0",
+  "peerDependencies": {
+    "zod": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
+  }
+}
