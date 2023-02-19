@@ -51,6 +51,7 @@ Sometimes you need dynamic headers, IE passing in a Bearer token. There are two 
 ```typescript
 import { contract } from './some-contract'
 import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
+
 export class SampleAPI {
   token: string
   constructor(params: { token: string }) {
