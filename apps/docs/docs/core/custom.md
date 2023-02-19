@@ -17,6 +17,7 @@ you can pass a `api` attribute to the `initClient` or `initQueryClient`.
 ```typescript
 import { contract } from './some-contract'
 import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
+
 const client = initClient(contract, {
   baseUrl: "http://localhost:3333/api",
   baseHeaders: {
