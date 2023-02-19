@@ -49,6 +49,8 @@ Sometimes you need dynamic headers, IE passing in a Bearer token. There are two 
 ### Instantiate the `client` with the header passed in:
 
 ```typescript
+import { contract } from './some-contract'
+import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
 export class SampleAPI {
   token: string
   constructor(params: { token: string }) {
@@ -56,7 +58,7 @@ export class SampleAPI {
     this.baseUrl = 'http://localhost:3333/api'
   }
   client = () => {
-    return initClient(userContract, {
+    return initClient(contract, {
       baseUrl: this.baseUrl,
       baseHeaders: {
         Authorization: `Bearer ${idToken}`,
@@ -90,13 +92,15 @@ export class SampleAPI {
 Here's an example using the `firebase/auth` library. Because `api` is async, you can `await` various calls when using the method. 
 
 ```typescript
+import { contract } from './some-contract'
+import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
 export class SampleAPI {
   authInstance: Auth
   constructor(params: { authInstance: Auth }) {
     this.authInstance = params.authInstance
   }
   client = () => {
-    return initClient(userContract, {
+    return initClient(contract, {
       baseUrl: '',
       baseHeaders: {
         'Content-Type': 'application/json',
