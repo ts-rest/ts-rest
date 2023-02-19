@@ -15,6 +15,8 @@ you can pass a `api` attribute to the `initClient` or `initQueryClient`.
 
 **Here's a basic example: **
 ```typescript
+import { contract } from './some-contract'
+import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
 const client = initClient(contract, {
   baseUrl: "http://localhost:3333/api",
   baseHeaders: {
@@ -22,13 +24,22 @@ const client = initClient(contract, {
   },
   api: async ({ path, method, headers, body }) => {
     const baseUrl = 'http://localhost:3333/api' //baseUrl is not available as a param, yet
-    const result = await axios.request({
-      method: method as Method,
-      url: `${baseUrl}/${path}`,
-      headers,
-      data: body,
-    })
-    return { status: result.status, body: result.data }
+    try {
+      const result = await axios.request({
+        method: method as Method,
+        url: `${this.baseUrl}/${path}`,
+        headers,
+        data: body,
+      })
+      return { status: result.status, body: result.data }
+    } catch (e: Error | AxiosError | any) {
+      if (isAxiosError(e)) {
+        const error = e as AxiosError
+        const response = error.response as AxiosResponse
+        return { status: response.status, body: response.data }
+      }
+    }
+    return { status: 500, body: {} }
   },
 })
 ```
@@ -52,13 +63,22 @@ export class SampleAPI {
         'Content-Type': 'application/json'
       },
       api: async ({ path, method, headers, body }) => {
-        const result = await axios.request({
-          method: method as Method,
-          url: `${this.baseUrl}/${path}`,
-          headers,
-          data: body,
-        })
-        return { status: result.status, body: result.data }
+        try {
+          const result = await axios.request({
+            method: method as Method,
+            url: `${this.baseUrl}/${path}`,
+            headers,
+            data: body,
+          })
+          return { status: result.status, body: result.data }
+        } catch (e: Error | AxiosError | any) {
+          if (isAxiosError(e)) {
+            const error = e as AxiosError
+            const response = error.response as AxiosResponse
+            return { status: response.status, body: response.data }
+          }
+        }
+        return { status: 500, body: {} }
       },
     })
   }
@@ -83,16 +103,25 @@ export class SampleAPI {
       },
       api: async ({ path, method, headers, body }) => {
         const token = await this.authInstance.currentUser.getIdToken()
-        const result = await axios.request({
-          method: method as Method,
-          url: `${this.baseUrl}/${path}`,
-          headers: { 
-            ...headers, 
-            Authorization: `Bearer ${token}` 
-          },
-          data: body,
-        })
-        return { status: result.status, body: result.data }
+        try {
+          const result = await axios.request({
+            method: method as Method,
+            url: `${this.serverEnvUrl}/${path}`,
+            headers: { 
+              ...headers,
+              Authorization: `Bearer ${idToken}` 
+            },
+            data: body,
+          })
+          return { status: result.status, body: result.data }
+        } catch (e: Error | AxiosError | any) {
+          if (isAxiosError(e)) {
+            const error = e as AxiosError
+            const response = error.response as AxiosResponse
+            return { status: response.status, body: response.data }
+          }
+        }
+        return { status: 500, body: {} }
       },
     })
   }
@@ -100,3 +129,6 @@ export class SampleAPI {
 ```
 
 :::
+
+
+   Authorization: `Bearer ${token}` 
