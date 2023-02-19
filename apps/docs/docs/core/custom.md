@@ -39,8 +39,7 @@ const client = initClient(contract, {
         const response = error.response as AxiosResponse
         return { status: response.status, body: response.data }
       }
-      
-      throw e;
+      throw e
     }
   },
 })
@@ -82,8 +81,8 @@ export class SampleAPI {
             const response = error.response as AxiosResponse
             return { status: response.status, body: response.data }
           }
+          throw e
         }
-        return { status: 500, body: {} }
       },
     })
   }
@@ -127,8 +126,8 @@ export class SampleAPI {
             const response = error.response as AxiosResponse
             return { status: response.status, body: response.data }
           }
+          throw e
         }
-        return { status: 500, body: {} }
       },
     })
   }
