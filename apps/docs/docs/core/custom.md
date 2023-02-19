@@ -110,7 +110,7 @@ export class SampleAPI {
         try {
           const result = await axios.request({
             method: method as Method,
-            url: `${this.serverEnvUrl}/${path}`,
+            url: `${this.baseUrl}/${path}`,
             headers: { 
               ...headers,
               Authorization: `Bearer ${idToken}` 
