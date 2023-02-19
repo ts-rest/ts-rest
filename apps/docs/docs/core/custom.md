@@ -133,6 +133,3 @@ export class SampleAPI {
 ```
 
 :::
-
-
-   Authorization: `Bearer ${token}` 
