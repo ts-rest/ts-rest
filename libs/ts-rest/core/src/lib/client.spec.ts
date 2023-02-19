@@ -1,6 +1,6 @@
 import * as fetchMock from 'fetch-mock-jest';
 import { initContract } from '..';
-import { initClient } from './client';
+import { ApiFetcherArgs, initClient } from './client';
 
 import { z } from 'zod';
 
@@ -469,5 +469,113 @@ describe('client', () => {
         },
       });
     });
+  });
+});
+
+const argsCalledMock = jest.fn();
+
+const customClient = initClient(router, {
+  baseUrl: 'https://api.com',
+  baseHeaders: {
+    'Base-Header': 'foo',
+  },
+  api: async (
+    args: ApiFetcherArgs & { uploadProgress?: (progress: number) => void }
+  ) => {
+    args.uploadProgress?.(10);
+
+    // Do something with the path, body, etc.
+
+    args.uploadProgress?.(100);
+
+    argsCalledMock(args);
+
+    return {
+      status: 200,
+      body: { message: 'Hello' },
+    };
+  },
+});
+
+describe('custom api', () => {
+  beforeEach(() => {
+    argsCalledMock.mockReset();
+  });
+
+  it('should allow a uploadProgress attribute on the api call', async () => {
+    const uploadProgress = jest.fn();
+    await customClient.posts.getPost({
+      params: { id: '1' },
+      uploadProgress,
+    });
+    expect(uploadProgress).toBeCalledWith(10);
+    expect(uploadProgress).toBeCalledWith(100);
+
+    expect(argsCalledMock).toBeCalledWith(
+      expect.objectContaining({
+        uploadProgress,
+      })
+    );
+  });
+
+  it('should allow extra headers to be passed in', async () => {
+    await customClient.posts.getPost({
+      params: { id: '1' },
+      headers: {
+        'X-Test': 'test',
+      },
+    });
+
+    expect(argsCalledMock).toBeCalledWith(
+      expect.objectContaining({
+        headers: {
+          'Base-Header': 'foo',
+          'X-Test': 'test',
+          'Content-Type': 'application/json',
+        },
+      })
+    );
+  });
+
+  it('extra headers should override base headers', async () => {
+    await customClient.posts.getPost({
+      params: { id: '1' },
+      headers: {
+        'Base-Header': 'bar',
+      },
+    });
+
+    expect(argsCalledMock).toBeCalledWith(
+      expect.objectContaining({
+        headers: {
+          'Base-Header': 'bar',
+          'Content-Type': 'application/json',
+        },
+      })
+    );
+  });
+
+  it('works for mutations', async () => {
+    await customClient.posts.mutationWithQuery({
+      query: { test: 'test' },
+      body: {},
+      headers: {
+        'X-Test': 'test',
+      },
+      uploadProgress: () => {
+        // noop
+      },
+    });
+
+    expect(argsCalledMock).toBeCalledWith(
+      expect.objectContaining({
+        headers: {
+          'Base-Header': 'foo',
+          'Content-Type': 'application/json',
+          'X-Test': 'test',
+        },
+        uploadProgress: expect.any(Function),
+      })
+    );
   });
 });
