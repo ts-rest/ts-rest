@@ -215,6 +215,70 @@ describe('react-query', () => {
     });
   });
 
+  it('useQuery should override base headers', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+          headers: {
+            'Content-Type': 'application/xml',
+          },
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/xml',
+      },
+    });
+  });
+
+  it('useQuery should remove header if value is undefined', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+          headers: {
+            'Content-Type': undefined,
+          },
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  });
+
   it('useQuery should accept non-json string response', () => {
     api.mockResolvedValue({
       status: 200,

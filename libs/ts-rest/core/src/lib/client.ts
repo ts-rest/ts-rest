@@ -66,6 +66,11 @@ type DataReturnArgsBase<
   query: 'query' extends keyof TRoute
     ? AppRouteMutationType<TRoute['query']>
     : never;
+  /**
+   * Additional headers to send with the request, merged over baseHeaders,
+   *
+   * Unset a header by setting it to undefined
+   */
   headers?: Record<string, string>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
@@ -110,7 +115,6 @@ export interface ClientArgs {
   jsonQuery?: boolean;
 }
 
-
 export type ApiFetcherArgs = {
   path: string;
   method: string;
@@ -123,7 +127,14 @@ export type ApiFetcher = (
   args: ApiFetcherArgs
 ) => Promise<{ status: number; body: unknown }>;
 
-export const defaultApi: ApiFetcher = async ({
+/**
+ * Default fetch api implementation:
+ *
+ * Can be used as a reference for implementing your own fetcher,
+ * or used in the "api" field of ClientArgs to allow you to hook
+ * into the request to run custom logic
+ */
+export const tsRestFetchApi: ApiFetcher = async ({
   path,
   method,
   headers,
@@ -171,21 +182,37 @@ export const fetchApi = ({
   route: AppRoute;
   body: unknown;
   extraInputArgs: Record<string, unknown>;
-  headers: Record<string, string>;
+  headers: Record<string, string | undefined>;
 }) => {
-  const apiFetcher = clientArgs.api || defaultApi;
+  const apiFetcher = clientArgs.api || tsRestFetchApi;
+
+  /**
+   * Combined headers should combine baseHeaders and headers from the api call, but
+   * if there are any duplicate keys, the headers from the api call should take precedence
+   * over the baseHeaders
+   *
+   * if the header is undefined, it should unset the header
+   */
+  const combinedHeaders = new Map();
+
+  Object.entries(clientArgs.baseHeaders).forEach(([key, value]) => {
+    combinedHeaders.set(key, value);
+  });
+
+  Object.entries(headers).forEach(([key, value]) => {
+    if (value === undefined) {
+      combinedHeaders.delete(key);
+    } else {
+      combinedHeaders.set(key, value);
+    }
+  });
 
   if (route.method !== 'GET' && route.contentType === 'multipart/form-data') {
     return apiFetcher({
       path,
       method: route.method,
       credentials: clientArgs.credentials,
-      headers: {
-        // Base headers
-        ...clientArgs.baseHeaders,
-        // Headers from the api call
-        ...headers,
-      },
+      headers: Object.fromEntries(combinedHeaders),
       body: body instanceof FormData ? body : createFormData(body),
       ...extraInputArgs,
     });
@@ -196,9 +223,8 @@ export const fetchApi = ({
     method: route.method,
     credentials: clientArgs.credentials,
     headers: {
-      ...clientArgs.baseHeaders,
       'Content-Type': 'application/json',
-      ...headers,
+      ...Object.fromEntries(combinedHeaders),
     },
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,

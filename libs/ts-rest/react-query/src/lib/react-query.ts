@@ -85,7 +85,12 @@ type DataReturnArgsBase<
       ? never
       : AppRouteMutationType<TRoute['query']>
     : never;
-  headers?: Record<string, string>;
+  /**
+   * Additional headers to send with the request, merged over baseHeaders,
+   *
+   * Unset a header by setting it to undefined
+   */
+  headers?: Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 type DataReturnArgs<

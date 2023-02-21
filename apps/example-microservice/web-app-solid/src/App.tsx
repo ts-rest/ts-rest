@@ -4,17 +4,23 @@ import logo from './logo.svg';
 import styles from './App.module.css';
 import { postsApi } from '@ts-rest/example-microservice/util-posts-api';
 import { initQueryClient } from '@ts-rest/solid-query';
+import { ApiFetcherArgs, tsRestFetchApi } from '@ts-rest/core';
 
 const client = initQueryClient(postsApi, {
   baseUrl: 'http://localhost:5003',
   baseHeaders: {},
-
+  api: async (args: ApiFetcherArgs & { test?: string }) => {
+    return tsRestFetchApi(args);
+  },
 });
 
 const App: Component = () => {
   const updatePostThumbnail = client.updatePostThumbnail.createMutation({});
 
-  const data = client.getPosts.createQuery(() => ['posts'], { query: {} });
+  const data = client.getPosts.createQuery(() => ['posts'], {
+    query: {},
+    test: 'hi',
+  });
 
   console.log(data.data);
 
