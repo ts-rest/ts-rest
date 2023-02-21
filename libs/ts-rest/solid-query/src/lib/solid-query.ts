@@ -160,7 +160,12 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
         !!clientArgs.jsonQuery
       );
 
-      const result = await fetchApi(path, clientArgs, route, args.body);
+      const result = await fetchApi({
+        path,
+        clientArgs,
+        route,
+        body: args.body,
+      });
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
       if (!String(result.status).startsWith('2')) {
@@ -196,12 +201,12 @@ const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
         !!clientArgs.jsonQuery
       );
 
-      const result = await fetchApi(
+      const result = await fetchApi({
         path,
         clientArgs,
         route,
-        resultingQueryArgs.body
-      );
+        body: resultingQueryArgs.body,
+      });
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
       if (!String(result.status).startsWith('2')) {
@@ -229,7 +234,12 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
         !!clientArgs.jsonQuery
       );
 
-      const result = await fetchApi(path, clientArgs, route, args.body);
+      const result = await fetchApi({
+        path,
+        clientArgs,
+        route,
+        body: args.body,
+      });
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
       if (!String(result.status).startsWith('2')) {

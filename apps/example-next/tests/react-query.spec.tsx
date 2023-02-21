@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
-import { initContract } from '@ts-rest/core';
+import { ApiFetcher, initContract } from '@ts-rest/core';
 import { initQueryClient } from '@ts-rest/react-query';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
@@ -126,7 +126,7 @@ const api = jest.fn();
 const client = initQueryClient(router, {
   baseUrl: 'http://api.com',
   baseHeaders: {},
-  api,
+  api: api as ApiFetcher,
 });
 
 let queryClient = new QueryClient();
@@ -180,6 +180,39 @@ describe('react-query', () => {
     });
 
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
+  });
+
+  it('useQuery should accept extra headers', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+          headers: {
+            'X-Test': 'test',
+          },
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Test': 'test',
+      },
+    });
   });
 
   it('useQuery should accept non-json string response', () => {

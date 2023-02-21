@@ -48,11 +48,12 @@ type AppRouteBodyOrFormData<T extends AppRouteMutation> =
 /**
  * Extract any extra parameters from the client args
  */
-type ExtractExtraParametersFromClientArgs<TClientArgs extends ClientArgs> =
-  TClientArgs['api'] extends ApiFetcher
-    ? Omit<Parameters<TClientArgs['api']>[0], keyof Parameters<ApiFetcher>[0]>
-    : // eslint-disable-next-line @typescript-eslint/ban-types
-      {};
+export type ExtractExtraParametersFromClientArgs<
+  TClientArgs extends ClientArgs
+> = TClientArgs['api'] extends ApiFetcher
+  ? Omit<Parameters<TClientArgs['api']>[0], keyof Parameters<ApiFetcher>[0]>
+  : // eslint-disable-next-line @typescript-eslint/ban-types
+    {};
 
 type DataReturnArgsBase<
   TRoute extends AppRoute,
@@ -109,6 +110,7 @@ export interface ClientArgs {
   jsonQuery?: boolean;
 }
 
+
 export type ApiFetcherArgs = {
   path: string;
   method: string;
@@ -117,7 +119,7 @@ export type ApiFetcherArgs = {
   credentials?: RequestCredentials;
 };
 
-type ApiFetcher = (
+export type ApiFetcher = (
   args: ApiFetcherArgs
 ) => Promise<{ status: number; body: unknown }>;
 
@@ -156,14 +158,21 @@ const createFormData = (body: unknown) => {
   return formData;
 };
 
-export const fetchApi = (
-  path: string,
-  clientArgs: ClientArgs,
-  route: AppRoute,
-  body: unknown,
-  extraInputArgs: Record<string, unknown>,
-  headers: Record<string, string>
-) => {
+export const fetchApi = ({
+  path,
+  clientArgs,
+  route,
+  body,
+  extraInputArgs,
+  headers,
+}: {
+  path: string;
+  clientArgs: ClientArgs;
+  route: AppRoute;
+  body: unknown;
+  extraInputArgs: Record<string, unknown>;
+  headers: Record<string, string>;
+}) => {
   const apiFetcher = clientArgs.api || defaultApi;
 
   if (route.method !== 'GET' && route.contentType === 'multipart/form-data') {
@@ -230,14 +239,14 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       !!clientArgs.jsonQuery
     );
 
-    return await fetchApi(
-      completeUrl,
+    return await fetchApi({
+      path: completeUrl,
       clientArgs,
       route,
       body,
       extraInputArgs,
-      headers || {}
-    );
+      headers: headers || {},
+    });
   };
 };
 

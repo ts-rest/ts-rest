@@ -21,6 +21,7 @@ import {
   AppRouter,
   AreAllPropertiesOptional,
   ClientArgs,
+  ExtractExtraParametersFromClientArgs,
   fetchApi,
   getCompleteUrl,
   getRouteQuery,
@@ -28,42 +29,51 @@ import {
   isAppRoute,
   OptionalIfAllOptional,
   PathParamsFromUrl,
+  Prettify,
   SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
 import { z, ZodTypeAny } from 'zod';
 
-type RecursiveProxyObj<T extends AppRouter> = {
+type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-    ? Without<UseQueryArgs<T[TKey]>, never>
+    ? Without<UseQueryArgs<T[TKey], TClientArgs>, never>
     : T[TKey] extends AppRouter
-    ? RecursiveProxyObj<T[TKey]>
+    ? RecursiveProxyObj<T[TKey], TClientArgs>
     : never;
 };
 
 type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
 
-type UseQueryArgs<TAppRoute extends AppRoute> = {
+type UseQueryArgs<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = {
   useQuery: TAppRoute extends AppRouteQuery
-    ? DataReturnQuery<TAppRoute>
+    ? DataReturnQuery<TAppRoute, TClientArgs>
     : never;
   useInfiniteQuery: TAppRoute extends AppRouteQuery
-    ? DataReturnInfiniteQuery<TAppRoute>
+    ? DataReturnInfiniteQuery<TAppRoute, TClientArgs>
     : never;
   useQueries: TAppRoute extends AppRouteQuery
-    ? DataReturnQueries<TAppRoute>
+    ? DataReturnQueries<TAppRoute, TClientArgs>
     : never;
-  query: TAppRoute extends AppRouteQuery ? AppRouteFunction<TAppRoute> : never;
+  query: TAppRoute extends AppRouteQuery
+    ? AppRouteFunction<TAppRoute, TClientArgs>
+    : never;
   useMutation: TAppRoute extends AppRouteMutation
-    ? DataReturnMutation<TAppRoute>
+    ? DataReturnMutation<TAppRoute, TClientArgs>
     : never;
   mutation: TAppRoute extends AppRouteMutation
-    ? AppRouteFunction<TAppRoute>
+    ? AppRouteFunction<TAppRoute, TClientArgs>
     : never;
 };
 
-type DataReturnArgsBase<TRoute extends AppRoute> = {
+type DataReturnArgsBase<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = {
   body: TRoute extends AppRouteMutation
     ? AppRouteMutationType<TRoute['body']> extends null
       ? never
@@ -75,11 +85,13 @@ type DataReturnArgsBase<TRoute extends AppRoute> = {
       ? never
       : AppRouteMutationType<TRoute['query']>
     : never;
-};
+  headers?: Record<string, string>;
+} & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
-type DataReturnArgs<TRoute extends AppRoute> = OptionalIfAllOptional<
-  DataReturnArgsBase<TRoute>
->;
+type DataReturnArgs<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = OptionalIfAllOptional<DataReturnArgsBase<TRoute, TClientArgs>>;
 
 /**
  * Split up the data and error to support react-query style
@@ -113,12 +125,14 @@ type DataResponse<T extends AppRoute> = SuccessResponseMapper<T['responses']>;
 type ErrorResponse<T extends AppRoute> = ErrorResponseMapper<T['responses']>;
 
 // Used on X.useQuery
-type DataReturnQuery<TAppRoute extends AppRoute> = AreAllPropertiesOptional<
-  Without<DataReturnArgs<TAppRoute>, never>
-> extends true
+type DataReturnQuery<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+> = AreAllPropertiesOptional<TArgs> extends true
   ? (
       queryKey: QueryKey,
-      args?: Without<DataReturnArgs<TAppRoute>, never>,
+      args?: TArgs,
       options?: UseQueryOptions<
         DataResponse<TAppRoute>,
         ErrorResponse<TAppRoute>
@@ -126,95 +140,113 @@ type DataReturnQuery<TAppRoute extends AppRoute> = AreAllPropertiesOptional<
     ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>
   : (
       queryKey: QueryKey,
-      args: Without<DataReturnArgs<TAppRoute>, never>,
+      args: TArgs,
       options?: UseQueryOptions<
         DataResponse<TAppRoute>,
         ErrorResponse<TAppRoute>
       >
     ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
 
-type DataReturnQueriesOptions<TAppRoute extends AppRoute> = Without<
-  DataReturnArgs<TAppRoute>,
-  never
-> &
+type DataReturnQueriesOptions<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = Without<DataReturnArgs<TAppRoute, TClientArgs>, never> &
   Omit<UseQueryOptions<TAppRoute['responses']>, 'queryFn'> & {
     queryKey: QueryKey;
   };
 
 type DataReturnQueries<
   TAppRoute extends AppRoute,
-  TQueries = readonly DataReturnQueriesOptions<TAppRoute>[]
+  TClientArgs extends ClientArgs,
+  TQueries = readonly DataReturnQueriesOptions<TAppRoute, TClientArgs>[]
 > = (args: {
   queries: TQueries;
   context?: UseQueryOptions['context'];
 }) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>[];
 
 // Used on X.useInfiniteQuery
-type DataReturnInfiniteQuery<TAppRoute extends AppRoute> =
-  AreAllPropertiesOptional<
-    Without<DataReturnArgs<TAppRoute>, never>
-  > extends true
-    ? (
-        queryKey: QueryKey,
-        args?: (
-          context: QueryFunctionContext<QueryKey>
-        ) => Without<DataReturnArgs<TAppRoute>, never>,
-        options?: UseInfiniteQueryOptions<
-          DataResponse<TAppRoute>,
-          ErrorResponse<TAppRoute>
-        >
-      ) => UseInfiniteQueryResult<
+type DataReturnInfiniteQuery<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = AreAllPropertiesOptional<
+  Without<DataReturnArgs<TAppRoute, TClientArgs>, never>
+> extends true
+  ? (
+      queryKey: QueryKey,
+      args?: (
+        context: QueryFunctionContext<QueryKey>
+      ) => Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
+      options?: UseInfiniteQueryOptions<
         DataResponse<TAppRoute>,
         ErrorResponse<TAppRoute>
       >
-    : (
-        queryKey: QueryKey,
-        args: (
-          context: QueryFunctionContext<QueryKey>
-        ) => Without<DataReturnArgs<TAppRoute>, never>,
-        options?: UseInfiniteQueryOptions<
-          DataResponse<TAppRoute>,
-          ErrorResponse<TAppRoute>
-        >
-      ) => UseInfiniteQueryResult<
+    ) => UseInfiniteQueryResult<
+      DataResponse<TAppRoute>,
+      ErrorResponse<TAppRoute>
+    >
+  : (
+      queryKey: QueryKey,
+      args: (
+        context: QueryFunctionContext<QueryKey>
+      ) => Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
+      options?: UseInfiniteQueryOptions<
         DataResponse<TAppRoute>,
         ErrorResponse<TAppRoute>
-      >;
+      >
+    ) => UseInfiniteQueryResult<
+      DataResponse<TAppRoute>,
+      ErrorResponse<TAppRoute>
+    >;
 
 // Used pn X.useMutation
-type DataReturnMutation<TAppRoute extends AppRoute> = (
+type DataReturnMutation<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = (
   options?: UseMutationOptions<
     DataResponse<TAppRoute>,
     ErrorResponse<TAppRoute>,
-    Without<DataReturnArgs<TAppRoute>, never>,
+    Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
     unknown
   >
 ) => UseMutationResult<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
-  Without<DataReturnArgs<TAppRoute>, never>,
+  Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
   unknown
 >;
 
-const getRouteUseQuery = <TAppRoute extends AppRoute>(
+const getRouteUseQuery = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+>(
   route: TAppRoute,
-  clientArgs: ClientArgs
+  clientArgs: TClientArgs
 ) => {
   return (
     queryKey: QueryKey,
-    args?: DataReturnArgs<any>,
+    args?: DataReturnArgs<any, ClientArgs>,
     options?: UseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
+      const { query, params, body, headers, ...extraInputArgs } = args || {};
+
       const path = getCompleteUrl(
-        args?.query,
+        query,
         clientArgs.baseUrl,
-        args?.params,
+        params,
         route,
         !!clientArgs.jsonQuery
       );
 
-      const result = await fetchApi(path, clientArgs, route, args?.body);
+      const result = await fetchApi({
+        path,
+        clientArgs,
+        route,
+        body,
+        headers: headers || {},
+        extraInputArgs,
+      });
 
       // If the response is not a 2XX, throw an error to be handled by react-query
       if (!String(result.status).startsWith('2')) {
@@ -228,27 +260,43 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
   };
 };
 
-const getRouteUseQueries = <TAppRoute extends AppRoute>(
+const getRouteUseQueries = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+>(
   route: TAppRoute,
-  clientArgs: ClientArgs
+  clientArgs: TClientArgs
 ) => {
-  return (args: Parameters<DataReturnQueries<TAppRoute>>[0]) => {
-    const queries = args.queries.map((query: any) => {
+  return (args: Parameters<DataReturnQueries<TAppRoute, TClientArgs>>[0]) => {
+    const queries = args.queries.map((queryArgs: any) => {
       const queryFn: QueryFunction<TAppRoute['responses']> = async () => {
+        const {
+          query,
+          params,
+          body,
+          headers,
+          credentials,
+          queryKey,
+          retry,
+          ...extraInputArgs
+        } = queryArgs || {};
+
         const path = getCompleteUrl(
-          'query' in query ? query?.query : undefined,
+          'query' in queryArgs ? queryArgs?.query : undefined,
           clientArgs.baseUrl,
-          'params' in query ? query?.params : undefined,
+          'params' in queryArgs ? queryArgs?.params : undefined,
           route,
           !!clientArgs.jsonQuery
         );
 
-        const result = await fetchApi(
+        const result = await fetchApi({
           path,
           clientArgs,
           route,
-          'body' in query ? query?.body : undefined
-        );
+          body: 'body' in queryArgs ? queryArgs?.body : undefined,
+          headers: headers || {},
+          extraInputArgs,
+        });
 
         // If the response is not a 2XX, throw an error to be handled by react-query
         if (!String(result.status).startsWith('2')) {
@@ -260,7 +308,7 @@ const getRouteUseQueries = <TAppRoute extends AppRoute>(
 
       return {
         queryFn,
-        ...query,
+        ...queryArgs,
       };
     });
 
@@ -268,13 +316,16 @@ const getRouteUseQueries = <TAppRoute extends AppRoute>(
   };
 };
 
-const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
+const getRouteUseInfiniteQuery = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+>(
   route: TAppRoute,
-  clientArgs: ClientArgs
+  clientArgs: TClientArgs
 ) => {
   return (
     queryKey: QueryKey,
-    args: (context: QueryFunctionContext) => DataReturnArgs<any>,
+    args: (context: QueryFunctionContext) => DataReturnArgs<any, ClientArgs>,
     options?: UseInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (
@@ -282,20 +333,25 @@ const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
     ) => {
       const resultingQueryArgs = args(infiniteQueryParams);
 
+      const { query, params, body, headers, ...extraInputArgs } =
+        resultingQueryArgs || {};
+
       const path = getCompleteUrl(
-        resultingQueryArgs.query,
+        query,
         clientArgs.baseUrl,
-        resultingQueryArgs.params,
+        params,
         route,
         !!clientArgs.jsonQuery
       );
 
-      const result = await fetchApi(
+      const result = await fetchApi({
         path,
         clientArgs,
         route,
-        resultingQueryArgs.body
-      );
+        body,
+        headers: headers || {},
+        extraInputArgs,
+      });
 
       // If the response is not a 2XX, throw an error to be handled by react-query
       if (!String(result.status).startsWith('2')) {
@@ -309,12 +365,17 @@ const getRouteUseInfiniteQuery = <TAppRoute extends AppRoute>(
   };
 };
 
-const getRouteUseMutation = <TAppRoute extends AppRoute>(
+const getRouteUseMutation = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+>(
   route: TAppRoute,
-  clientArgs: ClientArgs
+  clientArgs: TClientArgs
 ) => {
   return (options?: UseMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (args?: DataReturnArgs<any>) => {
+    const mutationFunction = async (args?: DataReturnArgs<any, ClientArgs>) => {
+      const { query, params, body, headers, ...extraInputArgs } = args || {};
+
       const path = getCompleteUrl(
         args?.query,
         clientArgs.baseUrl,
@@ -323,7 +384,14 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
         !!clientArgs.jsonQuery
       );
 
-      const result = await fetchApi(path, clientArgs, route, args?.body);
+      const result = await fetchApi({
+        path,
+        clientArgs,
+        route,
+        body: args?.body,
+        extraInputArgs,
+        headers: headers || {},
+      });
 
       // If the response is not a 2XX, throw an error to be handled by react-query
       if (!String(result.status).startsWith('2')) {
@@ -340,12 +408,18 @@ const getRouteUseMutation = <TAppRoute extends AppRoute>(
   };
 };
 
-export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
+export type InitClientReturn<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs
+> = RecursiveProxyObj<T, TClientArgs>;
 
-export const initQueryClient = <T extends AppRouter>(
+export const initQueryClient = <
+  T extends AppRouter,
+  TClientArgs extends ClientArgs
+>(
   router: T,
-  args: ClientArgs
-): InitClientReturn<T> => {
+  args: TClientArgs
+): InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {
