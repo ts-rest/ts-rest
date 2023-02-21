@@ -15,6 +15,9 @@ you can pass a `api` attribute to the `initClient` or `initQueryClient`.
 
 **Here's a basic example: **
 ```typescript
+import { contract } from './some-contract'
+import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
+
 const client = initClient(contract, {
   baseUrl: "http://localhost:3333/api",
   baseHeaders: {
@@ -22,13 +25,22 @@ const client = initClient(contract, {
   },
   api: async ({ path, method, headers, body }) => {
     const baseUrl = 'http://localhost:3333/api' //baseUrl is not available as a param, yet
-    const result = await axios.request({
-      method: method as Method,
-      url: `${baseUrl}/${path}`,
-      headers,
-      data: body,
-    })
-    return { status: result.status, body: result.data }
+    try {
+      const result = await axios.request({
+        method: method as Method,
+        url: `${this.baseUrl}/${path}`,
+        headers,
+        data: body,
+      })
+      return { status: result.status, body: result.data }
+    } catch (e: Error | AxiosError | any) {
+      if (isAxiosError(e)) {
+        const error = e as AxiosError
+        const response = error.response as AxiosResponse
+        return { status: response.status, body: response.data }
+      }
+      throw e
+    }
   },
 })
 ```
@@ -38,6 +50,9 @@ Sometimes you need dynamic headers, IE passing in a Bearer token. There are two 
 ### Instantiate the `client` with the header passed in:
 
 ```typescript
+import { contract } from './some-contract'
+import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
+
 export class SampleAPI {
   token: string
   constructor(params: { token: string }) {
@@ -45,20 +60,29 @@ export class SampleAPI {
     this.baseUrl = 'http://localhost:3333/api'
   }
   client = () => {
-    return initClient(userContract, {
+    return initClient(contract, {
       baseUrl: this.baseUrl,
       baseHeaders: {
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json'
       },
       api: async ({ path, method, headers, body }) => {
-        const result = await axios.request({
-          method: method as Method,
-          url: `${this.baseUrl}/${path}`,
-          headers,
-          data: body,
-        })
-        return { status: result.status, body: result.data }
+        try {
+          const result = await axios.request({
+            method: method as Method,
+            url: `${this.baseUrl}/${path}`,
+            headers,
+            data: body,
+          })
+          return { status: result.status, body: result.data }
+        } catch (e: Error | AxiosError | any) {
+          if (isAxiosError(e)) {
+            const error = e as AxiosError
+            const response = error.response as AxiosResponse
+            return { status: response.status, body: response.data }
+          }
+          throw e
+        }
       },
     })
   }
@@ -70,29 +94,40 @@ export class SampleAPI {
 Here's an example using the `firebase/auth` library. Because `api` is async, you can `await` various calls when using the method. 
 
 ```typescript
+import { contract } from './some-contract'
+import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios'
 export class SampleAPI {
   authInstance: Auth
   constructor(params: { authInstance: Auth }) {
     this.authInstance = params.authInstance
   }
   client = () => {
-    return initClient(userContract, {
+    return initClient(contract, {
       baseUrl: '',
       baseHeaders: {
         'Content-Type': 'application/json',
       },
       api: async ({ path, method, headers, body }) => {
         const token = await this.authInstance.currentUser.getIdToken()
-        const result = await axios.request({
-          method: method as Method,
-          url: `${this.baseUrl}/${path}`,
-          headers: { 
-            ...headers, 
-            Authorization: `Bearer ${token}` 
-          },
-          data: body,
-        })
-        return { status: result.status, body: result.data }
+        try {
+          const result = await axios.request({
+            method: method as Method,
+            url: `${this.baseUrl}/${path}`,
+            headers: { 
+              ...headers,
+              Authorization: `Bearer ${idToken}` 
+            },
+            data: body,
+          })
+          return { status: result.status, body: result.data }
+        } catch (e: Error | AxiosError | any) {
+          if (isAxiosError(e)) {
+            const error = e as AxiosError
+            const response = error.response as AxiosResponse
+            return { status: response.status, body: response.data }
+          }
+          throw e
+        }
       },
     })
   }
