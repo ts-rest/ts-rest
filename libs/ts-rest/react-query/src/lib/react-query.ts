@@ -211,13 +211,13 @@ type DataReturnMutation<
   options?: UseMutationOptions<
     DataResponse<TAppRoute>,
     ErrorResponse<TAppRoute>,
-    Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
+    Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>,
     unknown
   >
 ) => UseMutationResult<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
-  Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
+  Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>,
   unknown
 >;
 
