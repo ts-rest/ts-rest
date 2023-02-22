@@ -4,9 +4,9 @@ import { InstallTabs } from '@site/src/components/InstallTabs';
 
 # Quickstart
 
-Setup is easy. 
+Setting up `ts-rest` is easy! You can opt to use either just the front-end, just the backend, or just the contract (if you really wanted)
 
-Once you understand how to use `ts-rest`, the developer experience is like butter.  🧈🪄✨
+Once you've got to grips with the basics, the developer experience is like butter. 🧈🪄✨
 
 ## Installation
 
@@ -14,29 +14,36 @@ Install the core package
 
 <InstallTabs packageName="@ts-rest/core" />
 
-
 ## Create a contract
 
 <Tabs groupId="contract">
   <TabItem value="zod" label="Zod">
 
-### **Install Zod** 
+### **Install Zod**
 
 <InstallTabs packageName="zod" />
 
-### **Enable `strict` in your `tsconfig.json`**
-  ```
-    "compilerOptions": {
-      ...
-      "strict": true
-    }
-  ```
-- *This is required as part of [Zod](https://github.com/colinhacks/zod#requirements).*
+:::caution Make sure to use `strict` with Zod
+Enable `strict` in your `tsconfig.json`! This is required as part of [Zod](https://github.com/colinhacks/zod#requirements)
 
+```
+  "compilerOptions": {
+    ...
+    "strict": true
+  }
+```
+
+If you don't do this, ts-rest will still work, but you may face performance issues [#162](https://github.com/ts-rest/ts-rest/issues/162)
+
+:::
 
 ### **Create a contract!**
 
-<p>This should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package. Think of this as your HTTP Schema that both your client and backend can use.</p>
+<p>
+  This should ideally be shared between your consumers and producers, e.g. in a
+  shared library in a monorepo, or a shared npm package. Think of this as your
+  HTTP Schema that both your client and backend can use.
+</p>
 
 ```typescript
 // contract.ts
@@ -75,9 +82,10 @@ export const contract = c.router({
   },
 });
 ```
+
 <p>
-  Zod also has some nice features, like enabling body
-  parsing and OpenAPI type generation.
+  Zod also has some nice features, like enabling body parsing and OpenAPI type
+  generation.
 </p>
 
   </TabItem>
@@ -154,11 +162,10 @@ export class PostController implements NestControllerInterface<typeof c> {
 }
 ```
 
-You can see that we're using the *runtime* object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route. 
-We're also using the `RequestShapes` *Typescript Types* (which comes from the runtime object `c`) to ensure type safety of your contract *on* the Nest controller.
+You can see that we're using the _runtime_ object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route.
+We're also using the `RequestShapes` _Typescript Types_ (which comes from the runtime object `c`) to ensure type safety of your contract _on_ the Nest controller.
 
-If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an *object* in the contract above, not boolean!
-
+If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an _object_ in the contract above, not boolean!
 
   </TabItem>
   <TabItem value="express" label="Express">
