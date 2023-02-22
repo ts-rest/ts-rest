@@ -186,24 +186,15 @@ export const fetchApi = ({
 }) => {
   const apiFetcher = clientArgs.api || tsRestFetchApi;
 
-  /**
-   * Combined headers should combine baseHeaders and headers from the api call, but
-   * if there are any duplicate keys, the headers from the api call should take precedence
-   * over the baseHeaders
-   *
-   * if the header is undefined, it should unset the header
-   */
-  const combinedHeaders = new Map();
+  const combinedHeaders = {
+    ...clientArgs.baseHeaders,
+    ...headers,
+  } as Record<string, string>;
 
-  Object.entries(clientArgs.baseHeaders).forEach(([key, value]) => {
-    combinedHeaders.set(key, value);
-  });
-
-  Object.entries(headers).forEach(([key, value]) => {
-    if (value === undefined) {
-      combinedHeaders.delete(key);
-    } else {
-      combinedHeaders.set(key, value);
+  // Remove any headers that are set to undefined
+  Object.keys(combinedHeaders).forEach((key) => {
+    if (combinedHeaders[key] === undefined) {
+      delete combinedHeaders[key];
     }
   });
 
@@ -212,7 +203,7 @@ export const fetchApi = ({
       path,
       method: route.method,
       credentials: clientArgs.credentials,
-      headers: Object.fromEntries(combinedHeaders),
+      headers: combinedHeaders,
       body: body instanceof FormData ? body : createFormData(body),
       ...extraInputArgs,
     });
@@ -224,7 +215,7 @@ export const fetchApi = ({
     credentials: clientArgs.credentials,
     headers: {
       'Content-Type': 'application/json',
-      ...Object.fromEntries(combinedHeaders),
+      ...combinedHeaders,
     },
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,
