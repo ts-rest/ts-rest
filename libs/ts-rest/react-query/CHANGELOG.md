@@ -1,5 +1,13 @@
 # @ts-rest/react-query
 
+## 3.18.0
+
+### Minor Changes
+
+- 3fa43d9: Allow custom API to allow extra args, type them in the react query api calls
+- 3fa43d9: Add the ability to remove a baseHeader on a per-request basis by setting the headers value to undefined
+- 3fa43d9: Prettify the arguments of API calls, making it much clearer what data should be passed to ts-rest api calls (thanks @mattpocockuk!)
+
 ## 3.17.0
 
 ## 3.16.2
