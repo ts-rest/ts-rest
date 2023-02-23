@@ -529,9 +529,9 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         headers: {
-          'Base-Header': 'foo',
-          'X-Test': 'test',
-          'Content-Type': 'application/json',
+          'base-header': 'foo',
+          'x-test': 'test',
+          'content-type': 'application/json',
         },
       })
     );
@@ -548,8 +548,26 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         headers: {
-          'Base-Header': 'bar',
-          'Content-Type': 'application/json',
+          'base-header': 'bar',
+          'content-type': 'application/json',
+        },
+      })
+    );
+  });
+
+  it('extra headers with different casing should override base headers', async () => {
+    await customClient.posts.getPost({
+      params: { id: '1' },
+      headers: {
+        'bAse-heaDer': 'bar',
+      },
+    });
+
+    expect(argsCalledMock).toBeCalledWith(
+      expect.objectContaining({
+        headers: {
+          'base-header': 'bar',
+          'content-type': 'application/json',
         },
       })
     );
@@ -570,9 +588,9 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         headers: {
-          'Base-Header': 'foo',
-          'Content-Type': 'application/json',
-          'X-Test': 'test',
+          'base-header': 'foo',
+          'content-type': 'application/json',
+          'x-test': 'test',
         },
         uploadProgress: expect.any(Function),
       })

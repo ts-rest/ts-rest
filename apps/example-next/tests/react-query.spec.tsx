@@ -171,7 +171,7 @@ describe('react-query', () => {
       path: 'http://api.com/health',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -209,8 +209,8 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
-        'X-Test': 'test',
+        'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
   });
@@ -242,7 +242,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/xml',
+        'content-type': 'application/xml',
       },
     });
   });
@@ -274,7 +274,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
   });
@@ -298,7 +298,7 @@ describe('react-query', () => {
       path: 'http://api.com/health',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -328,7 +328,7 @@ describe('react-query', () => {
       path: 'http://api.com/health',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -375,7 +375,7 @@ describe('react-query', () => {
         authorId: '1',
       }),
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -425,7 +425,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -434,7 +434,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/2',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -492,7 +492,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -501,7 +501,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/2',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -563,7 +563,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -572,7 +572,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/2',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 

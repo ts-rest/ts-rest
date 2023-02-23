@@ -169,6 +169,12 @@ const createFormData = (body: unknown) => {
   return formData;
 };
 
+const normalizeHeaders = (headers: Record<string, string | undefined>) => {
+  return Object.fromEntries(
+    Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v])
+  );
+};
+
 export const fetchApi = ({
   path,
   clientArgs,
@@ -187,8 +193,8 @@ export const fetchApi = ({
   const apiFetcher = clientArgs.api || tsRestFetchApi;
 
   const combinedHeaders = {
-    ...clientArgs.baseHeaders,
-    ...headers,
+    ...normalizeHeaders(clientArgs.baseHeaders),
+    ...normalizeHeaders(headers),
   } as Record<string, string>;
 
   // Remove any headers that are set to undefined
@@ -214,7 +220,7 @@ export const fetchApi = ({
     method: route.method,
     credentials: clientArgs.credentials,
     headers: {
-      'Content-Type': 'application/json',
+      'content-type': 'application/json',
       ...combinedHeaders,
     },
     body:
