@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
-import { initContract } from '@ts-rest/core';
+import { ApiFetcher, initContract } from '@ts-rest/core';
 import { initQueryClient } from '@ts-rest/react-query';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
@@ -126,7 +126,7 @@ const api = jest.fn();
 const client = initQueryClient(router, {
   baseUrl: 'http://api.com',
   baseHeaders: {},
-  api,
+  api: api as ApiFetcher,
 });
 
 let queryClient = new QueryClient();
@@ -171,7 +171,7 @@ describe('react-query', () => {
       path: 'http://api.com/health',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -180,6 +180,103 @@ describe('react-query', () => {
     });
 
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
+  });
+
+  it('useQuery should accept extra headers', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+          headers: {
+            'X-Test': 'test',
+          },
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('useQuery should override base headers', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+          headers: {
+            'Content-Type': 'application/xml',
+          },
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/xml',
+      },
+    });
+  });
+
+  it('useQuery should remove header if value is undefined', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+          headers: {
+            'Content-Type': undefined,
+          },
+        }),
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'http://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
   });
 
   it('useQuery should accept non-json string response', () => {
@@ -201,7 +298,7 @@ describe('react-query', () => {
       path: 'http://api.com/health',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -231,7 +328,7 @@ describe('react-query', () => {
       path: 'http://api.com/health',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -278,7 +375,7 @@ describe('react-query', () => {
         authorId: '1',
       }),
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -328,7 +425,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -337,7 +434,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/2',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -395,7 +492,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -404,7 +501,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/2',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -466,7 +563,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/1',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 
@@ -475,7 +572,7 @@ describe('react-query', () => {
       path: 'http://api.com/posts/2',
       body: undefined,
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
     });
 

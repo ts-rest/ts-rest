@@ -6,16 +6,17 @@ import {
   AreAllPropertiesOptional,
   Merge,
   OptionalIfAllOptional,
+  Prettify,
   Without,
   ZodInferOrType,
   ZodInputOrType,
 } from './type-utils';
 
-type RecursiveProxyObj<T extends AppRouter> = {
+type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-    ? AppRouteFunction<T[TKey]>
+    ? AppRouteFunction<T[TKey], TClientArgs>
     : T[TKey] extends AppRouter
-    ? RecursiveProxyObj<T[TKey]>
+    ? RecursiveProxyObj<T[TKey], TClientArgs>
     : never;
 };
 
@@ -44,7 +45,20 @@ type AppRouteBodyOrFormData<T extends AppRouteMutation> =
     ? FormData | AppRouteMutationType<T['body']>
     : AppRouteMutationType<T['body']>;
 
-interface DataReturnArgsBase<TRoute extends AppRoute> {
+/**
+ * Extract any extra parameters from the client args
+ */
+export type ExtractExtraParametersFromClientArgs<
+  TClientArgs extends ClientArgs
+> = TClientArgs['api'] extends ApiFetcher
+  ? Omit<Parameters<TClientArgs['api']>[0], keyof Parameters<ApiFetcher>[0]>
+  : // eslint-disable-next-line @typescript-eslint/ban-types
+    {};
+
+type DataReturnArgsBase<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = {
   body: TRoute extends AppRouteMutation
     ? AppRouteBodyOrFormData<TRoute>
     : never;
@@ -52,11 +66,18 @@ interface DataReturnArgsBase<TRoute extends AppRoute> {
   query: 'query' extends keyof TRoute
     ? AppRouteMutationType<TRoute['query']>
     : never;
-}
+  /**
+   * Additional headers to send with the request, merged over baseHeaders,
+   *
+   * Unset a header by setting it to undefined
+   */
+  headers?: Record<string, string>;
+} & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
-type DataReturnArgs<TRoute extends AppRoute> = OptionalIfAllOptional<
-  DataReturnArgsBase<TRoute>
->;
+type DataReturnArgs<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = OptionalIfAllOptional<DataReturnArgsBase<TRoute, TClientArgs>>;
 
 export type ApiRouteResponse<T> =
   | {
@@ -73,14 +94,18 @@ export type ApiRouteResponse<T> =
 /**
  * Returned from a mutation or query call
  */
-export type AppRouteFunction<TRoute extends AppRoute> =
-  AreAllPropertiesOptional<Without<DataReturnArgs<TRoute>, never>> extends true
-    ? (
-        args?: Without<DataReturnArgs<TRoute>, never>
-      ) => Promise<ApiRouteResponse<TRoute['responses']>>
-    : (
-        args: Without<DataReturnArgs<TRoute>, never>
-      ) => Promise<ApiRouteResponse<TRoute['responses']>>;
+export type AppRouteFunction<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = AreAllPropertiesOptional<
+  Without<DataReturnArgs<TRoute, TClientArgs>, never>
+> extends true
+  ? (
+      args?: Prettify<Without<DataReturnArgs<TRoute, TClientArgs>, never>>
+    ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>
+  : (
+      args: Prettify<Without<DataReturnArgs<TRoute, TClientArgs>, never>>
+    ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -90,15 +115,26 @@ export interface ClientArgs {
   jsonQuery?: boolean;
 }
 
-type ApiFetcher = (args: {
+export type ApiFetcherArgs = {
   path: string;
   method: string;
   headers: Record<string, string>;
   body: FormData | string | null | undefined;
   credentials?: RequestCredentials;
-}) => Promise<{ status: number; body: unknown }>;
+};
 
-export const defaultApi: ApiFetcher = async ({
+export type ApiFetcher = (
+  args: ApiFetcherArgs
+) => Promise<{ status: number; body: unknown }>;
+
+/**
+ * Default fetch api implementation:
+ *
+ * Can be used as a reference for implementing your own fetcher,
+ * or used in the "api" field of ClientArgs to allow you to hook
+ * into the request to run custom logic
+ */
+export const tsRestFetchApi: ApiFetcher = async ({
   path,
   method,
   headers,
@@ -133,23 +169,49 @@ const createFormData = (body: unknown) => {
   return formData;
 };
 
-export const fetchApi = (
-  path: string,
-  clientArgs: ClientArgs,
-  route: AppRoute,
-  body: unknown
-) => {
-  const apiFetcher = clientArgs.api || defaultApi;
+const normalizeHeaders = (headers: Record<string, string | undefined>) => {
+  return Object.fromEntries(
+    Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v])
+  );
+};
+
+export const fetchApi = ({
+  path,
+  clientArgs,
+  route,
+  body,
+  extraInputArgs,
+  headers,
+}: {
+  path: string;
+  clientArgs: ClientArgs;
+  route: AppRoute;
+  body: unknown;
+  extraInputArgs: Record<string, unknown>;
+  headers: Record<string, string | undefined>;
+}) => {
+  const apiFetcher = clientArgs.api || tsRestFetchApi;
+
+  const combinedHeaders = {
+    ...normalizeHeaders(clientArgs.baseHeaders),
+    ...normalizeHeaders(headers),
+  } as Record<string, string>;
+
+  // Remove any headers that are set to undefined
+  Object.keys(combinedHeaders).forEach((key) => {
+    if (combinedHeaders[key] === undefined) {
+      delete combinedHeaders[key];
+    }
+  });
 
   if (route.method !== 'GET' && route.contentType === 'multipart/form-data') {
     return apiFetcher({
       path,
       method: route.method,
       credentials: clientArgs.credentials,
-      headers: {
-        ...clientArgs.baseHeaders,
-      },
+      headers: combinedHeaders,
       body: body instanceof FormData ? body : createFormData(body),
+      ...extraInputArgs,
     });
   }
 
@@ -158,11 +220,12 @@ export const fetchApi = (
     method: route.method,
     credentials: clientArgs.credentials,
     headers: {
-      ...clientArgs.baseHeaders,
-      'Content-Type': 'application/json',
+      'content-type': 'application/json',
+      ...combinedHeaders,
     },
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,
+    ...extraInputArgs,
   });
 };
 
@@ -188,25 +251,37 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
-  return async (inputArgs?: DataReturnArgs<any>) => {
+  return async (inputArgs?: DataReturnArgs<any, ClientArgs>) => {
+    const { query, params, body, headers, ...extraInputArgs } = inputArgs || {};
+
     const completeUrl = getCompleteUrl(
-      inputArgs?.query,
+      query,
       clientArgs.baseUrl,
-      inputArgs?.params,
+      params,
       route,
       !!clientArgs.jsonQuery
     );
 
-    return await fetchApi(completeUrl, clientArgs, route, inputArgs?.body);
+    return await fetchApi({
+      path: completeUrl,
+      clientArgs,
+      route,
+      body,
+      extraInputArgs,
+      headers: headers || {},
+    });
   };
 };
 
-export type InitClientReturn<T extends AppRouter> = RecursiveProxyObj<T>;
+export type InitClientReturn<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs
+> = RecursiveProxyObj<T, TClientArgs>;
 
-export const initClient = <T extends AppRouter>(
+export const initClient = <T extends AppRouter, TClientArgs extends ClientArgs>(
   router: T,
-  args: ClientArgs
-): InitClientReturn<T> => {
+  args: TClientArgs
+): InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {

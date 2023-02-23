@@ -133,14 +133,13 @@ export default function Home(): JSX.Element {
 
       <div className="mt-24 container mx-auto">
         <div className=" bg-purple-100/40 dark:bg-purple-700/5 p-5 border-solid border-0 border-l-4 border-purple-600 dark:border-purple-700/80">
-          <h3>Elevator Pitch</h3>
+          <h3>Quick Dip</h3>
 
           <p>
-            ts-rest was initially designed for TS-first teams, in legacy
-            codebases, who are working towards improving stability and safety -
-            who may have limited resources to migrate to a new solution/tech
-            (such as GraphQL), and need a simple, safe API with a focus on DX
-            and adoption speed.
+            ts-rest was designed for and by TS-first teams who want to improve
+            the stability and safety without a large investment into a new
+            solution/tech (such as GraphQL), and need a simple, safe API with a
+            focus on DX and adoption speed.
           </p>
 
           <ul>
@@ -165,6 +164,20 @@ export default function Home(): JSX.Element {
             </li>
           </ul>
         </div>
+      </div>
+
+      <div className="container mt-24">
+        <h4 className="text-primary">Don't just take our word for it</h4>
+        <h1 className="">Give it a go</h1>
+        <p>
+          We've made a basic Stackblitz demo using a contract with Zod, client,
+          and server - try and follow through the instructions to learn how
+          ts-rest works!
+        </p>
+        <iframe
+          className="w-full h-[40rem]"
+          src="https://stackblitz.com/edit/typescript-x7pinn?embed=1&file=index.ts&view=editor"
+        />
       </div>
 
       <div className="container mt-24">

@@ -25,19 +25,59 @@
 
 # Introduction
 
-ts-rest provides an RPC-like client side interface over your existing REST APIs, as well as allowing you define a _separate_ contract implementation rather than going for a 'implementation is the contract' approach, which is best suited for smaller or simpler APIs.
+ts-rest offers a simple way to define a contract for your API, which can be both consumed and implemented by your application, giving you end to end type safety without the hassle or code generation.
 
-If you have non typescript consumers, a public API, or maybe want to add type safety to your existing REST API? ts-rest is what you're looking for!
-
-## Features
+### Features
 
 - End to end type safety 🛟
-- Magic RPC-like API 🪄
-- Tiny bundle size 🌟 (1kb!)
+- RPC-like client side interface 📡
+- [Tiny bundle size 🌟](https://bundlephobia.com/package/@ts-rest/core) (1kb!)
 - Well-tested and production ready ✅
 - No Code Generation 🏃‍♀️
-- Zod support for body parsing 👮‍♀️
+- Zod support for runtime type checks 👮‍♀️
 - Full optional OpenAPI integration 📝
+
+### Super Simple Example
+
+Easily define your API contract somewhere shared
+
+```typescript
+const contract = c.contract({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    query: z.object({
+      skip: z.number(),
+      take: z.number(),
+    }), // <-- Zod schema
+    responses: {
+      200: c.response<Post[]>(), // <-- OR normal TS types
+    },
+  },
+});
+```
+
+Fulfil the contract on your sever, with a type-safe router:
+
+```typescript
+const router = s.router(contract, {
+  getPost: async ({ params: { id } }) => {
+    return {
+      status: 200,
+      body: prisma.post.findUnique({ where: { id } }),
+    };
+  },
+});
+```
+
+Consume the api on the client with a RPC-like interface:
+
+```typescript
+const result = await client.getPosts({
+  query: { skip: 0, take: 10 },
+  // ^-- Fully typed!
+});
+```
 
 ## Quickstart
 
