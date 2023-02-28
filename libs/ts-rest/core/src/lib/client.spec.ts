@@ -25,6 +25,9 @@ const postsRouter = c.router({
   getPost: {
     method: 'GET',
     path: `/posts/:id`,
+    headers: z.object({
+      'x-api-key': z.string().optional(),
+    }),
     responses: {
       200: c.response<Post | null>(),
     },
@@ -32,6 +35,9 @@ const postsRouter = c.router({
   getPosts: {
     method: 'GET',
     path: '/posts',
+    headers: z.object({
+      'x-pagination': z.string().optional(),
+    }),
     responses: {
       200: c.response<Post[]>(),
     },
@@ -99,29 +105,40 @@ const postsRouter = c.router({
 });
 
 // Three endpoints, two for posts, and one for health
-export const router = c.router({
-  posts: postsRouter,
-  health: {
-    method: 'GET',
-    path: '/health',
-    responses: {
-      200: c.response<{ message: string }>(),
+export const router = c.router(
+  {
+    posts: postsRouter,
+    health: {
+      method: 'GET',
+      path: '/health',
+      responses: {
+        200: c.response<{ message: string }>(),
+      },
+    },
+    upload: {
+      method: 'POST',
+      path: '/upload',
+      body: c.body<{ file: File }>(),
+      responses: {
+        200: c.response<{ message: string }>(),
+      },
+      contentType: 'multipart/form-data',
     },
   },
-  upload: {
-    method: 'POST',
-    path: '/upload',
-    body: c.body<{ file: File }>(),
-    responses: {
-      200: c.response<{ message: string }>(),
-    },
-    contentType: 'multipart/form-data',
-  },
-});
+  {
+    baseHeaders: z.object({
+      'x-api-key': z.string(),
+      'x-test': z.string().optional(),
+      'base-header': z.string().optional(),
+    }),
+  }
+);
 
 const client = initClient(router, {
   baseUrl: 'https://api.com',
-  baseHeaders: {},
+  baseHeaders: {
+    'x-api-key': 'foo',
+  },
 });
 
 describe('client', () => {
@@ -200,21 +217,17 @@ describe('client', () => {
 
     it('w/ json query parameters', async () => {
       const client = initClient(
-        {
-          ...router,
-          posts: {
-            ...router.posts,
-            getPosts: {
-              ...router.posts.getPosts,
-              query: router.posts.getPosts.query.extend({
-                published: z.boolean(),
-                filter: z.object({
-                  title: z.string(),
-                }),
+        c.router({
+          getPosts: {
+            ...router.endpoints.posts.endpoints.getPosts,
+            query: router.endpoints.posts.endpoints.getPosts.query.extend({
+              published: z.boolean(),
+              filter: z.object({
+                title: z.string(),
               }),
-            },
+            }),
           },
-        },
+        }),
         {
           baseUrl: 'https://api.com',
           baseHeaders: {},
@@ -235,7 +248,7 @@ describe('client', () => {
         { body: value, status: 200 }
       );
 
-      const result = await client.posts.getPosts({
+      const result = await client.getPosts({
         query: {
           take: 10,
           order: 'asc',
@@ -522,7 +535,7 @@ describe('custom api', () => {
     await customClient.posts.getPost({
       params: { id: '1' },
       headers: {
-        'X-Test': 'test',
+        'x-test': 'test',
       },
     });
 
@@ -541,25 +554,7 @@ describe('custom api', () => {
     await customClient.posts.getPost({
       params: { id: '1' },
       headers: {
-        'Base-Header': 'bar',
-      },
-    });
-
-    expect(argsCalledMock).toBeCalledWith(
-      expect.objectContaining({
-        headers: {
-          'base-header': 'bar',
-          'content-type': 'application/json',
-        },
-      })
-    );
-  });
-
-  it('extra headers with different casing should override base headers', async () => {
-    await customClient.posts.getPost({
-      params: { id: '1' },
-      headers: {
-        'bAse-heaDer': 'bar',
+        'base-header': 'bar',
       },
     });
 
@@ -578,7 +573,8 @@ describe('custom api', () => {
       query: { test: 'test' },
       body: {},
       headers: {
-        'X-Test': 'test',
+        'x-api-key': '123',
+        'x-test': 'test',
       },
       uploadProgress: () => {
         // noop
@@ -588,6 +584,7 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         headers: {
+          'x-api-key': '123',
           'base-header': 'foo',
           'content-type': 'application/json',
           'x-test': 'test',

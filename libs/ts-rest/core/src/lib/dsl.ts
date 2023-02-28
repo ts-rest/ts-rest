@@ -1,3 +1,5 @@
+import { DefinedOrEmpty, Merge, Narrow } from './type-utils';
+
 /**
  * The path with colon-prefixed parameters
  * e.g. "/posts/:id".
@@ -12,6 +14,7 @@ export type AppRouteQuery = {
   path: Path;
   pathParams?: unknown;
   query?: unknown;
+  headers?: unknown;
   summary?: string;
   description?: string;
   deprecated?: boolean;
@@ -29,6 +32,7 @@ export type AppRouteMutation = {
   contentType?: 'application/json' | 'multipart/form-data';
   body: unknown;
   query?: unknown;
+  headers?: unknown;
   summary?: string;
   description?: string;
   deprecated?: boolean;
@@ -40,12 +44,22 @@ export type AppRouteMutation = {
  *
  * The main purpose of this is to convert all path strings into string constants so we can infer the path
  */
-type RecursivelyProcessAppRouter<T extends AppRouter> = {
-  [K in keyof T]: T[K] extends AppRoute
-    ? T[K]
-    : T[K] extends AppRouter
-    ? RecursivelyProcessAppRouter<T[K]>
-    : T[K];
+type RecursivelyProcessAppRouter<
+  T extends AppRouter,
+  TEndpoints extends T['endpoints'] = T['endpoints'],
+  TOptions extends T['options'] = T['options']
+> = {
+  endpoints: {
+    [K in keyof TEndpoints]: TEndpoints[K] extends AppRoute
+      ? TEndpoints[K]
+      : TEndpoints[K] extends AppRouter
+      ? RecursivelyProcessAppRouter<{
+          endpoints: TEndpoints[K]['endpoints'];
+          options: CombineRouterOptions<TOptions, TEndpoints[K]['options']>;
+        }>
+      : TEndpoints[K];
+  };
+  options: TOptions;
 };
 
 /**
@@ -58,7 +72,24 @@ export type AppRoute = AppRouteQuery | AppRouteMutation;
  * individual routes
  */
 export type AppRouter = {
-  [key: string]: AppRouter | AppRoute;
+  endpoints: {
+    [key: string]: AppRouter | AppRoute;
+  };
+  options: RouterOptions;
+};
+
+export type RouterOptions = {
+  baseHeaders?: unknown;
+};
+
+export type CombineRouterOptions<
+  Parent extends RouterOptions | undefined,
+  Child extends RouterOptions | undefined
+> = {
+  baseHeaders: Merge<
+    DefinedOrEmpty<Parent, 'baseHeaders'>,
+    DefinedOrEmpty<Child, 'baseHeaders'>
+  >;
 };
 
 /**
@@ -68,7 +99,7 @@ export type AppRouter = {
  * @returns
  */
 export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
-  return obj?.method !== undefined;
+  return 'method' in obj && 'path' in obj;
 };
 
 /**
@@ -78,7 +109,16 @@ type ContractInstance = {
   /**
    * A collection of routes or routers
    */
-  router: <T extends AppRouter>(endpoints: RecursivelyProcessAppRouter<T>) => T;
+  router: <
+    TEndpoints extends RecursivelyProcessAppRouter<AppRouter>['endpoints'],
+    TOptions extends RouterOptions
+  >(
+    endpoints: Narrow<TEndpoints>,
+    options?: Narrow<TOptions>
+  ) => Narrow<{
+    endpoints: TEndpoints;
+    options: NonNullable<TOptions>;
+  }>;
   /**
    * A single query route, should exist within
    * a {@link AppRouter}
@@ -113,7 +153,7 @@ export const initTsRest = (): ContractInstance => initContract();
 export const initContract = (): ContractInstance => {
   return {
     // @ts-expect-error - this is a type error, but it's not clear how to fix it
-    router: (args) => args,
+    router: (endpoints, options) => ({ endpoints, options: options || {} }),
     query: (args) => args,
     mutation: (args) => args,
     response: <T>() => undefined as unknown as T,
