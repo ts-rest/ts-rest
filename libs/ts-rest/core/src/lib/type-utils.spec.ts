@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from 'zod';
 import { Equal, Expect } from './test-helpers';
-import { AreAllPropertiesOptional, ZodInferOrType } from './type-utils';
+import {
+  AreAllPropertiesOptional,
+  Without,
+  ZodInferOrType,
+} from './type-utils';
 
 const zodObject = z.object({ title: z.string() });
 type Test1 = ZodInferOrType<typeof zodObject>;
@@ -27,8 +31,29 @@ type AreAllPropertiesOptional3 = Expect<
       params: {
         id: string;
       };
-      headers?: Record<string, string> | undefined;
+      headers?: Record<string, string>;
     }>,
     false
+  >
+>;
+
+type WithoutTest = Expect<
+  Equal<
+    Without<
+      {
+        body: never;
+        params: {
+          id: string;
+        };
+        headers?: Record<string, string>;
+      },
+      never
+    >,
+    {
+      params: {
+        id: string;
+      };
+      headers?: Record<string, string>;
+    }
   >
 >;
