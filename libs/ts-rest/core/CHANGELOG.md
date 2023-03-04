@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.18.1
+
+### Patch Changes
+
+- 9bd4c77: Fixes broken typing where sometimes the client's request args were incorrectly typed as optional
+
 ## 3.18.0
 
 ### Minor Changes
