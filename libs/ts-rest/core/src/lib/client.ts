@@ -91,6 +91,28 @@ export type ApiRouteResponse<T> =
       body: unknown;
     };
 
+export type ResponseForRoute<T extends AppRoute> = ApiRouteResponse<
+  T['responses']
+>
+
+export type ResponsesForRouter<T extends AppRouter> = {
+  [K in keyof T]: T[K] extends AppRoute
+  ? ResponseForRoute<T[K]>
+  : T[K] extends AppRouter ? ResponsesForRouter<T[K]> : never;
+};
+
+/**
+ * 
+ * @deprecated
+ */
+export function getRouteResponses<T extends AppRouter>(router: T) {
+  return {} as {
+    [K in keyof typeof router]: typeof router[K] extends AppRoute
+      ? ResponseForRoute<typeof router[K]>
+      : 'not a route';
+  };
+}
+
 /**
  * Returned from a mutation or query call
  */
@@ -272,21 +294,6 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
     });
   };
 };
-
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
-  T['responses']
->;
-
-// takes a router and returns response types for each AppRoute
-// does not support nested routers, yet
-
-export function getRouteResponses<T extends AppRouter>(router: T) {
-  return {} as {
-    [K in keyof typeof router]: typeof router[K] extends AppRoute
-      ? ApiResponseForRoute<typeof router[K]>
-      : 'not a route';
-  };
-}
 
 export type InitClientReturn<
   T extends AppRouter,
