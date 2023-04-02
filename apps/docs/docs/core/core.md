@@ -116,21 +116,3 @@ export const contract = c.router({
   },
 });
 ```
-
-## Response Types
-
-If you need to quickly extract the Response types from a given Contract, you can use the `ResponsesForRouter` type.
-
-```typescript
-import { ResponsesForRouter } from '@ts-rest/core'
-import { contract } from './contract'
-
-//  initContract() must called prior
-type ResponseShapes = ResponsesForRouter<typeof contract>
-
-async function someHttpCall(req: Request): Promise<ResponseShapes['getPosts']> {
-  return ...
-}
-```
-
-This is particularly useful for Services/Functions/Lambdas that do not use frameworks like Express or Nestjs. 

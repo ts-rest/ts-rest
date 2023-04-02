@@ -66,6 +66,7 @@ const sidebars = {
         { type: 'doc', id: 'core/core' },
         { type: 'doc', id: 'core/fetch' },
         { type: 'doc', id: 'core/custom' },
+        { type: 'doc', id: 'core/infer-types' },
         { type: 'doc', id: 'core/errors' },
         { type: 'doc', id: 'core/form-data' },
       ],
