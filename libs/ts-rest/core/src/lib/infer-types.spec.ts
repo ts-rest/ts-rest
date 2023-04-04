@@ -2,12 +2,12 @@ import { z } from 'zod';
 import { initContract } from './dsl';
 import { Equal, Expect } from './test-helpers';
 import {
-  InferRequestForClient,
-  InferRequestForServer,
-  InferResponseBodyForClient,
-  InferResponseBodyForServer,
-  InferResponsesForClient,
-  InferResponsesForServer,
+  ClientInferRequest,
+  ServerInferRequest,
+  ClientInferResponseBody,
+  ServerInferResponseBody,
+  ClientInferResponses,
+  ServerInferResponses,
 } from './infer-types';
 import { HTTPStatusCode } from './status-codes';
 
@@ -86,9 +86,9 @@ const contract = c.router({
 });
 
 it('type inference helpers', () => {
-  type InferResponsesForServerTest = Expect<
+  type ServerInferResponsesTest = Expect<
     Equal<
-      InferResponsesForServer<typeof contract>,
+      ServerInferResponses<typeof contract>,
       {
         getPost:
           | {
@@ -122,9 +122,9 @@ it('type inference helpers', () => {
     >
   >;
 
-  type InferResponsesForServerTest2 = Expect<
+  type ServerInferResponsesTest2 = Expect<
     Equal<
-      InferResponsesForServer<typeof contract, 200>,
+      ServerInferResponses<typeof contract, 200>,
       {
         getPost: {
           status: 200;
@@ -148,9 +148,9 @@ it('type inference helpers', () => {
     >
   >;
 
-  type InferResponsesForServerTest3 = Expect<
+  type ServerInferResponsesTest3 = Expect<
     Equal<
-      InferResponsesForServer<typeof contract, 401>,
+      ServerInferResponses<typeof contract, 401>,
       {
         getPost: {
           status: 401;
@@ -174,9 +174,9 @@ it('type inference helpers', () => {
     >
   >;
 
-  type InferResponsesForClientTest = Expect<
+  type ClientInferResponsesTest = Expect<
     Equal<
-      InferResponsesForClient<typeof contract>,
+      ClientInferResponses<typeof contract>,
       {
         getPost:
           | {
@@ -213,23 +213,23 @@ it('type inference helpers', () => {
     >
   >;
 
-  type InferResponseBodyForServerTest = Expect<
+  type ServerInferResponseBodyTest = Expect<
     Equal<
-      InferResponseBodyForServer<typeof contract.getPost, 200>,
+      ServerInferResponseBody<typeof contract.getPost, 200>,
       { title?: string | undefined; id: number; content: string }
     >
   >;
 
-  type InferResponseBodyForClientTest = Expect<
+  type ClientInferResponseBodyTest = Expect<
     Equal<
-      InferResponseBodyForClient<typeof contract.getPost, 200>,
+      ClientInferResponseBody<typeof contract.getPost, 200>,
       { title: string; id: number; content: string }
     >
   >;
 
-  type InferRequestForServerTest = Expect<
+  type ServerInferRequestTest = Expect<
     Equal<
-      InferRequestForServer<typeof contract>,
+      ServerInferRequest<typeof contract>,
       {
         getPost: {
           query: { includeComments: boolean };
@@ -251,9 +251,9 @@ it('type inference helpers', () => {
     >
   >;
 
-  type InferRequestForClientTest = Expect<
+  type ClientInferRequestTest = Expect<
     Equal<
-      InferRequestForClient<typeof contract>,
+      ClientInferRequest<typeof contract>,
       {
         getPost: {
           query: { includeComments?: boolean | undefined };

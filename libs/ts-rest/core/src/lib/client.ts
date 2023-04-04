@@ -99,14 +99,14 @@ export type ApiRouteResponse<T> =
     };
 
 /**
- * @deprecated Only safe to use on the client-side. Use `InferResponsesForServer`/`InferResponsesForClient` instead.
+ * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
  */
 export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
   T['responses']
 >;
 
 /**
- * @deprecated Only safe to use on the client-side. Use `InferResponsesForServer`/`InferResponsesForClient` instead.
+ * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
  */
 export function getRouteResponses<T extends AppRouter>(router: T) {
   return {} as {

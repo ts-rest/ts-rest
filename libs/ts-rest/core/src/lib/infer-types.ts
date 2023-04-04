@@ -25,52 +25,41 @@ type AppRouteResponses<
       ? never
       : { status: Exclude<TStatus, keyof T['responses']>; body: unknown });
 
-export type InferResponsesForServer<
+export type ServerInferResponses<
   T extends AppRoute | AppRouter,
   TStatus extends HTTPStatusCode = HTTPStatusCode
 > = T extends AppRoute
   ? Prettify<AppRouteResponses<T, TStatus, 'server'>>
   : T extends AppRouter
-  ? {
-      [TKey in keyof T]: T[TKey] extends AppRoute
-        ? InferResponsesForServer<T[TKey], TStatus>
-        : T[TKey] extends AppRouter
-        ? InferResponsesForServer<T[TKey], TStatus>
-        : never;
-    }
+  ? { [TKey in keyof T]: ServerInferResponses<T[TKey], TStatus> }
   : never;
 
-export type InferResponsesForClient<
+export type ClientInferResponses<
   T extends AppRoute | AppRouter,
   TStatus extends HTTPStatusCode = HTTPStatusCode
 > = T extends AppRoute
   ? Prettify<AppRouteResponses<T, TStatus, 'client'>>
   : T extends AppRouter
-  ? {
-      [TKey in keyof T]: T[TKey] extends AppRoute
-        ? InferResponsesForClient<T[TKey], TStatus>
-        : T[TKey] extends AppRouter
-        ? InferResponsesForClient<T[TKey], TStatus>
-        : never;
-    }
+  ? { [TKey in keyof T]: ClientInferResponses<T[TKey], TStatus> }
   : never;
 
-export type InferResponseBodyForServer<
+export type ServerInferResponseBody<
   T extends AppRoute,
   TStatus extends keyof T['responses'] = keyof T['responses']
 > = Prettify<AppRouteResponses<T, TStatus & HTTPStatusCode, 'server'>['body']>;
 
-export type InferResponseBodyForClient<
+export type ClientInferResponseBody<
   T extends AppRoute,
   TStatus extends keyof T['responses'] = keyof T['responses']
 > = Prettify<AppRouteResponses<T, TStatus & HTTPStatusCode, 'client'>['body']>;
 
-type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
+type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> = Prettify<
   T['contentType'] extends 'multipart/form-data'
     ? Without<ZodInferOrType<T['body']>, File>
-    : ZodInferOrType<T['body']>;
+    : ZodInferOrType<T['body']>
+>;
 
-export type InferRequestForServer<T extends AppRoute | AppRouter> =
+export type ServerInferRequest<T extends AppRoute | AppRouter> =
   T extends AppRoute
     ? Prettify<
         Without<
@@ -87,16 +76,10 @@ export type InferRequestForServer<T extends AppRoute | AppRouter> =
         >
       >
     : T extends AppRouter
-    ? {
-        [TKey in keyof T]: T[TKey] extends AppRoute
-          ? InferRequestForServer<T[TKey]>
-          : T[TKey] extends AppRouter
-          ? InferRequestForServer<T[TKey]>
-          : never;
-      }
+    ? { [TKey in keyof T]: ServerInferRequest<T[TKey]> }
     : never;
 
-export type InferRequestForClient<T extends AppRoute | AppRouter> =
+export type ClientInferRequest<T extends AppRoute | AppRouter> =
   T extends AppRoute
     ? Prettify<
         Without<
@@ -118,11 +101,5 @@ export type InferRequestForClient<T extends AppRoute | AppRouter> =
         >
       >
     : T extends AppRouter
-    ? {
-        [TKey in keyof T]: T[TKey] extends AppRoute
-          ? InferRequestForClient<T[TKey]>
-          : T[TKey] extends AppRouter
-          ? InferRequestForClient<T[TKey]>
-          : never;
-      }
+    ? { [TKey in keyof T]: ClientInferRequest<T[TKey]> }
     : never;
