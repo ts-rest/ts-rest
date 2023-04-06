@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.19.0
+
+### Minor Changes
+
+- 2bb39f8: Added inference type helpers
+
 ## 3.18.1
 
 ### Patch Changes
