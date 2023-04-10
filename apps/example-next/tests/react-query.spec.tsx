@@ -377,6 +377,13 @@ describe('react-query', () => {
       headers: {
         'content-type': 'application/json',
       },
+      rawBody: {
+        authorId: '1',
+        content: '',
+        description: 'test',
+        title: 'test',
+      },
+      contentType: undefined,
     });
 
     await waitFor(() => {
