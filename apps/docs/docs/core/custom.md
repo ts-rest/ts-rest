@@ -46,7 +46,7 @@ const client = initQueryClient(postsApi, {
 
 ### Accessing the raw body and content type
 
-Our client automatically stringifies your `body` input for mutations. You can access the raw body object and content-type like so:
+Ts-Rest automatically stringifies your `body` input for mutations. You can access the raw body object and content-type like so:
 
 ```typescript
 const client = initQueryClient(postsApi, {
