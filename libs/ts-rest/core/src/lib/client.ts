@@ -145,6 +145,8 @@ export type ApiFetcherArgs = {
   method: string;
   headers: Record<string, string>;
   body: FormData | string | null | undefined;
+  rawBody: unknown;
+  contentType:  AppRouteMutation['contentType']
   credentials?: RequestCredentials;
 };
 
@@ -236,6 +238,8 @@ export const fetchApi = ({
       credentials: clientArgs.credentials,
       headers: combinedHeaders,
       body: body instanceof FormData ? body : createFormData(body),
+      rawBody: body,
+      contentType: route.contentType,
       ...extraInputArgs,
     });
   }
@@ -250,6 +254,8 @@ export const fetchApi = ({
     },
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,
+    rawBody: body,
+    contentType: route.method !== 'GET'  ? route.contentType : undefined,
     ...extraInputArgs,
   });
 };
