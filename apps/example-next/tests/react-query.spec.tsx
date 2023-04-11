@@ -383,7 +383,7 @@ describe('react-query', () => {
         description: 'test',
         title: 'test',
       },
-      contentType: undefined,
+      contentType: 'application/json',
     });
 
     await waitFor(() => {
