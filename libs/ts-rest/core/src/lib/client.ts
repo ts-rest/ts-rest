@@ -239,7 +239,7 @@ export const fetchApi = ({
       headers: combinedHeaders,
       body: body instanceof FormData ? body : createFormData(body),
       rawBody: body,
-      contentType: route.contentType,
+      contentType: 'multipart/form-data',
       ...extraInputArgs,
     });
   }
@@ -255,7 +255,7 @@ export const fetchApi = ({
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,
     rawBody: body,
-    contentType: route.method !== 'GET'  ? route.contentType : undefined,
+    contentType: route.method !== 'GET'  ? 'application/json' : undefined,
     ...extraInputArgs,
   });
 };
