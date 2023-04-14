@@ -18,6 +18,7 @@ import type {
   IRouter,
   Request,
   RequestHandler,
+  Response,
 } from 'express-serve-static-core';
 
 export function getValue<
@@ -117,6 +118,45 @@ const recursivelyApplyExpressRouter = (
   }
 };
 
+const validateRequest = (
+  req: Request,
+  res: Response,
+  schema: AppRouteQuery | AppRouteMutation,
+  options: Options
+) => {
+  const paramsResult = checkZodSchema(req.params, schema.pathParams, {
+    passThroughExtraKeys: true,
+  });
+
+  if (!paramsResult.success) {
+    return res.status(400).send(paramsResult.error);
+  }
+
+  const headersResult = checkZodSchema(req.headers, schema.headers, {
+    passThroughExtraKeys: true,
+  });
+
+  if (!headersResult.success) {
+    return res.status(400).send(headersResult.error);
+  }
+
+  const query = options.jsonQuery
+    ? parseJsonQueryObject(req.query as Record<string, string>)
+    : req.query;
+
+  const queryResult = checkZodSchema(query, schema.query);
+
+  if (!queryResult.success) {
+    return res.status(400).send(queryResult.error);
+  }
+
+  return {
+    paramsResult,
+    headersResult,
+    queryResult,
+  };
+};
+
 const transformAppRouteQueryImplementation = (
   route: AppRouteQueryImplementation<any>,
   schema: AppRouteQuery,
@@ -128,37 +168,18 @@ const transformAppRouteQueryImplementation = (
   }
 
   app.get(schema.path, async (req, res, next) => {
-    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
-      passThroughExtraKeys: true,
-    });
+    const validationResults = validateRequest(req, res, schema, options);
 
-    if (!paramsResult.success) {
-      return res.status(400).send(paramsResult.error);
-    }
-
-    const headersResult = checkZodSchema(req.headers, schema.headers, {
-      passThroughExtraKeys: true,
-    });
-
-    if (!headersResult.success) {
-      return res.status(400).send(headersResult.error);
-    }
-
-    const query = options.jsonQuery
-      ? parseJsonQueryObject(req.query as Record<string, string>)
-      : req.query;
-
-    const queryResult = checkZodSchema(query, schema.query);
-
-    if (!queryResult.success) {
-      return res.status(400).send(queryResult.error);
+    // validation failed, return response
+    if (!('paramsResult' in validationResults)) {
+      return validationResults;
     }
 
     try {
       const result = await route({
-        params: paramsResult.data,
-        query: queryResult.data,
-        headers: headersResult.data as Parameters<
+        params: validationResults.paramsResult.data,
+        query: validationResults.queryResult.data,
+        headers: validationResults.headersResult.data as Parameters<
           AppRouteQueryImplementation<typeof schema>
         >[0]['headers'],
         req: req,
@@ -198,30 +219,11 @@ const transformAppRouteMutationImplementation = (
   const method = schema.method;
 
   const reqHandler: RequestHandler = async (req, res, next) => {
-    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
-      passThroughExtraKeys: true,
-    });
+    const validationResults = validateRequest(req, res, schema, options);
 
-    if (!paramsResult.success) {
-      return res.status(400).send(paramsResult.error);
-    }
-
-    const headersResult = checkZodSchema(req.headers, schema.headers, {
-      passThroughExtraKeys: true,
-    });
-
-    if (!headersResult.success) {
-      return res.status(400).send(headersResult.error);
-    }
-
-    const query = options.jsonQuery
-      ? parseJsonQueryObject(req.query as Record<string, string>)
-      : req.query;
-
-    const queryResult = checkZodSchema(query, schema.query);
-
-    if (!queryResult.success) {
-      return res.status(400).send(queryResult.error);
+    // validation failed, return response
+    if (!('paramsResult' in validationResults)) {
+      return validationResults;
     }
 
     const bodyResult = checkZodSchema(req.body, schema.body);
@@ -232,10 +234,10 @@ const transformAppRouteMutationImplementation = (
 
     try {
       const result = await route({
-        params: paramsResult.data,
+        params: validationResults.paramsResult.data,
         body: bodyResult.data,
-        query: queryResult.data,
-        headers: headersResult.data as Parameters<
+        query: validationResults.queryResult.data,
+        headers: validationResults.headersResult.data as Parameters<
           AppRouteMutationImplementation<typeof schema>
         >[0]['headers'],
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

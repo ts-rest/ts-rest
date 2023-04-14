@@ -1,4 +1,4 @@
-import { Merge, Opaque, Prettify, Without, WithoutUnknown } from './type-utils';
+import { Merge, Opaque, Prettify, WithoutUnknown } from './type-utils';
 import { zodMerge } from './zod-utils';
 import { z } from 'zod';
 
