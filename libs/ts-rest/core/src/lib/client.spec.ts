@@ -219,8 +219,8 @@ describe('client', () => {
       const client = initClient(
         c.router({
           getPosts: {
-            ...router.endpoints.posts.endpoints.getPosts,
-            query: router.endpoints.posts.endpoints.getPosts.query.extend({
+            ...postsRouter.getPosts,
+            query: postsRouter.getPosts.query.extend({
               published: z.boolean(),
               filter: z.object({
                 title: z.string(),

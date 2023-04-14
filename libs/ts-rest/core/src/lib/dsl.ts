@@ -1,4 +1,8 @@
-import { DefinedOrEmpty, Merge, Narrow } from './type-utils';
+import { Merge, Opaque, Prettify } from './type-utils';
+import { zodMerge } from './zod-utils';
+import { z } from 'zod';
+
+type MixedZodError<A, B> = Opaque<{ a: A; b: B }, 'MixedZodError'>;
 
 /**
  * The path with colon-prefixed parameters
@@ -46,20 +50,58 @@ export type AppRouteMutation = {
  */
 type RecursivelyProcessAppRouter<
   T extends AppRouter,
-  TEndpoints extends T['endpoints'] = T['endpoints'],
-  TOptions extends T['options'] = T['options']
+  TOptions extends RouterOptions
 > = {
-  endpoints: {
-    [K in keyof TEndpoints]: TEndpoints[K] extends AppRoute
-      ? TEndpoints[K]
-      : TEndpoints[K] extends AppRouter
-      ? RecursivelyProcessAppRouter<{
-          endpoints: TEndpoints[K]['endpoints'];
-          options: CombineRouterOptions<TOptions, TEndpoints[K]['options']>;
-        }>
-      : TEndpoints[K];
-  };
-  options: TOptions;
+  [K in keyof T]: T[K] extends AppRoute
+    ? ApplyOptions<T[K], TOptions>['headers'] extends MixedZodError<
+        infer A,
+        infer B
+      >
+      ? {
+          _error: 'Cannot mix plain object types with Zod objects for headers';
+          a: A;
+          b: B;
+        }
+      : T[K]
+    : T[K] extends AppRouter
+    ? RecursivelyProcessAppRouter<T[K], TOptions>
+    : T[K];
+};
+
+type RecursivelyApplyOptions<
+  TRouter extends AppRouter,
+  TOptions extends RouterOptions
+> = {
+  [TRouterKey in keyof TRouter]: TRouter[TRouterKey] extends AppRoute
+    ? ApplyOptions<TRouter[TRouterKey], TOptions>
+    : TRouter[TRouterKey] extends AppRouter
+    ? RecursivelyApplyOptions<TRouter[TRouterKey], TOptions>
+    : TRouter[TRouterKey];
+};
+
+type UniversalMerge<A, B> = A extends z.AnyZodObject
+  ? B extends z.AnyZodObject
+    ? z.ZodObject<
+        z.objectUtil.MergeShapes<A['shape'], B['shape']>,
+        B['_def']['unknownKeys'],
+        B['_def']['catchall']
+      >
+    : unknown extends B
+    ? A
+    : MixedZodError<A, B>
+  : unknown extends A
+  ? B
+  : B extends z.AnyZodObject
+  ? MixedZodError<A, B>
+  : unknown extends B
+  ? A
+  : Prettify<Merge<A, B>>;
+
+type ApplyOptions<
+  TRoute extends AppRoute,
+  TOptions extends RouterOptions
+> = Omit<TRoute, 'headers'> & {
+  headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
 };
 
 /**
@@ -72,24 +114,11 @@ export type AppRoute = AppRouteQuery | AppRouteMutation;
  * individual routes
  */
 export type AppRouter = {
-  endpoints: {
-    [key: string]: AppRouter | AppRoute;
-  };
-  options: RouterOptions;
+  [key: string]: AppRouter | AppRoute;
 };
 
 export type RouterOptions = {
   baseHeaders?: unknown;
-};
-
-export type CombineRouterOptions<
-  Parent extends RouterOptions | undefined,
-  Child extends RouterOptions | undefined
-> = {
-  baseHeaders: Merge<
-    DefinedOrEmpty<Parent, 'baseHeaders'>,
-    DefinedOrEmpty<Child, 'baseHeaders'>
-  >;
 };
 
 /**
@@ -109,16 +138,10 @@ type ContractInstance = {
   /**
    * A collection of routes or routers
    */
-  router: <
-    TEndpoints extends RecursivelyProcessAppRouter<AppRouter>['endpoints'],
-    TOptions extends RouterOptions
-  >(
-    endpoints: Narrow<TEndpoints>,
-    options?: Narrow<TOptions>
-  ) => Narrow<{
-    endpoints: TEndpoints;
-    options: NonNullable<TOptions>;
-  }>;
+  router: <TRouter extends AppRouter, TOptions extends RouterOptions>(
+    endpoints: RecursivelyProcessAppRouter<TRouter, TOptions>,
+    options?: TOptions
+  ) => RecursivelyApplyOptions<TRouter, TOptions>;
   /**
    * A single query route, should exist within
    * a {@link AppRouter}
@@ -145,6 +168,27 @@ type ContractInstance = {
  */
 export const initTsRest = (): ContractInstance => initContract();
 
+const recursivelyApplyOptions = <T extends AppRouter>(
+  router: T,
+  options?: RouterOptions
+): T => {
+  return Object.fromEntries(
+    Object.entries(router).map(([key, value]) => {
+      if (isAppRoute(value)) {
+        return [
+          key,
+          {
+            ...value,
+            headers: zodMerge(options?.baseHeaders, value.headers),
+          },
+        ];
+      } else {
+        return [key, recursivelyApplyOptions(value, options)];
+      }
+    })
+  );
+};
+
 /**
  * Instantiate a ts-rest client, primarily to access `router`, `response`, and `body`
  *
@@ -153,7 +197,7 @@ export const initTsRest = (): ContractInstance => initContract();
 export const initContract = (): ContractInstance => {
   return {
     // @ts-expect-error - this is a type error, but it's not clear how to fix it
-    router: (endpoints, options) => ({ endpoints, options: options || {} }),
+    router: (endpoints, options) => recursivelyApplyOptions(endpoints, options),
     query: (args) => args,
     mutation: (args) => args,
     response: <T>() => undefined as unknown as T,

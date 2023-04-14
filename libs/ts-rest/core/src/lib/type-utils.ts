@@ -112,3 +112,11 @@ export type DefinedOrEmpty<
   K extends keyof NonNullable<T>
   // eslint-disable-next-line @typescript-eslint/ban-types
 > = undefined extends T ? {} : NonNullable<T>[K];
+
+declare const tag: unique symbol;
+
+declare type Tagged<Token> = {
+  readonly [tag]: Token;
+};
+
+export type Opaque<Type, Token = unknown> = Type & Tagged<Token>;

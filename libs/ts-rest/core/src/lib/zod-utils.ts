@@ -4,6 +4,22 @@ export const isZodObject = (body: unknown): body is z.AnyZodObject => {
   return (body as z.AnyZodObject)?.safeParse !== undefined;
 };
 
+export const zodMerge = (objectA: unknown, objectB: unknown) => {
+  if (isZodObject(objectA)) {
+    if (isZodObject(objectB)) {
+      return objectA.merge(objectB);
+    }
+
+    return objectA;
+  }
+
+  if (isZodObject(objectB)) {
+    return objectB;
+  }
+
+  return Object.assign({}, objectA, objectB);
+};
+
 export const checkZodSchema = (
   data: unknown,
   schema: unknown,

@@ -1,11 +1,4 @@
-import {
-  AppRoute,
-  AppRouteMutation,
-  AppRouter,
-  CombineRouterOptions,
-  isAppRoute,
-  RouterOptions,
-} from './dsl';
+import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
 import { insertParamsIntoPath, ParamsFromUrl } from './paths';
 import { convertQueryParamsToUrlString } from './query';
 import { HTTPStatusCode } from './status-codes';
@@ -20,20 +13,11 @@ import {
   ZodInputOrType,
 } from './type-utils';
 
-type RecursiveProxyObj<
-  T extends AppRouter,
-  TOptions extends RouterOptions,
-  TClientArgs extends ClientArgs,
-  TEndpoints extends T['endpoints'] = T['endpoints']
-> = {
-  [TKey in keyof TEndpoints]: TEndpoints[TKey] extends AppRoute
-    ? AppRouteFunction<TEndpoints[TKey], TOptions, TClientArgs>
-    : TEndpoints[TKey] extends AppRouter
-    ? RecursiveProxyObj<
-        TEndpoints[TKey],
-        CombineRouterOptions<TOptions, TEndpoints[TKey]['options']>,
-        TClientArgs
-      >
+type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
+  [TKey in keyof T]: T[TKey] extends AppRoute
+    ? AppRouteFunction<T[TKey], TClientArgs>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObj<T[TKey], TClientArgs>
     : never;
 };
 
@@ -74,7 +58,6 @@ export type ExtractExtraParametersFromClientArgs<
 
 type DataReturnArgsBase<
   TRoute extends AppRoute,
-  TRouterOptions extends RouterOptions,
   TClientArgs extends ClientArgs
 > = {
   body: TRoute extends AppRouteMutation
@@ -89,34 +72,23 @@ type DataReturnArgsBase<
    *
    * Unset a header by setting it to undefined
    *
-   * Mandatory headers defined in the client's baseHeaders are optional
+   * Headers defined in the client's baseHeaders will become optional since they are already set in the baseHeaders
    */
   headers: Prettify<
-    Merge<
-      'baseHeaders' extends keyof TRouterOptions
-        ? PartialByLooseKeys<
-            ZodInputOrType<TRouterOptions['baseHeaders']>,
-            keyof TClientArgs['baseHeaders']
-          >
-        : // eslint-disable-next-line @typescript-eslint/ban-types
-          {},
-      'headers' extends keyof TRoute
-        ? PartialByLooseKeys<
-            ZodInputOrType<TRoute['headers']>,
-            keyof TClientArgs['baseHeaders']
-          >
-        : // eslint-disable-next-line @typescript-eslint/ban-types
-          {}
-    >
+    'headers' extends keyof TRoute
+      ? PartialByLooseKeys<
+          ZodInputOrType<TRoute['headers']>,
+          keyof TClientArgs['baseHeaders']
+        >
+      : never
   >;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 type DataReturnArgs<
   TRoute extends AppRoute,
-  TRouterOptions extends RouterOptions,
   TClientArgs extends ClientArgs
 > = OptionalIfAllOptional<
-  Without<DataReturnArgsBase<TRoute, TRouterOptions, TClientArgs>, never>
+  Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
 >;
 
 export type ApiRouteResponse<T> =
@@ -136,16 +108,13 @@ export type ApiRouteResponse<T> =
  */
 export type AppRouteFunction<
   TRoute extends AppRoute,
-  TRouterOptions extends RouterOptions,
   TClientArgs extends ClientArgs
-> = AreAllPropertiesOptional<
-  DataReturnArgs<TRoute, TRouterOptions, TClientArgs>
-> extends true
+> = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
-      args?: Prettify<DataReturnArgs<TRoute, TRouterOptions, TClientArgs>>
+      args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>
   : (
-      args: Prettify<DataReturnArgs<TRoute, TRouterOptions, TClientArgs>>
+      args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>;
 
 export interface ClientArgs {
@@ -288,17 +257,11 @@ export const getCompleteUrl = (
   return `${baseUrl}${path}${queryComponent}`;
 };
 
-export const getRouteQuery = <
-  TAppRoute extends AppRoute,
-  TRouterOptions extends RouterOptions
->(
+export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
-  options: TRouterOptions,
   clientArgs: ClientArgs
 ) => {
-  return async (
-    inputArgs?: DataReturnArgsBase<any, TRouterOptions, ClientArgs>
-  ) => {
+  return async (inputArgs?: DataReturnArgsBase<any, ClientArgs>) => {
     const { query, params, body, headers, ...extraInputArgs } = inputArgs || {};
 
     const completeUrl = getCompleteUrl(
@@ -323,30 +286,18 @@ export const getRouteQuery = <
 export type InitClientReturn<
   T extends AppRouter,
   TClientArgs extends ClientArgs
-> = RecursiveProxyObj<T, T['options'], TClientArgs>;
+> = RecursiveProxyObj<T, TClientArgs>;
 
 export const initClient = <T extends AppRouter, TClientArgs extends ClientArgs>(
   router: T,
   args: TClientArgs
 ): InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
-    Object.entries(router.endpoints).map(([key, subRouter]) => {
+    Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {
-        return [key, getRouteQuery(subRouter, router.options || {}, args)];
+        return [key, getRouteQuery(subRouter, args)];
       } else {
-        return [
-          key,
-          initClient(
-            {
-              endpoints: subRouter['endpoints'],
-              options: Object.assign(
-                { ...router.options },
-                subRouter['options']
-              ),
-            },
-            args
-          ),
-        ];
+        return [key, initClient(subRouter, args)];
       }
     })
   );
