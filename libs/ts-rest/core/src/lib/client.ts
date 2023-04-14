@@ -4,6 +4,7 @@ import { convertQueryParamsToUrlString } from './query';
 import { HTTPStatusCode } from './status-codes';
 import {
   AreAllPropertiesOptional,
+  LowercaseKeys,
   Merge,
   OptionalIfAllOptional,
   PartialByLooseKeys,
@@ -69,8 +70,8 @@ type DataReturnArgsBase<
   THeaders = Prettify<
     'headers' extends keyof TRoute
       ? PartialByLooseKeys<
-          ZodInputOrType<TRoute['headers']>,
-          keyof TClientArgs['baseHeaders']
+          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
         >
       : never
   >
@@ -84,7 +85,7 @@ type DataReturnArgsBase<
     : never;
   headers: THeaders;
   extraHeaders?: {
-    [K in keyof THeaders]: never;
+    [K in NonNullable<keyof THeaders>]: never;
   } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 

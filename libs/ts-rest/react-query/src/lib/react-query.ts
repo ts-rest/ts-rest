@@ -27,6 +27,7 @@ import {
   getRouteQuery,
   HTTPStatusCode,
   isAppRoute,
+  LowercaseKeys,
   OptionalIfAllOptional,
   PartialByLooseKeys,
   PathParamsFromUrl,
@@ -36,7 +37,7 @@ import {
   ZodInferOrType,
   ZodInputOrType,
 } from '@ts-rest/core';
-import { z, ZodTypeAny } from 'zod';
+import { z } from 'zod';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -46,7 +47,7 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
     : never;
 };
 
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
+type AppRouteMutationType<T> = T extends z.ZodTypeAny ? z.input<T> : T;
 
 type UseQueryArgs<
   TAppRoute extends AppRoute,
@@ -78,8 +79,8 @@ type DataReturnArgsBase<
   THeaders = Prettify<
     'headers' extends keyof TRoute
       ? PartialByLooseKeys<
-          ZodInputOrType<TRoute['headers']>,
-          keyof TClientArgs['baseHeaders']
+          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
         >
       : never
   >
@@ -97,7 +98,7 @@ type DataReturnArgsBase<
     : never;
   headers: THeaders;
   extraHeaders?: {
-    [K in keyof THeaders]: never;
+    [K in keyof NonNullable<keyof THeaders>]: never;
   } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
@@ -238,7 +239,7 @@ const getRouteUseQuery = <
 ) => {
   return (
     queryKey: QueryKey,
-    args?: DataReturnArgs<any, ClientArgs>,
+    args?: DataReturnArgsBase<TAppRoute, TClientArgs>,
     options?: UseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
@@ -346,7 +347,9 @@ const getRouteUseInfiniteQuery = <
 ) => {
   return (
     queryKey: QueryKey,
-    args: (context: QueryFunctionContext) => DataReturnArgs<any, ClientArgs>,
+    args: (
+      context: QueryFunctionContext
+    ) => DataReturnArgsBase<TAppRoute, TClientArgs>,
     options?: UseInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (
@@ -397,8 +400,11 @@ const getRouteUseMutation = <
   clientArgs: TClientArgs
 ) => {
   return (options?: UseMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (args?: DataReturnArgs<any, ClientArgs>) => {
-      const { query, params, body, headers, ...extraInputArgs } = args || {};
+    const mutationFunction = async (
+      args?: DataReturnArgsBase<TAppRoute, TClientArgs>
+    ) => {
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+        args || {};
 
       const path = getCompleteUrl(
         args?.query,
@@ -414,7 +420,10 @@ const getRouteUseMutation = <
         route,
         body: args?.body,
         extraInputArgs,
-        headers: headers || {},
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
       });
 
       // If the response is not a 2XX, throw an error to be handled by react-query

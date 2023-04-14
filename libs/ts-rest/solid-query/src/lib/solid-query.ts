@@ -25,6 +25,7 @@ import {
   getRouteQuery,
   HTTPStatusCode,
   isAppRoute,
+  LowercaseKeys,
   PartialByLooseKeys,
   PathParamsFromUrl,
   Prettify,
@@ -71,8 +72,8 @@ type DataReturnArgs<
   THeaders = Prettify<
     'headers' extends keyof TRoute
       ? PartialByLooseKeys<
-          ZodInputOrType<TRoute['headers']>,
-          keyof TClientArgs['baseHeaders']
+          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
         >
       : never
   >
@@ -90,7 +91,7 @@ type DataReturnArgs<
     : never;
   headers: THeaders;
   extraHeaders?: {
-    [K in keyof THeaders]: never;
+    [K in keyof NonNullable<keyof THeaders>]: never;
   } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 

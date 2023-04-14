@@ -2,7 +2,6 @@ import * as fetchMock from 'fetch-mock-jest';
 import { initContract } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
-
 import { z } from 'zod';
 
 const c = initContract();
@@ -138,7 +137,7 @@ export const router = c.router(
 const client = initClient(router, {
   baseUrl: 'https://api.com',
   baseHeaders: {
-    'x-api-key': 'foo',
+    'X-Api-Key': 'foo',
   },
 });
 
@@ -151,7 +150,18 @@ type ClientGetPostsType = Expect<
           skip?: number;
           order?: string;
         };
-        headers?: Record<string, string>;
+        headers?: {
+          'x-pagination'?: string;
+          'x-test'?: string;
+          'base-header'?: string;
+          'x-api-key'?: string;
+        };
+        extraHeaders?: {
+          'x-pagination': never;
+          'x-test': never;
+          'base-header': never;
+          'x-api-key': never;
+        } & Record<string, string | undefined>;
       }
     | undefined
   >
@@ -164,7 +174,16 @@ type ClientGetPostType = Expect<
       params: {
         id: string;
       };
-      headers?: Record<string, string>;
+      headers?: {
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key'?: string;
+      };
+      extraHeaders?: {
+        'x-test': never;
+        'base-header': never;
+        'x-api-key': never;
+      } & Record<string, string | undefined>;
     }
   >
 >;
@@ -541,16 +560,26 @@ const customClient = initClient(router, {
 type CustomClientGetPostsType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPosts>[0],
-    | {
-        query?: {
-          take?: number;
-          skip?: number;
-          order?: string;
-        };
-        headers?: Record<string, string>;
-        uploadProgress?: (progress: number) => void;
-      }
-    | undefined
+    {
+      query?: {
+        take?: number;
+        skip?: number;
+        order?: string;
+      };
+      headers: {
+        'x-pagination'?: string;
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key': string;
+      };
+      extraHeaders?: {
+        'x-pagination': never;
+        'x-test': never;
+        'base-header': never;
+        'x-api-key': never;
+      } & Record<string, string | undefined>;
+      uploadProgress?: (progress: number) => void;
+    }
   >
 >;
 
@@ -561,7 +590,16 @@ type CustomClientGetPostType = Expect<
       params: {
         id: string;
       };
-      headers?: Record<string, string>;
+      headers?: {
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key'?: string;
+      };
+      extraHeaders?: {
+        'x-test': never;
+        'base-header': never;
+        'x-api-key': never;
+      } & Record<string, string | undefined>;
       uploadProgress?: (progress: number) => void;
     }
   >
