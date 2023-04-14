@@ -60,6 +60,21 @@ client.getPosts({
 You can use this to accomplish loads of patterns, such as adding a `cache` argument to your api, or adding a `logger` argument to your api - maybe you want to add an `onUploadProgress` argument to your api to track upload progress? You can do all of this with the `args` parameter!
 :::
 
+### Accessing the raw body and content type
+
+Ts-Rest automatically stringifies your `body` input for mutations. You can access the raw body object and content-type like so:
+
+```typescript
+const client = initQueryClient(postsApi, {
+  baseUrl: 'http://localhost:5003',
+  baseHeaders: {},
+  api: async ({ path, method, headers, body, rawBody, contentType }) => {
+    // do something with rawBody ✨
+    return tsRestFetchApi(args);
+  },
+});
+```
+
 ## Using Axios (custom api override)
 
 By default ts-rest ships with an incredibly simple fetch
