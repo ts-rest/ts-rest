@@ -58,7 +58,15 @@ export type ExtractExtraParametersFromClientArgs<
 
 type DataReturnArgsBase<
   TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
+  THeaders = Prettify<
+    'headers' extends keyof TRoute
+      ? PartialByLooseKeys<
+          ZodInputOrType<TRoute['headers']>,
+          keyof TClientArgs['baseHeaders']
+        >
+      : never
+  >
 > = {
   body: TRoute extends AppRouteMutation
     ? AppRouteBodyOrFormData<TRoute>
@@ -67,21 +75,10 @@ type DataReturnArgsBase<
   query: 'query' extends keyof TRoute
     ? AppRouteMutationType<TRoute['query']>
     : never;
-  /**
-   * Additional headers to send with the request, merged over baseHeaders,
-   *
-   * Unset a header by setting it to undefined
-   *
-   * Headers defined in the client's baseHeaders will become optional since they are already set in the baseHeaders
-   */
-  headers: Prettify<
-    'headers' extends keyof TRoute
-      ? PartialByLooseKeys<
-          ZodInputOrType<TRoute['headers']>,
-          keyof TClientArgs['baseHeaders']
-        >
-      : never
-  >;
+  headers: THeaders;
+  extraHeaders?: {
+    [K in keyof THeaders]: never;
+  } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 type DataReturnArgs<
@@ -262,7 +259,8 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   clientArgs: ClientArgs
 ) => {
   return async (inputArgs?: DataReturnArgsBase<any, ClientArgs>) => {
-    const { query, params, body, headers, ...extraInputArgs } = inputArgs || {};
+    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+      inputArgs || {};
 
     const completeUrl = getCompleteUrl(
       query,
@@ -278,7 +276,10 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       route,
       body,
       extraInputArgs,
-      headers: headers || {},
+      headers: {
+        ...extraHeaders,
+        ...headers,
+      },
     });
   };
 };

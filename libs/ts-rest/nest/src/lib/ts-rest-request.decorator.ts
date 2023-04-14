@@ -7,6 +7,7 @@ import {
   AppRoute,
   AppRouteMutation,
   checkZodSchema,
+  LowercaseKeys,
   parseJsonQueryObject,
   PathParamsWithCustomValidators,
   Without,
@@ -28,6 +29,8 @@ export type TsRestRequestShape<TRoute extends AppRoute> = Without<
       ? BodyWithoutFileIfMultiPart<TRoute>
       : never;
     query: ZodInferOrType<TRoute['query']>;
+    headers: LowercaseKeys<ZodInferOrType<TRoute['headers']>> &
+      Request['headers'];
   },
   never
 >;
@@ -47,6 +50,22 @@ export const TsRestRequest = createParamDecorator(
     if (!appRoute) {
       // this will respond with a 500 error without revealing this error message in the response body
       throw new Error('Make sure your route is decorated with @TsRest()');
+    }
+
+    const pathParamsResult = checkZodSchema(req.params, appRoute.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!pathParamsResult.success) {
+      throw new BadRequestException(zodErrorResponse(pathParamsResult.error));
+    }
+
+    const headersResult = checkZodSchema(req.headers, appRoute.headers, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!headersResult.success) {
+      throw new BadRequestException(zodErrorResponse(headersResult.error));
     }
 
     const isJsonQuery = !!(
@@ -73,18 +92,13 @@ export const TsRestRequest = createParamDecorator(
       throw new BadRequestException(zodErrorResponse(bodyResult.error));
     }
 
-    const pathParamsResult = checkZodSchema(req.params, appRoute.pathParams, {
-      passThroughExtraKeys: true,
-    });
-
-    if (!pathParamsResult.success) {
-      throw new BadRequestException(zodErrorResponse(pathParamsResult.error));
-    }
-
     return {
       query: queryResult.data,
       params: pathParamsResult.data,
       body: bodyResult.data,
+      headers: headersResult.data as TsRestRequestShape<
+        typeof appRoute
+      >['headers'],
     };
   }
 );

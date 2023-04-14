@@ -7,6 +7,7 @@ import {
   checkZodSchema,
   GetFieldType,
   isAppRoute,
+  LowercaseKeys,
   parseJsonQueryObject,
   PathParamsWithCustomValidators,
   validateResponse,
@@ -18,7 +19,6 @@ import type {
   Request,
   RequestHandler,
 } from 'express-serve-static-core';
-import type { IncomingHttpHeaders } from 'http';
 
 export function getValue<
   TData,
@@ -45,7 +45,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     {
       params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
-      headers: IncomingHttpHeaders;
+      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
       req: Request;
     },
     never
@@ -63,7 +63,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
       params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
       body: WithoutFileIfMultiPart<T>;
-      headers: IncomingHttpHeaders;
+      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
       files: unknown;
       file: unknown;
       req: Request;
@@ -128,6 +128,22 @@ const transformAppRouteQueryImplementation = (
   }
 
   app.get(schema.path, async (req, res, next) => {
+    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!paramsResult.success) {
+      return res.status(400).send(paramsResult.error);
+    }
+
+    const headersResult = checkZodSchema(req.headers, schema.headers, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!headersResult.success) {
+      return res.status(400).send(headersResult.error);
+    }
+
     const query = options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
@@ -138,19 +154,13 @@ const transformAppRouteQueryImplementation = (
       return res.status(400).send(queryResult.error);
     }
 
-    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
-      passThroughExtraKeys: true,
-    });
-
-    if (!paramsResult.success) {
-      return res.status(400).send(paramsResult.error);
-    }
-
     try {
       const result = await route({
         params: paramsResult.data,
         query: queryResult.data,
-        headers: req.headers,
+        headers: headersResult.data as Parameters<
+          AppRouteQueryImplementation<typeof schema>
+        >[0]['headers'],
         req: req,
       });
 
@@ -188,6 +198,22 @@ const transformAppRouteMutationImplementation = (
   const method = schema.method;
 
   const reqHandler: RequestHandler = async (req, res, next) => {
+    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!paramsResult.success) {
+      return res.status(400).send(paramsResult.error);
+    }
+
+    const headersResult = checkZodSchema(req.headers, schema.headers, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!headersResult.success) {
+      return res.status(400).send(headersResult.error);
+    }
+
     const query = options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
@@ -204,20 +230,14 @@ const transformAppRouteMutationImplementation = (
       return res.status(400).send(bodyResult.error);
     }
 
-    const paramsResult = checkZodSchema(req.params, schema.pathParams, {
-      passThroughExtraKeys: true,
-    });
-
-    if (!paramsResult.success) {
-      return res.status(400).send(paramsResult.error);
-    }
-
     try {
       const result = await route({
         params: paramsResult.data,
         body: bodyResult.data,
         query: queryResult.data,
-        headers: req.headers,
+        headers: headersResult.data as Parameters<
+          AppRouteMutationImplementation<typeof schema>
+        >[0]['headers'],
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         files: req.files,

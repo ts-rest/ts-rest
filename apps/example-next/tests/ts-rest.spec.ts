@@ -25,6 +25,9 @@ describe('/posts', () => {
         skip: '0',
         take: '10',
       },
+      headers: {
+        'x-api-key': '123',
+      },
     });
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -40,11 +43,48 @@ describe('/posts', () => {
     });
   });
 
+  it('fails on invalid header', async () => {
+    getPosts.mockResolvedValueOnce({
+      posts: [],
+      count: 0,
+    });
+
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: {
+        'ts-rest': ['posts'],
+        skip: '0',
+        take: '10',
+      },
+      headers: {
+        'x-api-key': '123',
+        'x-pagination': 'not a number',
+      },
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    await tsRestEndpoint(req, res);
+
+    expect(res._getStatusCode()).toBe(400);
+    expect(res._getJSONData()).toEqual([
+      {
+        code: 'invalid_string',
+        message: 'Should be a number',
+        path: ['x-pagination'],
+        validation: 'regex',
+      },
+    ]);
+  });
+
   it('transforms params correctly', async () => {
     const { req, res } = createMocks({
       method: 'GET',
       query: {
         'ts-rest': ['test', '123', 'test'],
+      },
+      headers: {
+        'x-api-key': '123',
       },
     });
 
@@ -67,6 +107,9 @@ describe('/posts', () => {
       },
       body: {
         title: '123',
+      },
+      headers: {
+        'x-api-key': '123',
       },
     });
 

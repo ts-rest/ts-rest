@@ -24,90 +24,97 @@ export type User = {
   name: string | null;
 };
 
-const postsRouter = c.router({
-  getPost: {
-    method: 'GET',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<Post | null>(),
+const postsRouter = c.router(
+  {
+    getPost: {
+      method: 'GET',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<Post | null>(),
+      },
+    },
+    getPosts: {
+      method: 'GET',
+      path: '/posts',
+      responses: {
+        200: c.response<Post[]>(),
+      },
+      query: z.object({
+        take: z.number().optional(),
+        skip: z.number().optional(),
+      }),
+    },
+    createPost: {
+      method: 'POST',
+      path: '/posts',
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: z.object({
+        title: z.string(),
+        content: z.string(),
+        published: z.boolean().optional(),
+        description: z.string().optional(),
+        authorId: z.string(),
+      }),
+    },
+    mutationWithQuery: {
+      method: 'POST',
+      path: '/posts',
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: z.object({}),
+      query: z.object({
+        test: z.string(),
+      }),
+    },
+    updatePost: {
+      method: 'PUT',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: z.object({
+        title: z.string(),
+        content: z.string(),
+        published: z.boolean().optional(),
+        description: z.string().optional(),
+        authorId: z.string(),
+      }),
+    },
+    patchPost: {
+      method: 'PATCH',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: null,
+    },
+    deletePost: {
+      method: 'DELETE',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<boolean>(),
+      },
+      body: null,
+    },
+    uploadImage: {
+      method: 'POST',
+      path: `/posts/:id/image`,
+      responses: {
+        200: c.response<Post>(),
+      },
+      contentType: 'multipart/form-data',
+      body: c.body<{ image: File }>(),
     },
   },
-  getPosts: {
-    method: 'GET',
-    path: '/posts',
-    responses: {
-      200: c.response<Post[]>(),
-    },
-    query: z.object({
-      take: z.number().optional(),
-      skip: z.number().optional(),
+  {
+    baseHeaders: z.object({
+      'x-test': z.string(),
     }),
-  },
-  createPost: {
-    method: 'POST',
-    path: '/posts',
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.object({
-      title: z.string(),
-      content: z.string(),
-      published: z.boolean().optional(),
-      description: z.string().optional(),
-      authorId: z.string(),
-    }),
-  },
-  mutationWithQuery: {
-    method: 'POST',
-    path: '/posts',
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.object({}),
-    query: z.object({
-      test: z.string(),
-    }),
-  },
-  updatePost: {
-    method: 'PUT',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.object({
-      title: z.string(),
-      content: z.string(),
-      published: z.boolean().optional(),
-      description: z.string().optional(),
-      authorId: z.string(),
-    }),
-  },
-  patchPost: {
-    method: 'PATCH',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: null,
-  },
-  deletePost: {
-    method: 'DELETE',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<boolean>(),
-    },
-    body: null,
-  },
-  uploadImage: {
-    method: 'POST',
-    path: `/posts/:id/image`,
-    responses: {
-      200: c.response<Post>(),
-    },
-    contentType: 'multipart/form-data',
-    body: c.body<{ image: File }>(),
-  },
-});
+  }
+);
 
 // Three endpoints, two for posts, and one for health
 export const router = c.router({
@@ -125,7 +132,9 @@ const api = jest.fn();
 
 const client = initQueryClient(router, {
   baseUrl: 'http://api.com',
-  baseHeaders: {},
+  baseHeaders: {
+    'x-test': 'test',
+  },
   api: api as ApiFetcher,
 });
 
@@ -172,6 +181,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -192,7 +202,7 @@ describe('react-query', () => {
             id: '1',
           },
           headers: {
-            'X-Test': 'test',
+            'x-test': 'test',
           },
         }),
       {
@@ -225,7 +235,10 @@ describe('react-query', () => {
             id: '1',
           },
           headers: {
-            'Content-Type': 'application/xml',
+            'x-test': 'foo',
+          },
+          extraHeaders: {
+            'content-type': 'application/xml',
           },
         }),
       {
@@ -243,6 +256,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/xml',
+        'x-test': 'foo',
       },
     });
   });
@@ -256,8 +270,8 @@ describe('react-query', () => {
           params: {
             id: '1',
           },
-          headers: {
-            'Content-Type': undefined,
+          extraHeaders: {
+            'content-type': undefined,
           },
         }),
       {
@@ -275,6 +289,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
   });
@@ -299,6 +314,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -329,6 +345,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -376,6 +393,7 @@ describe('react-query', () => {
       }),
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -426,6 +444,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -435,6 +454,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -493,6 +513,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -502,6 +523,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -564,6 +586,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -573,6 +596,7 @@ describe('react-query', () => {
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 

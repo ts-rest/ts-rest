@@ -28,11 +28,13 @@ import {
   HTTPStatusCode,
   isAppRoute,
   OptionalIfAllOptional,
+  PartialByLooseKeys,
   PathParamsFromUrl,
   Prettify,
   SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
+  ZodInputOrType,
 } from '@ts-rest/core';
 import { z, ZodTypeAny } from 'zod';
 
@@ -72,7 +74,15 @@ type UseQueryArgs<
 
 type DataReturnArgsBase<
   TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
+  THeaders = Prettify<
+    'headers' extends keyof TRoute
+      ? PartialByLooseKeys<
+          ZodInputOrType<TRoute['headers']>,
+          keyof TClientArgs['baseHeaders']
+        >
+      : never
+  >
 > = {
   body: TRoute extends AppRouteMutation
     ? AppRouteMutationType<TRoute['body']> extends null
@@ -85,12 +95,10 @@ type DataReturnArgsBase<
       ? never
       : AppRouteMutationType<TRoute['query']>
     : never;
-  /**
-   * Additional headers to send with the request, merged over baseHeaders,
-   *
-   * Unset a header by setting it to undefined
-   */
-  headers?: Record<string, string | undefined>;
+  headers: THeaders;
+  extraHeaders?: {
+    [K in keyof THeaders]: never;
+  } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 type DataReturnArgs<
@@ -234,7 +242,8 @@ const getRouteUseQuery = <
     options?: UseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
-      const { query, params, body, headers, ...extraInputArgs } = args || {};
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+        args || {};
 
       const path = getCompleteUrl(
         query,
@@ -249,7 +258,10 @@ const getRouteUseQuery = <
         clientArgs,
         route,
         body,
-        headers: headers || {},
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
         extraInputArgs,
       });
 
@@ -280,6 +292,7 @@ const getRouteUseQueries = <
           params,
           body,
           headers,
+          extraHeaders,
           credentials,
           queryKey,
           retry,
@@ -299,7 +312,10 @@ const getRouteUseQueries = <
           clientArgs,
           route,
           body: 'body' in queryArgs ? queryArgs?.body : undefined,
-          headers: headers || {},
+          headers: {
+            ...extraHeaders,
+            ...headers,
+          },
           extraInputArgs,
         });
 
@@ -338,7 +354,7 @@ const getRouteUseInfiniteQuery = <
     ) => {
       const resultingQueryArgs = args(infiniteQueryParams);
 
-      const { query, params, body, headers, ...extraInputArgs } =
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
         resultingQueryArgs || {};
 
       const path = getCompleteUrl(
@@ -354,7 +370,10 @@ const getRouteUseInfiniteQuery = <
         clientArgs,
         route,
         body,
-        headers: headers || {},
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
         extraInputArgs,
       });
 

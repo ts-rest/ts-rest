@@ -1,4 +1,4 @@
-import { Merge, Opaque, Prettify } from './type-utils';
+import { Merge, Opaque, Prettify, Without, WithoutUnknown } from './type-utils';
 import { zodMerge } from './zod-utils';
 import { z } from 'zod';
 
@@ -43,6 +43,20 @@ export type AppRouteMutation = {
   responses: Record<number, unknown>;
 };
 
+type ValidatedHeaders<
+  T extends AppRoute,
+  TOptions extends RouterOptions,
+  TOptionsApplied = ApplyOptions<T, TOptions>
+> = 'headers' extends keyof TOptionsApplied
+  ? TOptionsApplied['headers'] extends MixedZodError<infer A, infer B>
+    ? {
+        _error: 'Cannot mix plain object types with Zod objects for headers';
+        a: A;
+        b: B;
+      }
+    : T
+  : T;
+
 /**
  * Recursively process a router, allowing for you to define nested routers.
  *
@@ -53,16 +67,7 @@ type RecursivelyProcessAppRouter<
   TOptions extends RouterOptions
 > = {
   [K in keyof T]: T[K] extends AppRoute
-    ? ApplyOptions<T[K], TOptions>['headers'] extends MixedZodError<
-        infer A,
-        infer B
-      >
-      ? {
-          _error: 'Cannot mix plain object types with Zod objects for headers';
-          a: A;
-          b: B;
-        }
-      : T[K]
+    ? ValidatedHeaders<T[K], TOptions>
     : T[K] extends AppRouter
     ? RecursivelyProcessAppRouter<T[K], TOptions>
     : T[K];
@@ -73,7 +78,7 @@ type RecursivelyApplyOptions<
   TOptions extends RouterOptions
 > = {
   [TRouterKey in keyof TRouter]: TRouter[TRouterKey] extends AppRoute
-    ? ApplyOptions<TRouter[TRouterKey], TOptions>
+    ? Prettify<ApplyOptions<TRouter[TRouterKey], TOptions>>
     : TRouter[TRouterKey] extends AppRouter
     ? RecursivelyApplyOptions<TRouter[TRouterKey], TOptions>
     : TRouter[TRouterKey];
@@ -100,9 +105,10 @@ type UniversalMerge<A, B> = A extends z.AnyZodObject
 type ApplyOptions<
   TRoute extends AppRoute,
   TOptions extends RouterOptions
-> = Omit<TRoute, 'headers'> & {
-  headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
-};
+> = Omit<TRoute, 'headers'> &
+  WithoutUnknown<{
+    headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
+  }>;
 
 /**
  * A union of all possible endpoint types.

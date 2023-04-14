@@ -120,3 +120,14 @@ declare type Tagged<Token> = {
 };
 
 export type Opaque<Type, Token = unknown> = Type & Tagged<Token>;
+
+export type WithoutUnknown<T> = Pick<
+  T,
+  {
+    [K in keyof T]: unknown extends Exclude<T[K], undefined> ? never : K;
+  }[keyof T]
+>;
+
+export type LowercaseKeys<T> = Prettify<{
+  [K in keyof T as K extends string ? Lowercase<K> : K]: T[K];
+}>;

@@ -5,21 +5,46 @@ const superTestApp = supertest(app);
 
 describe('Posts Endpoints', () => {
   it('GET /posts should return an array of posts', async () => {
-    const res = await superTestApp.get('/posts?skip=0&take=10');
+    const res = await superTestApp
+      .get('/posts?skip=0&take=10')
+      .set('x-api-key', 'foo')
+      .set('x-pagination', '5');
 
     expect(res.status).toStrictEqual(200);
   });
 
   it('should transform skip and take into numbers', async () => {
-    const res = await superTestApp.get('/posts?skip=0&take=10');
+    const res = await superTestApp
+      .get('/posts?skip=0&take=10')
+      .set('x-api-key', 'foo');
 
     expect(res.status).toStrictEqual(200);
     expect(res.body.skip).toStrictEqual(0);
     expect(res.body.take).toStrictEqual(10);
   });
 
+  it('should error on invalid pagination header', async () => {
+    const res = await superTestApp
+      .get('/posts?skip=0&take=10')
+      .set('x-api-key', 'foo')
+      .set('x-pagination', 'not a number');
+
+    expect(res.status).toStrictEqual(400);
+    expect(res.body).toStrictEqual({
+      issues: [
+        {
+          code: 'invalid_string',
+          message: 'Should be a number',
+          path: ['x-pagination'],
+          validation: 'regex',
+        },
+      ],
+      name: 'ZodError',
+    });
+  });
+
   it('should error if a required query param is missing', async () => {
-    const res = await superTestApp.get('/posts?skip=0');
+    const res = await superTestApp.get('/posts?skip=0').set('x-api-key', 'foo');
 
     expect(res.status).toStrictEqual(400);
     expect(res.body).toStrictEqual({
@@ -37,7 +62,7 @@ describe('Posts Endpoints', () => {
   });
 
   it('should error if body is incorrect', async () => {
-    const res = await superTestApp.post('/posts').send({
+    const res = await superTestApp.post('/posts').set('x-api-key', 'foo').send({
       title: 'Good title',
       content: 123,
     });
@@ -57,8 +82,26 @@ describe('Posts Endpoints', () => {
     });
   });
 
+  it('should error if api key header is missing', async () => {
+    const res = await superTestApp.get('/posts');
+
+    expect(res.status).toStrictEqual(400);
+    expect(res.body).toStrictEqual({
+      issues: [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Required',
+          path: ['x-api-key'],
+          received: 'undefined',
+        },
+      ],
+      name: 'ZodError',
+    });
+  });
+
   it('should transform body correctly', async () => {
-    const res = await superTestApp.post('/posts').send({
+    const res = await superTestApp.post('/posts').set('x-api-key', 'foo').send({
       title: 'Title with extra spaces     ',
       content: 'content',
     });
@@ -68,7 +111,9 @@ describe('Posts Endpoints', () => {
   });
 
   it('should format params using pathParams correctly', async () => {
-    const res = await superTestApp.get('/test/123/name');
+    const res = await superTestApp
+      .get('/test/123/name')
+      .set('x-api-key', 'foo');
 
     expect(res.status).toStrictEqual(200);
     expect(res.body).toStrictEqual({
