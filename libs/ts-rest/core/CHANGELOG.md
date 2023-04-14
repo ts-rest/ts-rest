@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.19.1
+
+### Patch Changes
+
+- 5e1c6a2: feat: add rawBody and contentType to Custom Client API arguments
+- ecac73d: Fix comptability with Node.js TS native ESM code
+
 ## 3.19.0
 
 ### Minor Changes
