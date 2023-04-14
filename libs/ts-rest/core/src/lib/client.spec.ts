@@ -1,6 +1,7 @@
 import * as fetchMock from 'fetch-mock-jest';
 import { initContract } from '..';
 import { ApiFetcherArgs, initClient } from './client';
+import { Equal, Expect } from './test-helpers';
 
 import { z } from 'zod';
 
@@ -140,6 +141,33 @@ const client = initClient(router, {
     'x-api-key': 'foo',
   },
 });
+
+type ClientGetPostsType = Expect<
+  Equal<
+    Parameters<typeof client.posts.getPosts>[0],
+    | {
+        query?: {
+          take?: number;
+          skip?: number;
+          order?: string;
+        };
+        headers?: Record<string, string>;
+      }
+    | undefined
+  >
+>;
+
+type ClientGetPostType = Expect<
+  Equal<
+    Parameters<typeof client.posts.getPost>[0],
+    {
+      params: {
+        id: string;
+      };
+      headers?: Record<string, string>;
+    }
+  >
+>;
 
 describe('client', () => {
   beforeEach(() => {
@@ -509,6 +537,35 @@ const customClient = initClient(router, {
     };
   },
 });
+
+type CustomClientGetPostsType = Expect<
+  Equal<
+    Parameters<typeof customClient.posts.getPosts>[0],
+    | {
+        query?: {
+          take?: number;
+          skip?: number;
+          order?: string;
+        };
+        headers?: Record<string, string>;
+        uploadProgress?: (progress: number) => void;
+      }
+    | undefined
+  >
+>;
+
+type CustomClientGetPostType = Expect<
+  Equal<
+    Parameters<typeof customClient.posts.getPost>[0],
+    {
+      params: {
+        id: string;
+      };
+      headers?: Record<string, string>;
+      uploadProgress?: (progress: number) => void;
+    }
+  >
+>;
 
 describe('custom api', () => {
   beforeEach(() => {

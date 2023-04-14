@@ -1,5 +1,9 @@
 # @ts-rest/solid-query
 
+## 3.19.0
+
+## 3.18.1
+
 ## 3.18.0
 
 ### Minor Changes

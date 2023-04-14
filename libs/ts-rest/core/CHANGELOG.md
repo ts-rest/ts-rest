@@ -1,5 +1,17 @@
 # @ts-rest/core
 
+## 3.19.0
+
+### Minor Changes
+
+- 2bb39f8: Added inference type helpers
+
+## 3.18.1
+
+### Patch Changes
+
+- 9bd4c77: Fixes broken typing where sometimes the client's request args were incorrectly typed as optional
+
 ## 3.18.0
 
 ### Minor Changes

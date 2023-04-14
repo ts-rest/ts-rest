@@ -35,10 +35,17 @@ export type PathParamsFromUrl<T extends AppRoute> = ParamsFromUrl<
 /**
  * Merge `PathParamsFromUrl<T>` with pathParams schema if it exists
  */
-export type PathParamsWithCustomValidators<T extends AppRoute> =
-  T['pathParams'] extends undefined
-    ? PathParamsFromUrl<T>
-    : Merge<PathParamsFromUrl<T>, ZodInferOrType<T['pathParams']>>;
+export type PathParamsWithCustomValidators<
+  T extends AppRoute,
+  TClientOrServer extends 'client' | 'server' = 'server'
+> = T['pathParams'] extends undefined
+  ? PathParamsFromUrl<T>
+  : Merge<
+      PathParamsFromUrl<T>,
+      TClientOrServer extends 'server'
+        ? ZodInferOrType<T['pathParams']>
+        : ZodInputOrType<T['pathParams']>
+    >;
 
 // Allow FormData if the contentType is multipart/form-data
 type AppRouteBodyOrFormData<T extends AppRouteMutation> =
@@ -99,6 +106,24 @@ export type ApiRouteResponse<T> =
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
     };
+
+/**
+ * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
+ */
+export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
+  T['responses']
+>;
+
+/**
+ * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
+ */
+export function getRouteResponses<T extends AppRouter>(router: T) {
+  return {} as {
+    [K in keyof typeof router]: typeof router[K] extends AppRoute
+      ? ApiResponseForRoute<typeof router[K]>
+      : 'not a route';
+  };
+}
 
 /**
  * Returned from a mutation or query call
