@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.19.1
+
+### Patch Changes
+
+- ecac73d: Fix compatibility with Node.js TS native ESM code
+
 ## 3.19.0
 
 ## 3.18.1
