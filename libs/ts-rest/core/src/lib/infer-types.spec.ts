@@ -13,77 +13,87 @@ import { HTTPStatusCode } from './status-codes';
 
 const c = initContract();
 
-const contract = c.router({
-  getPost: {
-    method: 'GET',
-    path: '/posts/:id',
-    pathParams: z.object({
-      id: z.string().transform((id) => Number(id)),
-    }),
-    query: z.object({
-      includeComments: z.boolean().default(false),
-    }),
-    responses: {
-      200: z.object({
-        id: z.number(),
-        title: z.string().default('Untitled'),
-        content: z.string(),
-      }),
-      404: z.object({
-        message: z.string(),
-      }),
-    },
-  },
-  createPost: {
-    method: 'POST',
-    path: '/posts',
-    body: z.object({
-      title: z.string(),
-      content: z.string(),
-    }),
-    responses: {
-      201: z.object({
-        id: z.number(),
-        title: z.string(),
-        content: z.string(),
-      }),
-    },
-  },
-  uploadImage: {
-    method: 'POST',
-    path: '/images',
-    contentType: 'multipart/form-data',
-    body: c.body<{ image: File }>(),
-    responses: {
-      201: z.object({
-        id: z.number(),
-        url: z.string(),
-      }),
-    },
-  },
-  nested: {
-    getComments: {
+const contract = c.router(
+  {
+    getPost: {
       method: 'GET',
-      path: '/posts/:id/comments',
+      path: '/posts/:id',
       pathParams: z.object({
         id: z.string().transform((id) => Number(id)),
       }),
+      query: z.object({
+        includeComments: z.boolean().default(false),
+      }),
       responses: {
         200: z.object({
-          comments: z.array(
-            z.object({
-              id: z.number(),
-              content: z.string(),
-            })
-          ),
+          id: z.number(),
+          title: z.string().default('Untitled'),
+          content: z.string(),
         }),
         404: z.object({
           message: z.string(),
         }),
       },
     },
+    createPost: {
+      method: 'POST',
+      path: '/posts',
+      body: z.object({
+        title: z.string(),
+        content: z.string(),
+      }),
+      responses: {
+        201: z.object({
+          id: z.number(),
+          title: z.string(),
+          content: z.string(),
+        }),
+      },
+    },
+    uploadImage: {
+      method: 'POST',
+      path: '/images',
+      contentType: 'multipart/form-data',
+      body: c.body<{ image: File }>(),
+      responses: {
+        201: z.object({
+          id: z.number(),
+          url: z.string(),
+        }),
+      },
+    },
+    nested: {
+      getComments: {
+        method: 'GET',
+        path: '/posts/:id/comments',
+        pathParams: z.object({
+          id: z.string().transform((id) => Number(id)),
+        }),
+        headers: z.object({
+          'pagination-page': z.string().transform(Number),
+        }),
+        responses: {
+          200: z.object({
+            comments: z.array(
+              z.object({
+                id: z.number(),
+                content: z.string(),
+              })
+            ),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    },
   },
-});
+  {
+    baseHeaders: z.object({
+      Authorization: z.string(),
+    }),
+  }
+);
 
 it('type inference helpers', () => {
   type ServerInferResponsesTest = Expect<
@@ -234,17 +244,21 @@ it('type inference helpers', () => {
         getPost: {
           query: { includeComments: boolean };
           params: { id: number };
+          headers: { authorization: string };
         };
         createPost: {
           body: { title: string; content: string };
+          headers: { authorization: string };
         };
         uploadImage: {
           // eslint-disable-next-line @typescript-eslint/ban-types
           body: {};
+          headers: { authorization: string };
         };
         nested: {
           getComments: {
             params: { id: number };
+            headers: { authorization: string; 'pagination-page': number };
           };
         };
       }
@@ -258,9 +272,11 @@ it('type inference helpers', () => {
         getPost: {
           query: { includeComments?: boolean | undefined };
           params: { id: string };
+          headers: { authorization: string };
         };
         createPost: {
           body: { title: string; content: string };
+          headers: { authorization: string };
         };
         uploadImage: {
           body:
@@ -268,10 +284,12 @@ it('type inference helpers', () => {
                 image: File;
               }
             | FormData;
+          headers: { authorization: string };
         };
         nested: {
           getComments: {
             params: { id: string };
+            headers: { authorization: string; 'pagination-page': string };
           };
         };
       }

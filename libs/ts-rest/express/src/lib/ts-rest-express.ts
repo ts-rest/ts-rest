@@ -179,9 +179,7 @@ const transformAppRouteQueryImplementation = (
       const result = await route({
         params: validationResults.paramsResult.data,
         query: validationResults.queryResult.data,
-        headers: validationResults.headersResult.data as Parameters<
-          AppRouteQueryImplementation<typeof schema>
-        >[0]['headers'],
+        headers: validationResults.headersResult.data as any,
         req: req,
       });
 
@@ -237,9 +235,7 @@ const transformAppRouteMutationImplementation = (
         params: validationResults.paramsResult.data,
         body: bodyResult.data,
         query: validationResults.queryResult.data,
-        headers: validationResults.headersResult.data as Parameters<
-          AppRouteMutationImplementation<typeof schema>
-        >[0]['headers'],
+        headers: validationResults.headersResult.data as any,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         files: req.files,
