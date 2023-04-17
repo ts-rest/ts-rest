@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.19.2
+
+### Patch Changes
+
+- 96ab6bd: Revert ESM fix, due to failed compilation on Next.js
+
 ## 3.19.1
 
 ### Patch Changes
