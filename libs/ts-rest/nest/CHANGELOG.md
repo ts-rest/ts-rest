@@ -1,5 +1,7 @@
 # @ts-rest/nest
 
+## 3.19.3
+
 ## 3.19.2
 
 ### Patch Changes
