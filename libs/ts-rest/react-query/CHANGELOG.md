@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.19.3
+
+### Patch Changes
+
+- 5ee543f: Export ts-rest react-query types
+
 ## 3.19.2
 
 ### Patch Changes
