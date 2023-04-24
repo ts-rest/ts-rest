@@ -2,16 +2,13 @@ import {
   QueryFunction,
   QueryFunctionContext,
   QueryKey,
+  UseInfiniteQueryOptions as TanStackUseInfiniteQueryOptions,
   useInfiniteQuery,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
+  UseMutationOptions as TanStackUseMutationOptions,
   useMutation,
-  UseMutationOptions,
-  UseMutationResult,
+  UseQueryOptions as TanStackUseQueryOptions,
   useQueries,
   useQuery,
-  UseQueryOptions,
-  UseQueryResult,
 } from '@tanstack/react-query';
 import {
   AppRoute,
@@ -21,20 +18,23 @@ import {
   AppRouter,
   AreAllPropertiesOptional,
   ClientArgs,
-  ExtractExtraParametersFromClientArgs,
   fetchApi,
   getCompleteUrl,
   getRouteQuery,
-  HTTPStatusCode,
   isAppRoute,
-  OptionalIfAllOptional,
-  PathParamsFromUrl,
   Prettify,
-  SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
-import { z, ZodTypeAny } from 'zod';
+import {
+  DataReturnArgs,
+  UseInfiniteQueryOptions,
+  UseInfiniteQueryResult,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult,
+} from './types';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -43,8 +43,6 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
     ? RecursiveProxyObj<T[TKey], TClientArgs>
     : never;
 };
-
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
 
 type UseQueryArgs<
   TAppRoute extends AppRoute,
@@ -70,65 +68,6 @@ type UseQueryArgs<
     : never;
 };
 
-type DataReturnArgsBase<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
-> = {
-  body: TRoute extends AppRouteMutation
-    ? AppRouteMutationType<TRoute['body']> extends null
-      ? never
-      : AppRouteMutationType<TRoute['body']>
-    : never;
-  params: PathParamsFromUrl<TRoute>;
-  query: 'query' extends keyof TRoute
-    ? AppRouteMutationType<TRoute['query']> extends null
-      ? never
-      : AppRouteMutationType<TRoute['query']>
-    : never;
-  /**
-   * Additional headers to send with the request, merged over baseHeaders,
-   *
-   * Unset a header by setting it to undefined
-   */
-  headers?: Record<string, string | undefined>;
-} & ExtractExtraParametersFromClientArgs<TClientArgs>;
-
-type DataReturnArgs<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
-> = OptionalIfAllOptional<DataReturnArgsBase<TRoute, TClientArgs>>;
-
-/**
- * Split up the data and error to support react-query style
- * useQuery and useMutation error handling
- */
-type SuccessResponseMapper<T> = {
-  [K in keyof T]: K extends SuccessfulHttpStatusCode
-    ? { status: K; body: ZodInferOrType<T[K]> }
-    : never;
-}[keyof T];
-
-/**
- * Returns any handled errors, or any unhandled non success errors
- */
-type ErrorResponseMapper<T> =
-  | {
-      [K in keyof T]: K extends SuccessfulHttpStatusCode
-        ? never
-        : { status: K; body: ZodInferOrType<T[K]> };
-    }[keyof T]
-  // If the response isn't one of our typed ones. Return "unknown"
-  | {
-      status: Exclude<HTTPStatusCode, keyof T | SuccessfulHttpStatusCode>;
-      body: unknown;
-    };
-
-// Data response if it's a 2XX
-type DataResponse<T extends AppRoute> = SuccessResponseMapper<T['responses']>;
-
-// Error response if it's not a 2XX
-type ErrorResponse<T extends AppRoute> = ErrorResponseMapper<T['responses']>;
-
 // Used on X.useQuery
 type DataReturnQuery<
   TAppRoute extends AppRoute,
@@ -138,25 +77,19 @@ type DataReturnQuery<
   ? (
       queryKey: QueryKey,
       args?: TArgs,
-      options?: UseQueryOptions<
-        DataResponse<TAppRoute>,
-        ErrorResponse<TAppRoute>
-      >
-    ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>
+      options?: UseQueryOptions<TAppRoute>
+    ) => UseQueryResult<TAppRoute>
   : (
       queryKey: QueryKey,
       args: TArgs,
-      options?: UseQueryOptions<
-        DataResponse<TAppRoute>,
-        ErrorResponse<TAppRoute>
-      >
-    ) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
+      options?: UseQueryOptions<TAppRoute>
+    ) => UseQueryResult<TAppRoute>;
 
 type DataReturnQueriesOptions<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs
 > = Without<DataReturnArgs<TAppRoute, TClientArgs>, never> &
-  Omit<UseQueryOptions<TAppRoute['responses']>, 'queryFn'> & {
+  Omit<UseQueryOptions<TAppRoute>, 'queryFn'> & {
     queryKey: QueryKey;
   };
 
@@ -166,8 +99,8 @@ type DataReturnQueries<
   TQueries = readonly DataReturnQueriesOptions<TAppRoute, TClientArgs>[]
 > = (args: {
   queries: TQueries;
-  context?: UseQueryOptions['context'];
-}) => UseQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>[];
+  context?: UseQueryOptions<TAppRoute>['context'];
+}) => UseQueryResult<TAppRoute>[];
 
 // Used on X.useInfiniteQuery
 type DataReturnInfiniteQuery<
@@ -181,45 +114,23 @@ type DataReturnInfiniteQuery<
       args?: (
         context: QueryFunctionContext<QueryKey>
       ) => Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
-      options?: UseInfiniteQueryOptions<
-        DataResponse<TAppRoute>,
-        ErrorResponse<TAppRoute>
-      >
-    ) => UseInfiniteQueryResult<
-      DataResponse<TAppRoute>,
-      ErrorResponse<TAppRoute>
-    >
+      options?: UseInfiniteQueryOptions<TAppRoute>
+    ) => UseInfiniteQueryResult<TAppRoute>
   : (
       queryKey: QueryKey,
       args: (
         context: QueryFunctionContext<QueryKey>
       ) => Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
-      options?: UseInfiniteQueryOptions<
-        DataResponse<TAppRoute>,
-        ErrorResponse<TAppRoute>
-      >
-    ) => UseInfiniteQueryResult<
-      DataResponse<TAppRoute>,
-      ErrorResponse<TAppRoute>
-    >;
+      options?: UseInfiniteQueryOptions<TAppRoute>
+    ) => UseInfiniteQueryResult<TAppRoute>;
 
 // Used pn X.useMutation
 type DataReturnMutation<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs
 > = (
-  options?: UseMutationOptions<
-    DataResponse<TAppRoute>,
-    ErrorResponse<TAppRoute>,
-    Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>,
-    unknown
-  >
-) => UseMutationResult<
-  DataResponse<TAppRoute>,
-  ErrorResponse<TAppRoute>,
-  Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>,
-  unknown
->;
+  options?: UseMutationOptions<TAppRoute, TClientArgs>
+) => UseMutationResult<TAppRoute, TClientArgs>;
 
 const getRouteUseQuery = <
   TAppRoute extends AppRoute,
@@ -231,7 +142,7 @@ const getRouteUseQuery = <
   return (
     queryKey: QueryKey,
     args?: DataReturnArgs<any, ClientArgs>,
-    options?: UseQueryOptions<TAppRoute['responses']>
+    options?: TanStackUseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
       const { query, params, body, headers, ...extraInputArgs } = args || {};
@@ -331,7 +242,7 @@ const getRouteUseInfiniteQuery = <
   return (
     queryKey: QueryKey,
     args: (context: QueryFunctionContext) => DataReturnArgs<any, ClientArgs>,
-    options?: UseInfiniteQueryOptions<TAppRoute['responses']>
+    options?: TanStackUseInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (
       infiniteQueryParams
@@ -377,7 +288,7 @@ const getRouteUseMutation = <
   route: TAppRoute,
   clientArgs: TClientArgs
 ) => {
-  return (options?: UseMutationOptions<TAppRoute['responses']>) => {
+  return (options?: TanStackUseMutationOptions<TAppRoute['responses']>) => {
     const mutationFunction = async (args?: DataReturnArgs<any, ClientArgs>) => {
       const { query, params, body, headers, ...extraInputArgs } = args || {};
 
