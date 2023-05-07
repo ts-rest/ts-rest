@@ -17,6 +17,7 @@ export const encodeQueryParamsJson = (query: unknown) => {
   }
 
   return Object.entries(query)
+    .filter(([, value]) => value !== undefined)
     .map(([key, value]) => {
       let encodedValue;
 
@@ -29,15 +30,12 @@ export const encodeQueryParamsJson = (query: unknown) => {
         isNaN(Number(value))
       ) {
         encodedValue = value;
-      } else if (value === undefined) {
-        return;
       } else {
         encodedValue = JSON.stringify(value);
       }
 
       return `${encodeURIComponent(key)}=${encodeURIComponent(encodedValue)}`;
     })
-    .filter((maybeStr): maybeStr is string => typeof maybeStr === 'string')
     .join('&');
 };
 
