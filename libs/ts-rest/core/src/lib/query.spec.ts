@@ -233,6 +233,7 @@ describe('encodeQueryParamsJson', () => {
       numberString: '123',
       boolean: true,
       null: null,
+      undefined: undefined,
       sorting: {
         by: 'date',
         order: 'asc',
