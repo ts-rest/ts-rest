@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.19.4
+
+### Patch Changes
+
+- 4b6e9f6: Filter out undefined values from json queries
+
 ## 3.19.3
 
 ## 3.19.2
