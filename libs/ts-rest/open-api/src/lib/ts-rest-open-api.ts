@@ -94,11 +94,16 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
     return [];
   }
 
-  let zodShape = zodObject.shape;
+  let zodShape;
 
-  if (zodObject instanceof z.ZodEffects) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    zodShape = (zodObject as z.ZodEffects<any>)._def.schema.shape;
+  if ('shape' in zodObject) {
+    zodShape = zodObject.shape;
+    // @ts-expect-error - Support ZodEffects
+  } else if ('schema' in zodObject._def) {
+    // @ts-expect-error - Support ZodEffects
+    zodShape = zodObject._def.schema.shape;
+  } else {
+    throw new Error('Unknown zod object type');
   }
 
   return Object.entries(zodShape).map(([key, value]) => {
