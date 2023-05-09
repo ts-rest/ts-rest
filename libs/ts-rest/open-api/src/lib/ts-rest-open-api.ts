@@ -94,7 +94,14 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
     return [];
   }
 
-  return Object.entries(zodObject.shape).map(([key, value]) => {
+  let zodShape = zodObject.shape;
+
+  if (zodObject instanceof z.ZodEffects) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    zodShape = (zodObject as z.ZodEffects<any>)._def.schema.shape;
+  }
+
+  return Object.entries(zodShape).map(([key, value]) => {
     const schema = getOpenApiSchemaFromZod(value)!;
     const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
     const isRequired = !(value as z.ZodTypeAny).isOptional();
