@@ -94,7 +94,19 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
     return [];
   }
 
-  return Object.entries(zodObject.shape).map(([key, value]) => {
+  let zodShape;
+
+  if ('shape' in zodObject) {
+    zodShape = zodObject.shape;
+    // @ts-expect-error - Support ZodEffects
+  } else if ('schema' in zodObject._def) {
+    // @ts-expect-error - Support ZodEffects
+    zodShape = zodObject._def.schema.shape;
+  } else {
+    throw new Error('Unknown zod object type');
+  }
+
+  return Object.entries(zodShape).map(([key, value]) => {
     const schema = getOpenApiSchemaFromZod(value)!;
     const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
     const isRequired = !(value as z.ZodTypeAny).isOptional();

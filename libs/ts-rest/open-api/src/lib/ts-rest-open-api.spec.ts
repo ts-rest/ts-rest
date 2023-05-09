@@ -492,5 +492,115 @@ describe('ts-rest-open-api', () => {
         )
       ).toThrowError(/getPost/);
     });
+
+    it('works with zod refine', () => {
+      const routerWithRefine = c.router({
+        endpointWithZodRefine: {
+          method: 'GET',
+          path: '/refine',
+          responses: {
+            200: c.response<null>(),
+          },
+          query: z
+            .object({
+              foo: z.string(),
+            })
+            .refine((v) => v.foo === 'bar', {
+              message: 'foo must be bar',
+            }),
+        },
+      });
+
+      const schema = generateOpenApi(routerWithRefine, {
+        info: { title: 'Blog API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        info: {
+          title: 'Blog API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/refine': {
+            get: {
+              deprecated: undefined,
+              description: undefined,
+              parameters: [
+                {
+                  in: 'query',
+                  name: 'foo',
+                  required: true,
+                  schema: {
+                    type: 'string',
+                  },
+                },
+              ],
+              responses: {
+                '200': {
+                  description: '200',
+                },
+              },
+              summary: undefined,
+              tags: [],
+            },
+          },
+        },
+      });
+    });
+
+    it('works with zod transform', () => {
+      const routerWithTransform = c.router({
+        endpointWithZodTransform: {
+          method: 'GET',
+          path: '/transform',
+          responses: {
+            200: c.response<null>(),
+          },
+          query: z
+            .object({
+              foo: z.string(),
+            })
+            .transform((v) => ({ fooTransformed: v.foo })),
+        },
+      });
+
+      const schema = generateOpenApi(routerWithTransform, {
+        info: { title: 'Blog API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        info: {
+          title: 'Blog API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/transform': {
+            get: {
+              deprecated: undefined,
+              description: undefined,
+              parameters: [
+                {
+                  in: 'query',
+                  name: 'foo',
+                  required: true,
+                  schema: {
+                    type: 'string',
+                  },
+                },
+              ],
+              responses: {
+                '200': {
+                  description: '200',
+                },
+              },
+              summary: undefined,
+              tags: [],
+            },
+          },
+        },
+      });
+    });
   });
 });
