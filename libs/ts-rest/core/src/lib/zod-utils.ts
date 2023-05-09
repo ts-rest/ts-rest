@@ -1,7 +1,36 @@
 import { z } from 'zod';
 
-export const isZodObject = (body: unknown): body is z.AnyZodObject => {
-  return (body as z.AnyZodObject)?.safeParse !== undefined;
+export const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
+  return typeof (obj as z.ZodTypeAny)?.safeParse === 'function';
+};
+
+export const isZodObject = (
+  obj: unknown
+): obj is z.AnyZodObject | z.ZodEffects<z.AnyZodObject> => {
+  const isZodEffects =
+    typeof (obj as z.ZodEffects<z.AnyZodObject>)?.innerType === 'function';
+
+  const maybeZodObject = isZodEffects
+    ? (obj as z.ZodEffects<z.AnyZodObject>)?.innerType()
+    : (obj as z.AnyZodObject);
+
+  return typeof (maybeZodObject as z.AnyZodObject)?.passthrough === 'function';
+};
+
+export const extractZodObjectShape = <
+  T extends z.AnyZodObject | z.ZodEffects<z.AnyZodObject>
+>(
+  obj: T
+) => {
+  if (!isZodObject(obj)) {
+    throw new Error('Unknown zod object type');
+  }
+
+  if ('innerType' in obj) {
+    return obj.innerType().shape;
+  }
+
+  return obj.shape;
 };
 
 export const checkZodSchema = (
