@@ -1,0 +1,47 @@
+{
+  "name": "example-hono",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/example-hono/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/example-hono",
+        "main": "apps/example-hono/src/main.ts",
+        "tsConfig": "apps/example-hono/tsconfig.app.json",
+        "platform": "node",
+        "thirdParty": false,
+        "format": ["cjs"],
+        "skipTypeCheck": true
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm exec nodemon --watch \"apps/example-hono/**/*\" -e \"ts,tsx\" --exec \"pnpm nx run example-hono:build && ts-node dist/apps/example-hono/main.cjs\""
+        ]
+      },
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/example-hono/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/example-hono"],
+      "options": {
+        "jestConfig": "apps/example-hono/jest.config.ts",
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
+      }
+    }
+  },
+  "tags": []
+}
