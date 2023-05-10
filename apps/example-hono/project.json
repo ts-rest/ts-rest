@@ -17,6 +17,7 @@
         "tsConfig": "apps/example-hono/tsconfig.app.json",
         "assets": ["apps/example-hono/src/assets"],
         "generatePackageJson": true,
+        "skipTypeCheck": true,
         "esbuildOptions": {
           "sourcemap": true,
           "outExtension": {

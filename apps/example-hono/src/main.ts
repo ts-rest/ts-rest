@@ -4,10 +4,10 @@ import { serve } from '@hono/node-server';
 const app = new Hono();
 
 app.get('/', (c) => {
-  return c.text('Hello Hono! 2');
+  return c.json({
+    message: 'Hello World!',
+  });
 });
-
-console.log('Listening on port 3004...');
 
 serve({
   fetch: app.fetch,
