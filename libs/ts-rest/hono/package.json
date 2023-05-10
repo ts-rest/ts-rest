@@ -1,0 +1,16 @@
+{
+  "name": "@ts-rest/hono",
+  "version": "3.19.4",
+  "peerDependencies": {
+    "zod": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
+  }
+}
