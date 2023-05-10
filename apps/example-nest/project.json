@@ -5,9 +5,11 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nrwl/node:webpack",
+      "executor": "@nx/webpack:webpack",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "target": "node",
+        "compiler": "tsc",
         "outputPath": "dist/apps/example-nest",
         "main": "apps/example-nest/src/main.ts",
         "tsConfig": "apps/example-nest/tsconfig.app.json",
@@ -28,7 +30,7 @@
       }
     },
     "serve": {
-      "executor": "@nrwl/node:node",
+      "executor": "@nx/node:node",
       "options": {
         "buildTarget": "example-nest:build"
       },
@@ -39,14 +41,14 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/example-nest/**/*.ts"]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/apps/example-nest"],
       "options": {
         "jestConfig": "apps/example-nest/jest.config.ts",

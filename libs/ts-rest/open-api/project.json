@@ -5,7 +5,7 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/rollup:rollup",
+      "executor": "@nx/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
         "project": "libs/ts-rest/open-api/package.json",
@@ -19,19 +19,18 @@
       }
     },
     "publish": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "options": {
         "command": "node tools/scripts/publish.mjs ts-rest-open-api {args.ver} {args.tag}"
       },
       "dependsOn": [
         {
-          "projects": "self",
           "target": "build"
         }
       ]
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/open-api/**/*.ts"],
@@ -39,7 +38,7 @@
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/open-api"],
       "options": {
         "jestConfig": "libs/ts-rest/open-api/jest.config.ts",

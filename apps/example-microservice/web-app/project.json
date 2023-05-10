@@ -10,19 +10,19 @@
     },
     "serve": {
       "__TODO:__": "Figure out why the native plugin fails with pnpm",
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "options": {
         "command": "pnpm exec vite apps/example-microservice/web-app"
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "options": {
         "lintFilePatterns": ["apps/example-microservice/web-app/**/*.tsx"]
       }
     },
     "test": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "options": {
         "command": "npx vitest --run",
         "cwd": "apps/example-microservice/web-app"

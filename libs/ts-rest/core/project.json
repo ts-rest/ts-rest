@@ -5,7 +5,7 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/rollup:rollup",
+      "executor": "@nx/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
         "project": "libs/ts-rest/core/package.json",
@@ -19,26 +19,25 @@
       }
     },
     "publish": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "options": {
         "command": "node tools/scripts/publish.mjs ts-rest-core {args.ver} {args.tag}"
       },
       "dependsOn": [
         {
-          "projects": "self",
           "target": "build"
         }
       ]
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/core/**/*.ts"]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/core"],
       "options": {
         "jestConfig": "libs/ts-rest/core/jest.config.ts",
