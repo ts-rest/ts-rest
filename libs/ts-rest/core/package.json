@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/core",
-  "version": "3.19.4",
+  "version": "3.19.5",
   "description": "RPC-like experience over a regular REST API, with type safe server implementations 🪄",
   "license": "MIT",
   "keywords": [
