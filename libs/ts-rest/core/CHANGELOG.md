@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.19.5
+
+### Patch Changes
+
+- 574dbab: Improved Zod object detection in OpenAPI
+
 ## 3.19.4
 
 ### Patch Changes

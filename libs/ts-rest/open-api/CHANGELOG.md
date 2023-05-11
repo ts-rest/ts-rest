@@ -1,5 +1,12 @@
 # @ts-rest/open-api
 
+## 3.19.5
+
+### Patch Changes
+
+- 574dbab: Improved Zod object detection in OpenAPI
+- a668ad7: Add missing support for Zod Refine
+
 ## 3.19.4
 
 ## 3.19.3
