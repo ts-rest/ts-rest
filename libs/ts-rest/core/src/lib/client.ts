@@ -84,9 +84,7 @@ type DataReturnArgsBase<
     ? AppRouteMutationType<TRoute['query']>
     : never;
   headers: THeaders;
-  extraHeaders?: {
-    [K in NonNullable<keyof THeaders>]: never;
-  } & Record<string, string | undefined>;
+  extraHeaders?: Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 type DataReturnArgs<
@@ -154,7 +152,8 @@ export type ApiFetcherArgs = {
   headers: Record<string, string>;
   body: FormData | string | null | undefined;
   rawBody: unknown;
-  contentType:  AppRouteMutation['contentType']
+  rawQuery: unknown;
+  contentType: AppRouteMutation['contentType'];
   credentials?: RequestCredentials;
 };
 
@@ -215,12 +214,14 @@ export const fetchApi = ({
   clientArgs,
   route,
   body,
+  query,
   extraInputArgs,
   headers,
 }: {
   path: string;
   clientArgs: ClientArgs;
   route: AppRoute;
+  query: unknown;
   body: unknown;
   extraInputArgs: Record<string, unknown>;
   headers: Record<string, string | undefined>;
@@ -247,6 +248,7 @@ export const fetchApi = ({
       headers: combinedHeaders,
       body: body instanceof FormData ? body : createFormData(body),
       rawBody: body,
+      rawQuery: query,
       contentType: 'multipart/form-data',
       ...extraInputArgs,
     });
@@ -263,7 +265,8 @@ export const fetchApi = ({
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,
     rawBody: body,
-    contentType: route.method !== 'GET'  ? 'application/json' : undefined,
+    rawQuery: query,
+    contentType: route.method !== 'GET' ? 'application/json' : undefined,
     ...extraInputArgs,
   });
 };
@@ -307,6 +310,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       clientArgs,
       route,
       body,
+      query,
       extraInputArgs,
       headers: {
         ...extraHeaders,

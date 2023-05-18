@@ -52,8 +52,8 @@ importers:
       '@swc/helpers': ~0.4.11
       '@swc/jest': 0.2.22
       '@tailwindcss/typography': ^0.5.4
-      '@tanstack/query-core': ^4.10.3
-      '@tanstack/react-query': ^4.2.3
+      '@tanstack/query-core': 4.29.7
+      '@tanstack/react-query': 4.29.7
       '@tanstack/react-query-devtools': ^4.2.3
       '@tanstack/solid-query': 4.24.9
       '@testing-library/jest-dom': 5.16.5
@@ -198,9 +198,9 @@ importers:
       '@stackblitz/sdk': 1.8.0
       '@swc/helpers': 0.4.11
       '@tailwindcss/typography': 0.5.7_tailwindcss@3.2.4
-      '@tanstack/query-core': 4.10.3
-      '@tanstack/react-query': 4.3.4_2so4eo66zr774rftk5qlya5ltu
-      '@tanstack/react-query-devtools': 4.3.5_hbsvmtv74eglyqgnta4rgheflu
+      '@tanstack/query-core': 4.29.7
+      '@tanstack/react-query': 4.29.7_2so4eo66zr774rftk5qlya5ltu
+      '@tanstack/react-query-devtools': 4.3.5_rj5w6kms7jpdvm2o5bkb5pclni
       '@tanstack/solid-query': 4.24.9_solid-js@1.6.11
       '@types/body-parser': 1.19.2
       '@types/multer': 1.4.7
@@ -9013,19 +9013,15 @@ packages:
       remove-accents: 0.4.2
     dev: false
 
-  /@tanstack/query-core/4.10.3:
-    resolution: {integrity: sha512-+ME02sUmBfx3Pjd+0XtEthK8/4rVMD2jcxvnW9DSgFONpKtpjzfRzjY4ykzpDw1QEo2eoPvl7NS8J5mNI199aA==}
-    dev: false
-
   /@tanstack/query-core/4.24.9:
     resolution: {integrity: sha512-pZQ2NpdaHzx8gPPkAPh06d6zRkjfonUzILSYBXrdHDapP2eaBbGsx5L4/dMF+fyAglFzQZdDDzZgAykbM20QVw==}
     dev: false
 
-  /@tanstack/query-core/4.3.4:
-    resolution: {integrity: sha512-NLAe3j5Vk1yYEtoPP5fPGPjRzkZPx67KUM3f14L3InziJZJ0wVecCh7uKfgYkbRKJSeq6PlbND7iuCGdTplN6Q==}
+  /@tanstack/query-core/4.29.7:
+    resolution: {integrity: sha512-GXG4b5hV2Loir+h2G+RXhJdoZhJLnrBWsuLB2r0qBRyhWuXq9w/dWxzvpP89H0UARlH6Mr9DiVj4SMtpkF/aUA==}
     dev: false
 
-  /@tanstack/react-query-devtools/4.3.5_hbsvmtv74eglyqgnta4rgheflu:
+  /@tanstack/react-query-devtools/4.3.5_rj5w6kms7jpdvm2o5bkb5pclni:
     resolution: {integrity: sha512-Jb3HywQmvQDmyixNOzjv8xjksngguG9WjmJlBWjSBCcUFIm3GQGpeJYm62EnJmJ+lHMgDNWDr61UV7Fya8TVTA==}
     peerDependencies:
       '@tanstack/react-query': 4.3.4
@@ -9033,14 +9029,14 @@ packages:
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
       '@tanstack/match-sorter-utils': 8.1.1
-      '@tanstack/react-query': 4.3.4_2so4eo66zr774rftk5qlya5ltu
+      '@tanstack/react-query': 4.29.7_2so4eo66zr774rftk5qlya5ltu
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
     dev: false
 
-  /@tanstack/react-query/4.3.4_2so4eo66zr774rftk5qlya5ltu:
-    resolution: {integrity: sha512-IiAo+B8bxphEpO7xwLQaCptd2rY4Ef3pW1q9J3pT66G+J/st4QpGQ+cSm9iESp9ccRy1YNUk3klk/hQtWewl6g==}
+  /@tanstack/react-query/4.29.7_2so4eo66zr774rftk5qlya5ltu:
+    resolution: {integrity: sha512-ijBWEzAIo09fB1yd22slRZzprrZ5zMdWYzBnCg5qiXuFbH78uGN1qtGz8+Ed4MuhaPaYSD+hykn+QEKtQviEtg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -9051,7 +9047,7 @@ packages:
       react-native:
         optional: true
     dependencies:
-      '@tanstack/query-core': 4.3.4
+      '@tanstack/query-core': 4.29.7
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-native: 0.70.5_react@18.2.0
@@ -16428,7 +16424,7 @@ packages:
     resolution: {integrity: sha512-oWb1Z6mkHIskLzEJ/XWX0srkpkTQ7vaopMQkyaEIoq0fmtFVxOthb8cCxeT+p3ynTdkk/RZwbgG4brR5BeWECw==}
     engines: {node: '>= 4.0'}
     os: [darwin]
-    deprecated: fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.
+    deprecated: The v1 package contains DANGEROUS / INSECURE binaries. Upgrade to safe fsevents v2
     requiresBuild: true
     dependencies:
       bindings: 1.5.0

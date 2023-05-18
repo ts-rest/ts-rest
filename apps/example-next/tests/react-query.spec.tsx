@@ -1,4 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
 import { ApiFetcher, initContract } from '@ts-rest/core';
@@ -131,7 +135,7 @@ export const router = c.router({
 const api = jest.fn();
 
 const client = initQueryClient(router, {
-  baseUrl: 'http://api.com',
+  baseUrl: 'https://api.com',
   baseHeaders: {
     'x-test': 'test',
   },
@@ -177,7 +181,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/health',
+      path: 'https://api.com/health',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -216,7 +220,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -252,7 +256,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/xml',
@@ -285,7 +289,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -310,7 +314,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/health',
+      path: 'https://api.com/health',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -341,7 +345,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/health',
+      path: 'https://api.com/health',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -384,7 +388,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'POST',
-      path: 'http://api.com/posts',
+      path: 'https://api.com/posts',
       body: JSON.stringify({
         description: 'test',
         title: 'test',
@@ -447,7 +451,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -457,7 +461,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/2',
+      path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -516,7 +520,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -526,7 +530,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/2',
+      path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -589,7 +593,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -599,7 +603,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/2',
+      path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -619,5 +623,213 @@ describe('react-query', () => {
 
     expect(result.current[1].data).toStrictEqual(undefined);
     expect(result.current[1].error).toStrictEqual(ERROR_RESPONSE);
+  });
+
+  it('fetchQuery should handle success', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    renderHook(
+      () => {
+        const queryClient = useQueryClient();
+        return client.posts.getPost.fetchQuery(queryClient, ['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('fetchQuery should handle failure', async () => {
+    api.mockResolvedValue(ERROR_RESPONSE);
+
+    const { result } = renderHook(
+      async () => {
+        const queryClient = useQueryClient();
+        try {
+          await client.posts.getPost.fetchQuery(queryClient, ['post', '1'], {
+            params: {
+              id: '1',
+            },
+          });
+        } catch (error) {
+          return error;
+        }
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current).resolves.toStrictEqual(ERROR_RESPONSE);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('prefetchQuery should handle success', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    renderHook(
+      () => {
+        const queryClient = useQueryClient();
+        return client.posts.getPost.prefetchQuery(queryClient, ['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('getQueryData should return already fetched data', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { waitForNextUpdate } = renderHook(
+      () => {
+        const { data } = client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+
+        return data;
+      },
+      {
+        wrapper,
+      }
+    );
+
+    await waitForNextUpdate();
+
+    const { result } = renderHook(
+      () => {
+        const queryClient = useQueryClient();
+        return client.posts.getPost.getQueryData(queryClient, ['post', '1']);
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current).toStrictEqual(SUCCESS_RESPONSE);
+
+    expect(api).toHaveBeenCalledTimes(1);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('setQueryData should overwrite data returned from api', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const data = {
+      status: 200,
+      body: {
+        id: '1',
+        title: 'foo',
+        description: 'bar',
+        authorId: '1',
+        content: 'baz',
+        published: true,
+      } as Post,
+    } as const;
+
+    const { waitForNextUpdate } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(
+          ['post', '1'],
+          {
+            params: {
+              id: '1',
+            },
+          },
+          {
+            staleTime: 10000,
+          }
+        ),
+      {
+        wrapper,
+      }
+    );
+
+    await waitForNextUpdate();
+
+    renderHook(
+      () => {
+        const queryClient = useQueryClient();
+        return client.posts.getPost.setQueryData(
+          queryClient,
+          ['post', '1'],
+          data
+        );
+      },
+      {
+        wrapper,
+      }
+    );
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(
+          ['post', '1'],
+          {
+            params: {
+              id: '1',
+            },
+          },
+          {
+            staleTime: 10000,
+          }
+        ),
+      {
+        wrapper,
+      }
+    );
+
+    return waitFor(() => {
+      expect(result.current.isLoading).toStrictEqual(false);
+      expect(result.current.data).toStrictEqual(data);
+    });
   });
 });

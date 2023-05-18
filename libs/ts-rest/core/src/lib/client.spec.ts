@@ -156,12 +156,7 @@ type ClientGetPostsType = Expect<
           'base-header'?: string;
           'x-api-key'?: string;
         };
-        extraHeaders?: {
-          'x-pagination': never;
-          'x-test': never;
-          'base-header': never;
-          'x-api-key': never;
-        } & Record<string, string | undefined>;
+        extraHeaders?: Record<string, string | undefined>;
       }
     | undefined
   >
@@ -179,11 +174,7 @@ type ClientGetPostType = Expect<
         'base-header'?: string;
         'x-api-key'?: string;
       };
-      extraHeaders?: {
-        'x-test': never;
-        'base-header': never;
-        'x-api-key': never;
-      } & Record<string, string | undefined>;
+      extraHeaders?: Record<string, string | undefined>;
     }
   >
 >;
@@ -572,12 +563,7 @@ type CustomClientGetPostsType = Expect<
         'base-header'?: string;
         'x-api-key': string;
       };
-      extraHeaders?: {
-        'x-pagination': never;
-        'x-test': never;
-        'base-header': never;
-        'x-api-key': never;
-      } & Record<string, string | undefined>;
+      extraHeaders?: Record<string, string | undefined>;
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -595,11 +581,7 @@ type CustomClientGetPostType = Expect<
         'base-header'?: string;
         'x-api-key'?: string;
       };
-      extraHeaders?: {
-        'x-test': never;
-        'base-header': never;
-        'x-api-key': never;
-      } & Record<string, string | undefined>;
+      extraHeaders?: Record<string, string | undefined>;
       uploadProgress?: (progress: number) => void;
     }
   >
