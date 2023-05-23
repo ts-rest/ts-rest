@@ -17,6 +17,10 @@ export const isZodObject = (
   return typeof (maybeZodObject as z.AnyZodObject)?.passthrough === 'function';
 };
 
+export const isZodObjectStrict = (obj: unknown): obj is z.AnyZodObject => {
+  return typeof (obj as z.AnyZodObject)?.passthrough === 'function';
+};
+
 export const extractZodObjectShape = <
   T extends z.AnyZodObject | z.ZodEffects<z.AnyZodObject>
 >(
@@ -34,15 +38,15 @@ export const extractZodObjectShape = <
 };
 
 export const zodMerge = (objectA: unknown, objectB: unknown) => {
-  if (isZodObject(objectA)) {
-    if (isZodObject(objectB)) {
+  if (isZodObjectStrict(objectA)) {
+    if (isZodObjectStrict(objectB)) {
       return objectA.merge(objectB);
     }
 
     return objectA;
   }
 
-  if (isZodObject(objectB)) {
+  if (isZodObjectStrict(objectB)) {
     return objectB;
   }
 
