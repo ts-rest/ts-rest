@@ -69,10 +69,11 @@ describe('/posts', () => {
     expect(res._getStatusCode()).toBe(400);
     expect(res._getJSONData()).toEqual([
       {
-        code: 'invalid_string',
-        message: 'Should be a number',
+        code: 'invalid_type',
+        expected: 'number',
+        message: 'Expected number, received nan',
         path: ['x-pagination'],
-        validation: 'regex',
+        received: 'nan',
       },
     ]);
   });

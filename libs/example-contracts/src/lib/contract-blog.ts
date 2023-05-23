@@ -87,11 +87,7 @@ export const apiBlog = c.router(
       }),
       summary: 'Get all posts',
       headers: z.object({
-        'x-pagination': z
-          .string()
-          .regex(/\d+/, 'Should be a number')
-          .transform(Number)
-          .optional(),
+        'x-pagination': z.coerce.number().optional(),
       }),
     },
     testPathParams: {

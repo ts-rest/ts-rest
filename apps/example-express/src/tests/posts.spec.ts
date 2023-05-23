@@ -33,10 +33,11 @@ describe('Posts Endpoints', () => {
     expect(res.body).toStrictEqual({
       issues: [
         {
-          code: 'invalid_string',
-          message: 'Should be a number',
+          code: 'invalid_type',
+          expected: 'number',
+          message: 'Expected number, received nan',
           path: ['x-pagination'],
-          validation: 'regex',
+          received: 'nan',
         },
       ],
       name: 'ZodError',

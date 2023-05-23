@@ -36,7 +36,7 @@ const postsRouter = c.router({
     method: 'GET',
     path: '/posts',
     headers: z.object({
-      'x-pagination': z.string().optional(),
+      'x-pagination': z.coerce.number().optional(),
     }),
     responses: {
       200: c.response<Post[]>(),
@@ -151,7 +151,7 @@ type ClientGetPostsType = Expect<
           order?: string;
         };
         headers?: {
-          'x-pagination'?: string;
+          'x-pagination'?: number;
           'x-test'?: string;
           'base-header'?: string;
           'x-api-key'?: string;
@@ -567,7 +567,7 @@ type CustomClientGetPostsType = Expect<
         order?: string;
       };
       headers: {
-        'x-pagination'?: string;
+        'x-pagination'?: number;
         'x-test'?: string;
         'base-header'?: string;
         'x-api-key': string;
