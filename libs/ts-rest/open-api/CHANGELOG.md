@@ -1,5 +1,28 @@
 # @ts-rest/open-api
 
+## 3.19.5
+
+### Patch Changes
+
+- 574dbab: Improved Zod object detection in OpenAPI
+- a668ad7: Add missing support for Zod Refine
+
+## 3.19.4
+
+## 3.19.3
+
+## 3.19.2
+
+### Patch Changes
+
+- 96ab6bd: Revert ESM fix, due to failed compilation on Next.js
+
+## 3.19.1
+
+### Patch Changes
+
+- ecac73d: Fix compatibility with Node.js TS native ESM code
+
 ## 3.19.0
 
 ## 3.18.1

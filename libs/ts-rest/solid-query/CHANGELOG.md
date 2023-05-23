@@ -1,5 +1,24 @@
 # @ts-rest/solid-query
 
+## 3.19.5
+
+## 3.19.4
+
+## 3.19.3
+
+## 3.19.2
+
+### Patch Changes
+
+- 96ab6bd: Revert ESM fix, due to failed compilation on Next.js
+
+## 3.19.1
+
+### Patch Changes
+
+- 5e1c6a2: feat: add rawBody and contentType to Custom Client API arguments
+- ecac73d: Fix compatibility with Node.js TS native ESM code
+
 ## 3.19.0
 
 ## 3.18.1
