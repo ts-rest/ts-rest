@@ -4,8 +4,10 @@ import { convertQueryParamsToUrlString } from './query';
 import { HTTPStatusCode } from './status-codes';
 import {
   AreAllPropertiesOptional,
+  LowercaseKeys,
   Merge,
   OptionalIfAllOptional,
+  PartialByLooseKeys,
   Prettify,
   Without,
   ZodInferOrType,
@@ -64,7 +66,15 @@ export type ExtractExtraParametersFromClientArgs<
 
 type DataReturnArgsBase<
   TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
+  THeaders = Prettify<
+    'headers' extends keyof TRoute
+      ? PartialByLooseKeys<
+          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
+        >
+      : never
+  >
 > = {
   body: TRoute extends AppRouteMutation
     ? AppRouteBodyOrFormData<TRoute>
@@ -73,18 +83,18 @@ type DataReturnArgsBase<
   query: 'query' extends keyof TRoute
     ? AppRouteMutationType<TRoute['query']>
     : never;
-  /**
-   * Additional headers to send with the request, merged over baseHeaders,
-   *
-   * Unset a header by setting it to undefined
-   */
-  headers?: Record<string, string>;
+  headers: THeaders;
+  extraHeaders?: {
+    [K in NonNullable<keyof THeaders>]: never;
+  } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 type DataReturnArgs<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs
-> = OptionalIfAllOptional<DataReturnArgsBase<TRoute, TClientArgs>>;
+> = OptionalIfAllOptional<
+  Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
+>;
 
 export type ApiRouteResponse<T> =
   | {
@@ -122,14 +132,12 @@ export function getRouteResponses<T extends AppRouter>(router: T) {
 export type AppRouteFunction<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs
-> = AreAllPropertiesOptional<
-  Without<DataReturnArgs<TRoute, TClientArgs>, never>
-> extends true
+> = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
-      args?: Prettify<Without<DataReturnArgs<TRoute, TClientArgs>, never>>
+      args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>
   : (
-      args: Prettify<Without<DataReturnArgs<TRoute, TClientArgs>, never>>
+      args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>;
 
 export interface ClientArgs {
@@ -282,8 +290,9 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
-  return async (inputArgs?: DataReturnArgs<any, ClientArgs>) => {
-    const { query, params, body, headers, ...extraInputArgs } = inputArgs || {};
+  return async (inputArgs?: DataReturnArgsBase<any, ClientArgs>) => {
+    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+      inputArgs || {};
 
     const completeUrl = getCompleteUrl(
       query,
@@ -299,7 +308,10 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       route,
       body,
       extraInputArgs,
-      headers: headers || {},
+      headers: {
+        ...extraHeaders,
+        ...headers,
+      },
     });
   };
 };

@@ -2,7 +2,6 @@ import * as fetchMock from 'fetch-mock-jest';
 import { initContract } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
-
 import { z } from 'zod';
 
 const c = initContract();
@@ -26,6 +25,9 @@ const postsRouter = c.router({
   getPost: {
     method: 'GET',
     path: `/posts/:id`,
+    headers: z.object({
+      'x-api-key': z.string().optional(),
+    }),
     responses: {
       200: c.response<Post | null>(),
     },
@@ -33,6 +35,9 @@ const postsRouter = c.router({
   getPosts: {
     method: 'GET',
     path: '/posts',
+    headers: z.object({
+      'x-pagination': z.coerce.number().optional(),
+    }),
     responses: {
       200: c.response<Post[]>(),
     },
@@ -100,29 +105,40 @@ const postsRouter = c.router({
 });
 
 // Three endpoints, two for posts, and one for health
-export const router = c.router({
-  posts: postsRouter,
-  health: {
-    method: 'GET',
-    path: '/health',
-    responses: {
-      200: c.response<{ message: string }>(),
+export const router = c.router(
+  {
+    posts: postsRouter,
+    health: {
+      method: 'GET',
+      path: '/health',
+      responses: {
+        200: c.response<{ message: string }>(),
+      },
+    },
+    upload: {
+      method: 'POST',
+      path: '/upload',
+      body: c.body<{ file: File }>(),
+      responses: {
+        200: c.response<{ message: string }>(),
+      },
+      contentType: 'multipart/form-data',
     },
   },
-  upload: {
-    method: 'POST',
-    path: '/upload',
-    body: c.body<{ file: File }>(),
-    responses: {
-      200: c.response<{ message: string }>(),
-    },
-    contentType: 'multipart/form-data',
-  },
-});
+  {
+    baseHeaders: z.object({
+      'x-api-key': z.string(),
+      'x-test': z.string().optional(),
+      'base-header': z.string().optional(),
+    }),
+  }
+);
 
 const client = initClient(router, {
   baseUrl: 'https://api.com',
-  baseHeaders: {},
+  baseHeaders: {
+    'X-Api-Key': 'foo',
+  },
 });
 
 type ClientGetPostsType = Expect<
@@ -134,7 +150,18 @@ type ClientGetPostsType = Expect<
           skip?: number;
           order?: string;
         };
-        headers?: Record<string, string>;
+        headers?: {
+          'x-pagination'?: number;
+          'x-test'?: string;
+          'base-header'?: string;
+          'x-api-key'?: string;
+        };
+        extraHeaders?: {
+          'x-pagination': never;
+          'x-test': never;
+          'base-header': never;
+          'x-api-key': never;
+        } & Record<string, string | undefined>;
       }
     | undefined
   >
@@ -147,7 +174,16 @@ type ClientGetPostType = Expect<
       params: {
         id: string;
       };
-      headers?: Record<string, string>;
+      headers?: {
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key'?: string;
+      };
+      extraHeaders?: {
+        'x-test': never;
+        'base-header': never;
+        'x-api-key': never;
+      } & Record<string, string | undefined>;
     }
   >
 >;
@@ -228,21 +264,17 @@ describe('client', () => {
 
     it('w/ json query parameters', async () => {
       const client = initClient(
-        {
-          ...router,
-          posts: {
-            ...router.posts,
-            getPosts: {
-              ...router.posts.getPosts,
-              query: router.posts.getPosts.query.extend({
-                published: z.boolean(),
-                filter: z.object({
-                  title: z.string(),
-                }),
+        c.router({
+          getPosts: {
+            ...postsRouter.getPosts,
+            query: postsRouter.getPosts.query.extend({
+              published: z.boolean(),
+              filter: z.object({
+                title: z.string(),
               }),
-            },
+            }),
           },
-        },
+        }),
         {
           baseUrl: 'https://api.com',
           baseHeaders: {},
@@ -263,7 +295,7 @@ describe('client', () => {
         { body: value, status: 200 }
       );
 
-      const result = await client.posts.getPosts({
+      const result = await client.getPosts({
         query: {
           take: 10,
           order: 'asc',
@@ -528,16 +560,26 @@ const customClient = initClient(router, {
 type CustomClientGetPostsType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPosts>[0],
-    | {
-        query?: {
-          take?: number;
-          skip?: number;
-          order?: string;
-        };
-        headers?: Record<string, string>;
-        uploadProgress?: (progress: number) => void;
-      }
-    | undefined
+    {
+      query?: {
+        take?: number;
+        skip?: number;
+        order?: string;
+      };
+      headers: {
+        'x-pagination'?: number;
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key': string;
+      };
+      extraHeaders?: {
+        'x-pagination': never;
+        'x-test': never;
+        'base-header': never;
+        'x-api-key': never;
+      } & Record<string, string | undefined>;
+      uploadProgress?: (progress: number) => void;
+    }
   >
 >;
 
@@ -548,7 +590,16 @@ type CustomClientGetPostType = Expect<
       params: {
         id: string;
       };
-      headers?: Record<string, string>;
+      headers?: {
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key'?: string;
+      };
+      extraHeaders?: {
+        'x-test': never;
+        'base-header': never;
+        'x-api-key': never;
+      } & Record<string, string | undefined>;
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -579,7 +630,7 @@ describe('custom api', () => {
     await customClient.posts.getPost({
       params: { id: '1' },
       headers: {
-        'X-Test': 'test',
+        'x-test': 'test',
       },
     });
 
@@ -598,25 +649,7 @@ describe('custom api', () => {
     await customClient.posts.getPost({
       params: { id: '1' },
       headers: {
-        'Base-Header': 'bar',
-      },
-    });
-
-    expect(argsCalledMock).toBeCalledWith(
-      expect.objectContaining({
-        headers: {
-          'base-header': 'bar',
-          'content-type': 'application/json',
-        },
-      })
-    );
-  });
-
-  it('extra headers with different casing should override base headers', async () => {
-    await customClient.posts.getPost({
-      params: { id: '1' },
-      headers: {
-        'bAse-heaDer': 'bar',
+        'base-header': 'bar',
       },
     });
 
@@ -635,7 +668,8 @@ describe('custom api', () => {
       query: { test: 'test' },
       body: {},
       headers: {
-        'X-Test': 'test',
+        'x-api-key': '123',
+        'x-test': 'test',
       },
       uploadProgress: () => {
         // noop
@@ -645,6 +679,7 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         headers: {
+          'x-api-key': '123',
           'base-header': 'foo',
           'content-type': 'application/json',
           'x-test': 'test',

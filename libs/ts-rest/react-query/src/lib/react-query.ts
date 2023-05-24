@@ -28,6 +28,7 @@ import {
 } from '@ts-rest/core';
 import {
   DataReturnArgs,
+  DataReturnArgsBase,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
   UseMutationOptions,
@@ -141,11 +142,12 @@ const getRouteUseQuery = <
 ) => {
   return (
     queryKey: QueryKey,
-    args?: DataReturnArgs<any, ClientArgs>,
+    args?: DataReturnArgsBase<TAppRoute, TClientArgs>,
     options?: TanStackUseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
-      const { query, params, body, headers, ...extraInputArgs } = args || {};
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+        args || {};
 
       const path = getCompleteUrl(
         query,
@@ -160,7 +162,10 @@ const getRouteUseQuery = <
         clientArgs,
         route,
         body,
-        headers: headers || {},
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
         extraInputArgs,
       });
 
@@ -191,6 +196,7 @@ const getRouteUseQueries = <
           params,
           body,
           headers,
+          extraHeaders,
           credentials,
           queryKey,
           retry,
@@ -210,7 +216,10 @@ const getRouteUseQueries = <
           clientArgs,
           route,
           body: 'body' in queryArgs ? queryArgs?.body : undefined,
-          headers: headers || {},
+          headers: {
+            ...extraHeaders,
+            ...headers,
+          },
           extraInputArgs,
         });
 
@@ -241,7 +250,9 @@ const getRouteUseInfiniteQuery = <
 ) => {
   return (
     queryKey: QueryKey,
-    args: (context: QueryFunctionContext) => DataReturnArgs<any, ClientArgs>,
+    args: (
+      context: QueryFunctionContext
+    ) => DataReturnArgsBase<TAppRoute, TClientArgs>,
     options?: TanStackUseInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (
@@ -249,7 +260,7 @@ const getRouteUseInfiniteQuery = <
     ) => {
       const resultingQueryArgs = args(infiniteQueryParams);
 
-      const { query, params, body, headers, ...extraInputArgs } =
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
         resultingQueryArgs || {};
 
       const path = getCompleteUrl(
@@ -265,7 +276,10 @@ const getRouteUseInfiniteQuery = <
         clientArgs,
         route,
         body,
-        headers: headers || {},
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
         extraInputArgs,
       });
 
@@ -289,8 +303,11 @@ const getRouteUseMutation = <
   clientArgs: TClientArgs
 ) => {
   return (options?: TanStackUseMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (args?: DataReturnArgs<any, ClientArgs>) => {
-      const { query, params, body, headers, ...extraInputArgs } = args || {};
+    const mutationFunction = async (
+      args?: DataReturnArgsBase<TAppRoute, TClientArgs>
+    ) => {
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+        args || {};
 
       const path = getCompleteUrl(
         args?.query,
@@ -306,7 +323,10 @@ const getRouteUseMutation = <
         route,
         body: args?.body,
         extraInputArgs,
-        headers: headers || {},
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
       });
 
       // If the response is not a 2XX, throw an error to be handled by react-query

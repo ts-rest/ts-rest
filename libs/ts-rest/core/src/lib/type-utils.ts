@@ -73,6 +73,9 @@ export type Narrow<T> = Try<T, [], NarrowNotZod<T>>;
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
+export type PartialByLooseKeys<T, K> = Omit<T, K extends keyof T ? K : never> &
+  Partial<Pick<T, K extends keyof T ? K : never>>;
+
 // https://github.com/ts-essentials/ts-essentials/blob/4c451652ba7c20b0e0b965e0b7755fd4d7844127/lib/types.ts#L228
 type OptionalKeys<T> = T extends unknown
   ? {
@@ -103,3 +106,28 @@ export type Prettify<T> = {
   [K in keyof T]: T[K];
   // eslint-disable-next-line @typescript-eslint/ban-types
 } & {};
+
+export type DefinedOrEmpty<
+  T,
+  K extends keyof NonNullable<T>
+  // eslint-disable-next-line @typescript-eslint/ban-types
+> = undefined extends T ? {} : NonNullable<T>[K];
+
+declare const tag: unique symbol;
+
+declare type Tagged<Token> = {
+  readonly [tag]: Token;
+};
+
+export type Opaque<Type, Token = unknown> = Type & Tagged<Token>;
+
+export type WithoutUnknown<T> = Pick<
+  T,
+  {
+    [K in keyof T]: unknown extends Exclude<T[K], undefined> ? never : K;
+  }[keyof T]
+>;
+
+export type LowercaseKeys<T> = Prettify<{
+  [K in keyof T as K extends string ? Lowercase<K> : K]: T[K];
+}>;
