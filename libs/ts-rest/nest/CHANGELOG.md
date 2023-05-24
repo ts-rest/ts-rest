@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.20.0
+
+### Minor Changes
+
+- c1c1d31: Add type-safe header definitions to contracts
+
 ## 3.19.5
 
 ## 3.19.4
