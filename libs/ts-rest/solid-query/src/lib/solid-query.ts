@@ -90,7 +90,9 @@ type DataReturnArgs<
       : AppRouteMutationType<TRoute['query']>
     : never;
   headers: THeaders;
-  extraHeaders?: Record<string, string | undefined>;
+  extraHeaders?: {
+    [K in NonNullable<keyof THeaders>]?: never;
+  } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 /**

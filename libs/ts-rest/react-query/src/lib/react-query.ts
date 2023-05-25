@@ -337,7 +337,9 @@ const getRouteUseMutation = <
   clientArgs: TClientArgs
 ) => {
   return (options?: TanStackUseMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (args?: DataReturnArgsBase<TAppRoute, TClientArgs>) => {
+    const mutationFunction = async (
+      args?: DataReturnArgsBase<TAppRoute, TClientArgs>
+    ) => {
       const dataFn = queryFn(route, clientArgs, args);
 
       return dataFn(undefined as any);
@@ -350,7 +352,10 @@ const getRouteUseMutation = <
   };
 };
 
-type InitClientReturn<T extends AppRouter, TClientArgs extends ClientArgs> = {
+export type InitClientReturn<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs
+> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<AppRouteFunctions<T[TKey], TClientArgs>, never>
     : T[TKey] extends AppRouter
