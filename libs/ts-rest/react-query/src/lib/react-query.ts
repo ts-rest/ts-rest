@@ -14,7 +14,7 @@ import {
   UseQueryOptions as TanStackUseQueryOptions,
   useQueries,
   useQuery,
-  QueryClient,
+  useQueryClient,
 } from '@tanstack/react-query';
 import {
   AppRoute,
@@ -43,16 +43,9 @@ import {
   UseQueryOptions,
   UseQueryResult,
 } from './types';
+import { useMemo } from 'react';
 
-type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
-  [TKey in keyof T]: T[TKey] extends AppRoute
-    ? Without<UseQueryArgs<T[TKey], TClientArgs>, never>
-    : T[TKey] extends AppRouter
-    ? RecursiveProxyObj<T[TKey], TClientArgs>
-    : never;
-};
-
-type UseQueryArgs<
+type AppRouteFunctions<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs
 > = {
@@ -74,6 +67,12 @@ type UseQueryArgs<
   mutation: TAppRoute extends AppRouteMutation
     ? AppRouteFunction<TAppRoute, TClientArgs>
     : never;
+};
+
+type AppRouteFunctionsWithQueryClient<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = AppRouteFunctions<TAppRoute, TClientArgs> & {
   fetchQuery: TAppRoute extends AppRouteQuery
     ? DataReturnFetchQuery<TAppRoute, TClientArgs>
     : never;
@@ -160,13 +159,11 @@ type DataReturnFetchQuery<
   TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
-      queryClient: QueryClient,
       queryKey: QueryKey,
       args?: TArgs,
       options?: FetchQueryOptions<TAppRoute>
     ) => Promise<DataResponse<TAppRoute>>
   : (
-      queryClient: QueryClient,
       queryKey: QueryKey,
       args: TArgs,
       options?: FetchQueryOptions<TAppRoute>
@@ -178,13 +175,11 @@ type DataReturnPrefetchQuery<
   TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
-      queryClient: QueryClient,
       queryKey: QueryKey,
       args?: TArgs,
       options?: FetchQueryOptions<TAppRoute>
     ) => Promise<void>
   : (
-      queryClient: QueryClient,
       queryKey: QueryKey,
       args: TArgs,
       options?: FetchQueryOptions<TAppRoute>
@@ -195,7 +190,6 @@ type DataReturnFetchInfiniteQuery<
   TClientArgs extends ClientArgs,
   TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
 > = (
-  queryClient: QueryClient,
   queryKey: QueryKey,
   args: (context: QueryFunctionContext) => TArgs,
   options?: FetchQueryOptions<TAppRoute>
@@ -206,25 +200,21 @@ type DataReturnPrefetchInfiniteQuery<
   TClientArgs extends ClientArgs,
   TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
 > = (
-  queryClient: QueryClient,
   queryKey: QueryKey,
   args: (context: QueryFunctionContext) => TArgs,
   options?: FetchQueryOptions<TAppRoute>
 ) => Promise<void>;
 
 type DataReturnGetQueryData<TAppRoute extends AppRoute> = (
-  queryClient: QueryClient,
   queryKey: QueryKey,
   filters?: QueryFilters
 ) => DataResponse<TAppRoute> | undefined;
 
 type DataReturnGetQueriesData<TAppRoute extends AppRoute> = (
-  queryClient: QueryClient,
   filters: QueryFilters
 ) => [queryKey: QueryKey, data: DataResponse<TAppRoute> | undefined][];
 
 type DataReturnSetQueryData<TAppRoute extends AppRoute> = (
-  queryClient: QueryClient,
   queryKey: QueryKey,
   updater:
     | DataResponse<TAppRoute>
@@ -360,10 +350,15 @@ const getRouteUseMutation = <
   };
 };
 
-export type InitClientReturn<
-  T extends AppRouter,
-  TClientArgs extends ClientArgs
-> = RecursiveProxyObj<T, TClientArgs>;
+type InitClientReturn<T extends AppRouter, TClientArgs extends ClientArgs> = {
+  [TKey in keyof T]: T[TKey] extends AppRoute
+    ? Without<AppRouteFunctions<T[TKey], TClientArgs>, never>
+    : T[TKey] extends AppRouter
+    ? InitClientReturn<T[TKey], TClientArgs>
+    : never;
+};
+
+const ClientParameters = Symbol('ClientParameters');
 
 export const initQueryClient = <
   T extends AppRouter,
@@ -372,122 +367,167 @@ export const initQueryClient = <
   router: T,
   clientArgs: TClientArgs
 ): InitClientReturn<T, TClientArgs> => {
-  return Object.fromEntries(
-    Object.entries(router).map(([key, subRouter]) => {
-      if (isAppRoute(subRouter)) {
-        type TSubRouter = typeof subRouter;
+  const recursiveInit = <TInner extends AppRouter>(
+    innerRouter: TInner
+  ): InitClientReturn<TInner, TClientArgs> => {
+    return Object.fromEntries(
+      Object.entries(innerRouter).map(([key, subRouter]) => {
+        if (isAppRoute(subRouter)) {
+          return [
+            key,
+            {
+              query: getRouteQuery(subRouter, clientArgs),
+              mutation: getRouteQuery(subRouter, clientArgs),
+              useQuery: getRouteUseQuery(subRouter, clientArgs),
+              useQueries: getRouteUseQueries(subRouter, clientArgs),
+              useInfiniteQuery: getRouteUseInfiniteQuery(subRouter, clientArgs),
+              useMutation: getRouteUseMutation(subRouter, clientArgs),
+            },
+          ];
+        } else {
+          return [key, recursiveInit(subRouter)];
+        }
+      })
+    );
+  };
 
-        return [
-          key,
-          {
-            query: getRouteQuery(subRouter, clientArgs),
-            mutation: getRouteQuery(subRouter, clientArgs),
-            useQuery: getRouteUseQuery(subRouter, clientArgs),
-            useQueries: getRouteUseQueries(subRouter, clientArgs),
-            useInfiniteQuery: getRouteUseInfiniteQuery(subRouter, clientArgs),
-            useMutation: getRouteUseMutation(subRouter, clientArgs),
-            fetchQuery: (
-              queryClient: QueryClient,
-              queryKey: QueryKey,
-              args: DataReturnArgsBase<TSubRouter, TClientArgs>,
-              options?: FetchQueryOptions<any>
-            ) => {
-              const dataFn = queryFn(subRouter, clientArgs, args);
-              return queryClient.fetchQuery(queryKey, dataFn, options);
-            },
-            fetchInfiniteQuery: (
-              queryClient: QueryClient,
-              queryKey: QueryKey,
-              argsMapper: (
-                context: QueryFunctionContext
-              ) => DataReturnArgsBase<TSubRouter, TClientArgs>,
-              options?: FetchQueryOptions<any>
-            ) => {
-              return queryClient.fetchInfiniteQuery(
-                queryKey,
-                async (context) => {
-                  const resultingQueryArgs = argsMapper(context);
+  return {
+    ...recursiveInit(router),
+    [ClientParameters]: {
+      router,
+      clientArgs,
+    },
+  };
+};
 
-                  const innerDataFn = queryFn(
-                    subRouter,
-                    clientArgs,
-                    resultingQueryArgs
-                  );
+type InitUseTsRestQueryClientReturn<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs
+> = {
+  [TKey in keyof T]: T[TKey] extends AppRoute
+    ? Without<AppRouteFunctionsWithQueryClient<T[TKey], TClientArgs>, never>
+    : T[TKey] extends AppRouter
+    ? InitUseTsRestQueryClientReturn<T[TKey], TClientArgs>
+    : never;
+};
 
-                  return innerDataFn(undefined as any);
-                },
-                options
-              );
-            },
-            prefetchQuery: (
-              queryClient: QueryClient,
-              queryKey: QueryKey,
-              args: DataReturnArgsBase<TSubRouter, TClientArgs>,
-              options?: FetchQueryOptions<any>
-            ) => {
-              const dataFn = queryFn(subRouter, clientArgs, args);
+export const useTsRestQueryClient = <
+  T extends AppRouter,
+  TClientArgs extends ClientArgs
+>(
+  client: InitClientReturn<T, TClientArgs>
+): InitUseTsRestQueryClientReturn<T, TClientArgs> => {
+  // @ts-expect-error - hidden symbol, so we can refetch the original client router and clientArgs
+  const { router, clientArgs } = client[ClientParameters] as unknown as {
+    router: T;
+    clientArgs: TClientArgs;
+  };
 
-              return queryClient.prefetchQuery(queryKey, dataFn, options);
-            },
-            prefetchInfiniteQuery: (
-              queryClient: QueryClient,
-              queryKey: QueryKey,
-              argsMapper: (
-                context: QueryFunctionContext
-              ) => DataReturnArgsBase<TSubRouter, TClientArgs>,
-              options?: FetchQueryOptions<any>
-            ) => {
-              return queryClient.prefetchInfiniteQuery(
-                queryKey,
-                async (context) => {
-                  const resultingQueryArgs = argsMapper(context);
+  const queryClient = useQueryClient();
 
-                  const innerDataFn = queryFn(
-                    subRouter,
-                    clientArgs,
-                    resultingQueryArgs
-                  );
+  const recursiveInit = <TInner extends AppRouter>(
+    innerRouter: TInner,
+    innerClient: InitClientReturn<TInner, TClientArgs>
+  ): InitUseTsRestQueryClientReturn<TInner, TClientArgs> => {
+    return Object.fromEntries(
+      Object.entries(innerRouter).map(([key, subRouter]) => {
+        if (isAppRoute(subRouter)) {
+          type TSubRouter = typeof subRouter;
 
-                  return innerDataFn(undefined as any);
-                },
-                options
-              );
-            },
-            getQueryData: (
-              queryClient: QueryClient,
-              queryKey: QueryKey,
-              filters?: QueryFilters
-            ) => {
-              return queryClient.getQueryData(queryKey, filters);
-            },
-            ensureQueryData: (
-              queryClient: QueryClient,
-              queryKey: QueryKey,
-              args: DataReturnArgsBase<TSubRouter, TClientArgs>,
-              options?: FetchQueryOptions<any>
-            ) => {
-              const dataFn = queryFn(subRouter, clientArgs, args);
+          return [
+            key,
+            {
+              ...innerClient[key],
+              fetchQuery: (
+                queryKey: QueryKey,
+                args: DataReturnArgsBase<TSubRouter, TClientArgs>,
+                options?: FetchQueryOptions<any>
+              ) => {
+                console.log('fetchQuery', queryKey, args, options);
+                const dataFn = queryFn(subRouter, clientArgs, args);
+                return queryClient.fetchQuery(queryKey, dataFn, options);
+              },
+              fetchInfiniteQuery: (
+                queryKey: QueryKey,
+                argsMapper: (
+                  context: QueryFunctionContext
+                ) => DataReturnArgsBase<TSubRouter, TClientArgs>,
+                options?: FetchQueryOptions<any>
+              ) => {
+                return queryClient.fetchInfiniteQuery(
+                  queryKey,
+                  async (context) => {
+                    const resultingQueryArgs = argsMapper(context);
 
-              return queryClient.ensureQueryData(queryKey, dataFn, options);
+                    const innerDataFn = queryFn(
+                      subRouter,
+                      clientArgs,
+                      resultingQueryArgs
+                    );
+
+                    return innerDataFn(undefined as any);
+                  },
+                  options
+                );
+              },
+              prefetchQuery: (
+                queryKey: QueryKey,
+                args: DataReturnArgsBase<TSubRouter, TClientArgs>,
+                options?: FetchQueryOptions<any>
+              ) => {
+                const dataFn = queryFn(subRouter, clientArgs, args);
+
+                return queryClient.prefetchQuery(queryKey, dataFn, options);
+              },
+              prefetchInfiniteQuery: (
+                queryKey: QueryKey,
+                argsMapper: (
+                  context: QueryFunctionContext
+                ) => DataReturnArgsBase<TSubRouter, TClientArgs>,
+                options?: FetchQueryOptions<any>
+              ) => {
+                return queryClient.prefetchInfiniteQuery(
+                  queryKey,
+                  async (context) => {
+                    const resultingQueryArgs = argsMapper(context);
+
+                    const innerDataFn = queryFn(
+                      subRouter,
+                      clientArgs,
+                      resultingQueryArgs
+                    );
+
+                    return innerDataFn(undefined as any);
+                  },
+                  options
+                );
+              },
+              getQueryData: (queryKey: QueryKey, filters?: QueryFilters) => {
+                return queryClient.getQueryData(queryKey, filters);
+              },
+              ensureQueryData: (
+                queryKey: QueryKey,
+                args: DataReturnArgsBase<TSubRouter, TClientArgs>,
+                options?: FetchQueryOptions<any>
+              ) => {
+                const dataFn = queryFn(subRouter, clientArgs, args);
+
+                return queryClient.ensureQueryData(queryKey, dataFn, options);
+              },
+              getQueriesData: (filters: QueryFilters) => {
+                return queryClient.getQueriesData(filters);
+              },
+              setQueryData: (queryKey: QueryKey, updater: any) => {
+                return queryClient.setQueryData(queryKey, updater);
+              },
             },
-            getQueriesData: (
-              queryClient: QueryClient,
-              filters: QueryFilters
-            ) => {
-              return queryClient.getQueriesData(filters);
-            },
-            setQueryData: (
-              queryClient: QueryClient,
-              queryKey: QueryKey,
-              updater: any
-            ) => {
-              return queryClient.setQueryData(queryKey, updater);
-            },
-          },
-        ];
-      } else {
-        return [key, initQueryClient(subRouter, clientArgs)];
-      }
-    })
-  );
+          ];
+        } else {
+          return [key, recursiveInit(subRouter, innerClient[key] as any)];
+        }
+      })
+    );
+  };
+
+  return useMemo(() => recursiveInit(router, client), [client]);
 };

@@ -1,12 +1,8 @@
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
 import { ApiFetcher, initContract } from '@ts-rest/core';
-import { initQueryClient } from '@ts-rest/react-query';
+import { initQueryClient, useTsRestQueryClient } from '@ts-rest/react-query';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { z } from 'zod';
@@ -630,8 +626,8 @@ describe('react-query', () => {
 
     renderHook(
       () => {
-        const queryClient = useQueryClient();
-        return client.posts.getPost.fetchQuery(queryClient, ['post', '1'], {
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.fetchQuery(['post', '1'], {
           params: {
             id: '1',
           },
@@ -658,9 +654,9 @@ describe('react-query', () => {
 
     const { result } = renderHook(
       async () => {
-        const queryClient = useQueryClient();
+        const apiQueryClient = useTsRestQueryClient(client);
         try {
-          await client.posts.getPost.fetchQuery(queryClient, ['post', '1'], {
+          await apiQueryClient.posts.getPost.fetchQuery(['post', '1'], {
             params: {
               id: '1',
             },
@@ -692,8 +688,8 @@ describe('react-query', () => {
 
     renderHook(
       () => {
-        const queryClient = useQueryClient();
-        return client.posts.getPost.prefetchQuery(queryClient, ['post', '1'], {
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.prefetchQuery(['post', '1'], {
           params: {
             id: '1',
           },
@@ -737,8 +733,8 @@ describe('react-query', () => {
 
     const { result } = renderHook(
       () => {
-        const queryClient = useQueryClient();
-        return client.posts.getPost.getQueryData(queryClient, ['post', '1']);
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.getQueryData(['post', '1']);
       },
       {
         wrapper,
@@ -797,12 +793,8 @@ describe('react-query', () => {
 
     renderHook(
       () => {
-        const queryClient = useQueryClient();
-        return client.posts.getPost.setQueryData(
-          queryClient,
-          ['post', '1'],
-          data
-        );
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.setQueryData(['post', '1'], data);
       },
       {
         wrapper,
