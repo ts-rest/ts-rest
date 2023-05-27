@@ -1,4 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
 import { ApiFetcher, initContract } from '@ts-rest/core';
@@ -622,6 +626,34 @@ describe('react-query', () => {
   });
 
   it('fetchQuery should handle success', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    renderHook(
+      () => {
+        const queryClient = useQueryClient();
+        return client.posts.getPost.fetchQuery(queryClient, ['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('fetchQuery should handle success hook', async () => {
     api.mockResolvedValue(SUCCESS_RESPONSE);
 
     renderHook(
