@@ -157,10 +157,10 @@ type ClientGetPostsType = Expect<
           'x-api-key'?: string;
         };
         extraHeaders?: {
-          'x-pagination': never;
-          'x-test': never;
-          'base-header': never;
-          'x-api-key': never;
+          'x-pagination'?: never;
+          'x-test'?: never;
+          'base-header'?: never;
+          'x-api-key'?: never;
         } & Record<string, string | undefined>;
       }
     | undefined
@@ -180,9 +180,9 @@ type ClientGetPostType = Expect<
         'x-api-key'?: string;
       };
       extraHeaders?: {
-        'x-test': never;
-        'base-header': never;
-        'x-api-key': never;
+        'x-test'?: never;
+        'base-header'?: never;
+        'x-api-key'?: never;
       } & Record<string, string | undefined>;
     }
   >
@@ -573,10 +573,10 @@ type CustomClientGetPostsType = Expect<
         'x-api-key': string;
       };
       extraHeaders?: {
-        'x-pagination': never;
-        'x-test': never;
-        'base-header': never;
-        'x-api-key': never;
+        'x-pagination'?: never;
+        'x-test'?: never;
+        'base-header'?: never;
+        'x-api-key'?: never;
       } & Record<string, string | undefined>;
       uploadProgress?: (progress: number) => void;
     }
@@ -596,9 +596,9 @@ type CustomClientGetPostType = Expect<
         'x-api-key'?: string;
       };
       extraHeaders?: {
-        'x-test': never;
-        'base-header': never;
-        'x-api-key': never;
+        'x-test'?: never;
+        'base-header'?: never;
+        'x-api-key'?: never;
       } & Record<string, string | undefined>;
       uploadProgress?: (progress: number) => void;
     }
@@ -651,13 +651,16 @@ describe('custom api', () => {
       headers: {
         'base-header': 'bar',
       },
+      extraHeaders: {
+        'content-type': 'application/html',
+      },
     });
 
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         headers: {
           'base-header': 'bar',
-          'content-type': 'application/json',
+          'content-type': 'application/html',
         },
       })
     );

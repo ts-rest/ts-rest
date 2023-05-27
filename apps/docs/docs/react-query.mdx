@@ -200,3 +200,76 @@ return (
   </div>
 );
 ```
+
+## QueryClient Helpers
+
+In addition to the hooks provided, `@ts-rest/react-query` also provides a custom hook `useTsRestQueryClient` with wrapper functions around some `QueryClient` functions to help invoke the API as well as provide some typing.
+
+```tsx
+import { initQueryClient, useTsRestQueryClient } from '@ts-rest/react-query';
+
+export const client = initQueryClient(router);
+
+const App = () => {
+  const apiQueryClient = useTsRestQueryClient(client);
+
+  // You can either use apiQueryClient or client to call useQuery, useMutation, etc.
+  const { data, isLoading, error } = apiQueryClient.posts.get.useQuery(['posts']);
+  const { mutate, isLoading } = client.posts.create.useMutation();
+
+  const createPost = async () => {
+    return mutate({ body: { title: 'Hello World' } }, {
+      onSuccess: async (data) => {
+        //  this is typed ^
+        apiQueryClient.posts.get.setQueryData(['posts'], (oldPosts) => {
+          //                               this is also typed ^
+          return {
+            ...oldPosts,
+            body: [...oldPosts.body, data.body],
+          }
+        });
+      }
+    });
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (data?.status !== 200) {
+    return <div>Error</div>;
+  }
+
+  return (
+    <div>
+      <button onClick={createPost}>Create Post</button>
+      {data.body.map((post) => (
+        <p key={post.id}>post.title</p>
+      ))}
+    </div>
+  );
+};
+```
+
+#### Functions
+
+Following the same design philosophy as the hooks, these helpers follow the original `QueryClient` function APIs as closely as possible.
+Essentially, the API is exactly the same, but instead of passing a `queryFn`, you pass the request parameters directly.
+
+- `async fetchQuery(queryKey, args, options) => Promise<SuccessResponse>`
+- `async fetchInfiniteQuery(queryKey, argsMapper, options) => Promise<InfiniteData<SuccessResponse>>`
+- `async prefetchQuery(queryKey, args, options) => Promise<void>`
+- `async prefetchInfiniteQuery(queryKey, argsMapper, options) => Promise<void>`
+- `getQueryData(queryKey, filters) => SuccessResponse | undefined`
+- `async ensureQueryData(queryKey, args, options) => Promise<SuccessResponse>`
+- `getQueriesData(filters) => [QueryKey, SuccessResponse | undefined][]`
+- `setQueryData(queryKey, updater) => SuccessResponse | undefined`
+
+Functions such as `invalidateQueries` that neither exchange typed data nor invoke the API have no benefit of being wrapped. Therefore, call these functions directly through your `QueryClient` instance.
+
+:::info
+
+Functions that may throw on failure such as `fetchQuery` will throw an error if the request fails or returns a non-2xx response.
+Be sure to handle these errors appropriately.
+
+:::

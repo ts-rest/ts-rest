@@ -52,7 +52,7 @@ export type DataReturnArgsBase<
     : never;
   headers: THeaders;
   extraHeaders?: {
-    [K in keyof NonNullable<keyof THeaders>]: never;
+    [K in NonNullable<keyof THeaders>]?: never;
   } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
@@ -87,12 +87,12 @@ type ErrorResponseMapper<T> =
     };
 
 // Data response if it's a 2XX
-type DataResponse<TAppRoute extends AppRoute> = SuccessResponseMapper<
+export type DataResponse<TAppRoute extends AppRoute> = SuccessResponseMapper<
   TAppRoute['responses']
 >;
 
 // Error response if it's not a 2XX
-type ErrorResponse<TAppRoute extends AppRoute> = ErrorResponseMapper<
+export type ErrorResponse<TAppRoute extends AppRoute> = ErrorResponseMapper<
   TAppRoute['responses']
 >;
 

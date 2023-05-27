@@ -91,7 +91,7 @@ type DataReturnArgs<
     : never;
   headers: THeaders;
   extraHeaders?: {
-    [K in keyof NonNullable<keyof THeaders>]: never;
+    [K in NonNullable<keyof THeaders>]?: never;
   } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
@@ -204,6 +204,7 @@ const getRouteUseQuery = <
         clientArgs,
         route,
         body: args.body,
+        query,
         headers: {
           ...extraHeaders,
           ...headers,
@@ -258,6 +259,7 @@ const getRouteUseInfiniteQuery = <
         clientArgs,
         route,
         body: resultingQueryArgs.body,
+        query,
         headers: {
           ...extraHeaders,
           ...headers,
@@ -304,6 +306,7 @@ const getRouteUseMutation = <
         clientArgs,
         route,
         body: args.body,
+        query,
         headers: {
           ...extraHeaders,
           ...headers,
