@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.21.0
+
+### Patch Changes
+
+- 8729bb5: Fix node16 esm module resolution
+
 ## 3.20.0
 
 ### Minor Changes

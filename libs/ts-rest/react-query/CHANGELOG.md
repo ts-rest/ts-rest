@@ -1,5 +1,16 @@
 # @ts-rest/react-query
 
+## 3.21.0
+
+### Minor Changes
+
+- b2bf874: Added React Query QueryClient function helpers
+
+### Patch Changes
+
+- 8729bb5: Fix node16 esm module resolution
+- b2bf874: Add rawQuery parameter to custom API fetcher parameters
+
 ## 3.20.0
 
 ### Minor Changes
