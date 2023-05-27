@@ -24,6 +24,23 @@ describe('checkZodSchema', () => {
     expect(result.error.issues).toHaveLength(1);
   });
 
+  it('should return success false if invalid with nested refine', () => {
+    const result = checkZodSchema(
+      { a: '' },
+      z
+        .object({ a: z.number() })
+        .refine(() => true)
+        .refine(() => true)
+    );
+    expect(result.success).toBe(false);
+
+    if (result.success) {
+      throw new Error('This should not happen');
+    }
+
+    expect(result.error.issues).toHaveLength(1);
+  });
+
   it('should pass through extra keys if passThroughExtraKeys is true', () => {
     const result = checkZodSchema({ a: 1, b: 2 }, z.object({ a: z.number() }), {
       passThroughExtraKeys: true,
