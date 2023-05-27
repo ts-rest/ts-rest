@@ -6,4 +6,4 @@
 '@ts-rest/open-api': patch
 ---
 
-Fix incorrect detection of zod objects with nested ZodEffects
+Fix incorrect detection of zod objects with nested ZodEffects and fix regression with validation
