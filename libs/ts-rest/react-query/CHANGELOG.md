@@ -1,5 +1,7 @@
 # @ts-rest/react-query
 
+## 3.21.1
+
 ## 3.21.0
 
 ### Minor Changes
