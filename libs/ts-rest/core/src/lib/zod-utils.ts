@@ -7,14 +7,15 @@ export const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
 export const isZodObject = (
   obj: unknown
 ): obj is z.AnyZodObject | z.ZodEffects<z.AnyZodObject> => {
-  const isZodEffects =
-    typeof (obj as z.ZodEffects<z.AnyZodObject>)?.innerType === 'function';
+  if (typeof (obj as z.AnyZodObject)?.passthrough === 'function') {
+    return true;
+  }
 
-  const maybeZodObject = isZodEffects
-    ? (obj as z.ZodEffects<z.AnyZodObject>)?.innerType()
-    : (obj as z.AnyZodObject);
+  if (typeof (obj as z.ZodEffects<z.ZodTypeAny>)?.innerType === 'function') {
+    return isZodObject((obj as z.ZodEffects<z.ZodTypeAny>)?.innerType());
+  }
 
-  return typeof (maybeZodObject as z.AnyZodObject)?.passthrough === 'function';
+  return false;
 };
 
 export const isZodObjectStrict = (obj: unknown): obj is z.AnyZodObject => {
@@ -22,16 +23,16 @@ export const isZodObjectStrict = (obj: unknown): obj is z.AnyZodObject => {
 };
 
 export const extractZodObjectShape = <
-  T extends z.AnyZodObject | z.ZodEffects<z.AnyZodObject>
+  T extends z.AnyZodObject | z.ZodEffects<z.ZodTypeAny>
 >(
   obj: T
-) => {
+): any => {
   if (!isZodObject(obj)) {
     throw new Error('Unknown zod object type');
   }
 
   if ('innerType' in obj) {
-    return obj.innerType().shape;
+    return extractZodObjectShape(obj.innerType());
   }
 
   return obj.shape;
@@ -66,7 +67,7 @@ export const checkZodSchema = (
       success: false;
       error: z.ZodError;
     } => {
-  if (isZodObject(schema)) {
+  if (isZodType(schema)) {
     const result = schema.safeParse(data);
 
     if (result.success) {
