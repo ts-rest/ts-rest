@@ -13,6 +13,7 @@ import {
   ZodInferOrType,
   ZodInputOrType,
 } from './type-utils';
+import { UnknownStatusError } from './unknown-status-error';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -363,11 +364,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
     if (knownResponseStatuses.includes(response.status.toString())) {
       return response;
     }
-    throw new Error(
-      `Server returned unexpected response. Expected one of: ${knownResponseStatuses.join(
-        ','
-      )} got: ${response.status}`
-    );
+    throw new UnknownStatusError(response, knownResponseStatuses);
   };
 };
 
