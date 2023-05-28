@@ -705,8 +705,9 @@ describe('custom api', () => {
 
     const result = await client.posts.getPosts({});
 
-    // @ts-expect-error 404 is not defined in the known responses
-    result.status === 404;
+    type ClientGetPostsResponseStatusType = Expect<
+      Equal<typeof result.status, 200>
+    >;
   });
 
   it('throws an error when throwOnUnknownStatus is configured and response is unknown', async () => {
