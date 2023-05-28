@@ -265,6 +265,8 @@ Essentially, the API is exactly the same, but instead of passing a `queryFn`, yo
 - `getQueriesData(filters) => [QueryKey, SuccessResponse | undefined][]`
 - `setQueryData(queryKey, updater) => SuccessResponse | undefined`
 
+If you would like to use any of these functions outside a component or a hook, these functions are also available through the client directly, but you have to pass in the `QueryClient` instance as the first argument.
+
 Functions such as `invalidateQueries` that neither exchange typed data nor invoke the API have no benefit of being wrapped. Therefore, call these functions directly through your `QueryClient` instance.
 
 :::info
