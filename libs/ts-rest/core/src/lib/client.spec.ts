@@ -691,4 +691,29 @@ describe('custom api', () => {
       })
     );
   });
+
+  it('has correct types when throwOnUnexpectedResponse is configured', async () => {
+    const client = initClient(router, {
+      baseUrl: 'https://api.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      throwOnUnexpectedResponse: true,
+    });
+
+    fetchMock.getOnce(
+      {
+        url: 'https://api.com/posts',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      { status: 200 }
+    );
+
+    const result = await client.posts.getPosts({});
+
+    // @ts-expect-error 404 is not defined in the known responses
+    result.status === 404;
+  });
 });
