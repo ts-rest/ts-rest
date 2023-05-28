@@ -692,28 +692,36 @@ describe('custom api', () => {
     );
   });
 
-  it('has correct types when throwOnUnexpectedResponse is configured', async () => {
+  it('has correct types when strict is configured', async () => {
     const client = initClient(router, {
       baseUrl: 'https://api.com',
       baseHeaders: {
         'X-Api-Key': 'foo',
       },
-      throwOnUnexpectedResponse: true,
+      strict: true,
     });
 
-    fetchMock.getOnce(
-      {
-        url: 'https://api.com/posts',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-      { status: 200 }
-    );
+    fetchMock.getOnce({ url: 'https://api.com/posts' }, { status: 200 });
 
     const result = await client.posts.getPosts({});
 
     // @ts-expect-error 404 is not defined in the known responses
     result.status === 404;
+  });
+
+  it('throws an error when strict is configured and response is unknown', async () => {
+    const client = initClient(router, {
+      baseUrl: 'https://isolated.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      strict: true,
+    });
+
+    fetchMock.getOnce({ url: 'https://isolated.com/posts' }, { status: 419 });
+
+    await expect(client.posts.getPosts({})).rejects.toThrowError(
+      'Server returned unexpected response. Expected one of: 200 got: 419'
+    );
   });
 });

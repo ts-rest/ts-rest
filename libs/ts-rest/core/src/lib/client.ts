@@ -22,6 +22,17 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
     : never;
 };
 
+type RecursiveProxyObjStrict<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs & { strict: true }
+> = {
+  [TKey in keyof T]: T[TKey] extends AppRoute
+    ? AppRouteFunctionStrict<T[TKey], TClientArgs>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObjStrict<T[TKey], TClientArgs>
+    : never;
+};
+
 type AppRouteMutationType<T> = ZodInputOrType<T>;
 
 /**
@@ -96,13 +107,16 @@ type DataReturnArgs<
   Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
 >;
 
-export type ApiRouteResponse<T> =
+export type ApiRouteResponseStrict<T> =
   | {
       [K in keyof T]: {
         status: K;
         body: ZodInferOrType<T[K]>;
       };
-    }[keyof T]
+    }[keyof T];
+
+export type ApiRouteResponse<T> =
+  | ApiRouteResponseStrict<T>
   | {
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
@@ -140,12 +154,31 @@ export type AppRouteFunction<
       args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>;
 
+/**
+ * Returned from a mutation or query call when strict mode is enabled
+ */
+export type AppRouteFunctionStrict<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
+  ? (
+      args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
+    ) => Promise<Prettify<ApiRouteResponseStrict<TRoute['responses']>>>
+  : (
+      args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
+    ) => Promise<Prettify<ApiRouteResponseStrict<TRoute['responses']>>>;
+
 export interface ClientArgs {
   baseUrl: string;
   baseHeaders: Record<string, string>;
   api?: ApiFetcher;
   credentials?: RequestCredentials;
   jsonQuery?: boolean;
+  /**
+   * Enables strict mode which ensures that the responses from the server match
+   * those defined in the contract.
+   */
+  strict?: boolean;
 }
 
 export type ApiFetcherArgs = {
@@ -295,6 +328,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: ClientArgs
 ) => {
+  const knownResponseStatuses = Object.keys(route.responses);
   return async (inputArgs?: DataReturnArgsBase<any, ClientArgs>) => {
     const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
       inputArgs || {};
@@ -307,7 +341,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       !!clientArgs.jsonQuery
     );
 
-    return await fetchApi({
+    const request = fetchApi({
       path: completeUrl,
       clientArgs,
       route,
@@ -319,6 +353,20 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
         ...headers,
       },
     });
+
+    if (!clientArgs.strict) {
+      return await request;
+    }
+    const response = await request;
+
+    if (knownResponseStatuses.includes(response.status.toString())) {
+      return response;
+    }
+    throw new Error(
+      `Server returned unexpected response. Expected one of: ${knownResponseStatuses.join(
+        ','
+      )} got: ${response.status}`
+    );
   };
 };
 
@@ -327,10 +375,17 @@ export type InitClientReturn<
   TClientArgs extends ClientArgs
 > = RecursiveProxyObj<T, TClientArgs>;
 
+export type InitClientReturnStrict<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs & { strict: true }
+> = RecursiveProxyObjStrict<T, TClientArgs>;
+
 export const initClient = <T extends AppRouter, TClientArgs extends ClientArgs>(
   router: T,
   args: TClientArgs
-): InitClientReturn<T, TClientArgs> => {
+): TClientArgs extends { strict: true }
+  ? InitClientReturnStrict<T, TClientArgs>
+  : InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {
