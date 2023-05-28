@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.21.2
+
+### Patch Changes
+
+- 42c478a: Provide QueryClient functions through client directly
+
 ## 3.21.1
 
 ## 3.21.0

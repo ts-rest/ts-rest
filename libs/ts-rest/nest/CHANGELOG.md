@@ -1,5 +1,7 @@
 # @ts-rest/nest
 
+## 3.21.2
+
 ## 3.21.1
 
 ### Patch Changes
