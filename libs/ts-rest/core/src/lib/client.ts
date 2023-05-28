@@ -22,14 +22,14 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
     : never;
 };
 
-type RecursiveProxyObjStrict<
+type RecursiveProxyObjNoUnknownStatus<
   T extends AppRouter,
-  TClientArgs extends ClientArgs & { strict: true }
+  TClientArgs extends ClientArgs & { throwOnUnknownStatus: true }
 > = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-    ? AppRouteFunctionStrict<T[TKey], TClientArgs>
+    ? AppRouteFunctionNoUnknownStatus<T[TKey], TClientArgs>
     : T[TKey] extends AppRouter
-    ? RecursiveProxyObjStrict<T[TKey], TClientArgs>
+    ? RecursiveProxyObjNoUnknownStatus<T[TKey], TClientArgs>
     : never;
 };
 
@@ -107,7 +107,7 @@ type DataReturnArgs<
   Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
 >;
 
-export type ApiRouteResponseStrict<T> =
+export type ApiRouteResponseNoUnknownStatus<T> =
   | {
       [K in keyof T]: {
         status: K;
@@ -116,7 +116,7 @@ export type ApiRouteResponseStrict<T> =
     }[keyof T];
 
 export type ApiRouteResponse<T> =
-  | ApiRouteResponseStrict<T>
+  | ApiRouteResponseNoUnknownStatus<T>
   | {
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
@@ -155,18 +155,20 @@ export type AppRouteFunction<
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>;
 
 /**
- * Returned from a mutation or query call when strict mode is enabled
+ * Returned from a mutation or query call when NoUnknownStatus mode is enabled
  */
-export type AppRouteFunctionStrict<
+export type AppRouteFunctionNoUnknownStatus<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs
 > = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
       args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<ApiRouteResponseStrict<TRoute['responses']>>>
+    ) => Promise<Prettify<ApiRouteResponseNoUnknownStatus<TRoute['responses']>>>
   : (
       args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<ApiRouteResponseStrict<TRoute['responses']>>>;
+    ) => Promise<
+      Prettify<ApiRouteResponseNoUnknownStatus<TRoute['responses']>>
+    >;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -175,10 +177,10 @@ export interface ClientArgs {
   credentials?: RequestCredentials;
   jsonQuery?: boolean;
   /**
-   * Enables strict mode which ensures that the responses from the server match
-   * those defined in the contract.
+   * Ensures that the responses from the server match those defined in the
+   * contract.
    */
-  strict?: boolean;
+  throwOnUnknownStatus?: boolean;
 }
 
 export type ApiFetcherArgs = {
@@ -341,7 +343,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       !!clientArgs.jsonQuery
     );
 
-    const request = fetchApi({
+    const response = await fetchApi({
       path: completeUrl,
       clientArgs,
       route,
@@ -354,10 +356,9 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       },
     });
 
-    if (!clientArgs.strict) {
-      return await request;
+    if (!clientArgs.throwOnUnknownStatus) {
+      return response;
     }
-    const response = await request;
 
     if (knownResponseStatuses.includes(response.status.toString())) {
       return response;
@@ -375,16 +376,16 @@ export type InitClientReturn<
   TClientArgs extends ClientArgs
 > = RecursiveProxyObj<T, TClientArgs>;
 
-export type InitClientReturnStrict<
+export type InitClientReturnNoUnknownStatus<
   T extends AppRouter,
-  TClientArgs extends ClientArgs & { strict: true }
-> = RecursiveProxyObjStrict<T, TClientArgs>;
+  TClientArgs extends ClientArgs & { throwOnUnknownStatus: true }
+> = RecursiveProxyObjNoUnknownStatus<T, TClientArgs>;
 
 export const initClient = <T extends AppRouter, TClientArgs extends ClientArgs>(
   router: T,
   args: TClientArgs
-): TClientArgs extends { strict: true }
-  ? InitClientReturnStrict<T, TClientArgs>
+): TClientArgs extends { throwOnUnknownStatus: true }
+  ? InitClientReturnNoUnknownStatus<T, TClientArgs>
   : InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
