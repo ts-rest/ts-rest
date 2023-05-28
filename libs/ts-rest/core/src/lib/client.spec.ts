@@ -691,4 +691,38 @@ describe('custom api', () => {
       })
     );
   });
+
+  it('has correct types when throwOnUnknownStatus is configured', async () => {
+    const client = initClient(router, {
+      baseUrl: 'https://api.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      throwOnUnknownStatus: true,
+    });
+
+    fetchMock.getOnce({ url: 'https://api.com/posts' }, { status: 200 });
+
+    const result = await client.posts.getPosts({});
+
+    type ClientGetPostsResponseStatusType = Expect<
+      Equal<typeof result.status, 200>
+    >;
+  });
+
+  it('throws an error when throwOnUnknownStatus is configured and response is unknown', async () => {
+    const client = initClient(router, {
+      baseUrl: 'https://isolated.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      throwOnUnknownStatus: true,
+    });
+
+    fetchMock.getOnce({ url: 'https://isolated.com/posts' }, { status: 419 });
+
+    await expect(client.posts.getPosts({})).rejects.toThrowError(
+      'Server returned unexpected response. Expected one of: 200 got: 419'
+    );
+  });
 });
