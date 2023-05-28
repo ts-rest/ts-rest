@@ -177,11 +177,6 @@ export interface ClientArgs {
   api?: ApiFetcher;
   credentials?: RequestCredentials;
   jsonQuery?: boolean;
-  /**
-   * Ensures that the responses from the server match those defined in the
-   * contract.
-   */
-  throwOnUnknownStatus?: boolean;
 }
 
 export type ApiFetcherArgs = {
@@ -329,7 +324,7 @@ export const getCompleteUrl = (
 
 export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
-  clientArgs: ClientArgs
+  clientArgs: InitClientArgs
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
   return async (inputArgs?: DataReturnArgsBase<any, ClientArgs>) => {
@@ -378,7 +373,18 @@ export type InitClientReturnNoUnknownStatus<
   TClientArgs extends ClientArgs & { throwOnUnknownStatus: true }
 > = RecursiveProxyObjNoUnknownStatus<T, TClientArgs>;
 
-export const initClient = <T extends AppRouter, TClientArgs extends ClientArgs>(
+export type InitClientArgs = ClientArgs & {
+  /**
+   * Ensures that the responses from the server match those defined in the
+   * contract.
+   */
+  throwOnUnknownStatus?: boolean;
+};
+
+export const initClient = <
+  T extends AppRouter,
+  TClientArgs extends InitClientArgs
+>(
   router: T,
   args: TClientArgs
 ): TClientArgs extends { throwOnUnknownStatus: true }
