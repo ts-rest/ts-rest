@@ -149,6 +149,7 @@ export interface ClientArgs {
 }
 
 export type ApiFetcherArgs = {
+  route: AppRoute;
   path: string;
   method: string;
   headers: Record<string, string>;
@@ -157,6 +158,7 @@ export type ApiFetcherArgs = {
   rawQuery: unknown;
   contentType: AppRouteMutation['contentType'];
   credentials?: RequestCredentials;
+  signal?: AbortSignal;
 };
 
 export type ApiFetcher = (
@@ -176,8 +178,15 @@ export const tsRestFetchApi: ApiFetcher = async ({
   headers,
   body,
   credentials,
+  signal,
 }) => {
-  const result = await fetch(path, { method, headers, body, credentials });
+  const result = await fetch(path, {
+    method,
+    headers,
+    body,
+    credentials,
+    signal,
+  });
   const contentType = result.headers.get('content-type');
 
   if (contentType?.includes('application/json')) {
@@ -219,6 +228,7 @@ export const fetchApi = ({
   query,
   extraInputArgs,
   headers,
+  signal,
 }: {
   path: string;
   clientArgs: ClientArgs;
@@ -227,6 +237,7 @@ export const fetchApi = ({
   body: unknown;
   extraInputArgs: Record<string, unknown>;
   headers: Record<string, string | undefined>;
+  signal?: AbortSignal;
 }) => {
   const apiFetcher = clientArgs.api || tsRestFetchApi;
 
@@ -244,6 +255,7 @@ export const fetchApi = ({
 
   if (route.method !== 'GET' && route.contentType === 'multipart/form-data') {
     return apiFetcher({
+      route,
       path,
       method: route.method,
       credentials: clientArgs.credentials,
@@ -252,11 +264,13 @@ export const fetchApi = ({
       rawBody: body,
       rawQuery: query,
       contentType: 'multipart/form-data',
+      signal,
       ...extraInputArgs,
     });
   }
 
   return apiFetcher({
+    route,
     path,
     method: route.method,
     credentials: clientArgs.credentials,
@@ -269,6 +283,7 @@ export const fetchApi = ({
     rawBody: body,
     rawQuery: query,
     contentType: route.method !== 'GET' ? 'application/json' : undefined,
+    signal,
     ...extraInputArgs,
   });
 };
