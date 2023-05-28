@@ -692,13 +692,13 @@ describe('custom api', () => {
     );
   });
 
-  it('has correct types when strict is configured', async () => {
+  it('has correct types when throwOnUnknownStatus is configured', async () => {
     const client = initClient(router, {
       baseUrl: 'https://api.com',
       baseHeaders: {
         'X-Api-Key': 'foo',
       },
-      strict: true,
+      throwOnUnknownStatus: true,
     });
 
     fetchMock.getOnce({ url: 'https://api.com/posts' }, { status: 200 });
@@ -709,13 +709,13 @@ describe('custom api', () => {
     result.status === 404;
   });
 
-  it('throws an error when strict is configured and response is unknown', async () => {
+  it('throws an error when throwOnUnknownStatus is configured and response is unknown', async () => {
     const client = initClient(router, {
       baseUrl: 'https://isolated.com',
       baseHeaders: {
         'X-Api-Key': 'foo',
       },
-      strict: true,
+      throwOnUnknownStatus: true,
     });
 
     fetchMock.getOnce({ url: 'https://isolated.com/posts' }, { status: 419 });
