@@ -25,7 +25,10 @@ export class PostController implements NestControllerInterface<typeof c> {
   @TsRest(c.getPosts)
   async getPosts(
     @TsRestRequest()
-    { query: { take, skip, search } }: RequestShapes['getPosts']
+    {
+      query: { take, skip, search },
+      headers: { 'x-pagination': pagination },
+    }: RequestShapes['getPosts']
   ) {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,
@@ -35,7 +38,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
     return {
       status: 200 as const,
-      body: { posts, count: totalPosts, skip, take },
+      body: { posts, count: totalPosts, skip, take, pagination },
     };
   }
 

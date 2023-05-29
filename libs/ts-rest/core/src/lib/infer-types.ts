@@ -1,6 +1,7 @@
 import { AppRoute, AppRouteMutation, AppRouter } from './dsl';
 import { HTTPStatusCode } from './status-codes';
 import {
+  LowercaseKeys,
   Prettify,
   Without,
   ZodInferOrType,
@@ -71,6 +72,9 @@ export type ServerInferRequest<T extends AppRoute | AppRouter> =
               ? BodyWithoutFileIfMultiPart<T>
               : never;
             query: 'query' extends keyof T ? ZodInferOrType<T['query']> : never;
+            headers: 'headers' extends keyof T
+              ? Prettify<LowercaseKeys<ZodInferOrType<T['headers']>>>
+              : never;
           },
           never
         >
@@ -96,6 +100,9 @@ export type ClientInferRequest<T extends AppRoute | AppRouter> =
                 : ZodInputOrType<T['body']>
               : never;
             query: 'query' extends keyof T ? ZodInputOrType<T['query']> : never;
+            headers: 'headers' extends keyof T
+              ? Prettify<LowercaseKeys<ZodInputOrType<T['headers']>>>
+              : never;
           },
           never
         >

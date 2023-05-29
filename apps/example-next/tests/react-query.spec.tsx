@@ -1,8 +1,12 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
 import { ApiFetcher, initContract } from '@ts-rest/core';
-import { initQueryClient } from '@ts-rest/react-query';
+import { initQueryClient, useTsRestQueryClient } from '@ts-rest/react-query';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { z } from 'zod';
@@ -24,90 +28,97 @@ export type User = {
   name: string | null;
 };
 
-const postsRouter = c.router({
-  getPost: {
-    method: 'GET',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<Post | null>(),
+const postsRouter = c.router(
+  {
+    getPost: {
+      method: 'GET',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<Post | null>(),
+      },
+    },
+    getPosts: {
+      method: 'GET',
+      path: '/posts',
+      responses: {
+        200: c.response<Post[]>(),
+      },
+      query: z.object({
+        take: z.number().optional(),
+        skip: z.number().optional(),
+      }),
+    },
+    createPost: {
+      method: 'POST',
+      path: '/posts',
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: z.object({
+        title: z.string(),
+        content: z.string(),
+        published: z.boolean().optional(),
+        description: z.string().optional(),
+        authorId: z.string(),
+      }),
+    },
+    mutationWithQuery: {
+      method: 'POST',
+      path: '/posts',
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: z.object({}),
+      query: z.object({
+        test: z.string(),
+      }),
+    },
+    updatePost: {
+      method: 'PUT',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: z.object({
+        title: z.string(),
+        content: z.string(),
+        published: z.boolean().optional(),
+        description: z.string().optional(),
+        authorId: z.string(),
+      }),
+    },
+    patchPost: {
+      method: 'PATCH',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<Post>(),
+      },
+      body: null,
+    },
+    deletePost: {
+      method: 'DELETE',
+      path: `/posts/:id`,
+      responses: {
+        200: c.response<boolean>(),
+      },
+      body: null,
+    },
+    uploadImage: {
+      method: 'POST',
+      path: `/posts/:id/image`,
+      responses: {
+        200: c.response<Post>(),
+      },
+      contentType: 'multipart/form-data',
+      body: c.body<{ image: File }>(),
     },
   },
-  getPosts: {
-    method: 'GET',
-    path: '/posts',
-    responses: {
-      200: c.response<Post[]>(),
-    },
-    query: z.object({
-      take: z.number().optional(),
-      skip: z.number().optional(),
+  {
+    baseHeaders: z.object({
+      'x-test': z.string(),
     }),
-  },
-  createPost: {
-    method: 'POST',
-    path: '/posts',
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.object({
-      title: z.string(),
-      content: z.string(),
-      published: z.boolean().optional(),
-      description: z.string().optional(),
-      authorId: z.string(),
-    }),
-  },
-  mutationWithQuery: {
-    method: 'POST',
-    path: '/posts',
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.object({}),
-    query: z.object({
-      test: z.string(),
-    }),
-  },
-  updatePost: {
-    method: 'PUT',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.object({
-      title: z.string(),
-      content: z.string(),
-      published: z.boolean().optional(),
-      description: z.string().optional(),
-      authorId: z.string(),
-    }),
-  },
-  patchPost: {
-    method: 'PATCH',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: null,
-  },
-  deletePost: {
-    method: 'DELETE',
-    path: `/posts/:id`,
-    responses: {
-      200: c.response<boolean>(),
-    },
-    body: null,
-  },
-  uploadImage: {
-    method: 'POST',
-    path: `/posts/:id/image`,
-    responses: {
-      200: c.response<Post>(),
-    },
-    contentType: 'multipart/form-data',
-    body: c.body<{ image: File }>(),
-  },
-});
+  }
+);
 
 // Three endpoints, two for posts, and one for health
 export const router = c.router({
@@ -124,8 +135,10 @@ export const router = c.router({
 const api = jest.fn();
 
 const client = initQueryClient(router, {
-  baseUrl: 'http://api.com',
-  baseHeaders: {},
+  baseUrl: 'https://api.com',
+  baseHeaders: {
+    'x-test': 'test',
+  },
   api: api as ApiFetcher,
 });
 
@@ -168,10 +181,11 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/health',
+      path: 'https://api.com/health',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -192,7 +206,7 @@ describe('react-query', () => {
             id: '1',
           },
           headers: {
-            'X-Test': 'test',
+            'x-test': 'test',
           },
         }),
       {
@@ -206,7 +220,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
@@ -225,7 +239,10 @@ describe('react-query', () => {
             id: '1',
           },
           headers: {
-            'Content-Type': 'application/xml',
+            'x-test': 'foo',
+          },
+          extraHeaders: {
+            'content-type': 'application/xml',
           },
         }),
       {
@@ -239,10 +256,11 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/xml',
+        'x-test': 'foo',
       },
     });
   });
@@ -256,8 +274,8 @@ describe('react-query', () => {
           params: {
             id: '1',
           },
-          headers: {
-            'Content-Type': undefined,
+          extraHeaders: {
+            'content-type': undefined,
           },
         }),
       {
@@ -271,10 +289,11 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
   });
@@ -295,10 +314,11 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/health',
+      path: 'https://api.com/health',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -325,10 +345,11 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/health',
+      path: 'https://api.com/health',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -367,7 +388,7 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'POST',
-      path: 'http://api.com/posts',
+      path: 'https://api.com/posts',
       body: JSON.stringify({
         description: 'test',
         title: 'test',
@@ -376,6 +397,7 @@ describe('react-query', () => {
       }),
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
       rawBody: {
         authorId: '1',
@@ -429,19 +451,21 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/2',
+      path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -496,19 +520,21 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/2',
+      path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -567,19 +593,21 @@ describe('react-query', () => {
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/1',
+      path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
     expect(api).toHaveBeenCalledWith({
       method: 'GET',
-      path: 'http://api.com/posts/2',
+      path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
         'content-type': 'application/json',
+        'x-test': 'test',
       },
     });
 
@@ -595,5 +623,237 @@ describe('react-query', () => {
 
     expect(result.current[1].data).toStrictEqual(undefined);
     expect(result.current[1].error).toStrictEqual(ERROR_RESPONSE);
+  });
+
+  it('fetchQuery should handle success', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    renderHook(
+      () => {
+        const queryClient = useQueryClient();
+        return client.posts.getPost.fetchQuery(queryClient, ['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('fetchQuery should handle success hook', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    renderHook(
+      () => {
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.fetchQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('fetchQuery should handle failure', async () => {
+    api.mockResolvedValue(ERROR_RESPONSE);
+
+    const { result } = renderHook(
+      async () => {
+        const apiQueryClient = useTsRestQueryClient(client);
+        try {
+          await apiQueryClient.posts.getPost.fetchQuery(['post', '1'], {
+            params: {
+              id: '1',
+            },
+          });
+        } catch (error) {
+          return error;
+        }
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current).resolves.toStrictEqual(ERROR_RESPONSE);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('prefetchQuery should handle success', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    renderHook(
+      () => {
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.prefetchQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('getQueryData should return already fetched data', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { waitForNextUpdate } = renderHook(
+      () => {
+        const { data } = client.posts.getPost.useQuery(['post', '1'], {
+          params: {
+            id: '1',
+          },
+        });
+
+        return data;
+      },
+      {
+        wrapper,
+      }
+    );
+
+    await waitForNextUpdate();
+
+    const { result } = renderHook(
+      () => {
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.getQueryData(['post', '1']);
+      },
+      {
+        wrapper,
+      }
+    );
+
+    expect(result.current).toStrictEqual(SUCCESS_RESPONSE);
+
+    expect(api).toHaveBeenCalledTimes(1);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+    });
+  });
+
+  it('setQueryData should overwrite data returned from api', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const data = {
+      status: 200,
+      body: {
+        id: '1',
+        title: 'foo',
+        description: 'bar',
+        authorId: '1',
+        content: 'baz',
+        published: true,
+      } as Post,
+    } as const;
+
+    const { waitForNextUpdate } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(
+          ['post', '1'],
+          {
+            params: {
+              id: '1',
+            },
+          },
+          {
+            staleTime: 10000,
+          }
+        ),
+      {
+        wrapper,
+      }
+    );
+
+    await waitForNextUpdate();
+
+    renderHook(
+      () => {
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.getPost.setQueryData(['post', '1'], data);
+      },
+      {
+        wrapper,
+      }
+    );
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQuery(
+          ['post', '1'],
+          {
+            params: {
+              id: '1',
+            },
+          },
+          {
+            staleTime: 10000,
+          }
+        ),
+      {
+        wrapper,
+      }
+    );
+
+    return waitFor(() => {
+      expect(result.current.isLoading).toStrictEqual(false);
+      expect(result.current.data).toStrictEqual(data);
+    });
   });
 });

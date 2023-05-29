@@ -12,21 +12,32 @@ import {
   ClientArgs,
   ExtractExtraParametersFromClientArgs,
   HTTPStatusCode,
+  LowercaseKeys,
   OptionalIfAllOptional,
+  PartialByLooseKeys,
   PathParamsFromUrl,
   Prettify,
   SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
+  ZodInputOrType,
 } from '@ts-rest/core';
 import { z, ZodTypeAny } from 'zod';
 import { InitClientReturn } from './react-query';
 
 type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
 
-type DataReturnArgsBase<
+export type DataReturnArgsBase<
   TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
+  THeaders = Prettify<
+    'headers' extends keyof TRoute
+      ? PartialByLooseKeys<
+          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
+        >
+      : never
+  >
 > = {
   body: TRoute extends AppRouteMutation
     ? AppRouteMutationType<TRoute['body']> extends null
@@ -39,12 +50,10 @@ type DataReturnArgsBase<
       ? never
       : AppRouteMutationType<TRoute['query']>
     : never;
-  /**
-   * Additional headers to send with the request, merged over baseHeaders,
-   *
-   * Unset a header by setting it to undefined
-   */
-  headers?: Record<string, string | undefined>;
+  headers: THeaders;
+  extraHeaders?: {
+    [K in NonNullable<keyof THeaders>]?: never;
+  } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 export type DataReturnArgs<
@@ -78,12 +87,12 @@ type ErrorResponseMapper<T> =
     };
 
 // Data response if it's a 2XX
-type DataResponse<TAppRoute extends AppRoute> = SuccessResponseMapper<
+export type DataResponse<TAppRoute extends AppRoute> = SuccessResponseMapper<
   TAppRoute['responses']
 >;
 
 // Error response if it's not a 2XX
-type ErrorResponse<TAppRoute extends AppRoute> = ErrorResponseMapper<
+export type ErrorResponse<TAppRoute extends AppRoute> = ErrorResponseMapper<
   TAppRoute['responses']
 >;
 

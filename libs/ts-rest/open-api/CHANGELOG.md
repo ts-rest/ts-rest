@@ -1,5 +1,21 @@
 # @ts-rest/open-api
 
+## 3.21.2
+
+## 3.21.1
+
+### Patch Changes
+
+- 1b4ef1e: Fix incorrect detection of zod objects with nested ZodEffects and fix regression with validation
+
+## 3.21.0
+
+### Patch Changes
+
+- 8729bb5: Fix node16 esm module resolution
+
+## 3.20.0
+
 ## 3.19.5
 
 ### Patch Changes

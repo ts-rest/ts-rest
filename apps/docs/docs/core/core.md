@@ -29,6 +29,9 @@ export const contract = c.router({
     responses: {
       200: c.response<{ posts: Post[]; total: number }>(),
     },
+    headers: z.object({
+      pagination: z.string().optional(),
+    }),
     query: z.object({
       take: z.string().transform(Number).optional(),
       skip: z.string().transform(Number).optional(),
@@ -62,7 +65,7 @@ Check the relevant sections to see how to enable JSON query encoding/decoding on
 
 ## Combining Contracts
 
-You can combine contracts to create a single contract, helpful if you want many sub contracts, especially if they are huge.
+You can combine contracts to create a single contract, helpful if you want many sub-contracts, especially if they are huge.
 
 ```typescript
 const c = initContract();
@@ -85,6 +88,38 @@ export const postContract = c.router({
 
 export const contract = c.router({
   posts: postContract,
+});
+```
+
+## Headers
+
+You can define headers in your contract, however, they must have an input type of `string`, as they cannot be typed otherwise.
+You can use Zod transforms or coercion to transform any string values to different types if needed.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  getPosts: {
+    ...,
+    headers: z.object({
+      authorization: z.string(),
+      pagination: z.coerce.number().optional(),
+    }),
+  }
+});
+```
+
+You can also define base headers for all routes in a contract and its sub-contracts, this is useful for things like authorization headers.
+This will force the client to always pass 
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  // ...endpoints
+}, {
+  baseHeaders: z.object({
+    authorization: z.string(),
+  }),
 });
 ```
 

@@ -13,6 +13,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  LowercaseKeys,
   parseJsonQueryObject,
   PathParamsWithCustomValidators,
   validateResponse,
@@ -23,6 +24,8 @@ import { getPathParamsFromArray } from './path-utils';
 type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
   params: PathParamsWithCustomValidators<T>;
   query: ZodInferOrType<T['query']>;
+  headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
+    NextApiRequest['headers'];
   req: NextApiRequest;
   res: NextApiResponse;
 }) => Promise<ApiRouteServerResponse<T['responses']>>;
@@ -32,6 +35,8 @@ type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
     params: PathParamsWithCustomValidators<T>;
     body: ZodInferOrType<T['body']>;
     query: ZodInferOrType<T['query']>;
+    headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
+      NextApiRequest['headers'];
     req: NextApiRequest;
     res: NextApiResponse;
   }) => Promise<ApiRouteServerResponse<T['responses']>>;
@@ -230,6 +235,22 @@ export const createNextRouter = <T extends AppRouter>(
 
     const pathParams = getPathParamsFromArray(params, route);
 
+    const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!pathParamsResult.success) {
+      return res.status(400).json(pathParamsResult.error);
+    }
+
+    const headersResult = checkZodSchema(req.headers, route.headers, {
+      passThroughExtraKeys: true,
+    });
+
+    if (!headersResult.success) {
+      return res.status(400).send(headersResult.error);
+    }
+
     query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
@@ -246,19 +267,12 @@ export const createNextRouter = <T extends AppRouter>(
       return res.status(400).json(bodyResult.error);
     }
 
-    const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
-      passThroughExtraKeys: true,
-    });
-
-    if (!pathParamsResult.success) {
-      return res.status(400).json(pathParamsResult.error);
-    }
-
     try {
       const { body, status } = await route.implementation({
         body: bodyResult.data,
         query: queryResult.data,
         params: pathParamsResult.data,
+        headers: headersResult.data,
         req,
         res,
       });

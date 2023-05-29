@@ -4,19 +4,33 @@ import { convertQueryParamsToUrlString } from './query';
 import { HTTPStatusCode } from './status-codes';
 import {
   AreAllPropertiesOptional,
+  LowercaseKeys,
   Merge,
   OptionalIfAllOptional,
+  PartialByLooseKeys,
   Prettify,
   Without,
   ZodInferOrType,
   ZodInputOrType,
 } from './type-utils';
+import { UnknownStatusError } from './unknown-status-error';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? AppRouteFunction<T[TKey], TClientArgs>
     : T[TKey] extends AppRouter
     ? RecursiveProxyObj<T[TKey], TClientArgs>
+    : never;
+};
+
+type RecursiveProxyObjNoUnknownStatus<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs & { throwOnUnknownStatus: true }
+> = {
+  [TKey in keyof T]: T[TKey] extends AppRoute
+    ? AppRouteFunctionNoUnknownStatus<T[TKey], TClientArgs>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObjNoUnknownStatus<T[TKey], TClientArgs>
     : never;
 };
 
@@ -64,7 +78,15 @@ export type ExtractExtraParametersFromClientArgs<
 
 type DataReturnArgsBase<
   TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
+  THeaders = Prettify<
+    'headers' extends keyof TRoute
+      ? PartialByLooseKeys<
+          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
+        >
+      : never
+  >
 > = {
   body: TRoute extends AppRouteMutation
     ? AppRouteBodyOrFormData<TRoute>
@@ -73,26 +95,29 @@ type DataReturnArgsBase<
   query: 'query' extends keyof TRoute
     ? AppRouteMutationType<TRoute['query']>
     : never;
-  /**
-   * Additional headers to send with the request, merged over baseHeaders,
-   *
-   * Unset a header by setting it to undefined
-   */
-  headers?: Record<string, string>;
+  headers: THeaders;
+  extraHeaders?: {
+    [K in NonNullable<keyof THeaders>]?: never;
+  } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 type DataReturnArgs<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs
-> = OptionalIfAllOptional<DataReturnArgsBase<TRoute, TClientArgs>>;
+> = OptionalIfAllOptional<
+  Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
+>;
 
-export type ApiRouteResponse<T> =
+export type ApiRouteResponseNoUnknownStatus<T> =
   | {
       [K in keyof T]: {
         status: K;
         body: ZodInferOrType<T[K]>;
       };
-    }[keyof T]
+    }[keyof T];
+
+export type ApiRouteResponse<T> =
+  | ApiRouteResponseNoUnknownStatus<T>
   | {
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
@@ -122,15 +147,29 @@ export function getRouteResponses<T extends AppRouter>(router: T) {
 export type AppRouteFunction<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs
-> = AreAllPropertiesOptional<
-  Without<DataReturnArgs<TRoute, TClientArgs>, never>
-> extends true
+> = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
-      args?: Prettify<Without<DataReturnArgs<TRoute, TClientArgs>, never>>
+      args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>
   : (
-      args: Prettify<Without<DataReturnArgs<TRoute, TClientArgs>, never>>
+      args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
     ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>;
+
+/**
+ * Returned from a mutation or query call when NoUnknownStatus mode is enabled
+ */
+export type AppRouteFunctionNoUnknownStatus<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+> = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
+  ? (
+      args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
+    ) => Promise<Prettify<ApiRouteResponseNoUnknownStatus<TRoute['responses']>>>
+  : (
+      args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
+    ) => Promise<
+      Prettify<ApiRouteResponseNoUnknownStatus<TRoute['responses']>>
+    >;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -146,7 +185,8 @@ export type ApiFetcherArgs = {
   headers: Record<string, string>;
   body: FormData | string | null | undefined;
   rawBody: unknown;
-  contentType:  AppRouteMutation['contentType']
+  rawQuery: unknown;
+  contentType: AppRouteMutation['contentType'];
   credentials?: RequestCredentials;
 };
 
@@ -207,12 +247,14 @@ export const fetchApi = ({
   clientArgs,
   route,
   body,
+  query,
   extraInputArgs,
   headers,
 }: {
   path: string;
   clientArgs: ClientArgs;
   route: AppRoute;
+  query: unknown;
   body: unknown;
   extraInputArgs: Record<string, unknown>;
   headers: Record<string, string | undefined>;
@@ -239,6 +281,7 @@ export const fetchApi = ({
       headers: combinedHeaders,
       body: body instanceof FormData ? body : createFormData(body),
       rawBody: body,
+      rawQuery: query,
       contentType: 'multipart/form-data',
       ...extraInputArgs,
     });
@@ -255,7 +298,8 @@ export const fetchApi = ({
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,
     rawBody: body,
-    contentType: route.method !== 'GET'  ? 'application/json' : undefined,
+    rawQuery: query,
+    contentType: route.method !== 'GET' ? 'application/json' : undefined,
     ...extraInputArgs,
   });
 };
@@ -280,10 +324,12 @@ export const getCompleteUrl = (
 
 export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
-  clientArgs: ClientArgs
+  clientArgs: InitClientArgs
 ) => {
-  return async (inputArgs?: DataReturnArgs<any, ClientArgs>) => {
-    const { query, params, body, headers, ...extraInputArgs } = inputArgs || {};
+  const knownResponseStatuses = Object.keys(route.responses);
+  return async (inputArgs?: DataReturnArgsBase<any, ClientArgs>) => {
+    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+      inputArgs || {};
 
     const completeUrl = getCompleteUrl(
       query,
@@ -293,14 +339,27 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       !!clientArgs.jsonQuery
     );
 
-    return await fetchApi({
+    const response = await fetchApi({
       path: completeUrl,
       clientArgs,
       route,
       body,
+      query,
       extraInputArgs,
-      headers: headers || {},
+      headers: {
+        ...extraHeaders,
+        ...headers,
+      },
     });
+
+    if (!clientArgs.throwOnUnknownStatus) {
+      return response;
+    }
+
+    if (knownResponseStatuses.includes(response.status.toString())) {
+      return response;
+    }
+    throw new UnknownStatusError(response, knownResponseStatuses);
   };
 };
 
@@ -309,10 +368,28 @@ export type InitClientReturn<
   TClientArgs extends ClientArgs
 > = RecursiveProxyObj<T, TClientArgs>;
 
-export const initClient = <T extends AppRouter, TClientArgs extends ClientArgs>(
+export type InitClientReturnNoUnknownStatus<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs & { throwOnUnknownStatus: true }
+> = RecursiveProxyObjNoUnknownStatus<T, TClientArgs>;
+
+export type InitClientArgs = ClientArgs & {
+  /**
+   * Ensures that the responses from the server match those defined in the
+   * contract.
+   */
+  throwOnUnknownStatus?: boolean;
+};
+
+export const initClient = <
+  T extends AppRouter,
+  TClientArgs extends InitClientArgs
+>(
   router: T,
   args: TClientArgs
-): InitClientReturn<T, TClientArgs> => {
+): TClientArgs extends { throwOnUnknownStatus: true }
+  ? InitClientReturnNoUnknownStatus<T, TClientArgs>
+  : InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {

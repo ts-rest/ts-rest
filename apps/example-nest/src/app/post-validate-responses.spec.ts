@@ -50,6 +50,7 @@ describe('PostValidateResponsesController', () => {
 
       return request(app.getHttpServer())
         .get('/posts')
+        .set('x-api-key', 'foo')
         .expect(200)
         .expect({
           posts: [
@@ -77,6 +78,7 @@ describe('PostValidateResponsesController', () => {
 
       return request(app.getHttpServer())
         .get('/posts')
+        .set('x-api-key', 'foo')
         .expect(500)
         .expect({ statusCode: 500, message: 'Internal server error' });
     });
