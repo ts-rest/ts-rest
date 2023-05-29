@@ -187,7 +187,9 @@ const getRouteUseQuery = <
     args: DataReturnArgs<TAppRoute, TClientArgs>,
     options?: CreateQueryOptions<TAppRoute['responses']>
   ) => {
-    const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
+    const dataFn: QueryFunction<TAppRoute['responses']> = async ({
+      signal,
+    }) => {
       const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
         args || {};
 
@@ -209,6 +211,7 @@ const getRouteUseQuery = <
           ...extraHeaders,
           ...headers,
         },
+        signal,
         extraInputArgs,
       });
 
@@ -255,6 +258,7 @@ const getRouteUseInfiniteQuery = <
       );
 
       const result = await fetchApi({
+        signal: infiniteQueryParams.signal,
         path,
         clientArgs,
         route,
