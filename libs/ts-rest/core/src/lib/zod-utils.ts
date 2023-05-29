@@ -1,7 +1,57 @@
 import { z } from 'zod';
 
-export const isZodObject = (body: unknown): body is z.AnyZodObject => {
-  return (body as z.AnyZodObject)?.safeParse !== undefined;
+export const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
+  return typeof (obj as z.ZodTypeAny)?.safeParse === 'function';
+};
+
+export const isZodObject = (
+  obj: unknown
+): obj is z.AnyZodObject | z.ZodEffects<z.AnyZodObject> => {
+  if (typeof (obj as z.AnyZodObject)?.passthrough === 'function') {
+    return true;
+  }
+
+  if (typeof (obj as z.ZodEffects<z.ZodTypeAny>)?.innerType === 'function') {
+    return isZodObject((obj as z.ZodEffects<z.ZodTypeAny>)?.innerType());
+  }
+
+  return false;
+};
+
+export const isZodObjectStrict = (obj: unknown): obj is z.AnyZodObject => {
+  return typeof (obj as z.AnyZodObject)?.passthrough === 'function';
+};
+
+export const extractZodObjectShape = <
+  T extends z.AnyZodObject | z.ZodEffects<z.ZodTypeAny>
+>(
+  obj: T
+): any => {
+  if (!isZodObject(obj)) {
+    throw new Error('Unknown zod object type');
+  }
+
+  if ('innerType' in obj) {
+    return extractZodObjectShape(obj.innerType());
+  }
+
+  return obj.shape;
+};
+
+export const zodMerge = (objectA: unknown, objectB: unknown) => {
+  if (isZodObjectStrict(objectA)) {
+    if (isZodObjectStrict(objectB)) {
+      return objectA.merge(objectB);
+    }
+
+    return objectA;
+  }
+
+  if (isZodObjectStrict(objectB)) {
+    return objectB;
+  }
+
+  return Object.assign({}, objectA, objectB);
 };
 
 export const checkZodSchema = (
@@ -17,7 +67,7 @@ export const checkZodSchema = (
       success: false;
       error: z.ZodError;
     } => {
-  if (isZodObject(schema)) {
+  if (isZodType(schema)) {
     const result = schema.safeParse(data);
 
     if (result.success) {

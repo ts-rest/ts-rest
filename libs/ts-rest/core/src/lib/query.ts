@@ -17,6 +17,7 @@ export const encodeQueryParamsJson = (query: unknown) => {
   }
 
   return Object.entries(query)
+    .filter(([, value]) => value !== undefined)
     .map(([key, value]) => {
       let encodedValue;
 

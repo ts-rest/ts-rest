@@ -32,7 +32,8 @@ Breaking down the arguments:
 
 - `body` - The body of the request, only used for `POST`, `PUT`, `PATCH` requests.
 - `query` - The query parameters of the request.
-- `headers` - The headers of the request (merged and overridden with `baseHeaders` in the client)
+- `headers` - Request headers defined in the contract (merged and overridden with `baseHeaders` in the client)
+- `extraHeaders` - If you want to pass headers not defined in the contract
 - `params` - The path parameters of the request.
 
 :::tip Customise the API 🎨

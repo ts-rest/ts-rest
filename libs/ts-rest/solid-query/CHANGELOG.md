@@ -1,5 +1,45 @@
 # @ts-rest/solid-query
 
+## 3.21.2
+
+## 3.21.1
+
+## 3.21.0
+
+### Minor Changes
+
+- b2bf874: Added React Query QueryClient function helpers
+
+### Patch Changes
+
+- 8729bb5: Fix node16 esm module resolution
+- b2bf874: Add rawQuery parameter to custom API fetcher parameters
+
+## 3.20.0
+
+### Minor Changes
+
+- c1c1d31: Add type-safe header definitions to contracts
+
+## 3.19.5
+
+## 3.19.4
+
+## 3.19.3
+
+## 3.19.2
+
+### Patch Changes
+
+- 96ab6bd: Revert ESM fix, due to failed compilation on Next.js
+
+## 3.19.1
+
+### Patch Changes
+
+- 5e1c6a2: feat: add rawBody and contentType to Custom Client API arguments
+- ecac73d: Fix compatibility with Node.js TS native ESM code
+
 ## 3.19.0
 
 ## 3.18.1

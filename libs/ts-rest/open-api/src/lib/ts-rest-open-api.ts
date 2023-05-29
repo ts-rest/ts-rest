@@ -1,4 +1,11 @@
-import { AppRoute, AppRouter, isAppRoute, isZodObject } from '@ts-rest/core';
+import {
+  AppRoute,
+  AppRouter,
+  extractZodObjectShape,
+  isAppRoute,
+  isZodObject,
+  isZodType,
+} from '@ts-rest/core';
 import {
   InfoObject,
   OpenAPIObject,
@@ -41,24 +48,23 @@ const getPathsFromRouter = (
   return paths;
 };
 
-const getOpenApiSchemaFromZod = (zodObject: unknown, useOutput = false) => {
-  const isZodObj = isZodObject(zodObject);
-
-  if (!isZodObj) {
+const getOpenApiSchemaFromZod = (zodType: unknown, useOutput = false) => {
+  if (!isZodType(zodType)) {
     return null;
   }
 
-  return generateSchema(zodObject, useOutput);
+  return generateSchema(zodType, useOutput);
 };
 
 const getPathParameters = (path: string, zodObject?: unknown) => {
   const isZodObj = isZodObject(zodObject);
+  const zodShape = isZodObj ? extractZodObjectShape(zodObject) : {};
 
   const paramsFromPath = path
     .match(/{[^}]+}/g)
     ?.map((param) => param.slice(1, -1))
     .filter((param) => {
-      return !isZodObj || !zodObject.shape[param];
+      return zodShape[param] === undefined;
     });
 
   const params: any[] =
@@ -72,14 +78,12 @@ const getPathParameters = (path: string, zodObject?: unknown) => {
     })) || [];
 
   if (isZodObj) {
-    const paramsFromZod = Object.entries(zodObject.shape).map(
-      ([key, value]) => ({
-        name: key,
-        in: 'path' as const,
-        required: true,
-        schema: getOpenApiSchemaFromZod(value),
-      })
-    );
+    const paramsFromZod = Object.entries(zodShape).map(([key, value]) => ({
+      name: key,
+      in: 'path' as const,
+      required: true,
+      schema: getOpenApiSchemaFromZod(value),
+    }));
 
     params.push(...paramsFromZod);
   }
@@ -94,7 +98,9 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
     return [];
   }
 
-  return Object.entries(zodObject.shape).map(([key, value]) => {
+  const zodShape = extractZodObjectShape(zodObject);
+
+  return Object.entries(zodShape).map(([key, value]) => {
     const schema = getOpenApiSchemaFromZod(value)!;
     const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
     const isRequired = !(value as z.ZodTypeAny).isOptional();

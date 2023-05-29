@@ -40,6 +40,7 @@ describe('PostJsonQueryController', () => {
 
       return request(app.getHttpServer())
         .get('/posts-json-query')
+        .set('x-api-key', 'foo')
         .query('skip=0&take=10&search="foo"')
         .expect(200)
         .expect({

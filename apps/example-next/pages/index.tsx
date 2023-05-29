@@ -5,7 +5,9 @@ import Link from 'next/link';
 
 export const api = initQueryClient(apiBlog, {
   baseUrl: 'http://localhost:4200/api',
-  baseHeaders: {},
+  baseHeaders: {
+    'x-api-key': 'key',
+  },
 });
 
 export function Index() {

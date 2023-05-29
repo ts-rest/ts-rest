@@ -37,6 +37,7 @@ describe('PostController', () => {
 
       return request(app.getHttpServer())
         .get('/posts')
+        .set('x-api-key', 'foo')
         .query('skip=0&take=10')
         .expect(200)
         .expect({
@@ -47,9 +48,31 @@ describe('PostController', () => {
         });
     });
 
+    it('should fetch pagination header', async () => {
+      jest.spyOn(postService, 'getPosts').mockResolvedValue({
+        posts: [],
+        totalPosts: 0,
+      });
+
+      return request(app.getHttpServer())
+        .get('/posts')
+        .set('x-api-key', 'foo')
+        .set('x-pagination', '123')
+        .query('skip=0&take=10')
+        .expect(200)
+        .expect({
+          posts: [],
+          count: 0,
+          skip: 0,
+          take: 10,
+          pagination: 123,
+        });
+    });
+
     it('should error if a required query param is missing', async () => {
       return request(app.getHttpServer())
         .get('/posts')
+        .set('x-api-key', 'foo')
         .query('skip=0')
         .expect(400)
         .expect({
@@ -71,6 +94,7 @@ describe('PostController', () => {
     it('should error if body is incorrect', async () => {
       return request(app.getHttpServer())
         .post('/posts')
+        .set('x-api-key', 'foo')
         .send({
           title: 'Good title',
           content: 123,
@@ -97,6 +121,7 @@ describe('PostController', () => {
 
       return request(app.getHttpServer())
         .post('/posts')
+        .set('x-api-key', 'foo')
         .send({
           title: 'Title with extra spaces     ',
           content: 'content',
@@ -112,6 +137,7 @@ describe('PostController', () => {
   it('should format params using pathParams correctly', async () => {
     return request(app.getHttpServer())
       .get('/test/123/name')
+      .set('x-api-key', 'foo')
       .expect(200)
       .expect({
         id: 123,

@@ -25,6 +25,8 @@ import {
   getRouteQuery,
   HTTPStatusCode,
   isAppRoute,
+  LowercaseKeys,
+  PartialByLooseKeys,
   PathParamsFromUrl,
   Prettify,
   SuccessfulHttpStatusCode,
@@ -64,7 +66,18 @@ type UseQueryArgs<
     : never;
 };
 
-type DataReturnArgs<TRoute extends AppRoute, TClientArgs extends ClientArgs> = {
+type DataReturnArgs<
+  TRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+  THeaders = Prettify<
+    'headers' extends keyof TRoute
+      ? PartialByLooseKeys<
+          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
+        >
+      : never
+  >
+> = {
   body: TRoute extends AppRouteMutation
     ? AppRouteMutationType<TRoute['body']> extends null
       ? never
@@ -76,12 +89,10 @@ type DataReturnArgs<TRoute extends AppRoute, TClientArgs extends ClientArgs> = {
       ? never
       : AppRouteMutationType<TRoute['query']>
     : never;
-  /**
-   * Additional headers to send with the request, merged over baseHeaders,
-   *
-   * Unset a header by setting it to undefined
-   */
-  headers?: Record<string, string>;
+  headers: THeaders;
+  extraHeaders?: {
+    [K in NonNullable<keyof THeaders>]?: never;
+  } & Record<string, string | undefined>;
 } & ExtractExtraParametersFromClientArgs<TClientArgs>;
 
 /**
@@ -164,17 +175,21 @@ type DataReturnMutation<
   unknown
 >;
 
-const getRouteUseQuery = <TAppRoute extends AppRoute>(
+const getRouteUseQuery = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs
+>(
   route: TAppRoute,
-  clientArgs: ClientArgs
+  clientArgs: TClientArgs
 ) => {
   return (
     queryKey: () => QueryKey,
-    args: any,
+    args: DataReturnArgs<TAppRoute, TClientArgs>,
     options?: CreateQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async () => {
-      const { query, params, body, headers, ...extraInputArgs } = args || {};
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+        args || {};
 
       const path = getCompleteUrl(
         args.query,
@@ -189,7 +204,11 @@ const getRouteUseQuery = <TAppRoute extends AppRoute>(
         clientArgs,
         route,
         body: args.body,
-        headers: args.headers || {},
+        query,
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
         extraInputArgs,
       });
 
@@ -224,8 +243,8 @@ const getRouteUseInfiniteQuery = <
     ) => {
       const resultingQueryArgs = args(infiniteQueryParams);
 
-      const { query, params, body, headers, ...extraInputArgs } =
-        (resultingQueryArgs as any) || {};
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+        resultingQueryArgs || {};
 
       const path = getCompleteUrl(
         resultingQueryArgs.query,
@@ -240,7 +259,11 @@ const getRouteUseInfiniteQuery = <
         clientArgs,
         route,
         body: resultingQueryArgs.body,
-        headers: headers || {},
+        query,
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
         extraInputArgs,
       });
 
@@ -267,8 +290,8 @@ const getRouteUseMutation = <
     const mutationFunction = async (
       args: DataReturnArgs<TAppRoute, TClientArgs>
     ) => {
-      const { query, params, body, headers, ...extraInputArgs } =
-        (args as any) || {};
+      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+        args || {};
 
       const path = getCompleteUrl(
         args.query,
@@ -283,7 +306,11 @@ const getRouteUseMutation = <
         clientArgs,
         route,
         body: args.body,
-        headers: headers || {},
+        query,
+        headers: {
+          ...extraHeaders,
+          ...headers,
+        },
         extraInputArgs,
       });
 
