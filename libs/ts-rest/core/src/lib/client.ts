@@ -108,27 +108,27 @@ type DataReturnArgs<
   Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
 >;
 
-export type ApiRouteResponseNoUnknownStatus<T> =
+export type ApiRouteResponseNoUnknownStatus<T extends AppRoute> =
   | {
-      [K in keyof T]: {
+      [K in keyof T['responses']]: {
         status: K;
-        body: ZodInferOrType<T[K]>;
+        body: ZodInferOrType<T['responses'][K]>;
       };
-    }[keyof T];
+    }[keyof T['responses']];
 
-export type ApiRouteResponse<T> =
-  | ApiRouteResponseNoUnknownStatus<T>
-  | {
-      status: Exclude<HTTPStatusCode, keyof T>;
-      body: unknown;
-    };
+export type ApiRouteResponse<T extends AppRoute> = T extends { strict: true }
+  ? ApiRouteResponseNoUnknownStatus<T>
+  :
+      | ApiRouteResponseNoUnknownStatus<T>
+      | {
+          status: Exclude<HTTPStatusCode, keyof T['responses']>;
+          body: unknown;
+        };
 
 /**
  * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
  */
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
-  T['responses']
->;
+export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<T>;
 
 /**
  * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
@@ -150,10 +150,10 @@ export type AppRouteFunction<
 > = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
       args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>
+    ) => Promise<Prettify<ApiRouteResponse<TRoute>>>
   : (
       args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<ApiRouteResponse<TRoute['responses']>>>;
+    ) => Promise<Prettify<ApiRouteResponse<TRoute>>>;
 
 /**
  * Returned from a mutation or query call when NoUnknownStatus mode is enabled
@@ -164,12 +164,10 @@ export type AppRouteFunctionNoUnknownStatus<
 > = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
       args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<ApiRouteResponseNoUnknownStatus<TRoute['responses']>>>
+    ) => Promise<Prettify<ApiRouteResponseNoUnknownStatus<TRoute>>>
   : (
       args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<
-      Prettify<ApiRouteResponseNoUnknownStatus<TRoute['responses']>>
-    >;
+    ) => Promise<Prettify<ApiRouteResponseNoUnknownStatus<TRoute>>>;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -352,7 +350,8 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       },
     });
 
-    if (!clientArgs.throwOnUnknownStatus) {
+    const strictMode = route.strict ?? clientArgs.throwOnUnknownStatus;
+    if (!strictMode) {
       return response;
     }
 
@@ -387,9 +386,7 @@ export const initClient = <
 >(
   router: T,
   args: TClientArgs
-): TClientArgs extends { throwOnUnknownStatus: true }
-  ? InitClientReturnNoUnknownStatus<T, TClientArgs>
-  : InitClientReturn<T, TClientArgs> => {
+): InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {

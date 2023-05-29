@@ -3,13 +3,15 @@ import { HTTPStatusCode } from './status-codes';
 import { checkZodSchema } from './zod-utils';
 import { ResponseValidationError } from './response-validation-error';
 
+export type ApiRouteServerResponseStrict<T extends Record<number, unknown>> = {
+  [K in keyof T]: {
+    status: K;
+    body: ZodInputOrType<T[K]>;
+  };
+}[keyof T];
+
 export type ApiRouteServerResponse<T extends Record<number, unknown>> =
-  | {
-      [K in keyof T]: {
-        status: K;
-        body: ZodInputOrType<T[K]>;
-      };
-    }[keyof T]
+  | ApiRouteServerResponseStrict<T>
   | {
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;

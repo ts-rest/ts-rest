@@ -131,6 +131,7 @@ export const router = c.router(
       'x-test': z.string().optional(),
       'base-header': z.string().optional(),
     }),
+    strict: true,
   }
 );
 
@@ -186,6 +187,14 @@ type ClientGetPostType = Expect<
       } & Record<string, string | undefined>;
     }
   >
+>;
+type RouterHealthStrict = Expect<Equal<typeof router.health['strict'], true>>;
+type RouterGetPostStrict = Expect<
+  Equal<typeof router.posts.getPost['strict'], true>
+>;
+type t = Awaited<ReturnType<typeof client.health>>;
+type ClientGetPostResponseType = Expect<
+  Equal<t, { status: 200; body: { message: string } }>
 >;
 
 describe('client', () => {

@@ -23,6 +23,7 @@ export type AppRouteQuery = {
   description?: string;
   deprecated?: boolean;
   responses: Record<number, unknown>;
+  strict?: boolean;
 };
 
 /**
@@ -41,6 +42,7 @@ export type AppRouteMutation = {
   description?: string;
   deprecated?: boolean;
   responses: Record<number, unknown>;
+  strict?: boolean;
 };
 
 type ValidatedHeaders<
@@ -108,6 +110,7 @@ type ApplyOptions<
 > = Omit<TRoute, 'headers'> &
   WithoutUnknown<{
     headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
+    strict: TOptions['strict'] extends true ? true : TRoute['strict'];
   }>;
 
 /**
@@ -125,6 +128,7 @@ export type AppRouter = {
 
 export type RouterOptions = {
   baseHeaders?: unknown;
+  strict?: boolean;
 };
 
 /**
@@ -186,6 +190,7 @@ const recursivelyApplyOptions = <T extends AppRouter>(
           {
             ...value,
             headers: zodMerge(options?.baseHeaders, value.headers),
+            strict: options?.strict ?? value.strict,
           },
         ];
       } else {

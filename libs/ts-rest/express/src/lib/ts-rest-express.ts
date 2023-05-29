@@ -1,5 +1,6 @@
 import {
   ApiRouteServerResponse,
+  ApiRouteServerResponseStrict,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
@@ -51,7 +52,9 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     },
     never
   >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
+) => T extends { strict: true }
+  ? Promise<ApiRouteServerResponseStrict<T['responses']>>
+  : Promise<ApiRouteServerResponse<T['responses']>>;
 
 type WithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
@@ -71,7 +74,9 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
     },
     never
   >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
+) => T extends { strict: true }
+  ? Promise<ApiRouteServerResponseStrict<T['responses']>>
+  : Promise<ApiRouteServerResponse<T['responses']>>;
 
 type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteMutationImplementation<T>
