@@ -19,6 +19,7 @@ import type {
   Request,
   RequestHandler,
   Response,
+  NextFunction,
 } from 'express-serve-static-core';
 
 export function getValue<
@@ -47,7 +48,8 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
       params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
       headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      req: Request;
+      req: TsRestRequest<T, any>;
+      res: Response;
     },
     never
   >
@@ -67,7 +69,8 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
       headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
       files: unknown;
       file: unknown;
-      req: Request;
+      req: TsRestRequest<T, any>;
+      res: Response;
     },
     never
   >
@@ -79,11 +82,45 @@ type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteQueryImplementation<T>
   : never;
 
+type TsRestRequest<TRoute extends AppRoute, TContext> = Request & {
+  tsRest: { schema: TRoute; context?: TContext };
+};
+
+export interface TsRestRequestHandler<TRoute extends AppRoute, TContext> {
+  (
+    req: Request & { tsRest: { schema: TRoute; context?: TContext } },
+    res: Response,
+    next: NextFunction
+  ): void;
+}
+
+interface AppRouteOptions<TRoute extends AppRoute, TContext = any> {
+  context?:
+    | TContext
+    | ((props: { req: Request; schema: TRoute }) => Promise<TContext>);
+  middleware?: TsRestRequestHandler<TRoute, TContext>[];
+  handler: TRoute extends AppRouteQuery
+    ? AppRouteQueryImplementation<TRoute>
+    : TRoute extends AppRouteMutation
+    ? AppRouteMutationImplementation<TRoute>
+    : never;
+}
+
+type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
+  | AppRouteOptions<TRoute>
+  | AppRouteImplementation<TRoute>;
+
+const isAppRouteImplementation = <TRoute extends AppRoute>(
+  obj: AppRouteImplementationOrOptions<TRoute>
+): obj is AppRouteImplementation<TRoute> => {
+  return typeof obj === 'function';
+};
+
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
     ? RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? AppRouteImplementation<T[TKey]>
+    ? AppRouteImplementationOrOptions<T[TKey]>
     : never;
 };
 
@@ -91,6 +128,7 @@ type Options = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
   responseValidation?: boolean;
+  middleware?: TsRestRequestHandler<AppRoute, any>[];
 };
 
 export const initServer = () => {
@@ -101,20 +139,26 @@ export const initServer = () => {
 };
 
 const recursivelyApplyExpressRouter = (
-  router: RecursiveRouterObj<any> | AppRouteImplementation<any>,
+  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<AppRoute>,
   path: string[],
-  routeTransformer: (route: AppRouteImplementation<any>, path: string[]) => void
+  routeTransformer: (
+    route: AppRouteImplementationOrOptions<AppRoute>,
+    path: string[]
+  ) => void
 ): void => {
-  if (typeof router === 'object') {
+  if (typeof router === 'object' && typeof router?.handler !== 'function') {
     for (const key in router) {
       recursivelyApplyExpressRouter(
-        router[key],
+        (router as RecursiveRouterObj<any>)[key],
         [...path, key],
         routeTransformer
       );
     }
-  } else if (typeof router === 'function') {
-    routeTransformer(router, path);
+  } else if (
+    typeof router === 'function' ||
+    typeof router?.handler === 'function'
+  ) {
+    routeTransformer(router as AppRouteImplementationOrOptions<AppRoute>, path);
   }
 };
 
@@ -157,8 +201,36 @@ const validateRequest = (
   };
 };
 
+const contextMiddleware = (
+  implementationOrOptions: AppRouteImplementationOrOptions<any>,
+  schema: AppRoute
+): TsRestRequestHandler<any, any> => {
+  return (req, res, next) => {
+    (async () => {
+      let context = undefined;
+
+      if (
+        !isAppRouteImplementation(implementationOrOptions) &&
+        implementationOrOptions.context
+      ) {
+        context =
+          typeof implementationOrOptions.context === 'function'
+            ? await implementationOrOptions.context({ req, schema })
+            : implementationOrOptions.context;
+      }
+
+      req.tsRest = {
+        schema,
+        context,
+      };
+
+      next();
+    })();
+  };
+};
+
 const transformAppRouteQueryImplementation = (
-  route: AppRouteQueryImplementation<any>,
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteQuery>,
   schema: AppRouteQuery,
   app: IRouter,
   options: Options
@@ -167,7 +239,11 @@ const transformAppRouteQueryImplementation = (
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
   }
 
-  app.get(schema.path, async (req, res, next) => {
+  const handler = isAppRouteImplementation(implementationOrOptions)
+    ? implementationOrOptions
+    : implementationOrOptions.handler;
+
+  const mainReqHandler: RequestHandler = async (req, res, next) => {
     const validationResults = validateRequest(req, res, schema, options);
 
     // validation failed, return response
@@ -176,73 +252,12 @@ const transformAppRouteQueryImplementation = (
     }
 
     try {
-      const result = await route({
-        params: validationResults.paramsResult.data,
+      const result = await handler({
+        params: validationResults.paramsResult.data as any,
         query: validationResults.queryResult.data,
         headers: validationResults.headersResult.data as any,
-        req: req,
-      });
-
-      const statusCode = Number(result.status);
-
-      if (options.responseValidation) {
-        const response = validateResponse({
-          responseType: schema.responses[statusCode],
-          response: {
-            status: statusCode,
-            body: result.body,
-          },
-        });
-
-        return res.status(statusCode).json(response.body);
-      }
-
-      return res.status(statusCode).json(result.body);
-    } catch (e) {
-      return next(e);
-    }
-  });
-};
-
-const transformAppRouteMutationImplementation = (
-  route: AppRouteMutationImplementation<any>,
-  schema: AppRouteMutation,
-  app: IRouter,
-  options: Options
-) => {
-  if (options.logInitialization) {
-    console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
-  }
-
-  const method = schema.method;
-
-  const reqHandler: RequestHandler = async (req, res, next) => {
-    const validationResults = validateRequest(req, res, schema, options);
-
-    // validation failed, return response
-    if (!('paramsResult' in validationResults)) {
-      return validationResults;
-    }
-
-    const bodyResult = checkZodSchema(req.body, schema.body);
-
-    if (!bodyResult.success) {
-      return res.status(400).send(bodyResult.error);
-    }
-
-    try {
-      const result = await route({
-        params: validationResults.paramsResult.data,
-        body: bodyResult.data,
-        query: validationResults.queryResult.data,
-        headers: validationResults.headersResult.data as any,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        files: req.files,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        file: req.file,
-        req: req,
+        req: req as TsRestRequest<AppRouteQuery, any>,
+        res: res,
       });
 
       const statusCode = Number(result.status);
@@ -265,18 +280,121 @@ const transformAppRouteMutationImplementation = (
     }
   };
 
+  const handlers: TsRestRequestHandler<AppRouteQuery, any>[] = [
+    contextMiddleware(implementationOrOptions, schema),
+  ];
+
+  if (options.middleware) {
+    handlers.push(...options.middleware);
+  }
+
+  if (
+    !isAppRouteImplementation(implementationOrOptions) &&
+    implementationOrOptions.middleware
+  ) {
+    handlers.push(...implementationOrOptions.middleware);
+  }
+
+  handlers.push(mainReqHandler);
+
+  app.get(schema.path, ...(handlers as RequestHandler[]));
+};
+
+const transformAppRouteMutationImplementation = (
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteMutation>,
+  schema: AppRouteMutation,
+  app: IRouter,
+  options: Options
+) => {
+  if (options.logInitialization) {
+    console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
+  }
+
+  const method = schema.method;
+
+  const handler = isAppRouteImplementation(implementationOrOptions)
+    ? implementationOrOptions
+    : implementationOrOptions.handler;
+
+  const mainReqHandler: RequestHandler = async (req, res, next) => {
+    const validationResults = validateRequest(req, res, schema, options);
+
+    // validation failed, return response
+    if (!('paramsResult' in validationResults)) {
+      return validationResults;
+    }
+
+    const bodyResult = checkZodSchema(req.body, schema.body);
+
+    if (!bodyResult.success) {
+      return res.status(400).send(bodyResult.error);
+    }
+
+    try {
+      const result = await handler({
+        params: validationResults.paramsResult.data as any,
+        body: bodyResult.data,
+        query: validationResults.queryResult.data,
+        headers: validationResults.headersResult.data as any,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        files: req.files,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        file: req.file,
+        req: req as TsRestRequest<AppRouteMutation, any>,
+        res: res,
+      });
+
+      const statusCode = Number(result.status);
+
+      if (options.responseValidation) {
+        const response = validateResponse({
+          responseType: schema.responses[statusCode],
+          response: {
+            status: statusCode,
+            body: result.body,
+          },
+        });
+
+        return res.status(statusCode).json(response.body);
+      }
+
+      return res.status(statusCode).json(result.body);
+    } catch (e) {
+      return next(e);
+    }
+  };
+
+  const handlers: TsRestRequestHandler<AppRouteMutation, any>[] = [
+    contextMiddleware(implementationOrOptions, schema),
+  ];
+
+  if (options.middleware) {
+    handlers.push(...options.middleware);
+  }
+
+  if (
+    !isAppRouteImplementation(implementationOrOptions) &&
+    implementationOrOptions.middleware
+  ) {
+    handlers.push(...implementationOrOptions.middleware);
+  }
+
+  handlers.push(mainReqHandler);
+
   switch (method) {
     case 'DELETE':
-      app.delete(schema.path, reqHandler);
+      app.delete(schema.path, ...(handlers as RequestHandler[]));
       break;
     case 'POST':
-      app.post(schema.path, reqHandler);
+      app.post(schema.path, ...(handlers as RequestHandler[]));
       break;
     case 'PUT':
-      app.put(schema.path, reqHandler);
+      app.put(schema.path, ...(handlers as RequestHandler[]));
       break;
     case 'PATCH':
-      app.patch(schema.path, reqHandler);
+      app.patch(schema.path, ...(handlers as RequestHandler[]));
       break;
   }
 };
@@ -304,14 +422,14 @@ export const createExpressEndpoints = <
     if (isAppRoute(routerViaPath)) {
       if (routerViaPath.method === 'GET') {
         transformAppRouteQueryImplementation(
-          route as AppRouteQueryImplementation<any>,
+          route as AppRouteImplementationOrOptions<AppRouteQuery>,
           routerViaPath,
           app,
           options
         );
       } else {
         transformAppRouteMutationImplementation(
-          route,
+          route as AppRouteImplementationOrOptions<AppRouteMutation>,
           routerViaPath,
           app,
           options
