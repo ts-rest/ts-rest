@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "version-packages": "changeset version",
-    "release": "pnpm nx run-many --target=build --exclude=example-expo && pnpm fix-esm && pnpm copy-readme && changeset publish",
+    "release": "pnpm nx run-many --target=build --exclude=example-expo && pnpm fix-esm && pnpm copy-readme && changeset tag && changeset publish",
     "copy-readme": "find dist/libs/ts-rest -mindepth 1 -maxdepth 1 -type d -exec cp README.md '{}' ';'",
     "fix-esm": "node tools/scripts/fix-esm.mjs",
     "nest": "pnpm nx run example-nest:serve",
