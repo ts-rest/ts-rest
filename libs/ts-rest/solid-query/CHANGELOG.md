@@ -1,5 +1,11 @@
 # @ts-rest/solid-query
 
+## 3.22.0
+
+### Minor Changes
+
+- d61b127: Implement tanstack query cancellation
+
 ## 3.21.2
 
 ## 3.21.1
