@@ -19,9 +19,7 @@ const postsRouter = c.router({
 });
 
 it('allows unknown statuses when not in strict mode', () => {
-  const cLoose = c.router({
-    posts: postsRouter,
-  });
+  const cLoose = c.router({ posts: postsRouter });
   const nestContract = nestControllerContract(cLoose.posts);
   type RequestShapes = NestRequestShapes<typeof nestContract>;
 
@@ -36,13 +34,8 @@ it('allows unknown statuses when not in strict mode', () => {
 });
 
 it('does not allow unknown statuses when in strict mode', () => {
-  const cLoose = c.router(
-    {
-      posts: postsRouter,
-    },
-    { strict: true }
-  );
-  const nestContract = nestControllerContract(cLoose.posts);
+  const cStrict = c.router({ posts: postsRouter }, { strict: true });
+  const nestContract = nestControllerContract(cStrict.posts);
   type RequestShapes = NestRequestShapes<typeof nestContract>;
 
   class PostController implements NestControllerInterface<typeof nestContract> {

@@ -14,9 +14,7 @@ const postsRouter = c.router({
 
 describe('strict mode', () => {
   it('allows unknown responses when not in strict mode', () => {
-    const cLoose = c.router({
-      posts: postsRouter,
-    });
+    const cLoose = c.router({ posts: postsRouter });
     const s = initServer();
 
     s.router(cLoose, {
@@ -32,15 +30,10 @@ describe('strict mode', () => {
   });
 
   it('does not allow unknown statuses when in strict mode', () => {
-    const cLoose = c.router(
-      {
-        posts: postsRouter,
-      },
-      { strict: true }
-    );
+    const cStrict = c.router({ posts: postsRouter }, { strict: true });
     const s = initServer();
 
-    s.router(cLoose, {
+    s.router(cStrict, {
       posts: {
         // @ts-expect-error 201 is not defined as a known response
         getPost: async ({ params: { id } }) => {
