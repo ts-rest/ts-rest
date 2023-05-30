@@ -40,7 +40,7 @@ describe('Authenticated App Endpoints', () => {
       .post('/posts')
       .set('x-api-key', SAMPLE_GUEST_JWT)
       .send({
-        title: 'Title with extra spaces',
+        title: 'Title',
         content: 'content',
       });
 
@@ -52,7 +52,7 @@ describe('Authenticated App Endpoints', () => {
       .post('/posts')
       .set('x-api-key', SAMPLE_NON_OWNER_JWT)
       .send({
-        title: 'Title with extra spaces',
+        title: 'Title',
         content: 'content',
       });
 
@@ -64,7 +64,7 @@ describe('Authenticated App Endpoints', () => {
       .patch('/posts/1')
       .set('x-api-key', SAMPLE_OWNER_JWT)
       .send({
-        title: 'Title with extra spaces',
+        title: 'Title',
         content: 'content',
       });
 
@@ -76,7 +76,7 @@ describe('Authenticated App Endpoints', () => {
       .patch('/posts/1')
       .set('x-api-key', SAMPLE_NON_OWNER_JWT)
       .send({
-        title: 'Title with extra spaces',
+        title: 'Title',
         content: 'content',
       });
 

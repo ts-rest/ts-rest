@@ -144,7 +144,7 @@ type Options<TContext = any> = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
   responseValidation?: boolean;
-  middleware?: TsRestRequestHandler<AppRoute, TContext>[];
+  globalMiddleware?: TsRestRequestHandler<AppRoute, TContext>[];
 };
 
 export type FlattenAppRouter<T extends AppRouter> = {
@@ -342,8 +342,8 @@ const transformAppRouteQueryImplementation = ({
     }),
   ];
 
-  if (options.middleware) {
-    handlers.push(...options.middleware);
+  if (options.globalMiddleware) {
+    handlers.push(...options.globalMiddleware);
   }
 
   if (
@@ -438,8 +438,8 @@ const transformAppRouteMutationImplementation = ({
     }),
   ];
 
-  if (options.middleware) {
-    handlers.push(...options.middleware);
+  if (options.globalMiddleware) {
+    handlers.push(...options.globalMiddleware);
   }
 
   if (

@@ -152,7 +152,7 @@ const completedRouter = s
   });
 
 createExpressEndpoints(apiBlog, completedRouter, app, {
-  middleware: [
+  globalMiddleware: [
     passport.authenticate('jwt', { session: false }),
     (req, res, next) => {
       const context = req.tsRest.context;
@@ -164,11 +164,9 @@ createExpressEndpoints(apiBlog, completedRouter, app, {
         });
 
         if (resource.ownerId !== req.user?.id) {
-          return res
-            .status(403)
-            .json({
-              message: 'Forbidden... You are not the owner of this resource',
-            });
+          return res.status(403).json({
+            message: 'Forbidden... You are not the owner of this resource',
+          });
         }
       }
 
