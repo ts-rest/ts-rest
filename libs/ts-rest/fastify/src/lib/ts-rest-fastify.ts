@@ -168,8 +168,10 @@ const registerRoute = <TAppRoute extends AppRoute>(
       }
 
       const result = await routeImpl({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         params: validationResults.paramsResult.data as any,
         query: validationResults.queryResult.data,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         headers: validationResults.headersResult.data as any,
         request,
         body: request.body,
@@ -228,6 +230,7 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
 };
 
 export function getValue(data: AppRouter, path: string[]) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const value = path.reduce((value, key) => (value as any)?.[key], data as any);
 
   return value;
