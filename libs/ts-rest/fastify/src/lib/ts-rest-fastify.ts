@@ -5,11 +5,10 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
-  GetFieldType,
-  isAppRoute,
   LowercaseKeys,
   parseJsonQueryObject,
   PathParamsWithCustomValidators,
+  validateResponse,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
@@ -20,8 +19,9 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     {
       params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      req: Request;
+      headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
+        fastify.FastifyRequest['headers'];
+      request: fastify.FastifyRequest;
     },
     never
   >
@@ -38,10 +38,9 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
       params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
       body: WithoutFileIfMultiPart<T>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      files: unknown;
-      file: unknown;
-      req: Request;
+      headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
+        fastify.FastifyRequest['headers'];
+      request: fastify.FastifyRequest;
     },
     never
   >
@@ -81,17 +80,29 @@ const validateRequest = (
     passThroughExtraKeys: true,
   });
 
-  const query = options.jsonQuery
-    ? parseJsonQueryObject(request.query as Record<string, string>)
-    : request.query;
+  const queryResult = checkZodSchema(
+    options.jsonQuery
+      ? parseJsonQueryObject(request.query as Record<string, string>)
+      : request.query,
+    schema.query
+  );
 
-  const queryResult = checkZodSchema(query, schema.query);
+  const bodyResult = checkZodSchema(
+    request.body,
+    'body' in schema ? schema.body : null
+  );
 
-  if (!paramsResult.success || !headersResult.success || !queryResult.success) {
+  if (
+    !paramsResult.success ||
+    !headersResult.success ||
+    !queryResult.success ||
+    !bodyResult.success
+  ) {
     reply.status(400).send({
       queryParameterErrors: queryResult.success ? null : queryResult.error,
       pathParameterErrors: paramsResult.success ? null : paramsResult.error,
       headerErrors: headersResult.success ? null : headersResult.error,
+      bodyErrors: bodyResult.success ? null : bodyResult.error,
     });
 
     return null;
@@ -139,102 +150,56 @@ const registerRoute = <TAppRoute extends AppRoute>(
     console.log(`[ts-rest] Initialized ${appRoute.method} ${appRoute.path}`);
   }
 
-  switch (appRoute.method) {
-    case 'GET':
-      fastify.get(appRoute.path, async (request, reply) => {
-        const validationResults = validateRequest(
-          request,
-          reply,
-          appRoute,
-          options
-        );
+  fastify.route({
+    method: appRoute.method,
+    url: appRoute.path,
+    handler: async (request, reply) => {
+      const validationResults = validateRequest(
+        request,
+        reply,
+        appRoute,
+        options
+      );
 
-        if (validationResults === null) {
-          return;
-        }
+      if (validationResults === null) {
+        return;
+      }
 
-        return {
-          routeImpl,
-          appRoute,
-        };
+      const result = await routeImpl({
+        params: validationResults.paramsResult.data as any,
+        query: validationResults.queryResult.data,
+        headers: validationResults.headersResult.data as any,
+        request,
+        body: request.body,
       });
-      break;
 
-    case 'POST':
-      fastify.post(appRoute.path, async (request, reply) => {
-        const validationResults = validateRequest(
-          request,
-          reply,
-          appRoute,
-          options
-        );
+      const statusCode = result.status;
 
-        if (validationResults === null) {
-          return;
-        }
+      if (options.responseValidation) {
+        const response = validateResponse({
+          responseType: appRoute.responses[statusCode],
+          response: {
+            status: statusCode,
+            body: result.body,
+          },
+        });
 
-        return {
-          foo: 'bar',
-        };
-      });
-      break;
-    case 'PUT':
-      fastify.put(appRoute.path, async (request, reply) => {
-        const validationResults = validateRequest(
-          request,
-          reply,
-          appRoute,
-          options
-        );
+        return reply.status(statusCode).send(response.body);
+      }
 
-        if (validationResults === null) {
-          return;
-        }
-
-        return {
-          foo: 'bar',
-        };
-      });
-      break;
-    case 'DELETE':
-      fastify.delete(appRoute.path, async (request, reply) => {
-        const validationResults = validateRequest(
-          request,
-          reply,
-          appRoute,
-          options
-        );
-
-        if (validationResults === null) {
-          return;
-        }
-
-        return {
-          foo: 'bar',
-        };
-      });
-      break;
-    case 'PATCH':
-      fastify.patch(appRoute.path, async (request, reply) => {
-        const validationResults = validateRequest(
-          request,
-          reply,
-          appRoute,
-          options
-        );
-
-        if (validationResults === null) {
-          return;
-        }
-
-        return {
-          foo: 'bar',
-        };
-      });
-      break;
-  }
+      return reply.status(statusCode).send(result.body);
+    },
+  });
 };
 
+/**
+ *
+ * @param routerImpl - the user's implementation of the router
+ * @param appRouter - the `ts-rest` contract for this router
+ * @param path - the path to the current router, e.g. ["posts", "getPosts"]
+ * @param fastify  - the fastify instance to register the route on
+ * @param options
+ */
 const recursivelyRegisterRouter = <T extends AppRouter>(
   routerImpl: RecursiveRouterObj<T>,
   appRouter: T,
@@ -253,28 +218,14 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
       );
     }
   } else if (typeof routerImpl === 'function') {
-    const appRoute = getValue(appRouter, path.join('.')) as AppRoute;
+    const appRoute = getValue(appRouter, path) as AppRoute;
 
     registerRoute(routerImpl, appRoute, fastify, options);
   }
 };
 
-export function getValue<
-  TData,
-  TPath extends string,
-  TDefault = GetFieldType<TData, TPath>
->(
-  data: TData,
-  path: TPath,
-  defaultValue?: TDefault
-): GetFieldType<TData, TPath> | TDefault {
-  const value = path
-    .split(/[.[\]]/)
-    .filter(Boolean)
-    .reduce<GetFieldType<TData, TPath>>(
-      (value, key) => (value as any)?.[key],
-      data as any
-    );
+export function getValue(data: AppRouter, path: string[]) {
+  const value = path.reduce((value, key) => (value as any)?.[key], data as any);
 
-  return value !== undefined ? value : (defaultValue as TDefault);
+  return value;
 }
