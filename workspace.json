@@ -5,6 +5,7 @@
     "docs": "apps/docs",
     "example-contracts": "libs/example-contracts",
     "example-express": "apps/example-express",
+    "example-fastify": "apps/example-fastify",
     "example-microservice-posts-service": "apps/example-microservice/posts-service",
     "example-microservice-users-service": "apps/example-microservice/users-service",
     "example-microservice-util-posts-api": "libs/example-microservice/util-posts-api",
