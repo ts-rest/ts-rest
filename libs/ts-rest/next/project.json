@@ -12,6 +12,18 @@
         "outputPath": "dist/libs/ts-rest/next",
         "main": "libs/ts-rest/next/src/index.ts",
         "tsConfig": "libs/ts-rest/next/tsconfig.lib.json",
+        "assets": [
+          {
+            "glob": "CHANGELOG.md",
+            "input": "libs/ts-rest/next",
+            "output": "."
+          },
+          {
+            "glob": "README.md",
+            "input": ".",
+            "output": "."
+          }
+        ],
         "format": ["esm", "cjs"],
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
