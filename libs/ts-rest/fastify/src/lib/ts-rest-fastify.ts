@@ -4,9 +4,11 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
+  checkZodSchema,
   GetFieldType,
   isAppRoute,
   LowercaseKeys,
+  parseJsonQueryObject,
   PathParamsWithCustomValidators,
   Without,
   ZodInferOrType,
@@ -65,6 +67,43 @@ type RegisterRouterOptions = {
   responseValidation?: boolean;
 };
 
+const validateRequest = (
+  request: fastify.FastifyRequest,
+  reply: fastify.FastifyReply,
+  schema: AppRouteQuery | AppRouteMutation,
+  options: RegisterRouterOptions
+) => {
+  const paramsResult = checkZodSchema(request.params, schema.pathParams, {
+    passThroughExtraKeys: true,
+  });
+
+  const headersResult = checkZodSchema(request.headers, schema.headers, {
+    passThroughExtraKeys: true,
+  });
+
+  const query = options.jsonQuery
+    ? parseJsonQueryObject(request.query as Record<string, string>)
+    : request.query;
+
+  const queryResult = checkZodSchema(query, schema.query);
+
+  if (!paramsResult.success || !headersResult.success || !queryResult.success) {
+    reply.status(400).send({
+      queryParameterErrors: queryResult.success ? null : queryResult.error,
+      pathParameterErrors: paramsResult.success ? null : paramsResult.error,
+      headerErrors: headersResult.success ? null : headersResult.error,
+    });
+
+    return null;
+  }
+
+  return {
+    paramsResult,
+    headersResult,
+    queryResult,
+  };
+};
+
 export const initServer = () => ({
   router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) => args,
   registerRouter: <
@@ -103,14 +142,37 @@ const registerRoute = <TAppRoute extends AppRoute>(
   switch (appRoute.method) {
     case 'GET':
       fastify.get(appRoute.path, async (request, reply) => {
+        const validationResults = validateRequest(
+          request,
+          reply,
+          appRoute,
+          options
+        );
+
+        if (validationResults === null) {
+          return;
+        }
+
         return {
           routeImpl,
           appRoute,
         };
       });
       break;
+
     case 'POST':
       fastify.post(appRoute.path, async (request, reply) => {
+        const validationResults = validateRequest(
+          request,
+          reply,
+          appRoute,
+          options
+        );
+
+        if (validationResults === null) {
+          return;
+        }
+
         return {
           foo: 'bar',
         };
@@ -118,6 +180,17 @@ const registerRoute = <TAppRoute extends AppRoute>(
       break;
     case 'PUT':
       fastify.put(appRoute.path, async (request, reply) => {
+        const validationResults = validateRequest(
+          request,
+          reply,
+          appRoute,
+          options
+        );
+
+        if (validationResults === null) {
+          return;
+        }
+
         return {
           foo: 'bar',
         };
@@ -125,6 +198,17 @@ const registerRoute = <TAppRoute extends AppRoute>(
       break;
     case 'DELETE':
       fastify.delete(appRoute.path, async (request, reply) => {
+        const validationResults = validateRequest(
+          request,
+          reply,
+          appRoute,
+          options
+        );
+
+        if (validationResults === null) {
+          return;
+        }
+
         return {
           foo: 'bar',
         };
@@ -132,6 +216,17 @@ const registerRoute = <TAppRoute extends AppRoute>(
       break;
     case 'PATCH':
       fastify.patch(appRoute.path, async (request, reply) => {
+        const validationResults = validateRequest(
+          request,
+          reply,
+          appRoute,
+          options
+        );
+
+        if (validationResults === null) {
+          return;
+        }
+
         return {
           foo: 'bar',
         };

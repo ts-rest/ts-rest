@@ -12,7 +12,11 @@ export const mockPostFixtureFactory = (partial: Partial<Post>): Post => ({
   ...partial,
 });
 
-const app = fastify({ logger: true });
+const app = fastify({ logger: false });
+
+app.get('/', async (request, reply) => {
+  return { hello: 'world' };
+});
 
 const s = initServer();
 
@@ -78,7 +82,9 @@ const router = s.router(apiBlog, {
   },
 });
 
-s.registerRouter(apiBlog, router, app);
+s.registerRouter(apiBlog, router, app, {
+  logInitialization: true,
+});
 
 const start = async () => {
   try {
