@@ -22,6 +22,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
       headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
         fastify.FastifyRequest['headers'];
       request: fastify.FastifyRequest;
+      reply: fastify.FastifyReply;
     },
     never
   >
@@ -41,6 +42,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
       headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
         fastify.FastifyRequest['headers'];
       request: fastify.FastifyRequest;
+      reply: fastify.FastifyReply;
     },
     never
   >
@@ -171,6 +173,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
         headers: validationResults.headersResult.data as any,
         request,
         body: request.body,
+        reply,
       });
 
       const statusCode = result.status;
