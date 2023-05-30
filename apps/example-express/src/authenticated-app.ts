@@ -131,7 +131,7 @@ const completedRouter = s
     deletePost: {
       middleware: [
         (req, res, next) => {
-          console.log('deletePost middleware - id: ', req.params.id);
+          res.setHeader('x-middleware', 'true');
 
           next();
         },
@@ -164,7 +164,11 @@ createExpressEndpoints(apiBlog, completedRouter, app, {
         });
 
         if (resource.ownerId !== req.user?.id) {
-          return res.status(403).json({ message: 'Forbidden' });
+          return res
+            .status(403)
+            .json({
+              message: 'Forbidden... You are not the owner of this resource',
+            });
         }
       }
 

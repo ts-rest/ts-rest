@@ -81,5 +81,17 @@ describe('Authenticated App Endpoints', () => {
       });
 
     expect(res.status).toStrictEqual(403);
+    expect(res.body).toStrictEqual({
+      message: 'Forbidden... You are not the owner of this resource',
+    });
+  });
+
+  it('DELETE /posts/:id should succeed and receive header from middleware', async () => {
+    const res = await superTestApp
+      .delete('/posts/1')
+      .set('x-api-key', SAMPLE_OWNER_JWT);
+
+    expect(res.status).toStrictEqual(200);
+    expect(res.headers['x-middleware']).toStrictEqual('true');
   });
 });
