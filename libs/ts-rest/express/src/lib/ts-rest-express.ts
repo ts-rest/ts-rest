@@ -20,6 +20,7 @@ import type {
   RequestHandler,
   Response,
   NextFunction,
+  Express,
 } from 'express-serve-static-core';
 
 export function getValue<
@@ -82,22 +83,25 @@ type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
   ? AppRouteQueryImplementation<T>
   : never;
 
-type TsRestRequest<TRoute extends AppRoute, TContext> = Request & {
-  tsRest: { schema: TRoute; context?: TContext };
+export type TsRestRequest<
+  TRoute extends AppRoute,
+  TContext
+> = Express['request'] & {
+  tsRest: { route: TRoute; context: TContext };
 };
 
-export interface TsRestRequestHandler<TRoute extends AppRoute, TContext> {
+export interface TsRestRequestHandler<
+  TRoute extends AppRoute,
+  TContext = never
+> {
   (
-    req: Request & { tsRest: { schema: TRoute; context?: TContext } },
+    req: TsRestRequest<TRoute, TContext>,
     res: Response,
     next: NextFunction
   ): void;
 }
 
-interface AppRouteOptions<TRoute extends AppRoute, TContext = any> {
-  context?:
-    | TContext
-    | ((props: { req: Request; schema: TRoute }) => Promise<TContext>);
+interface AppRouteOptions<TRoute extends AppRoute, TContext = never> {
   middleware?: TsRestRequestHandler<TRoute, TContext>[];
   handler: TRoute extends AppRouteQuery
     ? AppRouteQueryImplementation<TRoute>
@@ -106,9 +110,10 @@ interface AppRouteOptions<TRoute extends AppRoute, TContext = any> {
     : never;
 }
 
-type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
-  | AppRouteOptions<TRoute>
-  | AppRouteImplementation<TRoute>;
+type AppRouteImplementationOrOptions<
+  TRoute extends AppRoute,
+  TContext = never
+> = AppRouteOptions<TRoute, TContext> | AppRouteImplementation<TRoute>;
 
 const isAppRouteImplementation = <TRoute extends AppRoute>(
   obj: AppRouteImplementationOrOptions<TRoute>
@@ -116,43 +121,89 @@ const isAppRouteImplementation = <TRoute extends AppRoute>(
   return typeof obj === 'function';
 };
 
-type RecursiveRouterObj<T extends AppRouter> = {
+type RecursiveRouterObj<T extends AppRouter, TContext = never> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey]>
+    ? RecursiveRouterObj<T[TKey], TContext>
     : T[TKey] extends AppRoute
-    ? AppRouteImplementationOrOptions<T[TKey]>
+    ? AppRouteImplementationOrOptions<T[TKey], TContext>
     : never;
 };
 
-type Options = {
+const RouterOptions = Symbol('RouterOptions');
+
+type CompleteRouterObj<
+  T extends AppRouter,
+  TContext = never
+> = RecursiveRouterObj<T, TContext> & {
+  [RouterOptions]?: {
+    contextFunction: ContextFunction<T, TContext>;
+  };
+};
+
+type Options<TContext = any> = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
   responseValidation?: boolean;
-  middleware?: TsRestRequestHandler<AppRoute, any>[];
+  middleware?: TsRestRequestHandler<AppRoute, TContext>[];
 };
+
+export type FlattenAppRouter<T extends AppRouter> = {
+  [TKey in keyof T]: T[TKey] extends AppRoute
+    ? T[TKey]
+    : T[TKey] extends AppRouter
+    ? FlattenAppRouter<T[TKey]>
+    : never;
+}[keyof T];
+
+export type ContextFunction<T extends AppRouter, TContext> = ({
+  req,
+  route,
+}: {
+  req: Request;
+  route: FlattenAppRouter<T>;
+}) => TContext | Promise<TContext>;
 
 export const initServer = () => {
   return {
+    context: <T extends AppRouter, TContext>(
+      router: T,
+      contextFunction: ContextFunction<T, TContext>
+    ) => {
+      return {
+        router: (args: RecursiveRouterObj<T, TContext>) => ({
+          ...args,
+          [RouterOptions]: {
+            contextFunction,
+          },
+        }),
+      };
+    },
     router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
       args,
   };
 };
 
-const recursivelyApplyExpressRouter = (
-  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<AppRoute>,
-  path: string[],
+const recursivelyApplyExpressRouter = ({
+  router,
+  path,
+  routeTransformer,
+}: {
+  router:
+    | CompleteRouterObj<any, any>
+    | AppRouteImplementationOrOptions<AppRoute>;
+  path: string[];
   routeTransformer: (
     route: AppRouteImplementationOrOptions<AppRoute>,
     path: string[]
-  ) => void
-): void => {
+  ) => void;
+}): void => {
   if (typeof router === 'object' && typeof router?.handler !== 'function') {
     for (const key in router) {
-      recursivelyApplyExpressRouter(
-        (router as RecursiveRouterObj<any>)[key],
-        [...path, key],
-        routeTransformer
-      );
+      recursivelyApplyExpressRouter({
+        router: (router as RecursiveRouterObj<any, any>)[key],
+        path: [...path, key],
+        routeTransformer,
+      });
     }
   } else if (
     typeof router === 'function' ||
@@ -201,26 +252,23 @@ const validateRequest = (
   };
 };
 
-const contextMiddleware = (
-  implementationOrOptions: AppRouteImplementationOrOptions<any>,
-  schema: AppRoute
-): TsRestRequestHandler<any, any> => {
+const contextMiddleware = ({
+  contextFunction,
+  route,
+}: {
+  contextFunction?: ContextFunction<any, any>;
+  route: AppRoute;
+}): TsRestRequestHandler<any, any> => {
   return (req, res, next) => {
     (async () => {
       let context = undefined;
 
-      if (
-        !isAppRouteImplementation(implementationOrOptions) &&
-        implementationOrOptions.context
-      ) {
-        context =
-          typeof implementationOrOptions.context === 'function'
-            ? await implementationOrOptions.context({ req, schema })
-            : implementationOrOptions.context;
+      if (contextFunction) {
+        context = await contextFunction({ req, route });
       }
 
       req.tsRest = {
-        schema,
+        route,
         context,
       };
 
@@ -229,12 +277,19 @@ const contextMiddleware = (
   };
 };
 
-const transformAppRouteQueryImplementation = (
-  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteQuery>,
-  schema: AppRouteQuery,
-  app: IRouter,
-  options: Options
-) => {
+const transformAppRouteQueryImplementation = ({
+  implementationOrOptions,
+  schema,
+  app,
+  options,
+  contextFunction,
+}: {
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteQuery>;
+  schema: AppRouteQuery;
+  app: IRouter;
+  options: Options;
+  contextFunction?: ContextFunction<any, any>;
+}) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
   }
@@ -280,8 +335,11 @@ const transformAppRouteQueryImplementation = (
     }
   };
 
-  const handlers: TsRestRequestHandler<AppRouteQuery, any>[] = [
-    contextMiddleware(implementationOrOptions, schema),
+  const handlers: TsRestRequestHandler<AppRouteQuery>[] = [
+    contextMiddleware({
+      contextFunction,
+      route: schema,
+    }),
   ];
 
   if (options.middleware) {
@@ -300,12 +358,19 @@ const transformAppRouteQueryImplementation = (
   app.get(schema.path, ...(handlers as RequestHandler[]));
 };
 
-const transformAppRouteMutationImplementation = (
-  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteMutation>,
-  schema: AppRouteMutation,
-  app: IRouter,
-  options: Options
-) => {
+const transformAppRouteMutationImplementation = ({
+  implementationOrOptions,
+  schema,
+  app,
+  options,
+  contextFunction,
+}: {
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteMutation>;
+  schema: AppRouteMutation;
+  app: IRouter;
+  options: Options;
+  contextFunction?: ContextFunction<any, any>;
+}) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
   }
@@ -366,8 +431,11 @@ const transformAppRouteMutationImplementation = (
     }
   };
 
-  const handlers: TsRestRequestHandler<AppRouteMutation, any>[] = [
-    contextMiddleware(implementationOrOptions, schema),
+  const handlers: TsRestRequestHandler<AppRouteMutation>[] = [
+    contextMiddleware({
+      contextFunction,
+      route: schema,
+    }),
   ];
 
   if (options.middleware) {
@@ -399,46 +467,51 @@ const transformAppRouteMutationImplementation = (
   }
 };
 
-export const createExpressEndpoints = <
-  T extends RecursiveRouterObj<TRouter>,
-  TRouter extends AppRouter
->(
+export const createExpressEndpoints = <TContext, TRouter extends AppRouter>(
   schema: TRouter,
-  router: T,
+  router: CompleteRouterObj<TRouter, TContext>,
   app: IRouter,
-  options: Options = {
+  options: Options<TContext> = {
     logInitialization: true,
     jsonQuery: false,
     responseValidation: false,
   }
 ) => {
-  recursivelyApplyExpressRouter(router, [], (route, path) => {
-    const routerViaPath = getValue(schema, path.join('.'));
+  recursivelyApplyExpressRouter({
+    router,
+    path: [],
+    routeTransformer: (route, path) => {
+      const routerViaPath = getValue(schema, path.join('.'));
 
-    if (!routerViaPath) {
-      throw new Error(`[ts-rest] No router found for path ${path.join('.')}`);
-    }
+      if (!routerViaPath) {
+        throw new Error(`[ts-rest] No router found for path ${path.join('.')}`);
+      }
 
-    if (isAppRoute(routerViaPath)) {
-      if (routerViaPath.method === 'GET') {
-        transformAppRouteQueryImplementation(
-          route as AppRouteImplementationOrOptions<AppRouteQuery>,
-          routerViaPath,
-          app,
-          options
-        );
+      if (isAppRoute(routerViaPath)) {
+        if (routerViaPath.method === 'GET') {
+          transformAppRouteQueryImplementation({
+            implementationOrOptions:
+              route as AppRouteImplementationOrOptions<AppRouteQuery>,
+            schema: routerViaPath,
+            contextFunction: router[RouterOptions]?.contextFunction,
+            app,
+            options,
+          });
+        } else {
+          transformAppRouteMutationImplementation({
+            implementationOrOptions:
+              route as AppRouteImplementationOrOptions<AppRouteMutation>,
+            schema: routerViaPath,
+            contextFunction: router[RouterOptions]?.contextFunction,
+            app,
+            options,
+          });
+        }
       } else {
-        transformAppRouteMutationImplementation(
-          route as AppRouteImplementationOrOptions<AppRouteMutation>,
-          routerViaPath,
-          app,
-          options
+        throw new Error(
+          'Could not find schema route implementation for ' + path.join('.')
         );
       }
-    } else {
-      throw new Error(
-        'Could not find schema route implementation for ' + path.join('.')
-      );
-    }
+    },
   });
 };

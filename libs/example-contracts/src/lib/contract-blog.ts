@@ -36,6 +36,7 @@ export const apiBlog = c.router(
         description: z.string().optional(),
       }),
       summary: 'Create a post',
+      metadata: { roles: ['user'] } as const,
     },
     updatePost: {
       method: 'PATCH',
@@ -48,6 +49,11 @@ export const apiBlog = c.router(
         description: z.string().optional(),
       }),
       summary: 'Update a post',
+      metadata: {
+        roles: ['user'],
+        resource: 'post',
+        identifierPath: 'params.id',
+      } as const,
     },
     deletePost: {
       method: 'DELETE',
@@ -58,6 +64,11 @@ export const apiBlog = c.router(
       },
       body: null,
       summary: 'Delete a post',
+      metadata: {
+        roles: ['user'],
+        resource: 'post',
+        identifierPath: 'params.id',
+      } as const,
     },
     getPost: {
       method: 'GET',
@@ -68,6 +79,7 @@ export const apiBlog = c.router(
       },
       query: null,
       summary: 'Get a post by id',
+      metadata: { roles: ['guest', 'user'] } as const,
     },
     getPosts: {
       method: 'GET',
@@ -89,6 +101,7 @@ export const apiBlog = c.router(
       headers: z.object({
         'x-pagination': z.coerce.number().optional(),
       }),
+      metadata: { roles: ['guest', 'user'] } as const,
     },
     testPathParams: {
       method: 'GET',
@@ -106,6 +119,7 @@ export const apiBlog = c.router(
           defaultValue: z.string().default('hello world'),
         }),
       },
+      metadata: { roles: ['guest', 'user'] } as const,
     },
   },
   {
