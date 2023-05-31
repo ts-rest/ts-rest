@@ -1,4 +1,4 @@
-import { getValue } from './ts-rest-express';
+import { getValue } from './get-value';
 
 describe('getValue', () => {
   it('should get one level deep', () => {

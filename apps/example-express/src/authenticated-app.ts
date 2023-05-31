@@ -7,7 +7,6 @@ import {
 } from '@ts-rest/express';
 import * as bodyParser from 'body-parser';
 import { mockOwnedResource, mockPostFixtureFactory } from './fixtures';
-import cors = require('cors');
 import { Strategy, ExtractJwt, VerifiedCallback } from 'passport-jwt';
 import * as passport from 'passport';
 import * as _ from 'lodash';
@@ -50,7 +49,6 @@ export const SAMPLE_GUEST_JWT = jwt.sign(
 
 const app = express();
 
-app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
