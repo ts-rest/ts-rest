@@ -27,6 +27,12 @@ import { InitClientReturn } from './react-query';
 
 type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
 
+// Allow FormData if the contentType is multipart/form-data
+type AppRouteBodyOrFormData<T extends AppRouteMutation> =
+  T['contentType'] extends 'multipart/form-data'
+    ? FormData | AppRouteMutationType<T['body']>
+    : AppRouteMutationType<T['body']>;
+
 export type DataReturnArgsBase<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs,
@@ -40,9 +46,7 @@ export type DataReturnArgsBase<
   >
 > = {
   body: TRoute extends AppRouteMutation
-    ? AppRouteMutationType<TRoute['body']> extends null
-      ? never
-      : AppRouteMutationType<TRoute['body']>
+    ? AppRouteBodyOrFormData<TRoute>
     : never;
   params: PathParamsFromUrl<TRoute>;
   query: 'query' extends keyof TRoute

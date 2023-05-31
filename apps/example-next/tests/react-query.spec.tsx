@@ -892,4 +892,45 @@ describe('react-query', () => {
       expect(result.current.data).toStrictEqual(data);
     });
   });
+
+  it('multipart/form-data should be handled correctly', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const data = new FormData();
+    data.append('image', new Blob(['foo']), 'foo.txt');
+
+    const { result } = renderHook(
+      () => {
+        const apiQueryClient = useTsRestQueryClient(client);
+        return apiQueryClient.posts.uploadImage.useMutation();
+      },
+      {
+        wrapper,
+      }
+    );
+
+    await act(async () => {
+      await result.current.mutateAsync({ body: data, params: { id: '1' } });
+    });
+
+    await waitFor(() => {
+      expect(api).toHaveBeenCalledWith({
+        method: 'POST',
+        path: 'https://api.com/posts/1/image',
+        body: data,
+        rawBody: data,
+        signal: undefined,
+        contentType: 'multipart/form-data',
+        credentials: undefined,
+        rawQuery: undefined,
+        headers: {
+          'content-type': 'multipart/form-data',
+          'x-test': 'test',
+        },
+        route: router.posts.uploadImage,
+      });
+
+      expect(api).toHaveBeenCalledTimes(1);
+    });
+  });
 });
