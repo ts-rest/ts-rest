@@ -22,7 +22,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
       params: PathParamsWithCustomValidators<T>;
       query: ZodInferOrType<T['query']>;
       headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      req: TsRestRequest<T, any>;
+      req: TsRestRequest<T>;
       res: Response;
     },
     never
@@ -43,7 +43,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
       headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
       files: unknown;
       file: unknown;
-      req: TsRestRequest<T, any>;
+      req: TsRestRequest<T>;
       res: Response;
     },
     never
@@ -57,26 +57,27 @@ export type AppRouteImplementation<T extends AppRoute> =
     ? AppRouteQueryImplementation<T>
     : never;
 
-export type TsRestRequest<
-  TRoute extends AppRoute,
-  TContext
-> = Express['request'] & {
-  tsRest: { route: TRoute; context: TContext };
+export type TsRestRequest<TRoute extends AppRoute> = Express['request'] & {
+  tsRestRoute: TRoute;
 };
 
-export interface TsRestRequestHandler<
-  TRoute extends AppRoute,
-  TContext = never
-> {
-  (
-    req: TsRestRequest<TRoute, TContext>,
-    res: Response,
-    next: NextFunction
-  ): void;
-}
+export type TsRestRequestPublic<T extends AppRouter | AppRoute> = TsRestRequest<
+  T extends AppRoute ? T : T extends AppRouter ? FlattenAppRouter<T> : never
+>;
 
-export interface AppRouteOptions<TRoute extends AppRoute, TContext = never> {
-  middleware?: TsRestRequestHandler<TRoute, TContext>[];
+export type TsRestRequestHandler<TRoute extends AppRoute> = (
+  req: TsRestRequest<TRoute>,
+  res: Response,
+  next: NextFunction
+) => void;
+
+export type TsRestRequestHandlerPublic<T extends AppRouter | AppRoute> =
+  TsRestRequestHandler<
+    T extends AppRoute ? T : T extends AppRouter ? FlattenAppRouter<T> : never
+  >;
+
+export interface AppRouteOptions<TRoute extends AppRoute> {
+  middleware?: TsRestRequestHandler<TRoute>[];
   handler: TRoute extends AppRouteQuery
     ? AppRouteQueryImplementation<TRoute>
     : TRoute extends AppRouteMutation
@@ -84,10 +85,9 @@ export interface AppRouteOptions<TRoute extends AppRoute, TContext = never> {
     : never;
 }
 
-export type AppRouteImplementationOrOptions<
-  TRoute extends AppRoute,
-  TContext = never
-> = AppRouteOptions<TRoute, TContext> | AppRouteImplementation<TRoute>;
+export type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
+  | AppRouteOptions<TRoute>
+  | AppRouteImplementation<TRoute>;
 
 export const isAppRouteImplementation = <TRoute extends AppRoute>(
   obj: AppRouteImplementationOrOptions<TRoute>
@@ -95,30 +95,19 @@ export const isAppRouteImplementation = <TRoute extends AppRoute>(
   return typeof obj === 'function';
 };
 
-export type RecursiveRouterObj<T extends AppRouter, TContext = never> = {
+export type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey], TContext>
+    ? RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? AppRouteImplementationOrOptions<T[TKey], TContext>
+    ? AppRouteImplementationOrOptions<T[TKey]>
     : never;
 };
 
-export const RouterOptions = Symbol('RouterOptions');
-
-export type CompleteRouterObj<
-  T extends AppRouter,
-  TContext = never
-> = RecursiveRouterObj<T, TContext> & {
-  [RouterOptions]?: {
-    contextFunction: ContextFunction<T, TContext>;
-  };
-};
-
-export type TsRestExpressOptions<TContext = any> = {
+export type TsRestExpressOptions<T extends AppRouter> = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
   responseValidation?: boolean;
-  globalMiddleware?: TsRestRequestHandler<AppRoute, TContext>[];
+  globalMiddleware?: TsRestRequestHandler<FlattenAppRouter<T>>[];
 };
 
 type FlattenAppRouter<T extends AppRouter> = {
@@ -128,11 +117,3 @@ type FlattenAppRouter<T extends AppRouter> = {
     ? FlattenAppRouter<T[TKey]>
     : never;
 }[keyof T];
-
-export type ContextFunction<T extends AppRouter, TContext> = ({
-  req,
-  route,
-}: {
-  req: Request;
-  route: FlattenAppRouter<T>;
-}) => TContext | Promise<TContext>;

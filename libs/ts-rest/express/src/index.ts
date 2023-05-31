@@ -1,3 +1,6 @@
 export * from './lib/get-value';
 export * from './lib/ts-rest-express';
-export { TsRestRequest, TsRestRequestHandler } from './lib/types';
+export {
+  TsRestRequestPublic as TsRestRequest,
+  TsRestRequestHandlerPublic as TsRestRequestHandler,
+} from './lib/types';

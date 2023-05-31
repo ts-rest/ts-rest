@@ -11,6 +11,7 @@ import { Strategy, ExtractJwt, VerifiedCallback } from 'passport-jwt';
 import * as passport from 'passport';
 import * as _ from 'lodash';
 import * as jwt from 'jsonwebtoken';
+import { NextFunction, Request, Response } from 'express';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -60,9 +61,10 @@ passport.use(
       passReqToCallback: true,
     },
     (req: express.Request, payload: any, done: VerifiedCallback) => {
-      const tsRestContext = (req as TsRestRequest<any, any>).tsRest.context;
+      const routeMetadata = (req as TsRestRequest<typeof apiBlog>).tsRestRoute
+        .metadata;
 
-      if (tsRestContext?.roles && tsRestContext.roles.includes(payload?.role)) {
+      if (routeMetadata.roles.includes(payload?.role)) {
         return done(null, payload);
       }
 
@@ -72,92 +74,86 @@ passport.use(
 );
 
 const s = initServer();
-const completedRouter = s
-  .context(apiBlog, async ({ req, route }) => {
+const completedRouter = s.router(apiBlog, {
+  getPost: async ({ params: { id } }) => {
+    const post = mockPostFixtureFactory({ id });
+
+    if (!post) {
+      return {
+        status: 404,
+        body: null,
+      };
+    }
+
     return {
-      ...route.metadata,
+      status: 200,
+      body: post,
     };
-  })
-  .router({
-    getPost: async ({ params: { id } }) => {
-      const post = mockPostFixtureFactory({ id });
+  },
+  getPosts: async ({ query }) => {
+    const posts = [
+      mockPostFixtureFactory({ id: '1' }),
+      mockPostFixtureFactory({ id: '2' }),
+    ];
 
-      if (!post) {
-        return {
-          status: 404,
-          body: null,
-        };
-      }
-
-      return {
-        status: 200,
-        body: post,
-      };
-    },
-    getPosts: async ({ query }) => {
-      const posts = [
-        mockPostFixtureFactory({ id: '1' }),
-        mockPostFixtureFactory({ id: '2' }),
-      ];
-
-      return {
-        status: 200,
-        body: {
-          posts,
-          count: 0,
-          skip: query.skip,
-          take: query.take,
-        },
-      };
-    },
-    createPost: async ({ body }) => {
-      const post = mockPostFixtureFactory(body);
-
-      return {
-        status: 201,
-        body: post,
-      };
-    },
-    updatePost: async ({ body }) => {
-      const post = mockPostFixtureFactory(body);
-
-      return {
-        status: 200,
-        body: post,
-      };
-    },
-    deletePost: {
-      middleware: [
-        (req, res, next) => {
-          res.setHeader('x-middleware', 'true');
-
-          next();
-        },
-      ],
-      handler: async () => {
-        return {
-          status: 200,
-          body: { message: 'Post deleted' },
-        };
+    return {
+      status: 200,
+      body: {
+        posts,
+        count: 0,
+        skip: query.skip,
+        take: query.take,
       },
-    },
-    testPathParams: async ({ params }) => {
+    };
+  },
+  createPost: async ({ body }) => {
+    const post = mockPostFixtureFactory(body);
+
+    return {
+      status: 201,
+      body: post,
+    };
+  },
+  updatePost: async ({ body }) => {
+    const post = mockPostFixtureFactory(body);
+
+    return {
+      status: 200,
+      body: post,
+    };
+  },
+  deletePost: {
+    middleware: [
+      (req, res, next) => {
+        res.setHeader('x-middleware', 'true');
+
+        next();
+      },
+    ],
+    handler: async () => {
       return {
         status: 200,
-        body: params,
+        body: { message: 'Post deleted' },
       };
     },
-  });
+  },
+  testPathParams: async ({ params }) => {
+    return {
+      status: 200,
+      body: params,
+    };
+  },
+});
 
 createExpressEndpoints(apiBlog, completedRouter, app, {
   globalMiddleware: [
     passport.authenticate('jwt', { session: false }),
     (req, res, next) => {
-      const context = req.tsRest.context;
+      const routeMetadata = req.tsRestRoute.metadata;
 
-      if (context && 'resource' in context) {
-        const resourceId = _.get(req, context.identifierPath);
-        const resource = mockOwnedResource(context.resource, {
+      if (routeMetadata.resource) {
+        const resourceId = _.get(req, routeMetadata.identifierPath);
+        const resource = mockOwnedResource(routeMetadata.resource, {
           id: resourceId,
         });
 
@@ -171,6 +167,12 @@ createExpressEndpoints(apiBlog, completedRouter, app, {
       next();
     },
   ],
+});
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err);
+
+  next(err);
 });
 
 const port = process.env.port || 3334;

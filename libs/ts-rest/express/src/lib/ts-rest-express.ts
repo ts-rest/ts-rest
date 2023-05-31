@@ -16,31 +16,15 @@ import type {
 } from 'express-serve-static-core';
 import {
   AppRouteImplementationOrOptions,
-  ContextFunction,
   TsRestExpressOptions,
   RecursiveRouterObj,
-  RouterOptions,
   TsRestRequestHandler,
   isAppRouteImplementation,
   TsRestRequest,
-  CompleteRouterObj,
 } from './types';
 
 export const initServer = () => {
   return {
-    context: <T extends AppRouter, TContext>(
-      router: T,
-      contextFunction: ContextFunction<T, TContext>
-    ) => {
-      return {
-        router: (args: RecursiveRouterObj<T, TContext>) => ({
-          ...args,
-          [RouterOptions]: {
-            contextFunction,
-          },
-        }),
-      };
-    },
     router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
       args,
   };
@@ -52,9 +36,7 @@ const recursivelyApplyExpressRouter = ({
   processRoute,
 }: {
   schema: AppRouter | AppRoute;
-  router:
-    | RecursiveRouterObj<any, any>
-    | AppRouteImplementationOrOptions<AppRoute>;
+  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<AppRoute>;
   processRoute: (
     implementation: AppRouteImplementationOrOptions<AppRoute>,
     schema: AppRoute
@@ -68,7 +50,7 @@ const recursivelyApplyExpressRouter = ({
 
       recursivelyApplyExpressRouter({
         schema: schema[key],
-        router: (router as RecursiveRouterObj<any, any>)[key],
+        router: (router as RecursiveRouterObj<any>)[key],
         processRoute,
       });
     }
@@ -88,7 +70,7 @@ const validateRequest = (
   req: Request,
   res: Response,
   schema: AppRouteQuery | AppRouteMutation,
-  options: TsRestExpressOptions
+  options: TsRestExpressOptions<AppRouter>
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -133,43 +115,16 @@ const validateRequest = (
   };
 };
 
-const contextMiddleware = ({
-  contextFunction,
-  route,
-}: {
-  contextFunction?: ContextFunction<any, any>;
-  route: AppRoute;
-}): TsRestRequestHandler<any, any> => {
-  return (req, res, next) => {
-    (async () => {
-      let context = undefined;
-
-      if (contextFunction) {
-        context = await contextFunction({ req, route });
-      }
-
-      req.tsRest = {
-        route,
-        context,
-      };
-
-      next();
-    })();
-  };
-};
-
 const initializeExpressRoute = ({
   implementationOrOptions,
   schema,
   app,
   options,
-  contextFunction,
 }: {
   implementationOrOptions: AppRouteImplementationOrOptions<AppRoute>;
   schema: AppRoute;
   app: IRouter;
-  options: TsRestExpressOptions;
-  contextFunction?: ContextFunction<any, any>;
+  options: TsRestExpressOptions<any>;
 }) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
@@ -199,7 +154,7 @@ const initializeExpressRoute = ({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         file: req.file,
-        req: req as TsRestRequest<any, any>,
+        req: req as TsRestRequest<any>,
         res: res,
       });
 
@@ -224,10 +179,10 @@ const initializeExpressRoute = ({
   };
 
   const handlers: TsRestRequestHandler<AppRoute>[] = [
-    contextMiddleware({
-      contextFunction,
-      route: schema,
-    }),
+    (req, res, next) => {
+      req.tsRestRoute = schema;
+      next();
+    },
   ];
 
   if (options.globalMiddleware) {
@@ -262,11 +217,11 @@ const initializeExpressRoute = ({
   }
 };
 
-export const createExpressEndpoints = <TContext, TRouter extends AppRouter>(
+export const createExpressEndpoints = <TRouter extends AppRouter>(
   schema: TRouter,
-  router: CompleteRouterObj<TRouter, TContext>,
+  router: RecursiveRouterObj<TRouter>,
   app: IRouter,
-  options: TsRestExpressOptions<TContext> = {
+  options: TsRestExpressOptions<TRouter> = {
     logInitialization: true,
     jsonQuery: false,
     responseValidation: false,
@@ -280,7 +235,6 @@ export const createExpressEndpoints = <TContext, TRouter extends AppRouter>(
         implementationOrOptions:
           implementation as AppRouteImplementationOrOptions<AppRoute>,
         schema: innerSchema,
-        contextFunction: router[RouterOptions]?.contextFunction,
         app,
         options,
       });
