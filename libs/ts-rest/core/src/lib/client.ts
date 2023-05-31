@@ -270,7 +270,10 @@ export const fetchApi = ({
       path,
       method: route.method,
       credentials: clientArgs.credentials,
-      headers: combinedHeaders,
+      headers: {
+        'content-type': 'multipart/form-data',
+        ...combinedHeaders,
+      },
       body: body instanceof FormData ? body : createFormData(body),
       rawBody: body,
       rawQuery: query,
