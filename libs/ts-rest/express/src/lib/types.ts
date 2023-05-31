@@ -15,6 +15,7 @@ import {
   Request,
   Response,
 } from 'express-serve-static-core';
+import { RequestValidationError } from './request-validation-error';
 
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
@@ -108,6 +109,15 @@ export type TsRestExpressOptions<T extends AppRouter> = {
   jsonQuery?: boolean;
   responseValidation?: boolean;
   globalMiddleware?: TsRestRequestHandler<FlattenAppRouter<T>>[];
+  requestValidationErrorHandler?:
+    | 'default'
+    | 'combined'
+    | ((
+        err: RequestValidationError,
+        req: TsRestRequest<FlattenAppRouter<T>>,
+        res: Response,
+        next: NextFunction
+      ) => void);
 };
 
 type FlattenAppRouter<T extends AppRouter> = {

@@ -146,6 +146,7 @@ const completedRouter = s.router(apiBlog, {
 });
 
 createExpressEndpoints(apiBlog, completedRouter, app, {
+  requestValidationErrorHandler: 'combined',
   globalMiddleware: [
     passport.authenticate('jwt', { session: false }),
     (req, res, next) => {

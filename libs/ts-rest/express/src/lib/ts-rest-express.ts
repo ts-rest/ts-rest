@@ -10,6 +10,7 @@ import {
 } from '@ts-rest/core';
 import type {
   IRouter,
+  NextFunction,
   Request,
   RequestHandler,
   Response,
@@ -22,6 +23,7 @@ import {
   isAppRouteImplementation,
   TsRestRequest,
 } from './types';
+import { RequestValidationError } from './request-validation-error';
 
 export const initServer = () => {
   return {
@@ -76,17 +78,9 @@ const validateRequest = (
     passThroughExtraKeys: true,
   });
 
-  if (!paramsResult.success) {
-    return res.status(400).send(paramsResult.error);
-  }
-
   const headersResult = checkZodSchema(req.headers, schema.headers, {
     passThroughExtraKeys: true,
   });
-
-  if (!headersResult.success) {
-    return res.status(400).send(headersResult.error);
-  }
 
   const query = options.jsonQuery
     ? parseJsonQueryObject(req.query as Record<string, string>)
@@ -94,17 +88,23 @@ const validateRequest = (
 
   const queryResult = checkZodSchema(query, schema.query);
 
-  if (!queryResult.success) {
-    return res.status(400).send(queryResult.error);
-  }
-
   const bodyResult = checkZodSchema(
     req.body,
     'body' in schema ? schema.body : null
   );
 
-  if (!bodyResult.success) {
-    return res.status(400).send(bodyResult.error);
+  if (
+    !paramsResult.success ||
+    !headersResult.success ||
+    !queryResult.success ||
+    !bodyResult.success
+  ) {
+    throw new RequestValidationError(
+      !paramsResult.success ? paramsResult.error : null,
+      !headersResult.success ? headersResult.error : null,
+      !queryResult.success ? queryResult.error : null,
+      !bodyResult.success ? bodyResult.error : null
+    );
   }
 
   return {
@@ -135,14 +135,9 @@ const initializeExpressRoute = ({
     : implementationOrOptions.handler;
 
   const mainReqHandler: RequestHandler = async (req, res, next) => {
-    const validationResults = validateRequest(req, res, schema, options);
-
-    // validation failed, return response
-    if (!('paramsResult' in validationResults)) {
-      return validationResults;
-    }
-
     try {
+      const validationResults = validateRequest(req, res, schema, options);
+
       const result = await handler({
         params: validationResults.paramsResult.data as any,
         body: validationResults.bodyResult.data,
@@ -217,6 +212,41 @@ const initializeExpressRoute = ({
   }
 };
 
+const requestValidationErrorHandler = (
+  requestValidationErrorHandler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default'
+) => {
+  return (err: any, req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof RequestValidationError) {
+      // old-style error handling, kept for backwards compatibility
+      if (requestValidationErrorHandler === 'default') {
+        if (err.pathParams) {
+          return res.status(400).json(err.pathParams);
+        }
+        if (err.headers) {
+          return res.status(400).json(err.headers);
+        }
+        if (err.query) {
+          return res.status(400).json(err.query);
+        }
+        if (err.body) {
+          return res.status(400).json(err.body);
+        }
+      } else if (requestValidationErrorHandler === 'combined') {
+        return res.status(400).json({
+          pathParameterErrors: err.pathParams,
+          headerErrors: err.headers,
+          queryParameterErrors: err.query,
+          bodyErrors: err.body,
+        });
+      } else {
+        return requestValidationErrorHandler(err, req as any, res, next);
+      }
+    }
+
+    next(err);
+  };
+};
+
 export const createExpressEndpoints = <TRouter extends AppRouter>(
   schema: TRouter,
   router: RecursiveRouterObj<TRouter>,
@@ -225,6 +255,7 @@ export const createExpressEndpoints = <TRouter extends AppRouter>(
     logInitialization: true,
     jsonQuery: false,
     responseValidation: false,
+    requestValidationErrorHandler: 'default',
   }
 ) => {
   recursivelyApplyExpressRouter({
@@ -240,4 +271,6 @@ export const createExpressEndpoints = <TRouter extends AppRouter>(
       });
     },
   });
+
+  app.use(requestValidationErrorHandler(options.requestValidationErrorHandler));
 };

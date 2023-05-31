@@ -94,4 +94,30 @@ describe('Authenticated App Endpoints', () => {
     expect(res.status).toStrictEqual(200);
     expect(res.headers['x-middleware']).toStrictEqual('true');
   });
+
+  it('should error on invalid pagination header', async () => {
+    const res = await superTestApp
+      .get('/posts?skip=0&take=10')
+      .set('x-api-key', SAMPLE_GUEST_JWT)
+      .set('x-pagination', 'not a number');
+
+    expect(res.status).toStrictEqual(400);
+    expect(res.body).toStrictEqual({
+      bodyErrors: null,
+      headerErrors: {
+        issues: [
+          {
+            code: 'invalid_type',
+            expected: 'number',
+            message: 'Expected number, received nan',
+            path: ['x-pagination'],
+            received: 'nan',
+          },
+        ],
+        name: 'ZodError',
+      },
+      pathParameterErrors: null,
+      queryParameterErrors: null,
+    });
+  });
 });
