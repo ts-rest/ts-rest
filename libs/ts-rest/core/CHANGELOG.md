@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.22.1-pre.0
+
+### Patch Changes
+
+- Test prerelease
+
 ## 3.22.0
 
 ### Minor Changes
