@@ -100,14 +100,12 @@ const validateRequest = (
     !queryResult.success ||
     !bodyResult.success
   ) {
-    reply.status(400).send({
+    throw reply.status(400).send({
       queryParameterErrors: queryResult.success ? null : queryResult.error,
       pathParameterErrors: paramsResult.success ? null : paramsResult.error,
       headerErrors: headersResult.success ? null : headersResult.error,
       bodyErrors: bodyResult.success ? null : bodyResult.error,
     });
-
-    return null;
   }
 
   return {
@@ -163,10 +161,6 @@ const registerRoute = <TAppRoute extends AppRoute>(
         options
       );
 
-      if (validationResults === null) {
-        return;
-      }
-
       const result = await routeImpl({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         params: validationResults.paramsResult.data as any,
@@ -216,22 +210,18 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
     for (const key in routerImpl) {
       recursivelyRegisterRouter(
         routerImpl[key] as unknown as RecursiveRouterObj<T>,
-        appRouter,
+        appRouter[key] as unknown as T,
         [...path, key],
         fastify,
         options
       );
     }
   } else if (typeof routerImpl === 'function') {
-    const appRoute = getValue(appRouter, path) as AppRoute;
-
-    registerRoute(routerImpl, appRoute, fastify, options);
+    registerRoute(
+      routerImpl,
+      appRouter as unknown as AppRoute,
+      fastify,
+      options
+    );
   }
 };
-
-export function getValue(data: AppRouter, path: string[]) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const value = path.reduce((value, key) => (value as any)?.[key], data as any);
-
-  return value;
-}
