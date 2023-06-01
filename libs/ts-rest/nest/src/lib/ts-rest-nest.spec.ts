@@ -34,7 +34,7 @@ it('allows unknown statuses when not in strict mode', () => {
 });
 
 it('does not allow unknown statuses when in strict mode', () => {
-  const cStrict = c.router({ posts: postsRouter }, { strict: true });
+  const cStrict = c.router({ posts: postsRouter }, { strictStatusCodes: true });
   const nestContract = nestControllerContract(cStrict.posts);
   type RequestShapes = NestRequestShapes<typeof nestContract>;
 

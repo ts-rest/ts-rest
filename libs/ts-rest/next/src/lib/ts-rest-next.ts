@@ -29,7 +29,7 @@ type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
     NextApiRequest['headers'];
   req: NextApiRequest;
   res: NextApiResponse;
-}) => T extends { strict: true }
+}) => T extends { strictStatusCodes: true }
   ? Promise<ApiRouteServerResponseStrict<T['responses']>>
   : Promise<ApiRouteServerResponse<T['responses']>>;
 
@@ -42,7 +42,7 @@ type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
       NextApiRequest['headers'];
     req: NextApiRequest;
     res: NextApiResponse;
-  }) => T extends { strict: true }
+  }) => T extends { strictStatusCodes: true }
     ? Promise<ApiRouteServerResponseStrict<T['responses']>>
     : Promise<ApiRouteServerResponse<T['responses']>>;
 

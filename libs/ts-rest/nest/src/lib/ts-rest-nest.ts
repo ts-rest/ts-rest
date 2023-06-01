@@ -9,7 +9,7 @@ import { TsRestRequestShape } from './ts-rest-request.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
   ...args: any[]
-) => T extends { strict: true }
+) => T extends { strictStatusCodes: true }
   ? Promise<ApiRouteServerResponseStrict<T['responses']>>
   : Promise<ApiRouteServerResponse<T['responses']>>;
 
@@ -30,7 +30,7 @@ type AppRouterRequestShapes<T extends AppRouter> = Without<
 type AppRouterResponseShapes<T extends AppRouter> = Without<
   {
     [K in keyof T]: T[K] extends AppRoute
-      ? T extends { strict: true }
+      ? T extends { strictStatusCodes: true }
         ? Promise<ApiRouteServerResponseStrict<T['responses']>>
         : Promise<ApiRouteServerResponse<T['responses']>>
       : never;

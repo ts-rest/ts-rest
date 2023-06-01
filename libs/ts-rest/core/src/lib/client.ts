@@ -116,7 +116,9 @@ export type ApiRouteResponseNoUnknownStatus<T extends AppRoute> =
       };
     }[keyof T['responses']];
 
-export type ApiRouteResponse<T extends AppRoute> = T extends { strict: true }
+export type ApiRouteResponse<T extends AppRoute> = T extends {
+  strictStatusCodes: true;
+}
   ? ApiRouteResponseNoUnknownStatus<T>
   :
       | ApiRouteResponseNoUnknownStatus<T>

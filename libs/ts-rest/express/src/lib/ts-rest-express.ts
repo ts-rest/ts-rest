@@ -52,7 +52,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
     },
     never
   >
-) => T extends { strict: true }
+) => T extends { strictStatusCodes: true }
   ? Promise<ApiRouteServerResponseStrict<T['responses']>>
   : Promise<ApiRouteServerResponse<T['responses']>>;
 
@@ -74,7 +74,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
     },
     never
   >
-) => T extends { strict: true }
+) => T extends { strictStatusCodes: true }
   ? Promise<ApiRouteServerResponseStrict<T['responses']>>
   : Promise<ApiRouteServerResponse<T['responses']>>;
 

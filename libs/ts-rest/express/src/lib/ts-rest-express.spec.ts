@@ -30,7 +30,10 @@ describe('strict mode', () => {
   });
 
   it('does not allow unknown statuses when in strict mode', () => {
-    const cStrict = c.router({ posts: postsRouter }, { strict: true });
+    const cStrict = c.router(
+      { posts: postsRouter },
+      { strictStatusCodes: true }
+    );
     const s = initServer();
 
     s.router(cStrict, {

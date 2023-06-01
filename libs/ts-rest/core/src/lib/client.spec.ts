@@ -131,7 +131,7 @@ export const router = c.router(
       'x-test': z.string().optional(),
       'base-header': z.string().optional(),
     }),
-    strict: true,
+    strictStatusCodes: true,
   }
 );
 
@@ -188,9 +188,11 @@ type ClientGetPostType = Expect<
     }
   >
 >;
-type RouterHealthStrict = Expect<Equal<typeof router.health['strict'], true>>;
+type RouterHealthStrict = Expect<
+  Equal<typeof router.health['strictStatusCodes'], true>
+>;
 type RouterGetPostStrict = Expect<
-  Equal<typeof router.posts.getPost['strict'], true>
+  Equal<typeof router.posts.getPost['strictStatusCodes'], true>
 >;
 type HealthReturnType = Awaited<ReturnType<typeof client.health>>;
 type ClientGetPostResponseType = Expect<
