@@ -135,7 +135,7 @@ export function getRouteResponses<T extends AppRouter>(router: T) {
 type AppRouteFunctionReturn<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs
-> = TClientArgs extends { throwOnUnknownStatus: true }
+> = TRoute extends { strictStatusCodes: true }
   ? ApiRouteResponseNoUnknownStatus<TRoute['responses']>
   : ApiRouteResponse<TRoute['responses']>;
 
