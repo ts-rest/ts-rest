@@ -102,6 +102,7 @@ export type ApiRouteResponseNoUnknownStatus<T> =
       [K in keyof T]: {
         status: K;
         body: ZodInferOrType<T[K]>;
+        headers: Record<string, string>;
       };
     }[keyof T];
 
@@ -110,6 +111,7 @@ export type ApiRouteResponse<T> =
   | {
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
+      headers: Record<string, string>;
     };
 
 /**
@@ -172,9 +174,11 @@ export type ApiFetcherArgs = {
   signal?: AbortSignal;
 };
 
-export type ApiFetcher = (
-  args: ApiFetcherArgs
-) => Promise<{ status: number; body: unknown }>;
+export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
+  status: number;
+  body: unknown;
+  headers: Record<string, string>;
+}>;
 
 /**
  * Default fetch api implementation:
@@ -200,15 +204,30 @@ export const tsRestFetchApi: ApiFetcher = async ({
   });
   const contentType = result.headers.get('content-type');
 
+  const responseHeaders: Record<string, string> = {};
+  result.headers.forEach((value, key) => {
+    responseHeaders[key] = value;
+  });
+
   if (contentType?.includes('application/json')) {
-    return { status: result.status, body: await result.json() };
+    return {
+      status: result.status,
+      body: await result.json(),
+      headers: responseHeaders,
+    };
+  } else if (contentType?.includes('text/plain')) {
+    return {
+      status: result.status,
+      body: await result.text(),
+      headers: responseHeaders,
+    };
+  } else {
+    return {
+      status: result.status,
+      body: await result.blob(),
+      headers: responseHeaders,
+    };
   }
-
-  if (contentType?.includes('text/plain')) {
-    return { status: result.status, body: await result.text() };
-  }
-
-  return { status: result.status, body: await result.blob() };
 };
 
 const createFormData = (body: unknown) => {

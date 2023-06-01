@@ -208,7 +208,14 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({});
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ no query parameters', async () => {
@@ -225,7 +232,14 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({ query: {} });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ no parameters (not provided)', async () => {
@@ -242,7 +256,14 @@ describe('client', () => {
 
       const result = await client.posts.getPosts();
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ query parameters', async () => {
@@ -259,7 +280,14 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ json query parameters', async () => {
@@ -304,7 +332,14 @@ describe('client', () => {
         },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ undefined query parameters', async () => {
@@ -323,7 +358,14 @@ describe('client', () => {
         query: { take: 10, skip: undefined },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ sub path', async () => {
@@ -340,7 +382,14 @@ describe('client', () => {
 
       const result = await client.posts.getPost({ params: { id: '1' } });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ a non json response (string)', async () => {
@@ -362,7 +411,14 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({});
 
-      expect(result).toStrictEqual({ body: 'string', status: 200 });
+      expect(result).toStrictEqual({
+        body: 'string',
+        status: 200,
+        headers: {
+          'content-length': '6',
+          'content-type': 'text/plain',
+        },
+      });
     });
   });
 
@@ -383,7 +439,14 @@ describe('client', () => {
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
 
     it('w/ query params', async () => {
@@ -403,7 +466,14 @@ describe('client', () => {
         body: {},
       });
 
-      expect(result).toStrictEqual({ body: {}, status: 200 });
+      expect(result).toStrictEqual({
+        body: {},
+        status: 200,
+        headers: {
+          'content-length': '2',
+          'content-type': 'application/json',
+        },
+      });
     });
   });
 
@@ -430,7 +500,14 @@ describe('client', () => {
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
   });
 
@@ -452,7 +529,14 @@ describe('client', () => {
         body: null,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
   });
 
@@ -474,7 +558,14 @@ describe('client', () => {
         body: null,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
     });
   });
 
@@ -494,7 +585,14 @@ describe('client', () => {
         body: { file },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
 
       expect(fetchMock).toHaveLastFetched(true, {
         matcher: (_, options) => {
@@ -520,7 +618,14 @@ describe('client', () => {
         body: formData,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result).toStrictEqual({
+        body: value,
+        status: 200,
+        headers: {
+          'content-length': '15',
+          'content-type': 'application/json',
+        },
+      });
 
       expect(fetchMock).toHaveLastFetched(true, {
         matcher: (_, options) => {
@@ -553,6 +658,7 @@ const customClient = initClient(router, {
     return {
       status: 200,
       body: { message: 'Hello' },
+      headers: {},
     };
   },
 });

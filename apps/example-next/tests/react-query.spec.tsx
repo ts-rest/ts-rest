@@ -837,6 +837,7 @@ describe('react-query', () => {
         content: 'baz',
         published: true,
       } as Post,
+      headers: {},
     } as const;
 
     const { waitForNextUpdate } = renderHook(
