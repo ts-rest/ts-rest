@@ -213,12 +213,12 @@ const initializeExpressRoute = ({
 };
 
 const requestValidationErrorHandler = (
-  requestValidationErrorHandler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default'
+  handler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default'
 ) => {
   return (err: any, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof RequestValidationError) {
       // old-style error handling, kept for backwards compatibility
-      if (requestValidationErrorHandler === 'default') {
+      if (handler === 'default') {
         if (err.pathParams) {
           return res.status(400).json(err.pathParams);
         }
@@ -231,7 +231,7 @@ const requestValidationErrorHandler = (
         if (err.body) {
           return res.status(400).json(err.body);
         }
-      } else if (requestValidationErrorHandler === 'combined') {
+      } else if (handler === 'combined') {
         return res.status(400).json({
           pathParameterErrors: err.pathParams,
           headerErrors: err.headers,
@@ -239,7 +239,7 @@ const requestValidationErrorHandler = (
           bodyErrors: err.body,
         });
       } else {
-        return requestValidationErrorHandler(err, req as any, res, next);
+        return handler(err, req as any, res, next);
       }
     }
 
