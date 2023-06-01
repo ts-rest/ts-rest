@@ -1,0 +1,17 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@ts-rest/core": "3.22.0",
+    "@ts-rest/express": "3.22.0",
+    "@ts-rest/nest": "3.22.0",
+    "@ts-rest/next": "3.22.0",
+    "@ts-rest/open-api": "3.22.0",
+    "@ts-rest/react-query": "3.22.0",
+    "@ts-rest/solid-query": "3.22.0"
+  },
+  "changesets": [
+    "serious-hotels-burn",
+    "tricky-dingos-reflect"
+  ]
+}

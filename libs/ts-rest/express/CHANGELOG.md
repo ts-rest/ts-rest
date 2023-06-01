@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.23.0-beta.0
+
+### Minor Changes
+
+- b84b0df: Add middleware directly through ts-rest with type-safe injected route object
+
 ## 3.22.0
 
 ## 3.21.2

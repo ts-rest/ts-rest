@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.23.0-beta.0
+
+### Minor Changes
+
+- b84b0df: Add 'metadata' property to routes
+
 ## 3.22.0
 
 ### Minor Changes

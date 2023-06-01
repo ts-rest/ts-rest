@@ -1,5 +1,7 @@
 # @ts-rest/solid-query
 
+## 3.23.0-beta.0
+
 ## 3.22.0
 
 ### Minor Changes
