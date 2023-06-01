@@ -81,13 +81,16 @@ The `data` property is typed as follows:
 ```typescript
 const data: {
     status: 200;
-    body: User
+    body: User;
+    headers: Record<string, string>
 } | {
     status: 400 | 100 | 101 | 102 | 201 | 202 | 203 | 204 | 205 | 206 | 207 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | ... 36 more ... | 511;
     body: unknown;
+    headers: Record<string, string>
 }
 ```
 
+In this context, the term 'headers' refers to the response headers retrieved either from the default Fetch client or a custom client implementation.
 :::
 
 ## Credentials (sending cookies)
@@ -131,9 +134,7 @@ Objects implementing `.toJSON()` will irreversibly be converted to JSON, so you 
 For example, Date objects will be converted ISO strings by default, so you could handle this case like so:
 
 ```typescript
-const dateSchema = z
-  .union([z.string().datetime(), z.date()])
-  .transform((date) => (typeof date === 'string' ? new Date(date) : date));
+const dateSchema = z.union([z.string().datetime(), z.date()]).transform((date) => (typeof date === 'string' ? new Date(date) : date));
 ```
 
 This will ensure that you could pass Date objects in your client queries. They will be converted to ISO strings in the JSON-encoded URL query string, and then converted back to Date objects on the server by zod's parser.

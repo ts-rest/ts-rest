@@ -108,12 +108,12 @@ const client = initClient(contract, {
         headers,
         data: body,
       });
-      return { status: result.status, body: result.data };
+      return { status: result.status, body: result.data, headers: response.headers };
     } catch (e: Error | AxiosError | any) {
       if (isAxiosError(e)) {
         const error = e as AxiosError;
         const response = error.response as AxiosResponse;
-        return { status: response.status, body: response.data };
+        return { status: response.status, body: response.data, headers: response.headers };
       }
       throw e;
     }
@@ -150,12 +150,12 @@ export class SampleAPI {
             headers,
             data: body,
           });
-          return { status: result.status, body: result.data };
+          return { status: result.status, body: result.data, headers: response.headers };
         } catch (e: Error | AxiosError | any) {
           if (isAxiosError(e)) {
             const error = e as AxiosError;
             const response = error.response as AxiosResponse;
-            return { status: response.status, body: response.data };
+            return { status: response.status, body: response.data, headers: response.headers };
           }
           throw e;
         }
@@ -195,12 +195,12 @@ export class SampleAPI {
             },
             data: body,
           });
-          return { status: result.status, body: result.data };
+          return { status: result.status, body: result.data, headers: result.headers };
         } catch (e: Error | AxiosError | any) {
           if (isAxiosError(e)) {
             const error = e as AxiosError;
             const response = error.response as AxiosResponse;
-            return { status: response.status, body: response.data };
+            return { status: response.status, body: response.data, headers: result.headers };
           }
           throw e;
         }
