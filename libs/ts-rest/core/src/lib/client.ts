@@ -108,29 +108,29 @@ type DataReturnArgs<
   Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
 >;
 
-export type ApiRouteResponseNoUnknownStatus<T extends AppRoute> =
+export type ApiRouteResponseNoUnknownStatus<T> =
   | {
-      [K in keyof T['responses']]: {
+      [K in keyof T]: {
         status: K;
-        body: ZodInferOrType<T['responses'][K]>;
+        body: ZodInferOrType<T[K]>;
       };
-    }[keyof T['responses']];
+    }[keyof T];
 
-export type ApiRouteResponse<T extends AppRoute> = T extends {
-  strictStatusCodes: true;
-}
-  ? ApiRouteResponseNoUnknownStatus<T>
-  :
-      | ApiRouteResponseNoUnknownStatus<T>
-      | {
-          status: Exclude<HTTPStatusCode, keyof T['responses']>;
-          body: unknown;
-        };
+export type ApiRouteResponse<T> =
+  | ApiRouteResponseNoUnknownStatus<T>
+  | {
+      status: Exclude<HTTPStatusCode, keyof T>;
+      body: unknown;
+    };
 
 /**
  * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
  */
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<T>;
+export type ApiResponseForRoute<T extends AppRoute> = T extends {
+  strictStatusCodes: true;
+}
+  ? ApiRouteResponseNoUnknownStatus<T['responses']>
+  : ApiRouteResponse<T['responses']>;
 
 /**
  * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
@@ -152,10 +152,10 @@ export type AppRouteFunction<
 > = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
       args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<ApiRouteResponse<TRoute>>>
+    ) => Promise<Prettify<ApiResponseForRoute<TRoute>>>
   : (
       args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<ApiRouteResponse<TRoute>>>;
+    ) => Promise<Prettify<ApiResponseForRoute<TRoute>>>;
 
 /**
  * Returned from a mutation or query call when NoUnknownStatus mode is enabled
