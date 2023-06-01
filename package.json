@@ -4,8 +4,7 @@
   "license": "MIT",
   "scripts": {
     "version-packages": "changeset version",
-    "release": "pnpm nx run-many --target=build --exclude=example-expo && pnpm fix-esm && pnpm copy-readme && changeset publish",
-    "copy-readme": "find dist/libs/ts-rest -mindepth 1 -maxdepth 1 -type d -exec cp README.md '{}' ';'",
+    "release": "pnpm nx run-many --target=build --exclude=example-expo && pnpm fix-esm && changeset publish",
     "fix-esm": "node tools/scripts/fix-esm.mjs",
     "nest": "pnpm nx run example-nest:serve",
     "affected:all": "pnpm nx affected:lint && pnpm nx affected:test && pnpm nx affected:build",
@@ -155,6 +154,7 @@
     "@wanews/nx-vite": "^0.11.0",
     "babel-jest": "28.1.3",
     "babel-preset-expo": "9.2.2",
+    "commander": "^10.0.1",
     "concurrently": "^7.4.0",
     "css-loader": "^6.4.0",
     "cypress": "^11.0.0",

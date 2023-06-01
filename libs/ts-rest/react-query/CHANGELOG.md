@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.22.0
+
+### Minor Changes
+
+- d61b127: Implement tanstack query cancellation
+
 ## 3.21.2
 
 ### Patch Changes

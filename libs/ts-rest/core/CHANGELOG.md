@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.22.0
+
+### Minor Changes
+
+- d61b127: Implement tanstack query cancellation
+- 1c53ac9: Add `throwOnUnknownStatus` to `initClient` configuration. When set to `true` the client will throw errors for all status codes returned by the server which are not defined in the contract.
+
 ## 3.21.2
 
 ## 3.21.1

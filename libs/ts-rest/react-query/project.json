@@ -13,6 +13,18 @@
         "outputPath": "dist/libs/ts-rest/react-query",
         "main": "libs/ts-rest/react-query/src/index.ts",
         "tsConfig": "libs/ts-rest/react-query/tsconfig.lib.json",
+        "assets": [
+          {
+            "glob": "CHANGELOG.md",
+            "input": "libs/ts-rest/react-query",
+            "output": "."
+          },
+          {
+            "glob": "README.md",
+            "input": ".",
+            "output": "."
+          }
+        ],
         "format": ["esm", "cjs"],
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
