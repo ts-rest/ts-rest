@@ -78,12 +78,17 @@ type ErrorResponseMapper<T> =
   | {
       [K in keyof T]: K extends SuccessfulHttpStatusCode
         ? never
-        : { status: K; body: ZodInferOrType<T[K]>;  headers: Record<string, string>};
+        : {
+            status: K;
+            body: ZodInferOrType<T[K]>;
+            headers: Record<string, string>;
+          };
     }[keyof T]
   // If the response isn't one of our typed ones. Return "unknown"
   | {
       status: Exclude<HTTPStatusCode, keyof T | SuccessfulHttpStatusCode>;
       body: unknown;
+      headers: Record<string, string>;
     };
 
 // Data response if it's a 2XX
