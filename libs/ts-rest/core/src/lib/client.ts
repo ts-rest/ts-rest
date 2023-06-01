@@ -350,8 +350,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       },
     });
 
-    const strictMode = route.strict ?? clientArgs.throwOnUnknownStatus;
-    if (!strictMode) {
+    if (!clientArgs.throwOnUnknownStatus) {
       return response;
     }
 
