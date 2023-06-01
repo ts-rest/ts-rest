@@ -53,6 +53,9 @@ const contract = c.contract({
     responses: {
       200: c.response<Post[]>(), // <-- OR normal TS types
     },
+    headers: z.object({
+      'x-pagination-page': z.coerce.number().optional(),
+    }),
   },
 });
 ```
@@ -74,6 +77,7 @@ Consume the api on the client with a RPC-like interface:
 
 ```typescript
 const result = await client.getPosts({
+  headers: { 'x-pagination-page': 1 },
   query: { skip: 0, take: 10 },
   // ^-- Fully typed!
 });
@@ -95,8 +99,8 @@ yarn add @ts-rest/open-api
 
 Create a contract, implement it on your server then consume it in your client. Incrementally adopt, trial it with your team, then get shipping faster.
 
-<div align="center" style={{margin: "50px"}}>
-<h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a>👈</h2>
+<div align="center">
+<h3>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a> 👈</h3>
 </div>
 
 ## Star History

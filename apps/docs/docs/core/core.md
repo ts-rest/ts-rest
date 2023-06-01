@@ -22,6 +22,7 @@ export const contract = c.router({
       description: z.string().optional(),
     }),
     summary: 'Create a post',
+    metadata: { role: 'user' } as const,
   },
   getPosts: {
     method: 'GET',
@@ -38,6 +39,7 @@ export const contract = c.router({
       search: z.string().optional(),
     }),
     summary: 'Get all posts',
+    metadata: { role: 'guest' } as const,
   },
 });
 ```
@@ -122,6 +124,28 @@ export const contract = c.router({
   }),
 });
 ```
+
+## Metadata
+
+You can attach metadata with any type to your contract routes that can be accessed anywhere throughout ts-rest where
+you have access to the contract route object.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+    getPosts: {
+        ...,
+        metadata: { role: 'guest' } as const,
+    }
+});
+```
+
+:::caution
+
+As the contract is not only used on the server, but on the client as well, it will also be part of your client-side bundle.
+You should not put any sensitive information in the metadata.
+
+:::
 
 ## Intellisense
 
