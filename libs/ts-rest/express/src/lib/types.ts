@@ -58,24 +58,16 @@ export type AppRouteImplementation<T extends AppRoute> =
     ? AppRouteQueryImplementation<T>
     : never;
 
-export type TsRestRequest<TRoute extends AppRoute> = Express['request'] & {
-  tsRestRoute: TRoute;
-};
+export type TsRestRequest<T extends AppRouter | AppRoute> =
+  Express['request'] & {
+    tsRestRoute: FlattenAppRouter<T>;
+  };
 
-export type TsRestRequestPublic<T extends AppRouter | AppRoute> = TsRestRequest<
-  T extends AppRoute ? T : T extends AppRouter ? FlattenAppRouter<T> : never
->;
-
-export type TsRestRequestHandler<TRoute extends AppRoute> = (
-  req: TsRestRequest<TRoute>,
+export type TsRestRequestHandler<T extends AppRouter | AppRoute> = (
+  req: TsRestRequest<T>,
   res: Response,
   next: NextFunction
 ) => void;
-
-export type TsRestRequestHandlerPublic<T extends AppRouter | AppRoute> =
-  TsRestRequestHandler<
-    T extends AppRoute ? T : T extends AppRouter ? FlattenAppRouter<T> : never
-  >;
 
 export interface AppRouteOptions<TRoute extends AppRoute> {
   middleware?: TsRestRequestHandler<TRoute>[];
@@ -120,10 +112,12 @@ export type TsRestExpressOptions<T extends AppRouter> = {
       ) => void);
 };
 
-type FlattenAppRouter<T extends AppRouter> = {
-  [TKey in keyof T]: T[TKey] extends AppRoute
-    ? T[TKey]
-    : T[TKey] extends AppRouter
-    ? FlattenAppRouter<T[TKey]>
-    : never;
-}[keyof T];
+type FlattenAppRouter<T extends AppRouter | AppRoute> = T extends AppRoute
+  ? T
+  : {
+      [TKey in keyof T]: T[TKey] extends AppRoute
+        ? T[TKey]
+        : T[TKey] extends AppRouter
+        ? FlattenAppRouter<T[TKey]>
+        : never;
+    }[keyof T];
