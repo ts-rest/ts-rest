@@ -1,0 +1,52 @@
+{
+  "name": "ts-rest-fastify",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ts-rest/fastify/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/rollup:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "project": "libs/ts-rest/fastify/package.json",
+        "outputPath": "dist/libs/ts-rest/fastify",
+        "main": "libs/ts-rest/fastify/src/index.ts",
+        "tsConfig": "libs/ts-rest/fastify/tsconfig.lib.json",
+        "format": ["esm", "cjs"],
+        "compiler": "tsc",
+        "rollupConfig": "tools/scripts/rollup.config.js",
+        "generateExportsField": true,
+        "skipTypeField": true
+      }
+    },
+    "publish": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "node tools/scripts/publish.mjs ts-rest-fastify {args.ver} {args.tag}"
+      },
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "build"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/ts-rest/fastify/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/fastify"],
+      "options": {
+        "jestConfig": "libs/ts-rest/fastify/jest.config.ts",
+        "passWithNoTests": true,
+        "coverageReporters": ["lcov", "text-summary"]
+      }
+    }
+  },
+  "tags": []
+}

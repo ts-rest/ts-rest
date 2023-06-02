@@ -74,6 +74,7 @@
     "expo-structured-headers": "~2.2.1",
     "expo-updates": "~0.14.3",
     "express": "4.18.1",
+    "fastify": "^4.17.0",
     "graphql": "^16.6.0",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",

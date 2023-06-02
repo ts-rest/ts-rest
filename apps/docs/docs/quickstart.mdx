@@ -213,6 +213,53 @@ const server = app.listen(port, () => {
 ```
 
   </TabItem>
+   <TabItem value="fastify" label="Fastify">
+  <InstallTabs packageName="@ts-rest/fastify" />
+<p>The fastify implementaton allows full type safety, offering; body parsing, query parsing, param parsing and full error handling</p>
+
+```typescript
+// main.ts
+
+const app = fastify();
+
+const s = initServer();
+
+const router = s.router(contract, {
+  getPost: async ({ params: { id } }) => {
+    const post = await prisma.post.findUnique({ where: { id } });
+
+    return {
+      status: 200,
+      body: post,
+    };
+  },
+  createPost: async ({ body }) => {
+    const post = await prisma.post.create({
+      data: body,
+    });
+
+    return {
+      status: 201,
+      body: post,
+    };
+  },
+});
+
+s.registerRouter(contract, router, app);
+
+const start = async () => {
+  try {
+    await app.listen({ port: 3000 });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+};
+
+start();
+```
+
+  </TabItem>
   <TabItem value="next" label="Next.js">
   <InstallTabs packageName="@ts-rest/next" />
 

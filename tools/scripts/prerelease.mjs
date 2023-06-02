@@ -46,7 +46,8 @@ program.parse();
 
 const options = program.opts();
 
-await execAndOutput(`git checkout -b prerelease/${options.branch}`, { cwd });
-await execAndOutput(`changeset pre enter ${options.tag}`, { cwd });
-await execAndOutput(`changeset version`, { cwd });
+await execAndOutput(`git branch -f prerelease/${options.branch}`, { cwd });
+await execAndOutput(`git checkout prerelease/${options.branch}`, { cwd });
+await execAndOutput(`pnpm changeset pre enter ${options.tag}`, { cwd });
+await execAndOutput(`pnpm changeset version`, { cwd });
 await execAndOutput(`git add --all`, { cwd });

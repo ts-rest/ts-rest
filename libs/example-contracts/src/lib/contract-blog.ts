@@ -107,7 +107,12 @@ export const apiBlog = c.router(
       method: 'GET',
       path: '/test/:id/:name',
       pathParams: z.object({
-        id: z.string().transform(Number),
+        id: z
+          .string()
+          .transform(Number)
+          .refine((v) => Number.isInteger(v), {
+            message: 'Must be an integer',
+          }),
       }),
       query: z.object({
         field: z.string().optional(),
