@@ -208,7 +208,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({});
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ no query parameters', async () => {
@@ -225,7 +228,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({ query: {} });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ no parameters (not provided)', async () => {
@@ -242,7 +248,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts();
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ query parameters', async () => {
@@ -259,7 +268,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ json query parameters', async () => {
@@ -304,7 +316,10 @@ describe('client', () => {
         },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ undefined query parameters', async () => {
@@ -323,7 +338,10 @@ describe('client', () => {
         query: { take: 10, skip: undefined },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ sub path', async () => {
@@ -340,7 +358,10 @@ describe('client', () => {
 
       const result = await client.posts.getPost({ params: { id: '1' } });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ a non json response (string)', async () => {
@@ -362,7 +383,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({});
 
-      expect(result).toStrictEqual({ body: 'string', status: 200 });
+      expect(result.body).toStrictEqual('string');
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('6');
+      expect(result.headers.get('Content-Type')).toBe('text/plain');
     });
   });
 
@@ -383,7 +407,10 @@ describe('client', () => {
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ query params', async () => {
@@ -403,7 +430,10 @@ describe('client', () => {
         body: {},
       });
 
-      expect(result).toStrictEqual({ body: {}, status: 200 });
+      expect(result.body).toStrictEqual({});
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('2');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -430,7 +460,10 @@ describe('client', () => {
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -452,7 +485,10 @@ describe('client', () => {
         body: null,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -474,7 +510,10 @@ describe('client', () => {
         body: null,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -494,7 +533,10 @@ describe('client', () => {
         body: { file },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
 
       expect(fetchMock).toHaveLastFetched(true, {
         matcher: (_, options) => {
@@ -520,7 +562,10 @@ describe('client', () => {
         body: formData,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
 
       expect(fetchMock).toHaveLastFetched(true, {
         matcher: (_, options) => {
@@ -553,6 +598,7 @@ const customClient = initClient(router, {
     return {
       status: 200,
       body: { message: 'Hello' },
+      headers: new Headers(),
     };
   },
 });
