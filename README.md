@@ -125,6 +125,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="http://rifaldhiaw.com"><img src="https://avatars.githubusercontent.com/u/7936061?v=4?s=100" width="100px;" alt="Rifaldhi AW"/><br /><sub><b>Rifaldhi AW</b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=rifaldhiaw" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Jwcode-uk"><img src="https://avatars.githubusercontent.com/u/30149596?v=4?s=100" width="100px;" alt="Jonathan White "/><br /><sub><b>Jonathan White </b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=Jwcode-uk" title="Code">💻</a> <a href="https://github.com/ts-rest/ts-rest/commits?author=Jwcode-uk" title="Documentation">📖</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/gingermusketeer"><img src="https://avatars.githubusercontent.com/u/1177034?v=4?s=100" width="100px;" alt="Max Brosnahan"/><br /><sub><b>Max Brosnahan</b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=gingermusketeer" title="Code">💻</a> <a href="#ideas-gingermusketeer" title="Ideas, Planning, & Feedback">🤔</a></td>
+    </tr>
   </tbody>
 </table>
 
