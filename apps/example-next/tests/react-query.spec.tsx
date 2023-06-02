@@ -829,6 +829,10 @@ describe('react-query', () => {
 
     const data = {
       status: 200,
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer your_token_here',
+      }),
       body: {
         id: '1',
         title: 'foo',
@@ -837,7 +841,6 @@ describe('react-query', () => {
         content: 'baz',
         published: true,
       } as Post,
-      headers: {},
     } as const;
 
     const { waitForNextUpdate } = renderHook(
