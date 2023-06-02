@@ -19,15 +19,23 @@ import {
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 
-type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (
-  args: Omit<ServerInferRequest<T>, 'body'> & {
+type RouteToQueryFunctionImplementation<
+  T extends AppRouteQuery,
+  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
+> = (
+  args: Omit<TRequest, 'body' | 'headers'> & {
+    headers: TRequest['headers'] & NextApiRequest['headers'];
     req: NextApiRequest;
     res: NextApiResponse;
   }
 ) => Promise<ServerInferResponses<T>>;
 
-type RouteToMutationFunctionImplementation<T extends AppRouteMutation> = (
-  args: ServerInferRequest<T> & {
+type RouteToMutationFunctionImplementation<
+  T extends AppRouteMutation,
+  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
+> = (
+  args: Omit<TRequest, 'headers'> & {
+    headers: TRequest['headers'] & NextApiRequest['headers'];
     req: NextApiRequest;
     res: NextApiResponse;
   }

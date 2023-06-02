@@ -9,15 +9,23 @@ import {
 import { Express, NextFunction, Response } from 'express-serve-static-core';
 import { RequestValidationError } from './request-validation-error';
 
-type AppRouteQueryImplementation<T extends AppRouteQuery> = (
-  input: Omit<ServerInferRequest<T>, 'body'> & {
+type AppRouteQueryImplementation<
+  T extends AppRouteQuery,
+  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
+> = (
+  input: Omit<TRequest, 'body' | 'headers'> & {
+    headers: TRequest['headers'] & Express['request']['headers'];
     req: TsRestRequest<T>;
     res: Response;
   }
 ) => Promise<ServerInferResponses<T>>;
 
-type AppRouteMutationImplementation<T extends AppRouteMutation> = (
-  input: ServerInferRequest<T> & {
+type AppRouteMutationImplementation<
+  T extends AppRouteMutation,
+  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
+> = (
+  input: Omit<TRequest, 'headers'> & {
+    headers: TRequest['headers'] & Express['request']['headers'];
     files: unknown;
     file: unknown;
     req: TsRestRequest<T>;

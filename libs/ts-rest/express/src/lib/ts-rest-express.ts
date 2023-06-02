@@ -24,6 +24,8 @@ import {
 } from './types';
 import { RequestValidationError } from './request-validation-error';
 
+type AppRouteWithParams = AppRoute & { path: '/:placeholder' };
+
 export const initServer = () => {
   return {
     router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
@@ -37,7 +39,7 @@ const recursivelyApplyExpressRouter = ({
   processRoute,
 }: {
   schema: AppRouter | AppRoute;
-  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<AppRoute>;
+  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<any>;
   processRoute: (
     implementation: AppRouteImplementationOrOptions<AppRoute>,
     schema: AppRoute
@@ -113,8 +115,6 @@ const validateRequest = (
     bodyResult,
   };
 };
-
-type AppRouteWithParams = AppRoute & { path: '/:placeholder' };
 
 const initializeExpressRoute = ({
   implementationOrOptions,
