@@ -831,7 +831,6 @@ describe('react-query', () => {
       status: 200,
       headers: new Headers({
         'Content-Type': 'application/json',
-        Authorization: 'Bearer your_token_here',
       }),
       body: {
         id: '1',
