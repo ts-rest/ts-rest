@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.23.0
+
+### Minor Changes
+
+- df77869: Response headers are now exposed to clients. Users of custom API fetchers should start returning headers.
+
 ## 3.22.0
 
 ### Minor Changes

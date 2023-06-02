@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.23.0
+
+### Minor Changes
+
+- 74bb4a8: Implement strict mode at a contract level. Strict mode ensures that only known responses are allowed by the type system. This applies both on the server and client side. Enable this with `strictStatusCodes: true` when defining a contract. If you would like to have the vanilla client throw an error when the response status is not known then you will need to use `throwOnUnknownStatus` when initializing the client.
+
 ## 3.22.0
 
 ## 3.21.2
