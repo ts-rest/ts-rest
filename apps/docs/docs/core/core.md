@@ -175,3 +175,35 @@ export const contract = c.router({
   },
 });
 ```
+
+## Strict Response Status Codes
+
+To help with incremental adoption, ts-rest, by default, will allow any response status code to be returned from the server
+even if it is not defined in the contract.
+
+As a result, the response types on the client will include all possible HTTP status codes, even ones that are not defined
+in the contract with those mapping to a body type of `unknown`.
+
+If you would like to disable this functionality and only allow the response status codes defined in the contract, you can
+set the `strictStatusCodes` option to `true` when initializing the contract.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  // ...endpoints
+}, {
+  strictStatusCodes: true,
+});
+```
+
+You can also set this option on a per-route basis which will also override the global option.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  getPosts: {
+    ...,
+    strictStatusCodes: true,
+  }
+});
+```
