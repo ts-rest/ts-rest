@@ -87,9 +87,7 @@ createfastifyEndpoints(contract, router, app, {
 
 ### Request Validation Error Handling
 
-The default functionality of handling request validation errors is to return a 400 response with the first validation error that the validator comes across.
-
-You can pass `combined` to the `requestValidationErrorHandler` option to return a 400 response with all validation errors in the body in this form.
+The default functionality of handling request validation errors is `combined` which returns a 400 response with all validation errors in the body in this form.
 
 ```typescript
 {
