@@ -16,7 +16,7 @@ import * as fastify from 'fastify';
 
 import { z } from 'zod';
 
-export class TsRestRequestValidationError extends Error {
+export class RequestValidationError extends Error {
   constructor(
     public pathParams: z.ZodError | null,
     public headers: z.ZodError | null,
@@ -82,7 +82,7 @@ type RegisterRouterOptions = {
   requestValidationErrorHandler?:
     | 'combined'
     | ((
-        err: TsRestRequestValidationError,
+        err: RequestValidationError,
         request: fastify.FastifyRequest,
         reply: fastify.FastifyReply
       ) => void);
@@ -120,7 +120,7 @@ const validateRequest = (
     !queryResult.success ||
     !bodyResult.success
   ) {
-    throw new TsRestRequestValidationError(
+    throw new RequestValidationError(
       paramsResult.success ? null : paramsResult.error,
       headersResult.success ? null : headersResult.error,
       queryResult.success ? null : queryResult.error,
@@ -168,7 +168,7 @@ const requestValidationErrorHandler = (
     request: fastify.FastifyRequest,
     reply: fastify.FastifyReply
   ) => {
-    if (err instanceof TsRestRequestValidationError) {
+    if (err instanceof RequestValidationError) {
       if (handler === 'combined') {
         return reply.status(400).send({
           pathParameterErrors: err.pathParams,

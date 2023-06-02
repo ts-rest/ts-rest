@@ -40,6 +40,15 @@ const contract = c.router({
       }),
     },
   },
+  returnsTheWrongData: {
+    method: 'GET',
+    path: '/wrong',
+    responses: {
+      200: z.object({
+        foo: z.string(),
+      }),
+    },
+  },
 });
 
 jest.setTimeout(30000);
@@ -69,6 +78,15 @@ describe('ts-rest-fastify', () => {
         status: 200,
         body: {
           id: params.id,
+        },
+      };
+    },
+    returnsTheWrongData: async () => {
+      return {
+        status: 200,
+        body: {
+          foo: 'bar',
+          bar: 'foo', // this is extra
         },
       };
     },
@@ -172,5 +190,37 @@ describe('ts-rest-fastify', () => {
 
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({ id: 'foo' });
+  });
+
+  it('options.responseValidation true should remove extra properties', async () => {
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app, {
+      logInitialization: false,
+      responseValidation: true,
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/wrong');
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({ foo: 'bar' });
+  });
+
+  it('options.responseValidation false should not remove extra properties', async () => {
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app, {
+      logInitialization: false,
+      responseValidation: false,
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/wrong');
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({ foo: 'bar', bar: 'foo' });
   });
 });
