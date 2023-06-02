@@ -137,6 +137,28 @@ describe('ts-rest-fastify', () => {
     });
   });
 
+  it("should allow for custom error handler if body doesn't match", async () => {
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app, {
+      logInitialization: false,
+      requestValidationErrorHandler: (err, request, reply) => {
+        return reply.status(500).send({
+          numberOfBodyErrors: err.body?.issues.length,
+        });
+      },
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).post('/ping').send({});
+
+    expect(response.statusCode).toEqual(500);
+    expect(response.body).toEqual({
+      numberOfBodyErrors: 1,
+    });
+  });
+
   it('should parse path params correctly', async () => {
     const app = fastify({ logger: false });
 

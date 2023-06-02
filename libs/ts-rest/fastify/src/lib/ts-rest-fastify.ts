@@ -14,6 +14,19 @@ import {
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
 
+import { z } from 'zod';
+
+export class TsRestRequestValidationError extends Error {
+  constructor(
+    public pathParams: z.ZodError | null,
+    public headers: z.ZodError | null,
+    public query: z.ZodError | null,
+    public body: z.ZodError | null
+  ) {
+    super('[ts-rest] request validation failed');
+  }
+}
+
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: Without<
     {
@@ -66,6 +79,13 @@ type RegisterRouterOptions = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
   responseValidation?: boolean;
+  requestValidationErrorHandler?:
+    | 'combined'
+    | ((
+        err: TsRestRequestValidationError,
+        request: fastify.FastifyRequest,
+        reply: fastify.FastifyReply
+      ) => void);
 };
 
 const validateRequest = (
@@ -100,18 +120,19 @@ const validateRequest = (
     !queryResult.success ||
     !bodyResult.success
   ) {
-    throw reply.status(400).send({
-      queryParameterErrors: queryResult.success ? null : queryResult.error,
-      pathParameterErrors: paramsResult.success ? null : paramsResult.error,
-      headerErrors: headersResult.success ? null : headersResult.error,
-      bodyErrors: bodyResult.success ? null : bodyResult.error,
-    });
+    throw new TsRestRequestValidationError(
+      paramsResult.success ? null : paramsResult.error,
+      headersResult.success ? null : headersResult.error,
+      queryResult.success ? null : queryResult.error,
+      bodyResult.success ? null : bodyResult.error
+    );
   }
 
   return {
     paramsResult,
     headersResult,
     queryResult,
+    bodyResult,
   };
 };
 
@@ -128,11 +149,39 @@ export const initServer = () => ({
       logInitialization: true,
       jsonQuery: false,
       responseValidation: false,
+      requestValidationErrorHandler: 'combined',
     }
   ) => {
     recursivelyRegisterRouter(routerImpl, contract, [], app, options);
+
+    app.setErrorHandler(
+      requestValidationErrorHandler(options.requestValidationErrorHandler)
+    );
   },
 });
+
+const requestValidationErrorHandler = (
+  handler: RegisterRouterOptions['requestValidationErrorHandler'] = 'combined'
+) => {
+  return (
+    err: unknown,
+    request: fastify.FastifyRequest,
+    reply: fastify.FastifyReply
+  ) => {
+    if (err instanceof TsRestRequestValidationError) {
+      if (handler === 'combined') {
+        return reply.status(400).send({
+          pathParameterErrors: err.pathParams,
+          headerErrors: err.headers,
+          queryParameterErrors: err.query,
+          bodyErrors: err.body,
+        });
+      } else {
+        return handler(err, request, reply);
+      }
+    }
+  };
+};
 
 /**
  *
