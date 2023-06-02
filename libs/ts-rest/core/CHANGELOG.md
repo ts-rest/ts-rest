@@ -1,5 +1,21 @@
 # @ts-rest/core
 
+## 3.23.0
+
+### Minor Changes
+
+- 74bb4a8: Implement strict mode at a contract level. Strict mode ensures that only known responses are allowed by the type system. This applies both on the server and client side. Enable this with `strictStatusCodes: true` when defining a contract. If you would like to have the vanilla client throw an error when the response status is not known then you will need to use `throwOnUnknownStatus` when initializing the client.
+- df77869: Response headers are now exposed to clients. Users of custom API fetchers should start returning headers.
+- 74e41dc: Add 'metadata' property to routes
+
+### BREAKING CHANGES FOR CUSTOM API FETCHERS
+
+If you are using a custom API fetcher, you need to start returning response headers from your fetcher as a Web API [Headers](https://developer.mozilla.org/en-US/docs/Web/API/Headers) interface.
+
+If you are using `fetch`, just simply return `response.headers`.
+
+If you are using `axios`, you can return `new Headers(response.headers.toJSON())`
+
 ## 3.22.0
 
 ### Minor Changes
