@@ -82,6 +82,19 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "oliverbutler",
+      "name": "Oliver Butler",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47489826?v=4",
+      "profile": "https://oliverbutler.uk",
+      "contributions": [
+        "code",
+        "ideas",
+        "doc",
+        "infra",
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
