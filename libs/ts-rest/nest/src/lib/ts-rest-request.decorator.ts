@@ -5,35 +5,16 @@ import {
 } from '@nestjs/common';
 import {
   AppRoute,
-  AppRouteMutation,
   checkZodSchema,
-  LowercaseKeys,
   parseJsonQueryObject,
-  PathParamsWithCustomValidators,
-  Without,
+  ServerInferRequest,
   zodErrorResponse,
-  ZodInferOrType,
 } from '@ts-rest/core';
 import type { Request } from 'express-serve-static-core';
 import { JsonQuerySymbol, TsRestAppRouteMetadataKey } from './constants';
 
-type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
-  T['contentType'] extends 'multipart/form-data'
-    ? Without<ZodInferOrType<T['body']>, File>
-    : ZodInferOrType<T['body']>;
-
-export type TsRestRequestShape<TRoute extends AppRoute> = Without<
-  {
-    params: PathParamsWithCustomValidators<TRoute>;
-    body: TRoute extends AppRouteMutation
-      ? BodyWithoutFileIfMultiPart<TRoute>
-      : never;
-    query: ZodInferOrType<TRoute['query']>;
-    headers: LowercaseKeys<ZodInferOrType<TRoute['headers']>> &
-      Request['headers'];
-  },
-  never
->;
+export type TsRestRequestShape<TRoute extends AppRoute> =
+  ServerInferRequest<TRoute>;
 
 /**
  * Parameter decorator used to parse, validate and return the typed request object
@@ -94,8 +75,8 @@ export const TsRestRequest = createParamDecorator(
 
     return {
       query: queryResult.data,
-      params: pathParamsResult.data,
-      body: bodyResult.data,
+      params: pathParamsResult.data as any,
+      body: bodyResult.data as any,
       headers: headersResult.data as TsRestRequestShape<
         typeof appRoute
       >['headers'],

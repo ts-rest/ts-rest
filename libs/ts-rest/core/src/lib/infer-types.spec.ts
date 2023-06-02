@@ -9,7 +9,11 @@ import {
   ClientInferResponses,
   ServerInferResponses,
 } from './infer-types';
-import { HTTPStatusCode } from './status-codes';
+import {
+  ErrorHttpStatusCode,
+  HTTPStatusCode,
+  SuccessfulHttpStatusCode,
+} from './status-codes';
 
 const c = initContract();
 
@@ -95,10 +99,80 @@ const contract = c.router(
   }
 );
 
+const contractStrict = c.router(contract, {
+  strictStatusCodes: true,
+});
+
 it('type inference helpers', () => {
   type ServerInferResponsesTest = Expect<
     Equal<
       ServerInferResponses<typeof contract>,
+      {
+        getPost:
+          | {
+              status: 200;
+              body: { title?: string | undefined; id: number; content: string };
+            }
+          | { status: 404; body: { message: string } }
+          | { status: Exclude<HTTPStatusCode, 200 | 404>; body: unknown };
+        createPost:
+          | {
+              status: 201;
+              body: { id: number; title: string; content: string };
+            }
+          | { status: Exclude<HTTPStatusCode, 201>; body: unknown };
+        uploadImage:
+          | {
+              status: 201;
+              body: { id: number; url: string };
+            }
+          | { status: Exclude<HTTPStatusCode, 201>; body: unknown };
+        nested: {
+          getComments:
+            | {
+                status: 200;
+                body: { comments: { id: number; content: string }[] };
+              }
+            | { status: 404; body: { message: string } }
+            | { status: Exclude<HTTPStatusCode, 200 | 404>; body: unknown };
+        };
+      }
+    >
+  >;
+
+  type ServerInferResponsesStrictTest = Expect<
+    Equal<
+      ServerInferResponses<typeof contractStrict>,
+      {
+        getPost:
+          | {
+              status: 200;
+              body: { title?: string | undefined; id: number; content: string };
+            }
+          | { status: 404; body: { message: string } };
+        createPost: {
+          status: 201;
+          body: { id: number; title: string; content: string };
+        };
+        uploadImage: {
+          status: 201;
+          body: { id: number; url: string };
+        };
+        nested: {
+          getComments:
+            | {
+                status: 200;
+                body: { comments: { id: number; content: string }[] };
+              }
+            | { status: 404; body: { message: string } };
+        };
+      }
+    >
+  >;
+
+  type ServerInferResponsesIgnoreStrictTest = Expect<
+    Equal<
+      ServerInferResponses<typeof contractStrict, HTTPStatusCode, 'ignore'>,
       {
         getPost:
           | {
@@ -184,6 +258,54 @@ it('type inference helpers', () => {
     >
   >;
 
+  type ServerInferResponsesErrorsTest = Expect<
+    Equal<
+      ServerInferResponses<
+        typeof contractStrict,
+        ErrorHttpStatusCode,
+        'ignore'
+      >,
+      {
+        getPost:
+          | { status: 404; body: { message: string } }
+          | { status: Exclude<ErrorHttpStatusCode, 404>; body: unknown };
+        createPost: { status: ErrorHttpStatusCode; body: unknown };
+        uploadImage: { status: ErrorHttpStatusCode; body: unknown };
+        nested: {
+          getComments:
+            | { status: 404; body: { message: string } }
+            | { status: Exclude<ErrorHttpStatusCode, 404>; body: unknown };
+        };
+      }
+    >
+  >;
+
+  type ServerInferResponsesSuccessForceTest = Expect<
+    Equal<
+      ServerInferResponses<typeof contract, SuccessfulHttpStatusCode, 'force'>,
+      {
+        getPost: {
+          status: 200;
+          body: { title?: string | undefined; id: number; content: string };
+        };
+        createPost: {
+          status: 201;
+          body: { id: number; title: string; content: string };
+        };
+        uploadImage: {
+          status: 201;
+          body: { id: number; url: string };
+        };
+        nested: {
+          getComments: {
+            status: 200;
+            body: { comments: { id: number; content: string }[] };
+          };
+        };
+      }
+    >
+  >;
+
   type ClientInferResponsesTest = Expect<
     Equal<
       ClientInferResponses<typeof contract>,
@@ -192,32 +314,57 @@ it('type inference helpers', () => {
           | {
               status: 200;
               body: { title: string; id: number; content: string };
+              headers: Headers;
             }
           | {
               status: 404;
               body: { message: string };
+              headers: Headers;
             }
-          | { status: Exclude<HTTPStatusCode, 200 | 404>; body: unknown };
+          | {
+              status: Exclude<HTTPStatusCode, 200 | 404>;
+              body: unknown;
+              headers: Headers;
+            };
         createPost:
           | {
               status: 201;
               body: { id: number; title: string; content: string };
+              headers: Headers;
             }
-          | { status: Exclude<HTTPStatusCode, 201>; body: unknown };
+          | {
+              status: Exclude<HTTPStatusCode, 201>;
+              body: unknown;
+              headers: Headers;
+            };
         uploadImage:
           | {
               status: 201;
               body: { id: number; url: string };
+              headers: Headers;
             }
-          | { status: Exclude<HTTPStatusCode, 201>; body: unknown };
+          | {
+              status: Exclude<HTTPStatusCode, 201>;
+              body: unknown;
+              headers: Headers;
+            };
         nested: {
           getComments:
             | {
                 status: 200;
                 body: { comments: { id: number; content: string }[] };
+                headers: Headers;
               }
-            | { status: 404; body: { message: string } }
-            | { status: Exclude<HTTPStatusCode, 200 | 404>; body: unknown };
+            | {
+                status: 404;
+                body: { message: string };
+                headers: Headers;
+              }
+            | {
+                status: Exclude<HTTPStatusCode, 200 | 404>;
+                body: unknown;
+                headers: Headers;
+              };
         };
       }
     >
@@ -273,10 +420,18 @@ it('type inference helpers', () => {
           query: { includeComments?: boolean | undefined };
           params: { id: string };
           headers: { authorization: string };
+          extraHeaders?: { authorization?: undefined } & Record<
+            string,
+            string | undefined
+          >;
         };
         createPost: {
           body: { title: string; content: string };
           headers: { authorization: string };
+          extraHeaders?: { authorization?: undefined } & Record<
+            string,
+            string | undefined
+          >;
         };
         uploadImage: {
           body:
@@ -285,11 +440,19 @@ it('type inference helpers', () => {
               }
             | FormData;
           headers: { authorization: string };
+          extraHeaders?: { authorization?: undefined } & Record<
+            string,
+            string | undefined
+          >;
         };
         nested: {
           getComments: {
             params: { id: string };
             headers: { authorization: string; 'pagination-page': string };
+            extraHeaders?: {
+              authorization?: undefined;
+              'pagination-page'?: undefined;
+            } & Record<string, string | undefined>;
           };
         };
       }

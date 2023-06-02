@@ -102,6 +102,12 @@ export type OptionalIfAllOptional<
     }[keyof T]
 >;
 
+export type MakePrettyOptionalFunction<T> = T extends (a: infer A) => infer R
+  ? AreAllPropertiesOptional<A> extends true
+    ? (a?: Prettify<A>) => Prettify<R>
+    : (a: Prettify<A>) => Prettify<R>
+  : T;
+
 export type Prettify<T> = {
   [K in keyof T]: T[K];
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -133,3 +139,30 @@ export type LowercaseKeys<T> = Prettify<{
 }>;
 
 export type Extends<T, U> = T extends U ? true : false;
+
+export type And<B1 extends boolean, B2 extends boolean> = {
+  false: {
+    false: false;
+    true: false;
+  };
+  true: {
+    false: false;
+    true: true;
+  };
+}[`${B1}`][`${B2}`];
+
+export type Or<B1 extends boolean, B2 extends boolean> = {
+  false: {
+    false: false;
+    true: true;
+  };
+  true: {
+    false: true;
+    true: true;
+  };
+}[`${B1}`][`${B2}`];
+
+export type Not<B extends boolean> = {
+  false: true;
+  true: false;
+}[`${B}`];

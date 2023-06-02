@@ -6,49 +6,32 @@ import type { NextApiRequest, NextApiResponse } from 'next';
  */
 
 import {
-  ApiRouteServerResponse,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
-  AppRouteStrictStatusCodes,
   checkZodSchema,
-  Extends,
   isAppRoute,
-  LowercaseKeys,
   parseJsonQueryObject,
-  PathParamsWithCustomValidators,
+  ServerInferRequest,
+  ServerInferResponses,
   validateResponse,
-  ZodInferOrType,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 
-type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
-  params: PathParamsWithCustomValidators<T>;
-  query: ZodInferOrType<T['query']>;
-  headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
-    NextApiRequest['headers'];
-  req: NextApiRequest;
-  res: NextApiResponse;
-}) => Promise<
-  ApiRouteServerResponse<T['responses'], Extends<T, AppRouteStrictStatusCodes>>
->;
-
-type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
-  (args: {
-    params: PathParamsWithCustomValidators<T>;
-    body: ZodInferOrType<T['body']>;
-    query: ZodInferOrType<T['query']>;
-    headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
-      NextApiRequest['headers'];
+type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (
+  args: Omit<ServerInferRequest<T>, 'body'> & {
     req: NextApiRequest;
     res: NextApiResponse;
-  }) => Promise<
-    ApiRouteServerResponse<
-      T['responses'],
-      Extends<T, AppRouteStrictStatusCodes>
-    >
-  >;
+  }
+) => Promise<ServerInferResponses<T>>;
+
+type RouteToMutationFunctionImplementation<T extends AppRouteMutation> = (
+  args: ServerInferRequest<T> & {
+    req: NextApiRequest;
+    res: NextApiResponse;
+  }
+) => Promise<ServerInferResponses<T>>;
 
 type RouteToFunctionImplementation<T extends AppRoute> = T extends AppRouteQuery
   ? RouteToQueryFunctionImplementation<T>
