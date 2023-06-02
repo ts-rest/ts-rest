@@ -110,9 +110,11 @@ type ApplyOptions<
 > = Omit<TRoute, 'headers'> &
   WithoutUnknown<{
     headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
-    strictStatusCodes: TOptions['strictStatusCodes'] extends true
-      ? true
-      : TRoute['strictStatusCodes'];
+    strictStatusCodes: TRoute['strictStatusCodes'] extends boolean
+      ? TRoute['strictStatusCodes']
+      : TOptions['strictStatusCodes'] extends boolean
+      ? TOptions['strictStatusCodes']
+      : unknown;
   }>;
 
 /**
@@ -193,7 +195,7 @@ const recursivelyApplyOptions = <T extends AppRouter>(
             ...value,
             headers: zodMerge(options?.baseHeaders, value.headers),
             strictStatusCodes:
-              options?.strictStatusCodes ?? value.strictStatusCodes,
+              value.strictStatusCodes ?? options?.strictStatusCodes,
           },
         ];
       } else {
