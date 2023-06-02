@@ -177,7 +177,7 @@ export type ApiFetcherArgs = {
 export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
   status: number;
   body: unknown;
-  headers?: Headers;
+  headers: Headers;
 }>;
 
 /**

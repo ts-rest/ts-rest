@@ -598,6 +598,7 @@ const customClient = initClient(router, {
     return {
       status: 200,
       body: { message: 'Hello' },
+      headers: new Headers(),
     };
   },
 });
