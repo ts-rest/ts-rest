@@ -206,7 +206,10 @@ type RouterGetPostStrict = Expect<
 >;
 type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
 type ClientGetPostResponseType = Expect<
-  Equal<HealthReturnType, { status: 200; body: { message: string } }>
+  Equal<
+    HealthReturnType,
+    { status: 200; body: { message: string }; headers: Headers }
+  >
 >;
 
 describe('client', () => {
