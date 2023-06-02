@@ -1,5 +1,7 @@
 # @ts-rest/next
 
+## 3.24.0-rc.0
+
 ## 3.23.0
 
 ### Minor Changes

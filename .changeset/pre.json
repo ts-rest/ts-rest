@@ -1,0 +1,17 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "@ts-rest/core": "3.23.0",
+    "@ts-rest/express": "3.23.0",
+    "@ts-rest/fastify": "3.22.0",
+    "@ts-rest/nest": "3.23.0",
+    "@ts-rest/next": "3.23.0",
+    "@ts-rest/open-api": "3.23.0",
+    "@ts-rest/react-query": "3.23.0",
+    "@ts-rest/solid-query": "3.23.0"
+  },
+  "changesets": [
+    "nine-tools-thank"
+  ]
+}

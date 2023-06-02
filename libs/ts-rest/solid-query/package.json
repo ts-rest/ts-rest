@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/solid-query",
-  "version": "3.23.0",
+  "version": "3.24.0-rc.0",
   "description": "solid-query client integration for @ts-rest",
   "license": "MIT",
   "keywords": [
