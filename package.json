@@ -19,7 +19,7 @@
   },
   "engines": {
     "pnpm": "8.6",
-    "node": "20.2"
+    "node": "18.16"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
