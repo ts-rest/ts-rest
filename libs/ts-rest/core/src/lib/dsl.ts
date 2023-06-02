@@ -10,11 +10,7 @@ type MixedZodError<A, B> = Opaque<{ a: A; b: B }, 'MixedZodError'>;
  */
 type Path = string;
 
-/**
- * A query endpoint. In REST terms, one using GET.
- */
-export type AppRouteQuery = {
-  method: 'GET';
+type AppRouteCommon = {
   path: Path;
   pathParams?: unknown;
   query?: unknown;
@@ -24,25 +20,24 @@ export type AppRouteQuery = {
   deprecated?: boolean;
   responses: Record<number, unknown>;
   strictStatusCodes?: boolean;
+  metadata?: unknown;
+};
+
+/**
+ * A query endpoint. In REST terms, one using GET.
+ */
+export type AppRouteQuery = AppRouteCommon & {
+  method: 'GET';
 };
 
 /**
  * A mutation endpoint. In REST terms, one using POST, PUT,
  * PATCH, or DELETE.
  */
-export type AppRouteMutation = {
+export type AppRouteMutation = AppRouteCommon & {
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
-  path: Path;
-  pathParams?: unknown;
   contentType?: 'application/json' | 'multipart/form-data';
   body: unknown;
-  query?: unknown;
-  headers?: unknown;
-  summary?: string;
-  description?: string;
-  deprecated?: boolean;
-  responses: Record<number, unknown>;
-  strictStatusCodes?: boolean;
 };
 
 type ValidatedHeaders<

@@ -28,6 +28,9 @@ const contract = c.contract({
     responses: {
       200: c.response<Post[]>(), // <-- OR normal TS types
     },
+    headers: z.object({
+      'x-pagination-page': z.coerce.number().optional(),
+    }),
   },
 });
 ```
@@ -49,6 +52,7 @@ Consume the api on the client with a RPC-like interface:
 
 ```typescript
 const result = await client.getPosts({
+  headers: { 'x-pagination-page': 1 },
   query: { skip: 0, take: 10 },
   // ^-- Fully typed!
 });

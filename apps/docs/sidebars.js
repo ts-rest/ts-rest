@@ -87,9 +87,13 @@ const sidebars = {
       id: 'next',
     },
     {
-      type: 'doc',
+      type: 'category',
       label: '@ts-rest/express',
-      id: 'express',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'express/express' },
+        { type: 'doc', id: 'express/middleware' },
+      ],
     },
     {
       type: 'doc',
