@@ -1,0 +1,17 @@
+{
+  "mode": "pre",
+  "tag": "pre",
+  "initialVersions": {
+    "@ts-rest/core": "3.24.0",
+    "@ts-rest/express": "3.24.0",
+    "@ts-rest/fastify": "3.24.0",
+    "@ts-rest/nest": "3.24.0",
+    "@ts-rest/next": "3.24.0",
+    "@ts-rest/open-api": "3.24.0",
+    "@ts-rest/react-query": "3.24.0",
+    "@ts-rest/solid-query": "3.24.0"
+  },
+  "changesets": [
+    "tiny-sheep-boil"
+  ]
+}

@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.24.1-pre.0
+
+### Patch Changes
+
+- 20608f7: Internal refactor of types
+
 ## 3.24.0
 
 ## 3.23.0
