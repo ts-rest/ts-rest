@@ -10,11 +10,7 @@ type MixedZodError<A, B> = Opaque<{ a: A; b: B }, 'MixedZodError'>;
  */
 type Path = string;
 
-/**
- * A query endpoint. In REST terms, one using GET.
- */
-export type AppRouteQuery = {
-  method: 'GET';
+type AppRouteCommon = {
   path: Path;
   pathParams?: unknown;
   query?: unknown;
@@ -23,24 +19,25 @@ export type AppRouteQuery = {
   description?: string;
   deprecated?: boolean;
   responses: Record<number, unknown>;
+  strictStatusCodes?: boolean;
+  metadata?: unknown;
+};
+
+/**
+ * A query endpoint. In REST terms, one using GET.
+ */
+export type AppRouteQuery = AppRouteCommon & {
+  method: 'GET';
 };
 
 /**
  * A mutation endpoint. In REST terms, one using POST, PUT,
  * PATCH, or DELETE.
  */
-export type AppRouteMutation = {
+export type AppRouteMutation = AppRouteCommon & {
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
-  path: Path;
-  pathParams?: unknown;
   contentType?: 'application/json' | 'multipart/form-data';
   body: unknown;
-  query?: unknown;
-  headers?: unknown;
-  summary?: string;
-  description?: string;
-  deprecated?: boolean;
-  responses: Record<number, unknown>;
 };
 
 type ValidatedHeaders<
@@ -108,12 +105,20 @@ type ApplyOptions<
 > = Omit<TRoute, 'headers'> &
   WithoutUnknown<{
     headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
+    strictStatusCodes: TRoute['strictStatusCodes'] extends boolean
+      ? TRoute['strictStatusCodes']
+      : TOptions['strictStatusCodes'] extends boolean
+      ? TOptions['strictStatusCodes']
+      : unknown;
   }>;
 
 /**
  * A union of all possible endpoint types.
  */
 export type AppRoute = AppRouteQuery | AppRouteMutation;
+export type AppRouteStrictStatusCodes = Omit<AppRoute, 'strictStatusCodes'> & {
+  strictStatusCodes: true;
+};
 
 /**
  * A router (or contract) in @ts-rest is a collection of more routers or
@@ -125,6 +130,7 @@ export type AppRouter = {
 
 export type RouterOptions = {
   baseHeaders?: unknown;
+  strictStatusCodes?: boolean;
 };
 
 /**
@@ -186,6 +192,8 @@ const recursivelyApplyOptions = <T extends AppRouter>(
           {
             ...value,
             headers: zodMerge(options?.baseHeaders, value.headers),
+            strictStatusCodes:
+              value.strictStatusCodes ?? options?.strictStatusCodes,
           },
         ];
       } else {

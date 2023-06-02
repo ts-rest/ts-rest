@@ -1,5 +1,5 @@
 import * as fetchMock from 'fetch-mock-jest';
-import { initContract } from '..';
+import { HTTPStatusCode, initContract } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
 import { z } from 'zod';
@@ -134,7 +134,18 @@ export const router = c.router(
   }
 );
 
+const routerStrict = c.router(router, {
+  strictStatusCodes: true,
+});
+
 const client = initClient(router, {
+  baseUrl: 'https://api.com',
+  baseHeaders: {
+    'X-Api-Key': 'foo',
+  },
+});
+
+const clientStrict = initClient(routerStrict, {
   baseUrl: 'https://api.com',
   baseHeaders: {
     'X-Api-Key': 'foo',
@@ -187,6 +198,19 @@ type ClientGetPostType = Expect<
     }
   >
 >;
+type RouterHealthStrict = Expect<
+  Equal<typeof routerStrict.health['strictStatusCodes'], true>
+>;
+type RouterGetPostStrict = Expect<
+  Equal<typeof routerStrict.posts.getPost['strictStatusCodes'], true>
+>;
+type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
+type ClientGetPostResponseType = Expect<
+  Equal<
+    HealthReturnType,
+    { status: 200; body: { message: string }; headers: Headers }
+  >
+>;
 
 describe('client', () => {
   beforeEach(() => {
@@ -208,7 +232,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({});
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ no query parameters', async () => {
@@ -225,7 +252,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({ query: {} });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ no parameters (not provided)', async () => {
@@ -242,7 +272,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts();
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ query parameters', async () => {
@@ -259,7 +292,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ json query parameters', async () => {
@@ -304,7 +340,10 @@ describe('client', () => {
         },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ undefined query parameters', async () => {
@@ -323,7 +362,10 @@ describe('client', () => {
         query: { take: 10, skip: undefined },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ sub path', async () => {
@@ -340,7 +382,10 @@ describe('client', () => {
 
       const result = await client.posts.getPost({ params: { id: '1' } });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ a non json response (string)', async () => {
@@ -362,7 +407,10 @@ describe('client', () => {
 
       const result = await client.posts.getPosts({});
 
-      expect(result).toStrictEqual({ body: 'string', status: 200 });
+      expect(result.body).toStrictEqual('string');
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('6');
+      expect(result.headers.get('Content-Type')).toBe('text/plain');
     });
   });
 
@@ -383,7 +431,10 @@ describe('client', () => {
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ query params', async () => {
@@ -403,7 +454,10 @@ describe('client', () => {
         body: {},
       });
 
-      expect(result).toStrictEqual({ body: {}, status: 200 });
+      expect(result.body).toStrictEqual({});
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('2');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -430,7 +484,10 @@ describe('client', () => {
         body: { title: 'title', content: 'content', authorId: 'authorId' },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -452,7 +509,10 @@ describe('client', () => {
         body: null,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -474,7 +534,10 @@ describe('client', () => {
         body: null,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -494,7 +557,10 @@ describe('client', () => {
         body: { file },
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
 
       expect(fetchMock).toHaveLastFetched(true, {
         matcher: (_, options) => {
@@ -520,7 +586,10 @@ describe('client', () => {
         body: formData,
       });
 
-      expect(result).toStrictEqual({ body: value, status: 200 });
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
 
       expect(fetchMock).toHaveLastFetched(true, {
         matcher: (_, options) => {
@@ -553,6 +622,7 @@ const customClient = initClient(router, {
     return {
       status: 200,
       body: { message: 'Hello' },
+      headers: new Headers(),
     };
   },
 });
@@ -608,6 +678,7 @@ type CustomClientGetPostType = Expect<
 describe('custom api', () => {
   beforeEach(() => {
     argsCalledMock.mockReset();
+    fetchMock.mockReset();
   });
 
   it('should allow a uploadProgress attribute on the api call', async () => {
@@ -692,7 +763,7 @@ describe('custom api', () => {
     );
   });
 
-  it('has correct types when throwOnUnknownStatus is configured', async () => {
+  it('has correct types when throwOnUnknownStatus only is configured', async () => {
     const client = initClient(router, {
       baseUrl: 'https://api.com',
       baseHeaders: {
@@ -704,6 +775,16 @@ describe('custom api', () => {
     fetchMock.getOnce({ url: 'https://api.com/posts' }, { status: 200 });
 
     const result = await client.posts.getPosts({});
+
+    type ClientGetPostsResponseStatusType = Expect<
+      Equal<typeof result.status, HTTPStatusCode>
+    >;
+  });
+
+  it('has correct types when strictStatusCode is configured', async () => {
+    fetchMock.getOnce({ url: 'https://api.com/posts' }, { status: 200 });
+
+    const result = await clientStrict.posts.getPosts({});
 
     type ClientGetPostsResponseStatusType = Expect<
       Equal<typeof result.status, 200>

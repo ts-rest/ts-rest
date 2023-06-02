@@ -111,6 +111,40 @@ const mockRes = {
   })),
 } as unknown as NextApiResponse;
 
+describe('strict mode', () => {
+  const c = initContract();
+  const postsRouter = c.router({
+    getPost: {
+      method: 'GET',
+      path: `/posts/:id`,
+      responses: {
+        200: null,
+      },
+    },
+  });
+
+  it('allows unknown responses when not in strict mode', () => {
+    const cLoose = c.router({ posts: postsRouter });
+    createNextRoute(cLoose, {
+      posts: {
+        getPost: async () => ({ status: 201, body: null }),
+      },
+    });
+  });
+
+  it('does not allow unknown statuses when in strict mode', () => {
+    const cStrict = c.router(
+      { posts: postsRouter },
+      { strictStatusCodes: true }
+    );
+    createNextRoute(cStrict, {
+      posts: {
+        // @ts-expect-error 201 is not defined as a known response
+        getPost: async () => ({ status: 201, body: null }),
+      },
+    });
+  });
+});
 describe('createNextRouter', () => {
   beforeEach(() => {
     jest.clearAllMocks();

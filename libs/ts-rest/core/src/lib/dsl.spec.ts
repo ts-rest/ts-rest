@@ -363,4 +363,118 @@ describe('contract', () => {
       >
     >;
   });
+
+  it('should add strictStatusCodes=true option to routes', () => {
+    const contract = c.router(
+      {
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          responses: {
+            200: c.body<{ id: number }>(),
+          },
+        },
+      },
+      {
+        strictStatusCodes: true,
+      }
+    );
+
+    expect(contract.getPost.strictStatusCodes).toStrictEqual(true);
+
+    type ContractShape = Expect<
+      Equal<
+        Pick<typeof contract.getPost, 'strictStatusCodes'>,
+        {
+          strictStatusCodes: true;
+        }
+      >
+    >;
+  });
+
+  it('should add strictStatusCodes=false option to routes', () => {
+    const contract = c.router(
+      {
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          responses: {
+            200: c.body<{ id: number }>(),
+          },
+        },
+      },
+      {
+        strictStatusCodes: false,
+      }
+    );
+
+    expect(contract.getPost.strictStatusCodes).toStrictEqual(false);
+
+    type ContractShape = Expect<
+      Equal<
+        Pick<typeof contract.getPost, 'strictStatusCodes'>,
+        {
+          strictStatusCodes: false;
+        }
+      >
+    >;
+  });
+
+  it('should merge strictStatusCodes options correctly is route is true', () => {
+    const contract = c.router(
+      {
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          responses: {
+            200: c.body<{ id: number }>(),
+          },
+          strictStatusCodes: true,
+        },
+      },
+      {
+        strictStatusCodes: false,
+      }
+    );
+
+    expect(contract.getPost.strictStatusCodes).toStrictEqual(true);
+
+    type ContractShape = Expect<
+      Equal<
+        Pick<typeof contract.getPost, 'strictStatusCodes'>,
+        {
+          strictStatusCodes: true;
+        }
+      >
+    >;
+  });
+
+  it('should merge strictStatusCodes options correctly if route is false', () => {
+    const contract = c.router(
+      {
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          responses: {
+            200: c.body<{ id: number }>(),
+          },
+          strictStatusCodes: false,
+        },
+      },
+      {
+        strictStatusCodes: true,
+      }
+    );
+
+    expect(contract.getPost.strictStatusCodes).toStrictEqual(false);
+
+    type ContractShape = Expect<
+      Equal<
+        Pick<typeof contract.getPost, 'strictStatusCodes'>,
+        {
+          strictStatusCodes: false;
+        }
+      >
+    >;
+  });
 });

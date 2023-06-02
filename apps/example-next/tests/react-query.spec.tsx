@@ -829,6 +829,9 @@ describe('react-query', () => {
 
     const data = {
       status: 200,
+      headers: new Headers({
+        'Content-Type': 'application/json',
+      }),
       body: {
         id: '1',
         title: 'foo',

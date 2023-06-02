@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      nx_affected: ${{ steps.set-nx-affected.outputs.nx_affected }}
     permissions:
       actions: read
       contents: write
@@ -20,20 +18,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set NX Shas
-        uses: nrwl/nx-set-shas@177b48373c6dc583ce0d9257ffb484bdd232fedf
-        with:
-          main-branch-name: 'main'
-      - name: NX Shas
-        run: |
-          echo "BASE: ${{ env.NX_BASE }}"
-          echo "HEAD: ${{ env.NX_HEAD }}"
-
       - name: Install pnpm
         uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd
         id: pnpm-install
         with:
-          version: 7
+          version: 8.6
           run_install: false
 
       - name: Get pnpm store directory
@@ -52,64 +41,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Modify Workspace File
+      - name: Modify "workspaces" value in package.json
         run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
 
+      - name: Get Release Version
+        id: release-version
+        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
+        with:
+          path: libs/ts-rest/core
+
       - name: Create Release Pull Request or Publish to npm
-        uses: changesets/action@d89c1de63c7f28ac47ec85ed395f5f1d045d4697
+        uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e
         with:
           title: Release Tracking
           # this expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: pnpm release
           version: pnpm version-packages
-          createGithubReleases: true
+          createGithubReleases: aggregate
+          githubReleaseName: v${{ steps.release-version.outputs.current-version }}
+          githubTagName: v${{ steps.release-version.outputs.current-version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Run CI on affected
-        run: pnpm run ci:nx-affected
-
-  # deploy-docs:
-  #   name: Deploy Docs
-  #   runs-on: ubuntu-latest
-  #   needs: [build]
-  #   if: ${{ contains(needs.build.outputs.nx_affected, 'docs') }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0
-  #     - uses: nrwl/nx-set-shas@v2
-
-  #     - uses: pnpm/action-setup@v2.0.1
-  #       name: Install pnpm
-  #       id: pnpm-install
-  #       with:
-  #         version: 7
-  #         run_install: false
-
-  #     - name: Get pnpm store directory
-  #       id: pnpm-cache
-  #       run: |
-  #         echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
-
-  #     - uses: actions/cache@v3
-  #       name: Setup pnpm cache
-  #       with:
-  #         path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-  #         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-pnpm-store-
-
-  #     - name: Install dependencies
-  #       run: pnpm install
-  #     - name: Build Docs
-  #       run: pnpm exec nx run docs:build
-  #     - name: Set AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: eu-west-2
-  #     - name: 'Deploy docs to S3'
-  #       run: 'aws s3 sync dist/apps/docs/ s3://ts-rest-docs-bucket/'

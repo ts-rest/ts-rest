@@ -1,0 +1,66 @@
+name: Pre-Release
+on:
+  push:
+    branches:
+      - prerelease/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      packages: write
+      pull-requests: write
+      issues: read
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd
+        id: pnpm-install
+        with:
+          version: 8.6
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Modify "workspaces" value in package.json
+        run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
+
+      - name: Get Release Version
+        id: release-version
+        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
+        with:
+          path: libs/ts-rest/core
+
+      - if: ${{ contains(steps.release-version.outputs.current-version, '-') }}
+        name: Create Release Pull Request or Publish to npm
+        uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e
+        with:
+          title: Release Tracking
+          publish: pnpm release
+          version: ':'
+          createGithubReleases: aggregate
+          githubReleaseName: v${{ steps.release-version.outputs.current-version }}
+          githubTagName: v${{ steps.release-version.outputs.current-version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

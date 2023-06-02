@@ -1,35 +1,51 @@
-import { getValue } from './ts-rest-express';
+import { initContract } from '@ts-rest/core';
+import { initServer } from './ts-rest-express';
 
-describe('getValue', () => {
-  it('should get one level deep', () => {
-    const obj = {
-      title: 'Title',
-    };
+const c = initContract();
+const postsRouter = c.router({
+  getPost: {
+    method: 'GET',
+    path: `/posts/:id`,
+    responses: {
+      200: null,
+    },
+  },
+});
 
-    const value = getValue(obj, 'title');
+describe('strict mode', () => {
+  it('allows unknown responses when not in strict mode', () => {
+    const cLoose = c.router({ posts: postsRouter });
+    const s = initServer();
 
-    expect(value).toBe('Title');
-  });
-
-  it('should get one level deep with nullable', () => {
-    const obj = {
-      title: 'Title',
-    };
-
-    const value = getValue(obj, 'test', null);
-
-    expect(value).toBe(null);
-  });
-
-  it('should get two levels deep', () => {
-    const obj = {
-      sub: {
-        text: 'text',
+    s.router(cLoose, {
+      posts: {
+        getPost: async ({ params: { id } }) => {
+          return {
+            status: 201,
+            body: null,
+          };
+        },
       },
-    };
+    });
+  });
 
-    const value = getValue(obj, 'sub.text');
+  it('does not allow unknown statuses when in strict mode', () => {
+    const cStrict = c.router(
+      { posts: postsRouter },
+      { strictStatusCodes: true }
+    );
+    const s = initServer();
 
-    expect(value).toBe('text');
+    s.router(cStrict, {
+      posts: {
+        // @ts-expect-error 201 is not defined as a known response
+        getPost: async ({ params: { id } }) => {
+          return {
+            status: 201,
+            body: null,
+          };
+        },
+      },
+    });
   });
 });

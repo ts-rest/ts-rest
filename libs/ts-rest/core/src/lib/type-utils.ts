@@ -131,3 +131,5 @@ export type WithoutUnknown<T> = Pick<
 export type LowercaseKeys<T> = Prettify<{
   [K in keyof T as K extends string ? Lowercase<K> : K]: T[K];
 }>;
+
+export type Extends<T, U> = T extends U ? true : false;

@@ -22,6 +22,7 @@ export const contract = c.router({
       description: z.string().optional(),
     }),
     summary: 'Create a post',
+    metadata: { role: 'user' } as const,
   },
   getPosts: {
     method: 'GET',
@@ -38,6 +39,7 @@ export const contract = c.router({
       search: z.string().optional(),
     }),
     summary: 'Get all posts',
+    metadata: { role: 'guest' } as const,
   },
 });
 ```
@@ -123,6 +125,28 @@ export const contract = c.router({
 });
 ```
 
+## Metadata
+
+You can attach metadata with any type to your contract routes that can be accessed anywhere throughout ts-rest where
+you have access to the contract route object.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+    getPosts: {
+        ...,
+        metadata: { role: 'guest' } as const,
+    }
+});
+```
+
+:::caution
+
+As the contract is not only used on the server, but on the client as well, it will also be part of your client-side bundle.
+You should not put any sensitive information in the metadata.
+
+:::
+
 ## Intellisense
 
 For intellisense on your contract types, you can use [JSDoc Reference](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#type).
@@ -149,5 +173,37 @@ export const contract = c.router({
     }),
     summary: 'Get posts within time-range',
   },
+});
+```
+
+## Strict Response Status Codes
+
+To help with incremental adoption, ts-rest, by default, will allow any response status code to be returned from the server
+even if it is not defined in the contract.
+
+As a result, the response types on the client will include all possible HTTP status codes, even ones that are not defined
+in the contract with those mapping to a body type of `unknown`.
+
+If you would like to disable this functionality and only allow the response status codes defined in the contract, you can
+set the `strictStatusCodes` option to `true` when initializing the contract.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  // ...endpoints
+}, {
+  strictStatusCodes: true,
+});
+```
+
+You can also set this option on a per-route basis which will also override the global option.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  getPosts: {
+    ...,
+    strictStatusCodes: true,
+  }
 });
 ```

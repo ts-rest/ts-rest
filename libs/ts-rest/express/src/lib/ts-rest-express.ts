@@ -1,97 +1,29 @@
 import {
-  ApiRouteServerResponse,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
-  GetFieldType,
   isAppRoute,
-  LowercaseKeys,
   parseJsonQueryObject,
-  PathParamsWithCustomValidators,
   validateResponse,
-  Without,
-  ZodInferOrType,
 } from '@ts-rest/core';
 import type {
   IRouter,
+  NextFunction,
   Request,
   RequestHandler,
   Response,
 } from 'express-serve-static-core';
-
-export function getValue<
-  TData,
-  TPath extends string,
-  TDefault = GetFieldType<TData, TPath>
->(
-  data: TData,
-  path: TPath,
-  defaultValue?: TDefault
-): GetFieldType<TData, TPath> | TDefault {
-  const value = path
-    .split(/[.[\]]/)
-    .filter(Boolean)
-    .reduce<GetFieldType<TData, TPath>>(
-      (value, key) => (value as any)?.[key],
-      data as any
-    );
-
-  return value !== undefined ? value : (defaultValue as TDefault);
-}
-
-type AppRouteQueryImplementation<T extends AppRouteQuery> = (
-  input: Without<
-    {
-      params: PathParamsWithCustomValidators<T>;
-      query: ZodInferOrType<T['query']>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      req: Request;
-    },
-    never
-  >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
-
-type WithoutFileIfMultiPart<T extends AppRouteMutation> =
-  T['contentType'] extends 'multipart/form-data'
-    ? Without<ZodInferOrType<T['body']>, File>
-    : ZodInferOrType<T['body']>;
-
-type AppRouteMutationImplementation<T extends AppRouteMutation> = (
-  input: Without<
-    {
-      params: PathParamsWithCustomValidators<T>;
-      query: ZodInferOrType<T['query']>;
-      body: WithoutFileIfMultiPart<T>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      files: unknown;
-      file: unknown;
-      req: Request;
-    },
-    never
-  >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
-
-type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
-  ? AppRouteMutationImplementation<T>
-  : T extends AppRouteQuery
-  ? AppRouteQueryImplementation<T>
-  : never;
-
-type RecursiveRouterObj<T extends AppRouter> = {
-  [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey]>
-    : T[TKey] extends AppRoute
-    ? AppRouteImplementation<T[TKey]>
-    : never;
-};
-
-type Options = {
-  logInitialization?: boolean;
-  jsonQuery?: boolean;
-  responseValidation?: boolean;
-};
+import {
+  AppRouteImplementationOrOptions,
+  TsRestExpressOptions,
+  RecursiveRouterObj,
+  TsRestRequestHandler,
+  isAppRouteImplementation,
+  TsRestRequest,
+} from './types';
+import { RequestValidationError } from './request-validation-error';
 
 export const initServer = () => {
   return {
@@ -100,21 +32,39 @@ export const initServer = () => {
   };
 };
 
-const recursivelyApplyExpressRouter = (
-  router: RecursiveRouterObj<any> | AppRouteImplementation<any>,
-  path: string[],
-  routeTransformer: (route: AppRouteImplementation<any>, path: string[]) => void
-): void => {
-  if (typeof router === 'object') {
+const recursivelyApplyExpressRouter = ({
+  schema,
+  router,
+  processRoute,
+}: {
+  schema: AppRouter | AppRoute;
+  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<AppRoute>;
+  processRoute: (
+    implementation: AppRouteImplementationOrOptions<AppRoute>,
+    schema: AppRoute
+  ) => void;
+}): void => {
+  if (typeof router === 'object' && typeof router?.handler !== 'function') {
     for (const key in router) {
-      recursivelyApplyExpressRouter(
-        router[key],
-        [...path, key],
-        routeTransformer
-      );
+      if (isAppRoute(schema)) {
+        throw new Error(`[ts-rest] Expected AppRouter but received AppRoute`);
+      }
+
+      recursivelyApplyExpressRouter({
+        schema: schema[key],
+        router: (router as RecursiveRouterObj<any>)[key],
+        processRoute,
+      });
     }
-  } else if (typeof router === 'function') {
-    routeTransformer(router, path);
+  } else if (
+    typeof router === 'function' ||
+    typeof router?.handler === 'function'
+  ) {
+    if (!isAppRoute(schema)) {
+      throw new Error(`[ts-rest] Expected AppRoute but received AppRouter`);
+    }
+
+    processRoute(router as AppRouteImplementationOrOptions<AppRoute>, schema);
   }
 };
 
@@ -122,23 +72,15 @@ const validateRequest = (
   req: Request,
   res: Response,
   schema: AppRouteQuery | AppRouteMutation,
-  options: Options
+  options: TsRestExpressOptions<AppRouter>
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
   });
 
-  if (!paramsResult.success) {
-    return res.status(400).send(paramsResult.error);
-  }
-
   const headersResult = checkZodSchema(req.headers, schema.headers, {
     passThroughExtraKeys: true,
   });
-
-  if (!headersResult.success) {
-    return res.status(400).send(headersResult.error);
-  }
 
   const query = options.jsonQuery
     ? parseJsonQueryObject(req.query as Record<string, string>)
@@ -146,94 +88,59 @@ const validateRequest = (
 
   const queryResult = checkZodSchema(query, schema.query);
 
-  if (!queryResult.success) {
-    return res.status(400).send(queryResult.error);
+  const bodyResult = checkZodSchema(
+    req.body,
+    'body' in schema ? schema.body : null
+  );
+
+  if (
+    !paramsResult.success ||
+    !headersResult.success ||
+    !queryResult.success ||
+    !bodyResult.success
+  ) {
+    throw new RequestValidationError(
+      !paramsResult.success ? paramsResult.error : null,
+      !headersResult.success ? headersResult.error : null,
+      !queryResult.success ? queryResult.error : null,
+      !bodyResult.success ? bodyResult.error : null
+    );
   }
 
   return {
     paramsResult,
     headersResult,
     queryResult,
+    bodyResult,
   };
 };
 
-const transformAppRouteQueryImplementation = (
-  route: AppRouteQueryImplementation<any>,
-  schema: AppRouteQuery,
-  app: IRouter,
-  options: Options
-) => {
+const initializeExpressRoute = ({
+  implementationOrOptions,
+  schema,
+  app,
+  options,
+}: {
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRoute>;
+  schema: AppRoute;
+  app: IRouter;
+  options: TsRestExpressOptions<any>;
+}) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
   }
 
-  app.get(schema.path, async (req, res, next) => {
-    const validationResults = validateRequest(req, res, schema, options);
+  const handler = isAppRouteImplementation(implementationOrOptions)
+    ? implementationOrOptions
+    : implementationOrOptions.handler;
 
-    // validation failed, return response
-    if (!('paramsResult' in validationResults)) {
-      return validationResults;
-    }
-
+  const mainReqHandler: RequestHandler = async (req, res, next) => {
     try {
-      const result = await route({
-        params: validationResults.paramsResult.data,
-        query: validationResults.queryResult.data,
-        headers: validationResults.headersResult.data as any,
-        req: req,
-      });
+      const validationResults = validateRequest(req, res, schema, options);
 
-      const statusCode = Number(result.status);
-
-      if (options.responseValidation) {
-        const response = validateResponse({
-          responseType: schema.responses[statusCode],
-          response: {
-            status: statusCode,
-            body: result.body,
-          },
-        });
-
-        return res.status(statusCode).json(response.body);
-      }
-
-      return res.status(statusCode).json(result.body);
-    } catch (e) {
-      return next(e);
-    }
-  });
-};
-
-const transformAppRouteMutationImplementation = (
-  route: AppRouteMutationImplementation<any>,
-  schema: AppRouteMutation,
-  app: IRouter,
-  options: Options
-) => {
-  if (options.logInitialization) {
-    console.log(`[ts-rest] Initialized ${schema.method} ${schema.path}`);
-  }
-
-  const method = schema.method;
-
-  const reqHandler: RequestHandler = async (req, res, next) => {
-    const validationResults = validateRequest(req, res, schema, options);
-
-    // validation failed, return response
-    if (!('paramsResult' in validationResults)) {
-      return validationResults;
-    }
-
-    const bodyResult = checkZodSchema(req.body, schema.body);
-
-    if (!bodyResult.success) {
-      return res.status(400).send(bodyResult.error);
-    }
-
-    try {
-      const result = await route({
-        params: validationResults.paramsResult.data,
-        body: bodyResult.data,
+      const result = await handler({
+        params: validationResults.paramsResult.data as any,
+        body: validationResults.bodyResult.data,
         query: validationResults.queryResult.data,
         headers: validationResults.headersResult.data as any,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -242,7 +149,8 @@ const transformAppRouteMutationImplementation = (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         file: req.file,
-        req: req,
+        req: req as TsRestRequest<any>,
+        res: res,
       });
 
       const statusCode = Number(result.status);
@@ -265,62 +173,104 @@ const transformAppRouteMutationImplementation = (
     }
   };
 
-  switch (method) {
+  const handlers: TsRestRequestHandler<AppRoute>[] = [
+    (req, res, next) => {
+      req.tsRestRoute = schema;
+      next();
+    },
+  ];
+
+  if (options.globalMiddleware) {
+    handlers.push(...options.globalMiddleware);
+  }
+
+  if (
+    !isAppRouteImplementation(implementationOrOptions) &&
+    implementationOrOptions.middleware
+  ) {
+    handlers.push(...implementationOrOptions.middleware);
+  }
+
+  handlers.push(mainReqHandler);
+
+  switch (schema.method) {
+    case 'GET':
+      app.get(schema.path, ...(handlers as RequestHandler[]));
+      break;
     case 'DELETE':
-      app.delete(schema.path, reqHandler);
+      app.delete(schema.path, ...(handlers as RequestHandler[]));
       break;
     case 'POST':
-      app.post(schema.path, reqHandler);
+      app.post(schema.path, ...(handlers as RequestHandler[]));
       break;
     case 'PUT':
-      app.put(schema.path, reqHandler);
+      app.put(schema.path, ...(handlers as RequestHandler[]));
       break;
     case 'PATCH':
-      app.patch(schema.path, reqHandler);
+      app.patch(schema.path, ...(handlers as RequestHandler[]));
       break;
   }
 };
 
-export const createExpressEndpoints = <
-  T extends RecursiveRouterObj<TRouter>,
-  TRouter extends AppRouter
->(
+const requestValidationErrorHandler = (
+  handler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default'
+) => {
+  return (err: any, req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof RequestValidationError) {
+      // old-style error handling, kept for backwards compatibility
+      if (handler === 'default') {
+        if (err.pathParams) {
+          return res.status(400).json(err.pathParams);
+        }
+        if (err.headers) {
+          return res.status(400).json(err.headers);
+        }
+        if (err.query) {
+          return res.status(400).json(err.query);
+        }
+        if (err.body) {
+          return res.status(400).json(err.body);
+        }
+      } else if (handler === 'combined') {
+        return res.status(400).json({
+          pathParameterErrors: err.pathParams,
+          headerErrors: err.headers,
+          queryParameterErrors: err.query,
+          bodyErrors: err.body,
+        });
+      } else {
+        return handler(err, req as any, res, next);
+      }
+    }
+
+    next(err);
+  };
+};
+
+export const createExpressEndpoints = <TRouter extends AppRouter>(
   schema: TRouter,
-  router: T,
+  router: RecursiveRouterObj<TRouter>,
   app: IRouter,
-  options: Options = {
+  options: TsRestExpressOptions<TRouter> = {
     logInitialization: true,
     jsonQuery: false,
     responseValidation: false,
+    requestValidationErrorHandler: 'default',
   }
 ) => {
-  recursivelyApplyExpressRouter(router, [], (route, path) => {
-    const routerViaPath = getValue(schema, path.join('.'));
-
-    if (!routerViaPath) {
-      throw new Error(`[ts-rest] No router found for path ${path.join('.')}`);
-    }
-
-    if (isAppRoute(routerViaPath)) {
-      if (routerViaPath.method === 'GET') {
-        transformAppRouteQueryImplementation(
-          route as AppRouteQueryImplementation<any>,
-          routerViaPath,
-          app,
-          options
-        );
-      } else {
-        transformAppRouteMutationImplementation(
-          route,
-          routerViaPath,
-          app,
-          options
-        );
-      }
-    } else {
-      throw new Error(
-        'Could not find schema route implementation for ' + path.join('.')
-      );
-    }
+  recursivelyApplyExpressRouter({
+    schema,
+    router,
+    processRoute: (implementation, innerSchema) => {
+      initializeExpressRoute({
+        implementationOrOptions:
+          implementation as AppRouteImplementationOrOptions<AppRoute>,
+        schema: innerSchema,
+        app,
+        options,
+      });
+    },
   });
+
+  app.use(requestValidationErrorHandler(options.requestValidationErrorHandler));
 };

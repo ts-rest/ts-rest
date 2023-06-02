@@ -11,7 +11,9 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
+  AppRouteStrictStatusCodes,
   checkZodSchema,
+  Extends,
   isAppRoute,
   LowercaseKeys,
   parseJsonQueryObject,
@@ -28,7 +30,9 @@ type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
     NextApiRequest['headers'];
   req: NextApiRequest;
   res: NextApiResponse;
-}) => Promise<ApiRouteServerResponse<T['responses']>>;
+}) => Promise<
+  ApiRouteServerResponse<T['responses'], Extends<T, AppRouteStrictStatusCodes>>
+>;
 
 type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
   (args: {
@@ -39,7 +43,12 @@ type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
       NextApiRequest['headers'];
     req: NextApiRequest;
     res: NextApiResponse;
-  }) => Promise<ApiRouteServerResponse<T['responses']>>;
+  }) => Promise<
+    ApiRouteServerResponse<
+      T['responses'],
+      Extends<T, AppRouteStrictStatusCodes>
+    >
+  >;
 
 type RouteToFunctionImplementation<T extends AppRoute> = T extends AppRouteQuery
   ? RouteToQueryFunctionImplementation<T>

@@ -5,19 +5,19 @@
   "sourceRoot": "apps/example-microservice/solid-app/src",
   "targets": {
     "build": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "options": {
         "command": "cd apps/example-microservice/web-app-solid && pnpm exec vite build"
       }
     },
     "serve": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "options": {
         "command": "cd apps/example-microservice/web-app-solid && pnpm exec vite"
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "options": {
         "lintFilePatterns": ["apps/example-microservice/web-app/**/*.tsx"]
       }
