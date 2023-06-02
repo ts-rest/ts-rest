@@ -386,7 +386,7 @@ describe('client', () => {
       expect(result.body).toStrictEqual('string');
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Length')).toBe('6');
-      expect(result.headers.get('Content-Type')).toBe('text/plain ');
+      expect(result.headers.get('Content-Type')).toBe('text/plain');
     });
   });
 
