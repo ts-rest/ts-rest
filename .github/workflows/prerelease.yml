@@ -22,7 +22,7 @@ jobs:
         uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd
         id: pnpm-install
         with:
-          version: 7
+          version: 8.6
           run_install: false
 
       - name: Get pnpm store directory
@@ -56,7 +56,7 @@ jobs:
         with:
           title: Release Tracking
           publish: pnpm release
-          version: ":"
+          version: ':'
           createGithubReleases: aggregate
           githubReleaseName: v${{ steps.release-version.outputs.current-version }}
           githubTagName: v${{ steps.release-version.outputs.current-version }}
