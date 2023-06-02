@@ -18,8 +18,8 @@
     "build-test-all": "pnpm nx run-many --target=lint && pnpm nx run-many --target=test && pnpm nx run-many --target=build"
   },
   "engines": {
-    "pnpm": "7",
-    "node": "20"
+    "pnpm": "8.6",
+    "node": "20.2"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
