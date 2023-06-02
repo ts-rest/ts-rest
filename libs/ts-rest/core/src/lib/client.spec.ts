@@ -1,5 +1,5 @@
 import * as fetchMock from 'fetch-mock-jest';
-import { initContract } from '..';
+import { HTTPStatusCode, initContract } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
 import { z } from 'zod';
@@ -134,7 +134,18 @@ export const router = c.router(
   }
 );
 
+const routerStrict = c.router(router, {
+  strictStatusCodes: true,
+});
+
 const client = initClient(router, {
+  baseUrl: 'https://api.com',
+  baseHeaders: {
+    'X-Api-Key': 'foo',
+  },
+});
+
+const clientStrict = initClient(routerStrict, {
   baseUrl: 'https://api.com',
   baseHeaders: {
     'X-Api-Key': 'foo',
@@ -185,6 +196,19 @@ type ClientGetPostType = Expect<
         'x-api-key'?: never;
       } & Record<string, string | undefined>;
     }
+  >
+>;
+type RouterHealthStrict = Expect<
+  Equal<typeof routerStrict.health['strictStatusCodes'], true>
+>;
+type RouterGetPostStrict = Expect<
+  Equal<typeof routerStrict.posts.getPost['strictStatusCodes'], true>
+>;
+type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
+type ClientGetPostResponseType = Expect<
+  Equal<
+    HealthReturnType,
+    { status: 200; body: { message: string }; headers: Headers }
   >
 >;
 
@@ -654,6 +678,7 @@ type CustomClientGetPostType = Expect<
 describe('custom api', () => {
   beforeEach(() => {
     argsCalledMock.mockReset();
+    fetchMock.mockReset();
   });
 
   it('should allow a uploadProgress attribute on the api call', async () => {
@@ -738,7 +763,7 @@ describe('custom api', () => {
     );
   });
 
-  it('has correct types when throwOnUnknownStatus is configured', async () => {
+  it('has correct types when throwOnUnknownStatus only is configured', async () => {
     const client = initClient(router, {
       baseUrl: 'https://api.com',
       baseHeaders: {
@@ -750,6 +775,16 @@ describe('custom api', () => {
     fetchMock.getOnce({ url: 'https://api.com/posts' }, { status: 200 });
 
     const result = await client.posts.getPosts({});
+
+    type ClientGetPostsResponseStatusType = Expect<
+      Equal<typeof result.status, HTTPStatusCode>
+    >;
+  });
+
+  it('has correct types when strictStatusCode is configured', async () => {
+    fetchMock.getOnce({ url: 'https://api.com/posts' }, { status: 200 });
+
+    const result = await clientStrict.posts.getPosts({});
 
     type ClientGetPostsResponseStatusType = Expect<
       Equal<typeof result.status, 200>

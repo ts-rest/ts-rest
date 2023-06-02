@@ -1,9 +1,16 @@
-import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
+import {
+  AppRoute,
+  AppRouteMutation,
+  AppRouter,
+  AppRouteStrictStatusCodes,
+  isAppRoute,
+} from './dsl';
 import { insertParamsIntoPath, ParamsFromUrl } from './paths';
 import { convertQueryParamsToUrlString } from './query';
 import { HTTPStatusCode } from './status-codes';
 import {
   AreAllPropertiesOptional,
+  Extends,
   LowercaseKeys,
   Merge,
   OptionalIfAllOptional,
@@ -97,28 +104,28 @@ type DataReturnArgs<
   Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
 >;
 
-export type ApiRouteResponseNoUnknownStatus<T> =
+export type ApiRouteResponse<T, TStrictStatusCodes = false> =
   | {
       [K in keyof T]: {
         status: K;
         body: ZodInferOrType<T[K]>;
         headers: Headers;
       };
-    }[keyof T];
-
-export type ApiRouteResponse<T> =
-  | ApiRouteResponseNoUnknownStatus<T>
-  | {
-      status: Exclude<HTTPStatusCode, keyof T>;
-      body: unknown;
-      headers: Headers;
-    };
+    }[keyof T]
+  | (TStrictStatusCodes extends true
+      ? never
+      : {
+          status: Exclude<HTTPStatusCode, keyof T>;
+          body: unknown;
+          headers: Headers;
+        });
 
 /**
  * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
  */
 export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
-  T['responses']
+  T['responses'],
+  Extends<T, AppRouteStrictStatusCodes>
 >;
 
 /**
@@ -132,12 +139,10 @@ export function getRouteResponses<T extends AppRouter>(router: T) {
   };
 }
 
-type AppRouteFunctionReturn<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
-> = TClientArgs extends { throwOnUnknownStatus: true }
-  ? ApiRouteResponseNoUnknownStatus<TRoute['responses']>
-  : ApiRouteResponse<TRoute['responses']>;
+type AppRouteFunctionReturn<TRoute extends AppRoute> = ApiRouteResponse<
+  TRoute['responses'],
+  Extends<TRoute, AppRouteStrictStatusCodes>
+>;
 
 /**
  * Returned from a mutation or query call
@@ -148,10 +153,10 @@ export type AppRouteFunction<
 > = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
   ? (
       args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<AppRouteFunctionReturn<TRoute, TClientArgs>>>
+    ) => Promise<Prettify<AppRouteFunctionReturn<TRoute>>>
   : (
       args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<AppRouteFunctionReturn<TRoute, TClientArgs>>>;
+    ) => Promise<Prettify<AppRouteFunctionReturn<TRoute>>>;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -210,19 +215,21 @@ export const tsRestFetchApi: ApiFetcher = async ({
       body: await result.json(),
       headers: result.headers,
     };
-  } else if (contentType?.includes('text/plain')) {
+  }
+
+  if (contentType?.includes('text/plain')) {
     return {
       status: result.status,
       body: await result.text(),
       headers: result.headers,
     };
-  } else {
-    return {
-      status: result.status,
-      body: await result.blob(),
-      headers: result.headers,
-    };
   }
+
+  return {
+    status: result.status,
+    body: await result.blob(),
+    headers: result.headers,
+  };
 };
 
 const createFormData = (body: unknown) => {

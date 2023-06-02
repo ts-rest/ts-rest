@@ -1,4 +1,9 @@
-import { AppRoute, AppRouteMutation, AppRouter } from './dsl';
+import {
+  AppRoute,
+  AppRouteMutation,
+  AppRouter,
+  AppRouteStrictStatusCodes,
+} from './dsl';
 import { HTTPStatusCode } from './status-codes';
 import {
   LowercaseKeys,
@@ -22,7 +27,9 @@ type AppRouteResponses<
           : ZodInferOrType<T['responses'][K]>;
       };
     }[keyof T['responses'] & TStatus]
-  | (Exclude<TStatus, keyof T['responses']> extends never
+  | (T extends AppRouteStrictStatusCodes
+      ? never
+      : Exclude<TStatus, keyof T['responses']> extends never
       ? never
       : { status: Exclude<TStatus, keyof T['responses']>; body: unknown });
 

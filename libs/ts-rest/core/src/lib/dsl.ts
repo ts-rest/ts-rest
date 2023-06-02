@@ -19,6 +19,7 @@ type AppRouteCommon = {
   description?: string;
   deprecated?: boolean;
   responses: Record<number, unknown>;
+  strictStatusCodes?: boolean;
   metadata?: unknown;
 };
 
@@ -104,12 +105,20 @@ type ApplyOptions<
 > = Omit<TRoute, 'headers'> &
   WithoutUnknown<{
     headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
+    strictStatusCodes: TRoute['strictStatusCodes'] extends boolean
+      ? TRoute['strictStatusCodes']
+      : TOptions['strictStatusCodes'] extends boolean
+      ? TOptions['strictStatusCodes']
+      : unknown;
   }>;
 
 /**
  * A union of all possible endpoint types.
  */
 export type AppRoute = AppRouteQuery | AppRouteMutation;
+export type AppRouteStrictStatusCodes = Omit<AppRoute, 'strictStatusCodes'> & {
+  strictStatusCodes: true;
+};
 
 /**
  * A router (or contract) in @ts-rest is a collection of more routers or
@@ -121,6 +130,7 @@ export type AppRouter = {
 
 export type RouterOptions = {
   baseHeaders?: unknown;
+  strictStatusCodes?: boolean;
 };
 
 /**
@@ -182,6 +192,8 @@ const recursivelyApplyOptions = <T extends AppRouter>(
           {
             ...value,
             headers: zodMerge(options?.baseHeaders, value.headers),
+            strictStatusCodes:
+              value.strictStatusCodes ?? options?.strictStatusCodes,
           },
         ];
       } else {
