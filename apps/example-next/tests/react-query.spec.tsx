@@ -187,6 +187,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.health,
+      signal: expect.any(AbortSignal),
     });
 
     await waitFor(() => {
@@ -226,6 +228,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -262,6 +266,8 @@ describe('react-query', () => {
         'content-type': 'application/xml',
         'x-test': 'foo',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -295,6 +301,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -320,6 +328,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.health,
+      signal: expect.any(AbortSignal),
     });
 
     return waitFor(() => {
@@ -351,6 +361,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.health,
+      signal: expect.any(AbortSignal),
     });
 
     await waitFor(() => {
@@ -406,6 +418,8 @@ describe('react-query', () => {
         title: 'test',
       },
       contentType: 'application/json',
+      route: router.posts.createPost,
+      signal: undefined,
     });
 
     await waitFor(() => {
@@ -457,6 +471,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -467,6 +483,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
 
     await waitFor(() => {
@@ -526,6 +544,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -536,6 +556,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
 
     await waitFor(() => {
@@ -599,6 +621,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -609,6 +633,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
 
     await waitFor(() => {
@@ -650,6 +676,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -678,6 +706,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -712,6 +742,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -740,6 +772,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -785,6 +819,8 @@ describe('react-query', () => {
         'content-type': 'application/json',
         'x-test': 'test',
       },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -793,6 +829,9 @@ describe('react-query', () => {
 
     const data = {
       status: 200,
+      headers: new Headers({
+        'Content-Type': 'application/json',
+      }),
       body: {
         id: '1',
         title: 'foo',

@@ -12,6 +12,18 @@
         "outputPath": "dist/libs/ts-rest/core",
         "main": "libs/ts-rest/core/src/index.ts",
         "tsConfig": "libs/ts-rest/core/tsconfig.lib.json",
+        "assets": [
+          {
+            "glob": "CHANGELOG.md",
+            "input": "libs/ts-rest/core",
+            "output": "."
+          },
+          {
+            "glob": "README.md",
+            "input": ".",
+            "output": "."
+          }
+        ],
         "format": ["esm", "cjs"],
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",

@@ -81,13 +81,16 @@ The `data` property is typed as follows:
 ```typescript
 const data: {
     status: 200;
-    body: User
+    body: User;
+    headers: Headers
 } | {
     status: 400 | 100 | 101 | 102 | 201 | 202 | 203 | 204 | 205 | 206 | 207 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | ... 36 more ... | 511;
     body: unknown;
+    headers: Headers
 }
 ```
 
+In this context, the term 'headers' refers to the response headers retrieved either from the default Fetch client or a custom client implementation.
 :::
 
 ## Credentials (sending cookies)

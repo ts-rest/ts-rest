@@ -1,8 +1,8 @@
-name: Release
+name: Pre-Release
 on:
   push:
     branches:
-      - main
+      - prerelease/**
 
 jobs:
   build:
@@ -50,13 +50,13 @@ jobs:
         with:
           path: libs/ts-rest/core
 
-      - name: Create Release Pull Request or Publish to npm
+      - if: ${{ contains(steps.release-version.outputs.current-version, '-') }}
+        name: Create Release Pull Request or Publish to npm
         uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e
         with:
           title: Release Tracking
-          # this expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: pnpm release
-          version: pnpm version-packages
+          version: ":"
           createGithubReleases: aggregate
           githubReleaseName: v${{ steps.release-version.outputs.current-version }}
           githubTagName: v${{ steps.release-version.outputs.current-version }}

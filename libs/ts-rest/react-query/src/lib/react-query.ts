@@ -38,7 +38,7 @@ const queryFn = <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
   clientArgs: TClientArgs,
   args?: DataReturnArgsBase<TAppRoute, TClientArgs>
 ): QueryFunction<TAppRoute['responses']> => {
-  return async () => {
+  return async (queryFnContext?: QueryFunctionContext) => {
     const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
       args || {};
 
@@ -51,6 +51,7 @@ const queryFn = <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
     );
 
     const result = await fetchApi({
+      signal: queryFnContext?.signal,
       path,
       clientArgs,
       route,

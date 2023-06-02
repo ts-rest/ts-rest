@@ -53,6 +53,9 @@ const contract = c.contract({
     responses: {
       200: c.response<Post[]>(), // <-- OR normal TS types
     },
+    headers: z.object({
+      'x-pagination-page': z.coerce.number().optional(),
+    }),
   },
 });
 ```
@@ -74,6 +77,7 @@ Consume the api on the client with a RPC-like interface:
 
 ```typescript
 const result = await client.getPosts({
+  headers: { 'x-pagination-page': 1 },
   query: { skip: 0, take: 10 },
   // ^-- Fully typed!
 });
@@ -95,8 +99,8 @@ yarn add @ts-rest/open-api
 
 Create a contract, implement it on your server then consume it in your client. Incrementally adopt, trial it with your team, then get shipping faster.
 
-<div align="center" style={{margin: "50px"}}>
-<h2>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a>👈</h2>
+<div align="center">
+<h3>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a> 👈</h3>
 </div>
 
 ## Star History
@@ -119,6 +123,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="http://michaelangrivera.com"><img src="https://avatars.githubusercontent.com/u/55844504?v=4?s=100" width="100px;" alt="Michael Angelo "/><br /><sub><b>Michael Angelo </b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=michaelangrivera" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://pieter.venter.pro"><img src="https://avatars.githubusercontent.com/u/1845861?v=4?s=100" width="100px;" alt="Pieter Venter"/><br /><sub><b>Pieter Venter</b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=cyrus-za" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://rifaldhiaw.com"><img src="https://avatars.githubusercontent.com/u/7936061?v=4?s=100" width="100px;" alt="Rifaldhi AW"/><br /><sub><b>Rifaldhi AW</b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=rifaldhiaw" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Jwcode-uk"><img src="https://avatars.githubusercontent.com/u/30149596?v=4?s=100" width="100px;" alt="Jonathan White "/><br /><sub><b>Jonathan White </b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=Jwcode-uk" title="Code">💻</a> <a href="https://github.com/ts-rest/ts-rest/commits?author=Jwcode-uk" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
