@@ -62,6 +62,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Jwcode-uk",
+      "name": "Jonathan White ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/30149596?v=4",
+      "profile": "https://github.com/Jwcode-uk",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -69,5 +79,6 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": "ts-rest",
-  "projectOwner": "ts-rest"
+  "projectOwner": "ts-rest",
+  "commitType": "docs"
 }
