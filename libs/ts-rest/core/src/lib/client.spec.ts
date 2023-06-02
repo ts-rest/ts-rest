@@ -629,6 +629,7 @@ type CustomClientGetPostType = Expect<
 describe('custom api', () => {
   beforeEach(() => {
     argsCalledMock.mockReset();
+    fetchMock.mockReset();
   });
 
   it('should allow a uploadProgress attribute on the api call', async () => {
