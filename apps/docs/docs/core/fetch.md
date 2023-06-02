@@ -82,11 +82,11 @@ The `data` property is typed as follows:
 const data: {
     status: 200;
     body: User;
-    headers: Record<string, string>
+    headers: Headers
 } | {
     status: 400 | 100 | 101 | 102 | 201 | 202 | 203 | 204 | 205 | 206 | 207 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | ... 36 more ... | 511;
     body: unknown;
-    headers: Record<string, string>
+    headers: Headers
 }
 ```
 

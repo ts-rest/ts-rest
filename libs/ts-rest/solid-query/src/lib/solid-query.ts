@@ -101,7 +101,7 @@ type DataReturnArgs<
  */
 type SuccessResponseMapper<T> = {
   [K in keyof T]: K extends SuccessfulHttpStatusCode
-    ? { status: K; body: ZodInferOrType<T[K]>; headers: Record<string, string> }
+    ? { status: K; body: ZodInferOrType<T[K]>; headers: Headers }
     : never;
 }[keyof T];
 
@@ -115,14 +115,14 @@ type ErrorResponseMapper<T> =
         : {
             status: K;
             body: ZodInferOrType<T[K]>;
-            headers: Record<string, string>;
+            headers: Headers;
           };
     }[keyof T]
   // If the response isn't one of our typed ones. Return "unknown"
   | {
       status: Exclude<HTTPStatusCode, keyof T | SuccessfulHttpStatusCode>;
       body: unknown;
-      headers: Record<string, string>;
+      headers: Headers;
     };
 
 // Data response if it's a 2XX

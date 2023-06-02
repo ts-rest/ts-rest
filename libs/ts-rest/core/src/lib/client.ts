@@ -102,7 +102,7 @@ export type ApiRouteResponseNoUnknownStatus<T> =
       [K in keyof T]: {
         status: K;
         body: ZodInferOrType<T[K]>;
-        headers: Record<string, string>;
+        headers: Headers;
       };
     }[keyof T];
 
@@ -111,7 +111,7 @@ export type ApiRouteResponse<T> =
   | {
       status: Exclude<HTTPStatusCode, keyof T>;
       body: unknown;
-      headers: Record<string, string>;
+      headers: Headers;
     };
 
 /**
@@ -177,7 +177,7 @@ export type ApiFetcherArgs = {
 export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
   status: number;
   body: unknown;
-  headers: Record<string, string>;
+  headers?: Headers;
 }>;
 
 /**
@@ -204,28 +204,23 @@ export const tsRestFetchApi: ApiFetcher = async ({
   });
   const contentType = result.headers.get('content-type');
 
-  const responseHeaders: Record<string, string> = {};
-  result.headers.forEach((value, key) => {
-    responseHeaders[key] = value;
-  });
-
   if (contentType?.includes('application/json')) {
     return {
       status: result.status,
       body: await result.json(),
-      headers: responseHeaders,
+      headers: result.headers,
     };
   } else if (contentType?.includes('text/plain')) {
     return {
       status: result.status,
       body: await result.text(),
-      headers: responseHeaders,
+      headers: result.headers,
     };
   } else {
     return {
       status: result.status,
       body: await result.blob(),
-      headers: responseHeaders,
+      headers: result.headers,
     };
   }
 };
