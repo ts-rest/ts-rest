@@ -116,6 +116,9 @@ type ApplyOptions<
  * A union of all possible endpoint types.
  */
 export type AppRoute = AppRouteQuery | AppRouteMutation;
+export type AppRouteStrictStatusCodes = Omit<AppRoute, 'strictStatusCodes'> & {
+  strictStatusCodes: true;
+};
 
 /**
  * A router (or contract) in @ts-rest is a collection of more routers or
