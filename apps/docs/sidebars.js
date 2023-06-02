@@ -87,6 +87,11 @@ const sidebars = {
       id: 'next',
     },
     {
+      type: 'doc',
+      label: '@ts-rest/fastify',
+      id: 'fastify',
+    },
+    {
       type: 'category',
       label: '@ts-rest/express',
       collapsed: false,

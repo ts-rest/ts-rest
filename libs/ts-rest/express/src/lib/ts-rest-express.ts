@@ -216,7 +216,7 @@ const initializeExpressRoute = ({
 const requestValidationErrorHandler = (
   handler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default'
 ) => {
-  return (err: any, req: Request, res: Response, next: NextFunction) => {
+  return (err: unknown, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof RequestValidationError) {
       // old-style error handling, kept for backwards compatibility
       if (handler === 'default') {

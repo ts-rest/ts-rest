@@ -19,6 +19,8 @@ import express from '../../static/img/express.png';
 // @ts-ignore
 import nest from '../../static/img/nest.png';
 // @ts-ignore
+import fastify from '../../static/img/fastify.png';
+// @ts-ignore
 import openApi from '../../static/img/swagger.png';
 // @ts-ignore
 import vercel from '../../static/img/vercel.png';
@@ -222,6 +224,11 @@ export default function Home(): JSX.Element {
               name: '@ts-rest/nest',
               description: 'Nest.js integration',
               image: nest,
+            },
+            {
+              name: '@ts-rest/fastify',
+              description: 'Fastify integration 🆕',
+              image: fastify,
             },
             {
               name: '@ts-rest/open-api',
