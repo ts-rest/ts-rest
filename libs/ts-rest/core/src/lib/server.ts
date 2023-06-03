@@ -1,24 +1,6 @@
-import { ZodInputOrType } from './type-utils';
 import { HTTPStatusCode } from './status-codes';
 import { checkZodSchema } from './zod-utils';
 import { ResponseValidationError } from './response-validation-error';
-
-export type ApiRouteServerResponse<
-  T extends Record<number, unknown>,
-  TStrictStatusCodes = false
-> =
-  | {
-      [K in keyof T]: {
-        status: K;
-        body: ZodInputOrType<T[K]>;
-      };
-    }[keyof T]
-  | (TStrictStatusCodes extends true
-      ? never
-      : {
-          status: Exclude<HTTPStatusCode, keyof T>;
-          body: unknown;
-        });
 
 export const isAppRouteResponse = (
   value: unknown

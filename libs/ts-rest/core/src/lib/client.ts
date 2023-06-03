@@ -1,26 +1,13 @@
-import {
-  AppRoute,
-  AppRouteMutation,
-  AppRouter,
-  AppRouteStrictStatusCodes,
-  isAppRoute,
-} from './dsl';
-import { insertParamsIntoPath, ParamsFromUrl } from './paths';
+import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
+import { insertParamsIntoPath } from './paths';
 import { convertQueryParamsToUrlString } from './query';
-import { HTTPStatusCode } from './status-codes';
-import {
-  AreAllPropertiesOptional,
-  Extends,
-  LowercaseKeys,
-  Merge,
-  OptionalIfAllOptional,
-  PartialByLooseKeys,
-  Prettify,
-  Without,
-  ZodInferOrType,
-  ZodInputOrType,
-} from './type-utils';
+import { AreAllPropertiesOptional, Prettify } from './type-utils';
 import { UnknownStatusError } from './unknown-status-error';
+import {
+  ClientInferRequest,
+  ClientInferResponses,
+  PartialClientInferRequest,
+} from './infer-types';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -30,133 +17,28 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
     : never;
 };
 
-type AppRouteMutationType<T> = ZodInputOrType<T>;
-
-/**
- * Extract the path params from the path in the contract
- */
-export type PathParamsFromUrl<T extends AppRoute> = ParamsFromUrl<
-  T['path']
-> extends infer U
-  ? U
-  : never;
-
-/**
- * Merge `PathParamsFromUrl<T>` with pathParams schema if it exists
- */
-export type PathParamsWithCustomValidators<
-  T extends AppRoute,
-  TClientOrServer extends 'client' | 'server' = 'server'
-> = T['pathParams'] extends undefined
-  ? PathParamsFromUrl<T>
-  : Merge<
-      PathParamsFromUrl<T>,
-      TClientOrServer extends 'server'
-        ? ZodInferOrType<T['pathParams']>
-        : ZodInputOrType<T['pathParams']>
-    >;
-
-// Allow FormData if the contentType is multipart/form-data
-type AppRouteBodyOrFormData<T extends AppRouteMutation> =
-  T['contentType'] extends 'multipart/form-data'
-    ? FormData | AppRouteMutationType<T['body']>
-    : AppRouteMutationType<T['body']>;
-
-/**
- * Extract any extra parameters from the client args
- */
-export type ExtractExtraParametersFromClientArgs<
-  TClientArgs extends ClientArgs
-> = TClientArgs['api'] extends ApiFetcher
-  ? Omit<Parameters<TClientArgs['api']>[0], keyof Parameters<ApiFetcher>[0]>
-  : // eslint-disable-next-line @typescript-eslint/ban-types
-    {};
-
-type DataReturnArgsBase<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
-  THeaders = Prettify<
-    'headers' extends keyof TRoute
-      ? PartialByLooseKeys<
-          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
-          keyof LowercaseKeys<TClientArgs['baseHeaders']>
-        >
-      : never
-  >
-> = {
-  body: TRoute extends AppRouteMutation
-    ? AppRouteBodyOrFormData<TRoute>
-    : never;
-  params: PathParamsFromUrl<TRoute>;
-  query: 'query' extends keyof TRoute
-    ? AppRouteMutationType<TRoute['query']>
-    : never;
-  headers: THeaders;
-  extraHeaders?: {
-    [K in NonNullable<keyof THeaders>]?: never;
-  } & Record<string, string | undefined>;
-} & ExtractExtraParametersFromClientArgs<TClientArgs>;
-
-type DataReturnArgs<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
-> = OptionalIfAllOptional<
-  Without<DataReturnArgsBase<TRoute, TClientArgs>, never>
->;
-
-export type ApiRouteResponse<T, TStrictStatusCodes = false> =
-  | {
-      [K in keyof T]: {
-        status: K;
-        body: ZodInferOrType<T[K]>;
-        headers: Headers;
-      };
-    }[keyof T]
-  | (TStrictStatusCodes extends true
-      ? never
-      : {
-          status: Exclude<HTTPStatusCode, keyof T>;
-          body: unknown;
-          headers: Headers;
-        });
-
 /**
  * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
  */
-export type ApiResponseForRoute<T extends AppRoute> = ApiRouteResponse<
-  T['responses'],
-  Extends<T, AppRouteStrictStatusCodes>
->;
+export type ApiResponseForRoute<T extends AppRoute> = ClientInferResponses<T>;
 
 /**
  * @deprecated Only safe to use on the client-side. Use `ServerInferResponses`/`ClientInferResponses` instead.
  */
 export function getRouteResponses<T extends AppRouter>(router: T) {
-  return {} as {
-    [K in keyof typeof router]: typeof router[K] extends AppRoute
-      ? ApiResponseForRoute<typeof router[K]>
-      : 'not a route';
-  };
+  return {} as ClientInferResponses<T>;
 }
-
-type AppRouteFunctionReturn<TRoute extends AppRoute> = ApiRouteResponse<
-  TRoute['responses'],
-  Extends<TRoute, AppRouteStrictStatusCodes>
->;
 
 /**
  * Returned from a mutation or query call
  */
 export type AppRouteFunction<
   TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
-> = AreAllPropertiesOptional<DataReturnArgs<TRoute, TClientArgs>> extends true
-  ? (
-      args?: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<AppRouteFunctionReturn<TRoute>>>
-  : (
-      args: Prettify<DataReturnArgs<TRoute, TClientArgs>>
-    ) => Promise<Prettify<AppRouteFunctionReturn<TRoute>>>;
+  TClientArgs extends ClientArgs,
+  TArgs = PartialClientInferRequest<TRoute, TClientArgs>
+> = AreAllPropertiesOptional<TArgs> extends true
+  ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
+  : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -338,12 +220,17 @@ export const getCompleteUrl = (
   return `${baseUrl}${path}${queryComponent}`;
 };
 
+type FullClientInferRequest = ClientInferRequest<
+  AppRouteMutation & { path: '/:placeholder' },
+  ClientArgs
+>;
+
 export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: InitClientArgs
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
-  return async (inputArgs?: DataReturnArgsBase<any, ClientArgs>) => {
+  return async (inputArgs?: FullClientInferRequest) => {
     const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
       inputArgs || {};
 

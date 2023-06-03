@@ -21,9 +21,10 @@ import {
   RecursiveRouterObj,
   TsRestRequestHandler,
   isAppRouteImplementation,
-  TsRestRequest,
 } from './types';
 import { RequestValidationError } from './request-validation-error';
+
+type AppRouteWithParams = AppRoute & { path: '/:placeholder' };
 
 export const initServer = () => {
   return {
@@ -38,7 +39,7 @@ const recursivelyApplyExpressRouter = ({
   processRoute,
 }: {
   schema: AppRouter | AppRoute;
-  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<AppRoute>;
+  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<any>;
   processRoute: (
     implementation: AppRouteImplementationOrOptions<AppRoute>,
     schema: AppRoute
@@ -121,7 +122,7 @@ const initializeExpressRoute = ({
   app,
   options,
 }: {
-  implementationOrOptions: AppRouteImplementationOrOptions<AppRoute>;
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteWithParams>;
   schema: AppRoute;
   app: IRouter;
   options: TsRestExpressOptions<any>;
@@ -140,7 +141,7 @@ const initializeExpressRoute = ({
 
       const result = await handler({
         params: validationResults.paramsResult.data as any,
-        body: validationResults.bodyResult.data,
+        body: validationResults.bodyResult.data as any,
         query: validationResults.queryResult.data,
         headers: validationResults.headersResult.data as any,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -149,7 +150,7 @@ const initializeExpressRoute = ({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         file: req.file,
-        req: req as TsRestRequest<any>,
+        req: req as any,
         res: res,
       });
 
@@ -173,9 +174,9 @@ const initializeExpressRoute = ({
     }
   };
 
-  const handlers: TsRestRequestHandler<AppRoute>[] = [
+  const handlers: TsRestRequestHandler<AppRouteWithParams>[] = [
     (req, res, next) => {
-      req.tsRestRoute = schema;
+      req.tsRestRoute = schema as any;
       next();
     },
   ];
@@ -264,7 +265,7 @@ export const createExpressEndpoints = <TRouter extends AppRouter>(
     processRoute: (implementation, innerSchema) => {
       initializeExpressRoute({
         implementationOrOptions:
-          implementation as AppRouteImplementationOrOptions<AppRoute>,
+          implementation as AppRouteImplementationOrOptions<AppRouteWithParams>,
         schema: innerSchema,
         app,
         options,

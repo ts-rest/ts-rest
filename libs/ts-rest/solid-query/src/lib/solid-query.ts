@@ -19,20 +19,17 @@ import {
   AppRouteQuery,
   AppRouter,
   ClientArgs,
-  ExtractExtraParametersFromClientArgs,
+  ClientInferRequest,
+  ClientInferResponses,
+  ErrorHttpStatusCode,
   fetchApi,
   getCompleteUrl,
   getRouteQuery,
-  HTTPStatusCode,
   isAppRoute,
-  LowercaseKeys,
-  PartialByLooseKeys,
-  PathParamsFromUrl,
-  Prettify,
+  PartialClientInferRequest,
   SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
-  ZodInputOrType,
 } from '@ts-rest/core';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
@@ -42,8 +39,6 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
     ? RecursiveProxyObj<T[TKey], TClientArgs>
     : never;
 };
-
-type AppRouteMutationType<T> = ZodInputOrType<T>;
 
 type UseQueryArgs<
   TAppRoute extends AppRoute,
@@ -66,70 +61,19 @@ type UseQueryArgs<
     : never;
 };
 
-type DataReturnArgs<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
-  THeaders = Prettify<
-    'headers' extends keyof TRoute
-      ? PartialByLooseKeys<
-          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
-          keyof LowercaseKeys<TClientArgs['baseHeaders']>
-        >
-      : never
-  >
-> = {
-  body: TRoute extends AppRouteMutation
-    ? AppRouteMutationType<TRoute['body']> extends null
-      ? never
-      : AppRouteMutationType<TRoute['body']>
-    : never;
-  params: PathParamsFromUrl<TRoute>;
-  query: 'query' extends keyof TRoute
-    ? AppRouteMutationType<TRoute['query']> extends null
-      ? never
-      : AppRouteMutationType<TRoute['query']>
-    : never;
-  headers: THeaders;
-  extraHeaders?: {
-    [K in NonNullable<keyof THeaders>]?: never;
-  } & Record<string, string | undefined>;
-} & ExtractExtraParametersFromClientArgs<TClientArgs>;
-
-/**
- * Split up the data and error to support solid-query style
- * createQuery and createMutation error handling
- */
-type SuccessResponseMapper<T> = {
-  [K in keyof T]: K extends SuccessfulHttpStatusCode
-    ? { status: K; body: ZodInferOrType<T[K]>; headers: Headers }
-    : never;
-}[keyof T];
-
-/**
- * Returns any handled errors, or any unhandled non success errors
- */
-type ErrorResponseMapper<T> =
-  | {
-      [K in keyof T]: K extends SuccessfulHttpStatusCode
-        ? never
-        : {
-            status: K;
-            body: ZodInferOrType<T[K]>;
-            headers: Headers;
-          };
-    }[keyof T]
-  // If the response isn't one of our typed ones. Return "unknown"
-  | {
-      status: Exclude<HTTPStatusCode, keyof T | SuccessfulHttpStatusCode>;
-      body: unknown;
-      headers: Headers;
-    };
-
 // Data response if it's a 2XX
-type DataResponse<T extends AppRoute> = SuccessResponseMapper<T['responses']>;
+type DataResponse<TAppRoute extends AppRoute> = ClientInferResponses<
+  TAppRoute,
+  SuccessfulHttpStatusCode,
+  'force'
+>;
 
 // Error response if it's not a 2XX
-type ErrorResponse<T extends AppRoute> = ErrorResponseMapper<T['responses']>;
+type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
+  TAppRoute,
+  ErrorHttpStatusCode,
+  'ignore'
+>;
 
 // Used on X.createQuery
 type DataReturnQuery<
@@ -137,7 +81,7 @@ type DataReturnQuery<
   TClientArgs extends ClientArgs
 > = (
   queryKey: () => QueryKey,
-  args: Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>,
+  args: PartialClientInferRequest<TAppRoute, TClientArgs>,
   options?: CreateQueryOptions<
     DataResponse<TAppRoute>,
     ErrorResponse<TAppRoute>
@@ -152,7 +96,7 @@ type DataReturnInfiniteQuery<
   queryKey: () => QueryKey,
   args: (
     context: QueryFunctionContext<QueryKey>
-  ) => Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>,
+  ) => PartialClientInferRequest<TAppRoute, TClientArgs>,
   options?: CreateInfiniteQueryOptions<
     DataResponse<TAppRoute>,
     ErrorResponse<TAppRoute>
@@ -170,14 +114,19 @@ type DataReturnMutation<
   options?: CreateMutationOptions<
     DataResponse<TAppRoute>,
     ErrorResponse<TAppRoute>,
-    Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>,
+    PartialClientInferRequest<TAppRoute, TClientArgs>,
     unknown
   >
 ) => CreateMutationResult<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
-  Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
+  PartialClientInferRequest<TAppRoute, TClientArgs>,
   unknown
+>;
+
+type FullClientInferRequest = ClientInferRequest<
+  AppRouteMutation & { path: '/:placeholder' },
+  ClientArgs
 >;
 
 const getRouteUseQuery = <
@@ -189,7 +138,7 @@ const getRouteUseQuery = <
 ) => {
   return (
     queryKey: () => QueryKey,
-    args: DataReturnArgs<TAppRoute, TClientArgs>,
+    args: FullClientInferRequest,
     options?: CreateQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async ({
@@ -241,9 +190,7 @@ const getRouteUseInfiniteQuery = <
 ) => {
   return (
     queryKey: () => QueryKey,
-    args: (
-      context: QueryFunctionContext
-    ) => DataReturnArgs<TAppRoute, TClientArgs>,
+    args: (context: QueryFunctionContext) => FullClientInferRequest,
     options?: CreateInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (
@@ -296,9 +243,7 @@ const getRouteUseMutation = <
   clientArgs: TClientArgs
 ) => {
   return (options?: CreateMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (
-      args: DataReturnArgs<TAppRoute, TClientArgs>
-    ) => {
+    const mutationFunction = async (args: FullClientInferRequest) => {
       const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
         args || {};
 

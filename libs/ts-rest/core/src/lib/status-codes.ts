@@ -68,3 +68,8 @@ export type HTTPStatusCode =
   | 505
   | 507
   | 511;
+
+export type ErrorHttpStatusCode = Exclude<
+  HTTPStatusCode,
+  SuccessfulHttpStatusCode
+>;
