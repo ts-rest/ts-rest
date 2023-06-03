@@ -131,6 +131,7 @@ export type AppRouter = {
 export type RouterOptions = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
+  urlPrefix?: string;
 };
 
 /**
@@ -191,6 +192,9 @@ const recursivelyApplyOptions = <T extends AppRouter>(
           key,
           {
             ...value,
+            path: options?.urlPrefix
+              ? options.urlPrefix + value.path
+              : value.path,
             headers: zodMerge(options?.baseHeaders, value.headers),
             strictStatusCodes:
               value.strictStatusCodes ?? options?.strictStatusCodes,
