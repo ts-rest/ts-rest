@@ -95,6 +95,17 @@
         "infra",
         "maintenance"
       ]
+    },
+    {
+      "login": "baryla",
+      "name": "Adrian Barylski",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10336085?v=4",
+      "profile": "https://github.com/baryla",
+      "contributions": [
+        "code",
+        "doc",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
