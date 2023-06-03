@@ -75,6 +75,11 @@ type RecursiveRouterObj<T extends AppRouter> = {
     : never;
 };
 
+type InitialisedRouter<TContract extends AppRouter> = {
+  contract: TContract;
+  routes: RecursiveRouterObj<TContract>;
+};
+
 type RegisterRouterOptions = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
@@ -137,9 +142,15 @@ const validateRequest = (
 };
 
 export const initServer = () => ({
-  router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) => args,
+  router: <TContract extends AppRouter>(
+    contract: TContract,
+    routes: RecursiveRouterObj<TContract>
+  ): InitialisedRouter<TContract> => ({
+    contract,
+    routes,
+  }),
   registerRouter: <
-    T extends RecursiveRouterObj<TContract>,
+    T extends InitialisedRouter<TContract>,
     TContract extends AppRouter
   >(
     contract: TContract,
@@ -152,12 +163,25 @@ export const initServer = () => ({
       requestValidationErrorHandler: 'combined',
     }
   ) => {
-    recursivelyRegisterRouter(routerImpl, contract, [], app, options);
+    recursivelyRegisterRouter(routerImpl.routes, contract, [], app, options);
 
     app.setErrorHandler(
       requestValidationErrorHandler(options.requestValidationErrorHandler)
     );
   },
+  plugin:
+    <T extends AppRouter>(
+      router: InitialisedRouter<T>
+    ): fastify.FastifyPluginCallback<RegisterRouterOptions> =>
+    (app, opts, done) => {
+      recursivelyRegisterRouter(router.routes, router.contract, [], app, opts);
+
+      app.setErrorHandler(
+        requestValidationErrorHandler(opts.requestValidationErrorHandler)
+      );
+
+      done();
+    },
 });
 
 const requestValidationErrorHandler = (
