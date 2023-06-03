@@ -173,7 +173,16 @@ export const initServer = () => ({
     <T extends AppRouter>(
       router: InitialisedRouter<T>
     ): fastify.FastifyPluginCallback<RegisterRouterOptions> =>
-    (app, opts, done) => {
+    (
+      app,
+      opts = {
+        logInitialization: true,
+        jsonQuery: false,
+        responseValidation: false,
+        requestValidationErrorHandler: 'combined',
+      },
+      done
+    ) => {
       recursivelyRegisterRouter(router.routes, router.contract, [], app, opts);
 
       app.setErrorHandler(
