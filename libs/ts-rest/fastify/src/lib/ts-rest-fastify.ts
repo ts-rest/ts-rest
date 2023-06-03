@@ -23,33 +23,12 @@ export class RequestValidationError extends Error {
   }
 }
 
-type AppRouteQueryImplementation<
-  T extends AppRouteQuery,
-  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
-> = (
-  input: Omit<TRequest, 'body' | 'headers'> & {
-    headers: TRequest['headers'] & fastify.FastifyRequest['headers'];
+type AppRouteImplementation<T extends AppRoute> = (
+  input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
     request: fastify.FastifyRequest;
     reply: fastify.FastifyReply;
   }
 ) => Promise<ServerInferResponses<T>>;
-
-type AppRouteMutationImplementation<
-  T extends AppRouteMutation,
-  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
-> = (
-  input: Omit<TRequest, 'headers'> & {
-    headers: TRequest['headers'] & fastify.FastifyRequest['headers'];
-    request: fastify.FastifyRequest;
-    reply: fastify.FastifyReply;
-  }
-) => Promise<ServerInferResponses<T>>;
-
-type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
-  ? AppRouteMutationImplementation<T>
-  : T extends AppRouteQuery
-  ? AppRouteQueryImplementation<T>
-  : never;
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter

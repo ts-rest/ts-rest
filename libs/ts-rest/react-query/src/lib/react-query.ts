@@ -184,8 +184,6 @@ export const initQueryClient = <
     return Object.fromEntries(
       Object.entries(innerRouter).map(([key, subRouter]) => {
         if (isAppRoute(subRouter)) {
-          type TSubRouter = typeof subRouter;
-
           return [
             key,
             {

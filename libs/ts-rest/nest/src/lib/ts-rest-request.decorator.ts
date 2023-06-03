@@ -14,12 +14,10 @@ import {
 import type { Request } from 'express-serve-static-core';
 import { JsonQuerySymbol, TsRestAppRouteMetadataKey } from './constants';
 
-export type TsRestRequestShape<
-  TRoute extends AppRoute,
-  TRequest extends ServerInferRequest<TRoute> = ServerInferRequest<TRoute>
-> = Omit<TRequest, 'headers'> & {
-  headers: TRequest['headers'] & Request['headers'];
-};
+export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
+  TRoute,
+  Request['headers']
+>;
 
 type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
 

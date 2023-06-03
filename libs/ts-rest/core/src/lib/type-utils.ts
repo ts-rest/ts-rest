@@ -110,13 +110,11 @@ export type MakePrettyOptionalFunction<T> = T extends (a: infer A) => infer R
 
 export type Prettify<T> = {
   [K in keyof T]: T[K];
-  // eslint-disable-next-line @typescript-eslint/ban-types
 } & {};
 
 export type DefinedOrEmpty<
   T,
   K extends keyof NonNullable<T>
-  // eslint-disable-next-line @typescript-eslint/ban-types
 > = undefined extends T ? {} : NonNullable<T>[K];
 
 declare const tag: unique symbol;

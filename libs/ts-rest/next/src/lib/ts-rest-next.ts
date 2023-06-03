@@ -19,53 +19,23 @@ import {
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 
-type RouteToQueryFunctionImplementation<
-  T extends AppRouteQuery,
-  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
-> = (
-  args: Omit<TRequest, 'body' | 'headers'> & {
-    headers: TRequest['headers'] & NextApiRequest['headers'];
+type AppRouteImplementation<T extends AppRoute> = (
+  args: ServerInferRequest<T, NextApiRequest['headers']> & {
     req: NextApiRequest;
     res: NextApiResponse;
   }
 ) => Promise<ServerInferResponses<T>>;
-
-type RouteToMutationFunctionImplementation<
-  T extends AppRouteMutation,
-  TRequest extends ServerInferRequest<T> = ServerInferRequest<T>
-> = (
-  args: Omit<TRequest, 'headers'> & {
-    headers: TRequest['headers'] & NextApiRequest['headers'];
-    req: NextApiRequest;
-    res: NextApiResponse;
-  }
-) => Promise<ServerInferResponses<T>>;
-
-type RouteToFunctionImplementation<T extends AppRoute> = T extends AppRouteQuery
-  ? RouteToQueryFunctionImplementation<T>
-  : T extends AppRouteMutation
-  ? RouteToMutationFunctionImplementation<T>
-  : never;
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
     ? RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? RouteToFunctionImplementation<T[TKey]>
+    ? AppRouteImplementation<T[TKey]>
     : never;
 };
 
-type AppRouteQueryWithImplementation<T extends AppRouteQuery> = T &
-  RouteToQueryFunctionImplementation<T>;
-
-type AppRouteMutationWithImplementation<T extends AppRouteMutation> = T &
-  RouteToMutationFunctionImplementation<T>;
-
-type AppRouteWithImplementation<T extends AppRoute> = T extends AppRouteMutation
-  ? AppRouteMutationWithImplementation<T>
-  : T extends AppRouteQuery
-  ? AppRouteQueryWithImplementation<T>
-  : never;
+type AppRouteWithImplementation<T extends AppRouteQuery> = T &
+  AppRouteImplementation<T>;
 
 type AppRouterWithImplementation = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

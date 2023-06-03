@@ -30,7 +30,6 @@ type RecursivelyExtractPathParams<
  */
 export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
   T,
-  // eslint-disable-next-line @typescript-eslint/ban-types
   {}
 > extends infer U
   ? keyof U extends never
