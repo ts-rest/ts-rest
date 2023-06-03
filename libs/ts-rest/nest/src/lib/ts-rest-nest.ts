@@ -27,7 +27,7 @@ type AppRouterRequestShapes<T extends AppRouter> = Without<
 type AppRouterResponseShapes<T extends AppRouter> = Without<
   {
     [K in keyof T]: T[K] extends AppRoute
-      ? Promise<ServerInferResponses<T[K]>>
+      ? ServerInferResponses<T[K]>
       : never;
   },
   never
