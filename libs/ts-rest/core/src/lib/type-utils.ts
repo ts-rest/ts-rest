@@ -102,12 +102,6 @@ export type OptionalIfAllOptional<
     }[keyof T]
 >;
 
-export type MakePrettyOptionalFunction<T> = T extends (a: infer A) => infer R
-  ? AreAllPropertiesOptional<A> extends true
-    ? (a?: Prettify<A>) => Prettify<R>
-    : (a: Prettify<A>) => Prettify<R>
-  : T;
-
 export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};

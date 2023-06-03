@@ -1,7 +1,7 @@
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
 import { insertParamsIntoPath } from './paths';
 import { convertQueryParamsToUrlString } from './query';
-import { MakePrettyOptionalFunction } from './type-utils';
+import { AreAllPropertiesOptional, Prettify } from './type-utils';
 import { UnknownStatusError } from './unknown-status-error';
 import {
   ClientInferRequest,
@@ -34,12 +34,11 @@ export function getRouteResponses<T extends AppRouter>(router: T) {
  */
 export type AppRouteFunction<
   TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
-> = MakePrettyOptionalFunction<
-  (
-    args: PartialClientInferRequest<TRoute, TClientArgs>
-  ) => Promise<ClientInferResponses<TRoute>>
->;
+  TClientArgs extends ClientArgs,
+  TArgs = PartialClientInferRequest<TRoute, TClientArgs>
+> = AreAllPropertiesOptional<TArgs> extends true
+  ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
+  : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
 
 export interface ClientArgs {
   baseUrl: string;
