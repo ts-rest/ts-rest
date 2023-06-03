@@ -2,17 +2,13 @@ import {
   AppRoute,
   AppRouter,
   Without,
-  ApiRouteServerResponse,
-  AppRouteStrictStatusCodes,
-  Extends,
+  ServerInferResponses,
 } from '@ts-rest/core';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
   ...args: any[]
-) => Promise<
-  ApiRouteServerResponse<T['responses'], Extends<T, AppRouteStrictStatusCodes>>
->;
+) => Promise<ServerInferResponses<T>>;
 
 type AppRouterControllerShape<T extends AppRouter> = Without<
   {
@@ -31,10 +27,7 @@ type AppRouterRequestShapes<T extends AppRouter> = Without<
 type AppRouterResponseShapes<T extends AppRouter> = Without<
   {
     [K in keyof T]: T[K] extends AppRoute
-      ? ApiRouteServerResponse<
-          T[K]['responses'],
-          Extends<T[K], AppRouteStrictStatusCodes>
-        >
+      ? ServerInferResponses<T[K]>
       : never;
   },
   never

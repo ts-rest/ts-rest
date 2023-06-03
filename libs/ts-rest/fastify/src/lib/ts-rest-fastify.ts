@@ -1,19 +1,15 @@
 import {
-  ApiRouteServerResponse,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
-  LowercaseKeys,
   parseJsonQueryObject,
-  PathParamsWithCustomValidators,
+  ServerInferRequest,
+  ServerInferResponses,
   validateResponse,
-  Without,
-  ZodInferOrType,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
-
 import { z } from 'zod';
 
 export class RequestValidationError extends Error {
@@ -27,45 +23,12 @@ export class RequestValidationError extends Error {
   }
 }
 
-type AppRouteQueryImplementation<T extends AppRouteQuery> = (
-  input: Without<
-    {
-      params: PathParamsWithCustomValidators<T>;
-      query: ZodInferOrType<T['query']>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
-        fastify.FastifyRequest['headers'];
-      request: fastify.FastifyRequest;
-      reply: fastify.FastifyReply;
-    },
-    never
-  >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
-
-type WithoutFileIfMultiPart<T extends AppRouteMutation> =
-  T['contentType'] extends 'multipart/form-data'
-    ? Without<ZodInferOrType<T['body']>, File>
-    : ZodInferOrType<T['body']>;
-
-type AppRouteMutationImplementation<T extends AppRouteMutation> = (
-  input: Without<
-    {
-      params: PathParamsWithCustomValidators<T>;
-      query: ZodInferOrType<T['query']>;
-      body: WithoutFileIfMultiPart<T>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
-        fastify.FastifyRequest['headers'];
-      request: fastify.FastifyRequest;
-      reply: fastify.FastifyReply;
-    },
-    never
-  >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
-
-type AppRouteImplementation<T extends AppRoute> = T extends AppRouteMutation
-  ? AppRouteMutationImplementation<T>
-  : T extends AppRouteQuery
-  ? AppRouteQueryImplementation<T>
-  : never;
+type AppRouteImplementation<T extends AppRoute> = (
+  input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
+    request: fastify.FastifyRequest;
+    reply: fastify.FastifyReply;
+  }
+) => Promise<ServerInferResponses<T>>;
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
@@ -183,14 +146,17 @@ const requestValidationErrorHandler = (
   };
 };
 
+type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
+
 /**
  *
  * @param routeImpl - User's implementation of the route
  * @param appRoute - the `ts-rest` contract for this route (e.g. with Path, params, query, body, etc.)
  * @param fastify - the fastify instance to register the route on
+ * @param options - options for the routers
  */
 const registerRoute = <TAppRoute extends AppRoute>(
-  routeImpl: AppRouteImplementation<AppRoute>,
+  routeImpl: AppRouteImplementation<AppRouteMutationWithParams>,
   appRoute: TAppRoute,
   fastify: fastify.FastifyInstance,
   options: RegisterRouterOptions
@@ -217,7 +183,8 @@ const registerRoute = <TAppRoute extends AppRoute>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         headers: validationResults.headersResult.data as any,
         request,
-        body: request.body,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        body: request.body as any,
         reply,
       });
 

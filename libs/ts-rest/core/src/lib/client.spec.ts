@@ -506,7 +506,6 @@ describe('client', () => {
 
       const result = await client.posts.patchPost({
         params: { id: '1' },
-        body: null,
       });
 
       expect(result.body).toStrictEqual(value);
@@ -531,7 +530,6 @@ describe('client', () => {
 
       const result = await client.posts.deletePost({
         params: { id: '1' },
-        body: null,
       });
 
       expect(result.body).toStrictEqual(value);

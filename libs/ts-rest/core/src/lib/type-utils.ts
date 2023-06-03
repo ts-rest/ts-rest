@@ -104,13 +104,11 @@ export type OptionalIfAllOptional<
 
 export type Prettify<T> = {
   [K in keyof T]: T[K];
-  // eslint-disable-next-line @typescript-eslint/ban-types
 } & {};
 
 export type DefinedOrEmpty<
   T,
   K extends keyof NonNullable<T>
-  // eslint-disable-next-line @typescript-eslint/ban-types
 > = undefined extends T ? {} : NonNullable<T>[K];
 
 declare const tag: unique symbol;
@@ -133,3 +131,30 @@ export type LowercaseKeys<T> = Prettify<{
 }>;
 
 export type Extends<T, U> = T extends U ? true : false;
+
+export type And<B1 extends boolean, B2 extends boolean> = {
+  false: {
+    false: false;
+    true: false;
+  };
+  true: {
+    false: false;
+    true: true;
+  };
+}[`${B1}`][`${B2}`];
+
+export type Or<B1 extends boolean, B2 extends boolean> = {
+  false: {
+    false: false;
+    true: true;
+  };
+  true: {
+    false: true;
+    true: true;
+  };
+}[`${B1}`][`${B2}`];
+
+export type Not<B extends boolean> = {
+  false: true;
+  true: false;
+}[`${B}`];

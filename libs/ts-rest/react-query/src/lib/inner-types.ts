@@ -5,12 +5,11 @@ import {
   AppRouteQuery,
   AreAllPropertiesOptional,
   ClientArgs,
-  Prettify,
-  Without,
+  ClientInferRequest,
+  PartialClientInferRequest,
 } from '@ts-rest/core';
 import {
   DataResponse,
-  DataReturnArgs,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
   UseMutationOptions,
@@ -26,6 +25,11 @@ import {
   QueryFunctionContext,
   QueryKey,
 } from '@tanstack/react-query';
+
+export type FullClientInferRequest = ClientInferRequest<
+  AppRouteMutation & { path: '/:placeholder' },
+  ClientArgs
+>;
 
 export type AppRouteFunctions<
   TAppRoute extends AppRoute,
@@ -109,7 +113,7 @@ export type AppRouteFunctionsWithQueryClient<
 export type DataReturnQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
       queryKey: QueryKey,
@@ -125,7 +129,7 @@ export type DataReturnQuery<
 export type DataReturnQueriesOptions<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs
-> = Without<DataReturnArgs<TAppRoute, TClientArgs>, never> &
+> = PartialClientInferRequest<TAppRoute, TClientArgs> &
   Omit<UseQueryOptions<TAppRoute>, 'queryFn'> & {
     queryKey: QueryKey;
   };
@@ -147,7 +151,7 @@ export type DataReturnInfiniteQuery<
   queryKey: QueryKey,
   args: (
     context: QueryFunctionContext<QueryKey>
-  ) => Without<DataReturnArgs<TAppRoute, TClientArgs>, never>,
+  ) => PartialClientInferRequest<TAppRoute, TClientArgs>,
   options?: UseInfiniteQueryOptions<TAppRoute>
 ) => UseInfiniteQueryResult<TAppRoute>;
 
@@ -162,7 +166,7 @@ export type DataReturnMutation<
 export type DataReturnFetchQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
       queryClient: QueryClient,
@@ -180,7 +184,7 @@ export type DataReturnFetchQuery<
 export type DataReturnFetchQueryHook<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
       queryKey: QueryKey,
@@ -196,7 +200,7 @@ export type DataReturnFetchQueryHook<
 export type DataReturnPrefetchQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
       queryClient: QueryClient,
@@ -214,7 +218,7 @@ export type DataReturnPrefetchQuery<
 export type DataReturnPrefetchQueryHook<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
       queryKey: QueryKey,
@@ -230,7 +234,7 @@ export type DataReturnPrefetchQueryHook<
 export type DataReturnFetchInfiniteQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = (
   queryClient: QueryClient,
   queryKey: QueryKey,
@@ -241,7 +245,7 @@ export type DataReturnFetchInfiniteQuery<
 export type DataReturnFetchInfiniteQueryHook<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = (
   queryKey: QueryKey,
   args: (context: QueryFunctionContext) => TArgs,
@@ -251,7 +255,7 @@ export type DataReturnFetchInfiniteQueryHook<
 export type DataReturnPrefetchInfiniteQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = (
   queryClient: QueryClient,
   queryKey: QueryKey,
@@ -262,7 +266,7 @@ export type DataReturnPrefetchInfiniteQuery<
 export type DataReturnPrefetchInfiniteQueryHook<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = Prettify<Without<DataReturnArgs<TAppRoute, TClientArgs>, never>>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
 > = (
   queryKey: QueryKey,
   args: (context: QueryFunctionContext) => TArgs,
