@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { z } from 'zod';
+import { TypeOf, z } from 'zod';
 import { initContract } from './dsl';
 import type { Equal, Expect } from './test-helpers';
 const c = initContract();
@@ -476,5 +476,28 @@ describe('contract', () => {
         }
       >
     >;
+  });
+
+  describe('pathPrefix', () => {
+    it('Should recursively apply pathPrefix to path', () => {
+      const postsContractNested = c.router(
+        {
+          getPost: {
+            path: '/:id',
+            method: 'GET',
+            responses: { 200: c.response<{ id: string }>() },
+          },
+        },
+        { pathPrefix: '/posts' }
+      );
+      const postsContract = c.router(
+        {
+          posts: postsContractNested,
+        },
+        { pathPrefix: '/v1' }
+      );
+      expect(postsContractNested.getPost.path).toStrictEqual('/posts/:id');
+      expect(postsContract.posts.getPost.path).toStrictEqual('/v1/posts/:id');
+    });
   });
 });

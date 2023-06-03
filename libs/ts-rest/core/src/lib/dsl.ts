@@ -42,7 +42,7 @@ export type AppRouteMutation = AppRouteCommon & {
 
 type ValidatedHeaders<
   T extends AppRoute,
-  TOptions extends RouterOptions,
+  TOptions extends RouterOptions<string>,
   TOptionsApplied = ApplyOptions<T, TOptions>
 > = 'headers' extends keyof TOptionsApplied
   ? TOptionsApplied['headers'] extends MixedZodError<infer A, infer B>
@@ -61,7 +61,7 @@ type ValidatedHeaders<
  */
 type RecursivelyProcessAppRouter<
   T extends AppRouter,
-  TOptions extends RouterOptions
+  TOptions extends RouterOptions<string>
 > = {
   [K in keyof T]: T[K] extends AppRoute
     ? ValidatedHeaders<T[K], TOptions>
@@ -72,7 +72,7 @@ type RecursivelyProcessAppRouter<
 
 type RecursivelyApplyOptions<
   TRouter extends AppRouter,
-  TOptions extends RouterOptions
+  TOptions extends RouterOptions<string>
 > = {
   [TRouterKey in keyof TRouter]: TRouter[TRouterKey] extends AppRoute
     ? Prettify<ApplyOptions<TRouter[TRouterKey], TOptions>>
@@ -101,9 +101,12 @@ type UniversalMerge<A, B> = A extends z.AnyZodObject
 
 type ApplyOptions<
   TRoute extends AppRoute,
-  TOptions extends RouterOptions
-> = Omit<TRoute, 'headers'> &
+  TOptions extends RouterOptions<string>
+> = Omit<TRoute, 'headers' | 'path'> &
   WithoutUnknown<{
+    path: TOptions['pathPrefix'] extends string
+      ? `${TOptions['pathPrefix']}${TRoute['path']}`
+      : TRoute['path'];
     headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
     strictStatusCodes: TRoute['strictStatusCodes'] extends boolean
       ? TRoute['strictStatusCodes']
@@ -128,10 +131,10 @@ export type AppRouter = {
   [key: string]: AppRouter | AppRoute;
 };
 
-export type RouterOptions = {
+export type RouterOptions<TPrefix extends string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
-  urlPrefix?: string;
+  pathPrefix?: TPrefix;
 };
 
 /**
@@ -151,7 +154,11 @@ type ContractInstance = {
   /**
    * A collection of routes or routers
    */
-  router: <TRouter extends AppRouter, TOptions extends RouterOptions>(
+  router: <
+    TRouter extends AppRouter,
+    TPrefix extends string,
+    TOptions extends RouterOptions<TPrefix>
+  >(
     endpoints: RecursivelyProcessAppRouter<TRouter, TOptions>,
     options?: TOptions
   ) => RecursivelyApplyOptions<TRouter, TOptions>;
@@ -183,7 +190,7 @@ export const initTsRest = (): ContractInstance => initContract();
 
 const recursivelyApplyOptions = <T extends AppRouter>(
   router: T,
-  options?: RouterOptions
+  options?: RouterOptions<string>
 ): T => {
   return Object.fromEntries(
     Object.entries(router).map(([key, value]) => {
@@ -192,8 +199,8 @@ const recursivelyApplyOptions = <T extends AppRouter>(
           key,
           {
             ...value,
-            path: options?.urlPrefix
-              ? options.urlPrefix + value.path
+            path: options?.pathPrefix
+              ? options.pathPrefix + value.path
               : value.path,
             headers: zodMerge(options?.baseHeaders, value.headers),
             strictStatusCodes:
