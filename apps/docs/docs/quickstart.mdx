@@ -245,7 +245,7 @@ const router = s.router(contract, {
   },
 });
 
-s.registerRouter(contract, router, app);
+app.register(s.plugin(router));
 
 const start = async () => {
   try {
