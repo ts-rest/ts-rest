@@ -107,6 +107,34 @@ describe('ts-rest-fastify', () => {
     expect(response.body).toEqual({ foo: 'bar' });
   });
 
+  it('should instantiate fastify routes using plugin instance', async () => {
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/test');
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({ foo: 'bar' });
+  });
+
+  it('should allow for options when using plugin instance', async () => {
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(router), {
+      responseValidation: true,
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/wrong');
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({ foo: 'bar' });
+  });
+
   it('should parse body correctly', async () => {
     const app = fastify({ logger: false });
 
