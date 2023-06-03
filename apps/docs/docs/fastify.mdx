@@ -37,7 +37,7 @@ const router = s.router(contract, {
   },
 });
 
-s.registerRouter(contract, router, app);
+app.register(s.plugin(router));
 
 const start = async () => {
   try {
@@ -51,12 +51,12 @@ const start = async () => {
 start();
 ```
 
-`s.registerRouter` is a function that takes a contract, a corresponding router with implementations for each route and an fastify app, and it will
+`s.registerRouter` is a function that takes a contract, a corresponding router with implementations for each route and a fastify app, and it will
 create the corresponding fastify routes for each endpoint with the correct method, paths and middleware and attach them to your fastify app.
 
 ## Options
 
-You can pass an optional options object as the last argument for `createfastifyEndpoints`.
+You can pass an optional options object as the last argument for `s.registerRouter`.
 
 ```typescript
 type Options = {
@@ -80,7 +80,7 @@ If there is a corresponding response Zod schema defined in the contract for the 
 If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
 
 ```typescript
-createfastifyEndpoints(contract, router, app, {
+s.registerRouter(contract, router, app, {
   validateResponses: true,
 });
 ```

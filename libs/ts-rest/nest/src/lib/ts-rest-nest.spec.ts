@@ -3,6 +3,7 @@ import {
   nestControllerContract,
   NestControllerInterface,
   NestRequestShapes,
+  NestResponseShapes,
 } from './ts-rest-nest';
 import { TsRest } from './ts-rest.decorator';
 import { TsRestRequest } from './ts-rest-request.decorator';
@@ -22,7 +23,12 @@ it('allows unknown statuses when not in strict mode', () => {
   const cLoose = c.router({ posts: postsRouter });
   const nestContract = nestControllerContract(cLoose.posts);
   type RequestShapes = NestRequestShapes<typeof nestContract>;
+  type ResponseShapes = NestResponseShapes<typeof nestContract>;
 
+  const responseTypeCheck: Awaited<ResponseShapes['getPost']> = {
+    status: 419,
+    body: 'invalid status and response',
+  };
   class PostController implements NestControllerInterface<typeof nestContract> {
     @TsRest(nestContract.getPost)
     async getPost(
@@ -36,7 +42,16 @@ it('allows unknown statuses when not in strict mode', () => {
 it('does not allow unknown statuses when in strict mode', () => {
   const cStrict = c.router({ posts: postsRouter }, { strictStatusCodes: true });
   const nestContract = nestControllerContract(cStrict.posts);
-  type RequestShapes = NestRequestShapes<typeof nestContract>;
+  type contractType = typeof nestContract;
+  type RequestShapes = NestRequestShapes<contractType>;
+  type ResponseShapes = NestResponseShapes<typeof nestContract>;
+
+  const responseTypeCheck: Awaited<ResponseShapes['getPost']> = {
+    // @ts-expect-error 419 is not defined as a known response
+    status: 419,
+    // @ts-expect-error 419 is not defined as a known response
+    body: 'invalid status and response',
+  };
 
   class PostController implements NestControllerInterface<typeof nestContract> {
     @TsRest(nestContract.getPost)
@@ -45,6 +60,27 @@ it('does not allow unknown statuses when in strict mode', () => {
       @TsRestRequest() { params: { id } }: RequestShapes['getPost']
     ) {
       return { status: 201 as const, body: null };
+    }
+  }
+});
+
+it('allows responseShapes types to be used in controller logic', () => {
+  const cStrict = c.router({ posts: postsRouter }, { strictStatusCodes: true });
+  const nestContract = nestControllerContract(cStrict.posts);
+  type contractType = typeof nestContract;
+  type RequestShapes = NestRequestShapes<contractType>;
+  type ResponseShapes = NestResponseShapes<typeof nestContract>;
+
+  class PostController implements NestControllerInterface<typeof nestContract> {
+    @TsRest(nestContract.getPost)
+    async getPost(
+      @TsRestRequest() { params: { id } }: RequestShapes['getPost']
+    ) {
+      const result: ResponseShapes['getPost'] = {
+        status: 200 as const,
+        body: null,
+      };
+      return result;
     }
   }
 });

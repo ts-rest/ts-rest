@@ -28,8 +28,7 @@
         "format": ["esm", "cjs"],
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
-        "generateExportsField": true,
-        "skipTypeField": true
+        "generateExportsField": true
       }
     },
     "lint": {

@@ -6,75 +6,36 @@ import type { NextApiRequest, NextApiResponse } from 'next';
  */
 
 import {
-  ApiRouteServerResponse,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
-  AppRouteStrictStatusCodes,
   checkZodSchema,
-  Extends,
   isAppRoute,
-  LowercaseKeys,
   parseJsonQueryObject,
-  PathParamsWithCustomValidators,
+  ServerInferRequest,
+  ServerInferResponses,
   validateResponse,
-  ZodInferOrType,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 
-type RouteToQueryFunctionImplementation<T extends AppRouteQuery> = (args: {
-  params: PathParamsWithCustomValidators<T>;
-  query: ZodInferOrType<T['query']>;
-  headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
-    NextApiRequest['headers'];
-  req: NextApiRequest;
-  res: NextApiResponse;
-}) => Promise<
-  ApiRouteServerResponse<T['responses'], Extends<T, AppRouteStrictStatusCodes>>
->;
-
-type RouteToMutationFunctionImplementation<T extends AppRouteMutation> =
-  (args: {
-    params: PathParamsWithCustomValidators<T>;
-    body: ZodInferOrType<T['body']>;
-    query: ZodInferOrType<T['query']>;
-    headers: LowercaseKeys<ZodInferOrType<T['headers']>> &
-      NextApiRequest['headers'];
+type AppRouteImplementation<T extends AppRoute> = (
+  args: ServerInferRequest<T, NextApiRequest['headers']> & {
     req: NextApiRequest;
     res: NextApiResponse;
-  }) => Promise<
-    ApiRouteServerResponse<
-      T['responses'],
-      Extends<T, AppRouteStrictStatusCodes>
-    >
-  >;
-
-type RouteToFunctionImplementation<T extends AppRoute> = T extends AppRouteQuery
-  ? RouteToQueryFunctionImplementation<T>
-  : T extends AppRouteMutation
-  ? RouteToMutationFunctionImplementation<T>
-  : never;
+  }
+) => Promise<ServerInferResponses<T>>;
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
     ? RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? RouteToFunctionImplementation<T[TKey]>
+    ? AppRouteImplementation<T[TKey]>
     : never;
 };
 
-type AppRouteQueryWithImplementation<T extends AppRouteQuery> = T &
-  RouteToQueryFunctionImplementation<T>;
-
-type AppRouteMutationWithImplementation<T extends AppRouteMutation> = T &
-  RouteToMutationFunctionImplementation<T>;
-
-type AppRouteWithImplementation<T extends AppRoute> = T extends AppRouteMutation
-  ? AppRouteMutationWithImplementation<T>
-  : T extends AppRouteQuery
-  ? AppRouteQueryWithImplementation<T>
-  : never;
+type AppRouteWithImplementation<T extends AppRouteQuery> = T &
+  AppRouteImplementation<T>;
 
 type AppRouterWithImplementation = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

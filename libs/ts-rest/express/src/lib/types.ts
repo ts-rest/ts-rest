@@ -1,55 +1,29 @@
 import {
-  ApiRouteServerResponse,
   AppRoute,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
-  LowercaseKeys,
-  PathParamsWithCustomValidators,
-  Without,
-  ZodInferOrType,
+  ServerInferRequest,
+  ServerInferResponses,
 } from '@ts-rest/core';
-import {
-  Express,
-  NextFunction,
-  Request,
-  Response,
-} from 'express-serve-static-core';
+import { Express, NextFunction, Response } from 'express-serve-static-core';
 import { RequestValidationError } from './request-validation-error';
 
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
-  input: Without<
-    {
-      params: PathParamsWithCustomValidators<T>;
-      query: ZodInferOrType<T['query']>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      req: TsRestRequest<T>;
-      res: Response;
-    },
-    never
-  >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
-
-type WithoutFileIfMultiPart<T extends AppRouteMutation> =
-  T['contentType'] extends 'multipart/form-data'
-    ? Without<ZodInferOrType<T['body']>, File>
-    : ZodInferOrType<T['body']>;
+  input: ServerInferRequest<T, Express['request']['headers']> & {
+    req: TsRestRequest<T>;
+    res: Response;
+  }
+) => Promise<ServerInferResponses<T>>;
 
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
-  input: Without<
-    {
-      params: PathParamsWithCustomValidators<T>;
-      query: ZodInferOrType<T['query']>;
-      body: WithoutFileIfMultiPart<T>;
-      headers: LowercaseKeys<ZodInferOrType<T['headers']>> & Request['headers'];
-      files: unknown;
-      file: unknown;
-      req: TsRestRequest<T>;
-      res: Response;
-    },
-    never
-  >
-) => Promise<ApiRouteServerResponse<T['responses']>>;
+  input: ServerInferRequest<T, Express['request']['headers']> & {
+    files: unknown;
+    file: unknown;
+    req: TsRestRequest<T>;
+    res: Response;
+  }
+) => Promise<ServerInferResponses<T>>;
 
 export type AppRouteImplementation<T extends AppRoute> =
   T extends AppRouteMutation

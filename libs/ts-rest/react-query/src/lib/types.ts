@@ -8,97 +8,27 @@ import {
 } from '@tanstack/react-query';
 import {
   AppRoute,
-  AppRouteMutation,
   ClientArgs,
-  ExtractExtraParametersFromClientArgs,
-  HTTPStatusCode,
-  LowercaseKeys,
-  OptionalIfAllOptional,
-  PartialByLooseKeys,
-  PathParamsFromUrl,
-  Prettify,
+  ClientInferRequest,
+  ClientInferResponses,
+  ErrorHttpStatusCode,
+  PartialClientInferRequest,
   SuccessfulHttpStatusCode,
-  Without,
-  ZodInferOrType,
-  ZodInputOrType,
 } from '@ts-rest/core';
-import { z, ZodTypeAny } from 'zod';
 import { InitClientReturn } from './react-query';
 
-type AppRouteMutationType<T> = T extends ZodTypeAny ? z.input<T> : T;
-
-export type DataReturnArgsBase<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
-  THeaders = Prettify<
-    'headers' extends keyof TRoute
-      ? PartialByLooseKeys<
-          LowercaseKeys<ZodInputOrType<TRoute['headers']>>,
-          keyof LowercaseKeys<TClientArgs['baseHeaders']>
-        >
-      : never
-  >
-> = {
-  body: TRoute extends AppRouteMutation
-    ? AppRouteMutationType<TRoute['body']> extends null
-      ? never
-      : AppRouteMutationType<TRoute['body']>
-    : never;
-  params: PathParamsFromUrl<TRoute>;
-  query: 'query' extends keyof TRoute
-    ? AppRouteMutationType<TRoute['query']> extends null
-      ? never
-      : AppRouteMutationType<TRoute['query']>
-    : never;
-  headers: THeaders;
-  extraHeaders?: {
-    [K in NonNullable<keyof THeaders>]?: never;
-  } & Record<string, string | undefined>;
-} & ExtractExtraParametersFromClientArgs<TClientArgs>;
-
-export type DataReturnArgs<
-  TRoute extends AppRoute,
-  TClientArgs extends ClientArgs
-> = OptionalIfAllOptional<DataReturnArgsBase<TRoute, TClientArgs>>;
-
-/**
- * Split up the data and error to support react-query style
- * useQuery and useMutation error handling
- */
-type SuccessResponseMapper<T> = {
-  [K in keyof T]: K extends SuccessfulHttpStatusCode
-    ? { status: K; body: ZodInferOrType<T[K]>; headers: Headers }
-    : never;
-}[keyof T];
-
-/**
- * Returns any handled errors, or any unhandled non success errors
- */
-type ErrorResponseMapper<T> =
-  | {
-      [K in keyof T]: K extends SuccessfulHttpStatusCode
-        ? never
-        : {
-            status: K;
-            body: ZodInferOrType<T[K]>;
-            headers: Headers;
-          };
-    }[keyof T]
-  // If the response isn't one of our typed ones. Return "unknown"
-  | {
-      status: Exclude<HTTPStatusCode, keyof T | SuccessfulHttpStatusCode>;
-      body: unknown;
-      headers: Headers;
-    };
-
 // Data response if it's a 2XX
-export type DataResponse<TAppRoute extends AppRoute> = SuccessResponseMapper<
-  TAppRoute['responses']
+export type DataResponse<TAppRoute extends AppRoute> = ClientInferResponses<
+  TAppRoute,
+  SuccessfulHttpStatusCode,
+  'force'
 >;
 
 // Error response if it's not a 2XX
-export type ErrorResponse<TAppRoute extends AppRoute> = ErrorResponseMapper<
-  TAppRoute['responses']
+export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
+  TAppRoute,
+  ErrorHttpStatusCode,
+  'ignore'
 >;
 
 export type UseQueryOptions<TAppRoute extends AppRoute> =
@@ -133,14 +63,9 @@ export type UseMutationOptions<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
   TClientArgsOrClient extends ClientArgs
-    ? Prettify<Without<DataReturnArgs<TAppRoute, TClientArgsOrClient>, never>>
+    ? PartialClientInferRequest<TAppRoute, TClientArgsOrClient>
     : TClientArgsOrClient extends InitClientReturn<any, any>
-    ? Prettify<
-        Without<
-          DataReturnArgs<TAppRoute, InferClientArgs<TClientArgsOrClient>>,
-          never
-        >
-      >
+    ? PartialClientInferRequest<TAppRoute, InferClientArgs<TClientArgsOrClient>>
     : never,
   unknown
 >;
@@ -152,14 +77,9 @@ export type UseMutationResult<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
   TClientArgsOrClient extends ClientArgs
-    ? Prettify<Without<DataReturnArgs<TAppRoute, TClientArgsOrClient>, never>>
+    ? PartialClientInferRequest<TAppRoute, TClientArgsOrClient>
     : TClientArgsOrClient extends InitClientReturn<any, any>
-    ? Prettify<
-        Without<
-          DataReturnArgs<TAppRoute, InferClientArgs<TClientArgsOrClient>>,
-          never
-        >
-      >
+    ? PartialClientInferRequest<TAppRoute, InferClientArgs<TClientArgsOrClient>>
     : never,
   unknown
 >;
