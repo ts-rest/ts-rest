@@ -63,3 +63,24 @@ it('does not allow unknown statuses when in strict mode', () => {
     }
   }
 });
+
+it('allows responseShapes types to be used in controller logic', () => {
+  const cStrict = c.router({ posts: postsRouter }, { strictStatusCodes: true });
+  const nestContract = nestControllerContract(cStrict.posts);
+  type contractType = typeof nestContract;
+  type RequestShapes = NestRequestShapes<contractType>;
+  type ResponseShapes = NestResponseShapes<typeof nestContract>;
+
+  class PostController implements NestControllerInterface<typeof nestContract> {
+    @TsRest(nestContract.getPost)
+    async getPost(
+      @TsRestRequest() { params: { id } }: RequestShapes['getPost']
+    ) {
+      const result: ResponseShapes['getPost'] = {
+        status: 200 as const,
+        body: null,
+      };
+      return result;
+    }
+  }
+});
