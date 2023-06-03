@@ -95,6 +95,7 @@ const contract = c.router(
   {
     baseHeaders: z.object({
       Authorization: z.string(),
+      age: z.coerce.number().optional(),
     }),
   }
 );
@@ -391,21 +392,75 @@ it('type inference helpers', () => {
         getPost: {
           query: { includeComments: boolean };
           params: { id: number };
-          headers: { authorization: string };
+          headers: { authorization: string; age?: number };
         };
         createPost: {
           body: { title: string; content: string };
-          headers: { authorization: string };
+          headers: { authorization: string; age?: number };
         };
         uploadImage: {
-          // eslint-disable-next-line @typescript-eslint/ban-types
           body: {};
-          headers: { authorization: string };
+          headers: { authorization: string; age?: number };
         };
         nested: {
           getComments: {
             params: { id: number };
-            headers: { authorization: string; 'pagination-page': number };
+            headers: {
+              authorization: string;
+              'pagination-page': number;
+              age?: number;
+            };
+          };
+        };
+      }
+    >
+  >;
+
+  type ServerInferRequestOverrideServerHeadersTest = Expect<
+    Equal<
+      ServerInferRequest<
+        typeof contract,
+        {
+          authorization: string | undefined;
+          age: string | undefined;
+          'content-type': string | undefined;
+        }
+      >,
+      {
+        getPost: {
+          query: { includeComments: boolean };
+          params: { id: number };
+          headers: {
+            authorization: string;
+            age?: number;
+            'content-type': string | undefined;
+          };
+        };
+        createPost: {
+          body: { title: string; content: string };
+          headers: {
+            authorization: string;
+            age?: number;
+            'content-type': string | undefined;
+          };
+        };
+        uploadImage: {
+          body: {};
+          headers: {
+            authorization: string;
+            age?: number;
+            'content-type': string | undefined;
+          };
+        };
+        nested: {
+          getComments: {
+            params: { id: number };
+            headers: {
+              authorization: string;
+              'pagination-page': number;
+              age?: number;
+              'content-type': string | undefined;
+            };
           };
         };
       }
@@ -419,19 +474,19 @@ it('type inference helpers', () => {
         getPost: {
           query: { includeComments?: boolean | undefined };
           params: { id: string };
-          headers: { authorization: string };
-          extraHeaders?: { authorization?: undefined } & Record<
-            string,
-            string | undefined
-          >;
+          headers: { authorization: string; age?: number };
+          extraHeaders?: {
+            authorization?: undefined;
+            age?: undefined;
+          } & Record<string, string | undefined>;
         };
         createPost: {
           body: { title: string; content: string };
-          headers: { authorization: string };
-          extraHeaders?: { authorization?: undefined } & Record<
-            string,
-            string | undefined
-          >;
+          headers: { authorization: string; age?: number };
+          extraHeaders?: {
+            authorization?: undefined;
+            age?: undefined;
+          } & Record<string, string | undefined>;
         };
         uploadImage: {
           body:
@@ -439,19 +494,24 @@ it('type inference helpers', () => {
                 image: File;
               }
             | FormData;
-          headers: { authorization: string };
-          extraHeaders?: { authorization?: undefined } & Record<
-            string,
-            string | undefined
-          >;
+          headers: { authorization: string; age?: number };
+          extraHeaders?: {
+            authorization?: undefined;
+            age?: undefined;
+          } & Record<string, string | undefined>;
         };
         nested: {
           getComments: {
             params: { id: string };
-            headers: { authorization: string; 'pagination-page': string };
+            headers: {
+              authorization: string;
+              'pagination-page': string;
+              age?: number;
+            };
             extraHeaders?: {
               authorization?: undefined;
               'pagination-page'?: undefined;
+              age?: undefined;
             } & Record<string, string | undefined>;
           };
         };
