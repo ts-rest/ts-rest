@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TypeOf, z } from 'zod';
+import { z } from 'zod';
 import { initContract } from './dsl';
 import type { Equal, Expect } from './test-helpers';
 const c = initContract();

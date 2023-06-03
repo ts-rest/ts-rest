@@ -19,38 +19,35 @@ export type Post = z.infer<typeof PostSchema>;
 
 const c = initContract();
 
-export const postsApi = c.router(
-  {
-    getPosts: {
-      method: 'GET',
-      path: '/posts',
-      query: z.object({
-        userId: z.number().optional(),
+export const postsApi = c.router({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    query: z.object({
+      userId: z.number().optional(),
+    }),
+    responses: {
+      200: z.array(PostSchema),
+      400: z.object({
+        message: z.string(),
       }),
-      responses: {
-        200: z.array(PostSchema),
-        400: z.object({
-          message: z.string(),
-        }),
-      },
-      description: 'Get all posts',
     },
-
-    updatePostThumbnail: {
-      method: 'POST',
-      path: '/posts/:id/thumbnail',
-      contentType: 'multipart/form-data',
-      body: c.body<{ thumbnail: File; data: string }>(),
-      responses: {
-        200: z.object({
-          message: z.string(),
-        }),
-        400: z.object({
-          message: z.string(),
-        }),
-      },
-      description: 'Update post thumbnail',
-    },
+    description: 'Get all posts',
   },
-  { urlPrefix: 'test' }
-);
+
+  updatePostThumbnail: {
+    method: 'POST',
+    path: '/posts/:id/thumbnail',
+    contentType: 'multipart/form-data',
+    body: c.body<{ thumbnail: File; data: string }>(),
+    responses: {
+      200: z.object({
+        message: z.string(),
+      }),
+      400: z.object({
+        message: z.string(),
+      }),
+    },
+    description: 'Update post thumbnail',
+  },
+});
