@@ -31,11 +31,9 @@ type AppRouterRequestShapes<T extends AppRouter> = Without<
 type AppRouterResponseShapes<T extends AppRouter> = Without<
   {
     [K in keyof T]: T[K] extends AppRoute
-      ? Promise<
-          ApiRouteServerResponse<
-            T[K]['responses'],
-            Extends<T[K], AppRouteStrictStatusCodes>
-          >
+      ? ApiRouteServerResponse<
+          T[K]['responses'],
+          Extends<T[K], AppRouteStrictStatusCodes>
         >
       : never;
   },
