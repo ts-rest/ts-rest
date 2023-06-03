@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.25.0
+
+### Patch Changes
+
+- bf21a75: Internal refactor of types
+
 ## 3.24.0
 
 ## 3.23.0
