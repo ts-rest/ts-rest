@@ -49,11 +49,8 @@ export const encodeQueryParams = (query: unknown) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .flatMap((key) => tokeniseValue(key, query[key]))
-      .map((pair) => {
-        const [key, ...rhs] = pair.split('=');
-        return `${encodeURIComponent(key)}=${rhs
-          .map(encodeURIComponent)
-          .join('=')}`;
+      .map(([key, value]) => {
+        return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
       })
       .join('&')
   );
@@ -67,17 +64,17 @@ export const encodeQueryParams = (query: unknown) => {
  *
  * This should be fully compatible with the "qs" library, but without the need to add a dependency
  */
-const tokeniseValue = (key: string, value: unknown): string[] => {
+const tokeniseValue = (key: string, value: unknown): [string, string][] => {
   if (Array.isArray(value)) {
     return value.flatMap((v, idx) => tokeniseValue(`${key}[${idx}]`, v));
   }
 
   if (value instanceof Date) {
-    return [`${key}=${value.toISOString()}`];
+    return [[`${key}`, value.toISOString()]];
   }
 
   if (value === null) {
-    return [`${key}=`];
+    return [[`${key}`, '']];
   }
 
   if (value === undefined) {
@@ -92,7 +89,7 @@ const tokeniseValue = (key: string, value: unknown): string[] => {
     );
   }
 
-  return [`${key}=${value}`];
+  return [[`${key}`, `${value}`]];
 };
 
 /**
