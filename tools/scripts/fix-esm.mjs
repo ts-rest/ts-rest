@@ -18,6 +18,8 @@ for (const lib of libs) {
     ...JSON.parse(packageJson),
     module: './index.mjs',
     main: './index.js',
+    // Ensure that esm is not forced due to "type": "module" being added.
+    type: undefined,
     exports: {
       '.': {
         types: './src/index.d.ts',
