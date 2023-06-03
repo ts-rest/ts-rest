@@ -156,19 +156,27 @@ const initializeExpressRoute = ({
 
       const statusCode = Number(result.status);
 
-      if (options.responseValidation) {
-        const response = validateResponse({
-          responseType: schema.responses[statusCode],
-          response: {
-            status: statusCode,
-            body: result.body,
-          },
-        });
+      const responseData = (() => {
+        if (options.responseValidation) {
+          return validateResponse({
+            responseType: schema.responses[statusCode],
+            response: {
+              status: statusCode,
+              body: result.body,
+            },
+          }).body;
+        }
 
-        return res.status(statusCode).json(response.body);
+        return result.body;
+      })();
+
+      const isJson = typeof responseData === 'object';
+
+      if (isJson) {
+        return res.status(statusCode).json(responseData);
       }
 
-      return res.status(statusCode).json(result.body);
+      return res.status(statusCode).send(responseData);
     } catch (e) {
       return next(e);
     }
