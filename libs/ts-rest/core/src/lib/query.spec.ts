@@ -212,6 +212,30 @@ describe('encodeQueryParams', () => {
     expect(qsParse(result)).toEqual(query);
     expect(qsStringify(query)).toBe(result);
   });
+
+  it('should encode values with equals sign in key', () => {
+    const query = {
+      'foo=bar': 'baz',
+    };
+
+    const result = encodeQueryParams(query);
+
+    expect(result).toBe('foo%3Dbar=baz');
+    expect(qsParse(result)).toEqual(query);
+    expect(qsStringify(query)).toBe(result);
+  });
+
+  it('should encode values with equals sign in value', () => {
+    const query = {
+      foo: 'bar=baz',
+    };
+
+    const result = encodeQueryParams(query);
+
+    expect(result).toBe('foo=bar%3Dbaz');
+    expect(qsParse(result)).toEqual(query);
+    expect(qsStringify(query)).toBe(result);
+  });
 });
 
 describe('encodeQueryParamsJson', () => {
