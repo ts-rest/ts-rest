@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.25.1
+
+### Patch Changes
+
+- 81560d4: Fix ESM/CJS issues in package.json
+
 ## 3.25.0
 
 ## 3.24.0
