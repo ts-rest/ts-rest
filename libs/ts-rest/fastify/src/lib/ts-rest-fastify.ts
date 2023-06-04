@@ -34,7 +34,7 @@ type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
     ? RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? AppRouteImplementation<T[TKey]>
+    ? AppRouteImplementationOrOptions<T[TKey]>
     : never;
 };
 
@@ -54,6 +54,71 @@ type RegisterRouterOptions = {
         request: fastify.FastifyRequest,
         reply: fastify.FastifyReply
       ) => void);
+};
+
+type FlattenAppRouter<T extends AppRouter | AppRoute> = T extends AppRoute
+  ? T
+  : {
+      [TKey in keyof T]: T[TKey] extends AppRoute
+        ? T[TKey]
+        : T[TKey] extends AppRouter
+        ? FlattenAppRouter<T[TKey]>
+        : never;
+    }[keyof T];
+
+export type MiddlewareRequest<
+  T extends AppRouter | AppRoute,
+  TRequest
+> = TRequest & {
+  tsRestRoute: FlattenAppRouter<T>;
+};
+
+type ExtractExpressMiddlewareFn<
+  T extends AppRouter | AppRoute,
+  Fn
+> = Fn extends (request: infer TRequest, response: infer TResponse) => unknown
+  ? (
+      req: MiddlewareRequest<T, TRequest>,
+      res: TResponse,
+      next: () => void
+    ) => unknown
+  : never;
+
+type ExtractMiddleMiddlewareFn<
+  T extends AppRouter | AppRoute,
+  Fn
+> = Fn extends (request: infer TRequest, response: infer TResponse) => unknown
+  ? (
+      req: MiddlewareRequest<T, TRequest>,
+      res: TResponse,
+      next: () => void
+    ) => unknown
+  : never;
+
+type MiddlewareHandler<T extends AppRouter | AppRoute> =
+  fastify.FastifyInstance extends {
+    express: infer TExpress;
+  }
+    ? ExtractExpressMiddlewareFn<T, TExpress>
+    : fastify.FastifyInstance extends {
+        use(routes: string[], fn: infer MiddieFn): unknown;
+      }
+    ? ExtractMiddleMiddlewareFn<T, MiddieFn>
+    : never;
+
+type AppRouteOptions<TRoute extends AppRoute> = {
+  middleware?: MiddlewareHandler<TRoute>[];
+  handler: AppRouteImplementation<TRoute>;
+};
+
+type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
+  | AppRouteOptions<TRoute>
+  | AppRouteImplementation<TRoute>;
+
+const isAppRouteImplementation = <TRoute extends AppRoute>(
+  obj: AppRouteImplementationOrOptions<TRoute>
+): obj is AppRouteImplementation<TRoute> => {
+  return typeof obj === 'function';
 };
 
 const validateRequest = (
@@ -189,16 +254,24 @@ type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
  * @param options - options for the routers
  */
 const registerRoute = <TAppRoute extends AppRoute>(
-  routeImpl: AppRouteImplementation<AppRouteMutationWithParams>,
+  routeImpl: AppRouteImplementationOrOptions<AppRouteMutationWithParams>,
   appRoute: TAppRoute,
-  fastify: fastify.FastifyInstance,
+  app: fastify.FastifyInstance,
   options: RegisterRouterOptions
 ) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${appRoute.method} ${appRoute.path}`);
   }
 
-  fastify.route({
+  const handler = isAppRouteImplementation(routeImpl)
+    ? routeImpl
+    : routeImpl.handler;
+
+  const middleware = isAppRouteImplementation(routeImpl)
+    ? []
+    : routeImpl.middleware || [];
+
+  const route: fastify.RouteOptions = {
     method: appRoute.method,
     url: appRoute.path,
     handler: async (request, reply) => {
@@ -209,7 +282,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
         options
       );
 
-      const result = await routeImpl({
+      const result = await handler({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         params: validationResults.paramsResult.data as any,
         query: validationResults.queryResult.data,
@@ -237,7 +310,31 @@ const registerRoute = <TAppRoute extends AppRoute>(
 
       return reply.status(statusCode).send(result.body);
     },
-  });
+  };
+
+  if (middleware.length === 0) {
+    app.route(route);
+  } else {
+    if (!('use' in app) || typeof app.use !== 'function') {
+      throw new Error(
+        `[ts-rest] Middleware are only supported via additional plugins. Visit https://www.fastify.io/docs/latest/Reference/Middleware to find out more.`
+      );
+    }
+
+    app
+      .use([
+        (
+          req: MiddlewareRequest<TAppRoute, unknown>,
+          _: unknown,
+          next: () => void
+        ) => {
+          req.tsRestRoute = appRoute as FlattenAppRouter<TAppRoute>;
+          next();
+        },
+        ...middleware,
+      ])
+      .route(route);
+  }
 };
 
 /**
@@ -255,7 +352,10 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   fastify: fastify.FastifyInstance,
   options: RegisterRouterOptions
 ) => {
-  if (typeof routerImpl === 'object') {
+  if (
+    typeof routerImpl === 'object' &&
+    typeof routerImpl?.['handler'] !== 'function'
+  ) {
     for (const key in routerImpl) {
       recursivelyRegisterRouter(
         routerImpl[key] as unknown as RecursiveRouterObj<T>,
@@ -265,9 +365,12 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
         options
       );
     }
-  } else if (typeof routerImpl === 'function') {
+  } else if (
+    typeof routerImpl === 'function' ||
+    typeof routerImpl?.['handler'] === 'function'
+  ) {
     registerRoute(
-      routerImpl,
+      routerImpl as unknown as AppRouteImplementationOrOptions<AppRouteMutationWithParams>,
       appRouter as unknown as AppRoute,
       fastify,
       options

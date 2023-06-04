@@ -7,6 +7,7 @@ const { exclude: _, ...swcJestConfig } = JSON.parse(
   readFileSync(`${__dirname}/.lib.swcrc`, 'utf-8')
 );
 export default {
+  testEnvironment: 'node',
   displayName: 'ts-rest-fastify',
   preset: '../../../jest.preset.js',
   transform: {

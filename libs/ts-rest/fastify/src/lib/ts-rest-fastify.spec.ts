@@ -2,6 +2,8 @@ import { initContract } from '@ts-rest/core';
 import { initServer } from './ts-rest-fastify';
 import { z } from 'zod';
 import fastify from 'fastify';
+import fastifyExpress from '@fastify/express';
+import fastifyMiddie from '@fastify/middie';
 import * as supertest from 'supertest';
 
 const c = initContract();
@@ -272,7 +274,6 @@ describe('ts-rest-fastify', () => {
     const router = s.router(postsContract, {
       posts: {
         getPost: async ({ params }) => {
-          console.log(params);
           return { status: 200, body: { id: params.postId } };
         },
       },
@@ -286,5 +287,221 @@ describe('ts-rest-fastify', () => {
 
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({ id: '10' });
+  });
+
+  it('should allow for middleware to be used with @fastify/middie', async () => {
+    const app = fastify({ logger: false });
+    app.register(fastifyMiddie);
+
+    const contract = c.router({
+      test: {
+        method: 'GET',
+        path: '/test',
+        responses: {
+          200: z.object({
+            foo: z.string(),
+          }),
+        },
+      },
+      routeWithMiddleware: {
+        method: 'GET',
+        path: '/middleware',
+        responses: {
+          200: z.object({
+            foo: z.string(),
+          }),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      test: async () => {
+        return {
+          status: 200,
+          body: {
+            foo: 'bar',
+          },
+        };
+      },
+      routeWithMiddleware: {
+        middleware: [
+          async (request, response, next) => {
+            expect(request.tsRestRoute.path).toEqual('/middleware');
+            request.headers['x-foo'] = 'bar';
+            next();
+          },
+          async (request, response, next) => {
+            expect(request.headers['x-foo']).toEqual('bar');
+            next();
+          },
+        ],
+        handler: async () => {
+          return {
+            status: 200,
+            body: {
+              foo: 'bar',
+            },
+          };
+        },
+      },
+    });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/middleware').send();
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({ foo: 'bar' });
+  });
+
+  it('should allow for middleware to be used with @fastify/express', async () => {
+    const app = fastify({ logger: false });
+    app.register(fastifyExpress);
+
+    const contract = c.router({
+      test: {
+        method: 'GET',
+        path: '/test',
+        responses: {
+          200: z.object({
+            foo: z.string(),
+          }),
+        },
+      },
+      routeWithMiddleware: {
+        method: 'GET',
+        path: '/middleware',
+        responses: {
+          200: z.object({
+            foo: z.string(),
+          }),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      test: async () => {
+        return {
+          status: 200,
+          body: {
+            foo: 'bar',
+          },
+        };
+      },
+      routeWithMiddleware: {
+        middleware: [
+          async (request, response, next) => {
+            expect(request.tsRestRoute.path).toEqual('/middleware');
+            request.headers['x-foo'] = 'bar';
+            next();
+          },
+          async (request, response, next) => {
+            expect(request.headers['x-foo']).toEqual('bar');
+            next();
+          },
+        ],
+        handler: async () => {
+          return {
+            status: 200,
+            body: {
+              foo: 'bar',
+            },
+          };
+        },
+      },
+    });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/middleware').send();
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({ foo: 'bar' });
+  });
+
+  it('should allow for middleware to reject the request with @fastify/middie', async () => {
+    const app = fastify({ logger: false });
+    app.register(fastifyMiddie);
+
+    const contract = c.router({
+      routeWithMiddleware: {
+        method: 'GET',
+        path: '/middleware',
+        responses: {
+          200: z.object({
+            foo: z.string(),
+          }),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      routeWithMiddleware: {
+        middleware: [
+          async (request, response) => {
+            return response.writeHead(401).end();
+          },
+        ],
+        handler: async () => {
+          return {
+            status: 200,
+            body: { foo: 'bar' },
+          };
+        },
+      },
+    });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/middleware').send();
+
+    expect(response.statusCode).toEqual(401);
+  });
+
+  it('should allow for middleware to reject the request with @fastify/express', async () => {
+    const app = fastify({ logger: false });
+    app.register(fastifyExpress);
+
+    const contract = c.router({
+      routeWithMiddleware: {
+        method: 'GET',
+        path: '/middleware',
+        responses: {
+          200: z.object({
+            foo: z.string(),
+          }),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      routeWithMiddleware: {
+        middleware: [
+          async (request, response) => {
+            return response.status(401).send();
+          },
+        ],
+        handler: async () => {
+          return {
+            status: 200,
+            body: { foo: 'bar' },
+          };
+        },
+      },
+    });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/middleware').send();
+
+    expect(response.statusCode).toEqual(401);
   });
 });
