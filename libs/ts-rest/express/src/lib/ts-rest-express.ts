@@ -5,6 +5,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  isAppRouteNonJsonResponse,
   parseJsonQueryObject,
   validateResponse,
 } from '@ts-rest/core';
@@ -155,10 +156,16 @@ const initializeExpressRoute = ({
       });
 
       const statusCode = Number(result.status);
+      const responseType = schema.responses[statusCode];
+
+      if (isAppRouteNonJsonResponse(responseType)) {
+        res.setHeader('content-type', responseType.contentType);
+        return res.status(statusCode).send(result.body);
+      }
 
       if (options.responseValidation) {
         const response = validateResponse({
-          responseType: schema.responses[statusCode],
+          responseType,
           response: {
             status: statusCode,
             body: result.body,

@@ -1,6 +1,7 @@
 import { HTTPStatusCode } from './status-codes';
 import { checkZodSchema } from './zod-utils';
 import { ResponseValidationError } from './response-validation-error';
+import { NonJsonResponseSymbol } from './dsl';
 
 export const isAppRouteResponse = (
   value: unknown
@@ -10,6 +11,19 @@ export const isAppRouteResponse = (
     typeof value === 'object' &&
     'status' in value &&
     typeof value.status === 'number'
+  );
+};
+
+export const isAppRouteNonJsonResponse = (
+  response: unknown
+): response is { contentType: string } => {
+  return (
+    response != null &&
+    typeof response === 'object' &&
+    'symbol' in response &&
+    response.symbol === NonJsonResponseSymbol &&
+    'contentType' in response &&
+    typeof response.contentType === 'string'
   );
 };
 

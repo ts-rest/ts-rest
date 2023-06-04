@@ -172,6 +172,18 @@ type ContractInstance = {
    * Exists to allow storing a Type in the contract (at compile time only)
    */
   body: <T>() => T;
+  /**
+   * Define an HTML response type
+   */
+  htmlResponse: () => string;
+  /**
+   * Define an plain text response type
+   */
+  textResponse: () => string;
+  /**
+   * Define an plain text response type
+   */
+  nonJsonResponse: <T>(contentType: string) => T;
 };
 
 /**
@@ -203,6 +215,13 @@ const recursivelyApplyOptions = <T extends AppRouter>(
   );
 };
 
+export const NonJsonResponseSymbol = Symbol('NonJsonResponse');
+
+type CustomResponse = {
+  symbol: typeof NonJsonResponseSymbol;
+  contentType: string;
+};
+
 /**
  * Instantiate a ts-rest client, primarily to access `router`, `response`, and `body`
  *
@@ -216,5 +235,20 @@ export const initContract = (): ContractInstance => {
     mutation: (args) => args,
     response: <T>() => undefined as unknown as T,
     body: <T>() => undefined as unknown as T,
+    htmlResponse: () =>
+      ({
+        symbol: NonJsonResponseSymbol,
+        contentType: 'text/html',
+      } satisfies CustomResponse as unknown as string),
+    textResponse: () =>
+      ({
+        symbol: NonJsonResponseSymbol,
+        contentType: 'text/plain',
+      } satisfies CustomResponse as unknown as string),
+    nonJsonResponse: <T>(contentType: string) =>
+      ({
+        symbol: NonJsonResponseSymbol,
+        contentType,
+      } satisfies CustomResponse as unknown as T),
   };
 };
