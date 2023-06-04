@@ -112,20 +112,17 @@ export const contract = c.router({
 ```
 
 You can also define base headers for all routes in a contract and its sub-contracts, this is useful for things like authorization headers.
-This will force the client to always pass
+This will force the client to always pass 
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
+export const contract = c.router({
     // ...endpoints
-  },
-  {
+  }, {
     baseHeaders: z.object({
       authorization: z.string(),
     }),
-  }
-);
+  });
 ```
 
 ## Metadata
@@ -189,14 +186,11 @@ You can assign `baseHeaders` which will be merged with the contract `headers`. H
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
+export const contract = c.router({
     // ...endpoints
-  },
-  {
+  }, {
     baseHeaders: myHeader,
-  }
-);
+  });
 ```
 
 ### Strict Response Status Codes
@@ -212,17 +206,14 @@ set the `strictStatusCodes` option to `true` when initializing the contract.
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
+export const contract = c.router({
     // ...endpoints
-  },
-  {
+  }, {
     strictStatusCodes: true,
-  }
-);
+  });
 ```
 
-You can also set this options on a per-route basis which will also override the global option.
+You can also set this option on a per-route basis which will also override the global option.
 
 ```typescript
 const c = initContract();
@@ -236,14 +227,13 @@ export const contract = c.router({
 
 ### Path Prefix
 
-The `pathPrefix` option allows you to add a prefix to URL paths, thereby promoting more modular and reusable routing logic. This feature is applied recursively, thereby facilitating the application of prefixes to nested contracts. In addition, when hovering over the contract, the prefixed path will appear at the beginning of the path.
+The `pathPrefix` option allows you to add a prefix to URL paths, thereby promoting more modular and reusable routing logic. This feature is applied recursively, thereby allowing the application of prefixes to nested contracts. In addition, when hovering over the contract, the prefixed path will appear at the beginning of the path.
 
 Here is an example of how to utilize the `pathPrefix` option. In this scenario, the resulting path is `/api/v1/MyPath`.
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
+export const contract = c.router({
     getPost: {
       path: 'MyPath',
       //... Your Contract
@@ -258,8 +248,7 @@ export const contract = c.router(
 You can also use this feature in nested contracts, as demonstrated below. In this case, the resulting path is `/v1/posts/MyPath`, with the `pathPrefix` of the nested contract following the `pathPrefix` of the parent contract.
 
 ```typescript
-const ContractNested = c.router(
-  {
+const ContractNested = c.router({
     getPost: {
       path: 'MyPath',
       //... Your Contract
@@ -267,8 +256,7 @@ const ContractNested = c.router(
   },
   { pathPrefix: '/posts' }
 );
-const postsContract = c.router(
-  {
+const postsContract = c.router({
     posts: ContractNested,
   },
   { pathPrefix: '/v1' }
