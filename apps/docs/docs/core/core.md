@@ -112,20 +112,17 @@ export const contract = c.router({
 ```
 
 You can also define base headers for all routes in a contract and its sub-contracts, this is useful for things like authorization headers.
-This will force the client to always pass
+This will force the client to always pass 
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
-    // ...endpoints
-  },
-  {
-    baseHeaders: z.object({
-      authorization: z.string(),
-    }),
-  }
-);
+export const contract = c.router({
+  // ...endpoints
+}, {
+  baseHeaders: z.object({
+    authorization: z.string(),
+  }),
+});
 ```
 
 ## Metadata
@@ -189,14 +186,11 @@ You can assign `baseHeaders` which will be merged with the contract `headers`. H
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
-    // ...endpoints
-  },
-  {
-    baseHeaders: myHeader,
-  }
-);
+export const contract = c.router({
+  // ...endpoints
+}, {
+  strictStatusCodes: true,
+});
 ```
 
 ### Strict Response Status Codes
@@ -222,7 +216,7 @@ export const contract = c.router(
 );
 ```
 
-You can also set this options on a per-route basis which will also override the global option.
+You can also set this option on a per-route basis which will also override the global option.
 
 ```typescript
 const c = initContract();
