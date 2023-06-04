@@ -233,35 +233,31 @@ Here is an example of how to use the `pathPrefix` option. In this example, the r
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
+export const contract = c.router({
     getPost: {
       path: 'MyPath',
       //... Your Contract
     },
-  },
-  {
+  }, {
     pathPrefix: '/api/v1',
-  }
-);
+  });
 ```
 
 You can also use this feature in nested contracts, as shown below. In this case, the resulting path is `/v1/posts/MyPath`, with the `pathPrefix` of the nested contract following the `pathPrefix` of the parent contract.
 
 ```typescript
-const nestedContract = c.router(
-  {
+const nestedContract = c.router({
     getPost: {
       path: 'MyPath',
       //... Your Contract
     },
-  },
-  { pathPrefix: '/posts' }
-);
-const parentContract = c.router(
-  {
+  }, { 
+    pathPrefix: '/posts'
+  });
+  
+const parentContract = c.router({
     posts: nestedContract,
-  },
-  { pathPrefix: '/v1' }
-);
+  }, { 
+    pathPrefix: '/v1'
+});
 ```
