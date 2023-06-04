@@ -103,12 +103,15 @@ const nextEndpoint = createNextRoute(contract, {
 });
 
 const jsonMock = jest.fn();
+const sendMock = jest.fn();
 
 const mockRes = {
   status: jest.fn(() => ({
     end: jest.fn(),
     json: jsonMock,
+    send: sendMock,
   })),
+  setHeader: jest.fn(),
 } as unknown as NextApiResponse;
 
 describe('strict mode', () => {
@@ -281,6 +284,76 @@ describe('createNextRouter', () => {
 
       expect(errorHandler).toHaveBeenCalled();
     });
+  });
+
+  it('should handle non-json response types from contract', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      getIndex: {
+        method: 'GET',
+        path: `/index.html`,
+        responses: {
+          200: c.htmlResponse(),
+        },
+      },
+      getRobots: {
+        method: 'GET',
+        path: `/robots.txt`,
+        responses: {
+          200: c.textResponse(),
+        },
+      },
+      getCss: {
+        method: 'GET',
+        path: '/style.css',
+        responses: {
+          200: c.nonJsonResponse('text/css'),
+        },
+      },
+    });
+
+    const router = createNextRouter(contract, {
+      getIndex: async () => {
+        return {
+          status: 200,
+          body: '<h1>hello world</h1>',
+        };
+      },
+      getRobots: async () => {
+        return {
+          status: 200,
+          body: 'User-agent: * Disallow: /',
+        };
+      },
+      getCss: async () => {
+        return {
+          status: 200,
+          body: 'body { color: red; }',
+        };
+      },
+    });
+
+    let req = mockReq('/index.html', { method: 'GET' });
+    await router(req, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.setHeader).toHaveBeenCalledWith('content-type', 'text/html');
+    expect(sendMock).toHaveBeenCalledWith('<h1>hello world</h1>');
+
+    req = mockReq('/robots.txt', { method: 'GET' });
+    await router(req, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.setHeader).toHaveBeenCalledWith(
+      'content-type',
+      'text/plain'
+    );
+    expect(sendMock).toHaveBeenCalledWith('User-agent: * Disallow: /');
+
+    req = mockReq('/style.css', { method: 'GET' });
+    await router(req, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.setHeader).toHaveBeenCalledWith('content-type', 'text/css');
+    expect(sendMock).toHaveBeenCalledWith('body { color: red; }');
   });
 });
 
