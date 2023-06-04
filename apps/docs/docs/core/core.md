@@ -176,7 +176,26 @@ export const contract = c.router({
 });
 ```
 
-## Strict Response Status Codes
+## Options
+
+These configuration options allow you to modify how your contract functions.
+
+### Base Header
+
+You can assign `baseHeaders` which will be merged with the contract `headers`. Here's how to set it:
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  // ...endpoints
+}, {
+  baseHeaders: z.object({
+      authorization: z.string(),
+    }),
+});
+```
+
+### Strict Response Status Codes
 
 To help with incremental adoption, ts-rest, by default, will allow any response status code to be returned from the server
 even if it is not defined in the contract.
@@ -189,11 +208,16 @@ set the `strictStatusCodes` option to `true` when initializing the contract.
 
 ```typescript
 const c = initContract();
-export const contract = c.router({
-  // ...endpoints
-}, {
-  strictStatusCodes: true,
-});
+export const contract = c.router(
+  {
+    // ...endpoints
+  },
+  {
+    baseHeaders: z.object({
+      authorization: z.string(),
+    }),
+  }
+);
 ```
 
 You can also set this option on a per-route basis which will also override the global option.
@@ -206,4 +230,50 @@ export const contract = c.router({
     strictStatusCodes: true,
   }
 });
+```
+
+### Path Prefix
+
+The `pathPrefix` option allows you to add a prefix to paths, allowing more modular and reusable routing logic. This option is applied recursively, allowing the application of prefixes to nested contracts. In addition, when hovering over the contract, the prefixed path will appear at the beginning of the path for ease of use.
+
+Here is an example of how to use the `pathPrefix` option. In this example, the resulting path is `/api/v1/mypath`.
+
+```typescript
+const c = initContract();
+export const contract = c.router(
+  {
+    getPost: {
+      path: '/mypath',
+      //... Your Contract
+    },
+  },
+  {
+    pathPrefix: '/api/v1',
+  }
+);
+```
+
+You can also use this feature in nested contracts, as shown below. In this case, the resulting path is `/v1/posts/mypath`, with the `pathPrefix` of the nested contract following the `pathPrefix` of the parent contract.
+
+```typescript
+const nestedContract = c.router(
+  {
+    getPost: {
+      path: '/mypath',
+      //... Your Contract
+    },
+  },
+  {
+    pathPrefix: '/posts',
+  }
+);
+
+const parentContract = c.router(
+  {
+    posts: nestedContract,
+  },
+  {
+    pathPrefix: '/v1',
+  }
+);
 ```
