@@ -178,7 +178,7 @@ export const contract = c.router({
 
 ## Options
 
-These configuration options allow you to modify the functionality of how your contract works.
+These configuration options allow you to modify the functionality of how your contract functions.
 
 ### Base Header
 
@@ -227,7 +227,7 @@ export const contract = c.router({
 
 ### Path Prefix
 
-The `pathPrefix` option allows you to add a prefix to paths, allowing more modular and reusable routing logic. This feature is applied recursively, allowing the application of prefixes to nested contracts. In addition, when hovering over the contract, the prefixed path will appear at the beginning of the path for ease of use.
+The `pathPrefix` option allows you to add a prefix to paths, allowing more modular and reusable routing logic. This option is applied recursively, allowing the application of prefixes to nested contracts. In addition, when hovering over the contract, the prefixed path will appear at the beginning of the path for ease of use.
 
 Here is an example of how to use the `pathPrefix` option. In this example, the resulting path is `/api/v1/MyPath`.
 
