@@ -178,7 +178,7 @@ export const contract = c.router({
 
 ## Options
 
-These configuration options allow you to modify the functionality of how your contract functions.
+These configuration options allow you to modify how your contract functions.
 
 ### Base Header
 
