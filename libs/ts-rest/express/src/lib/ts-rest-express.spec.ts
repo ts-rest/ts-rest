@@ -53,7 +53,7 @@ describe('strict mode', () => {
 });
 
 describe('ts-rest-express', () => {
-  it('should allow sending non json responses', async () => {
+  it('should handle non-json response types from contract', async () => {
     const c = initContract();
 
     const contract = c.router({

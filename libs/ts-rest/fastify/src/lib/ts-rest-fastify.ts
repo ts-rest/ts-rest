@@ -4,6 +4,7 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  isAppRouteNonJsonResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
@@ -222,10 +223,16 @@ const registerRoute = <TAppRoute extends AppRoute>(
       });
 
       const statusCode = result.status;
+      const responseType = appRoute.responses[statusCode];
+
+      if (isAppRouteNonJsonResponse(responseType)) {
+        reply.header('content-type', responseType.contentType);
+        return reply.status(statusCode).send(result.body);
+      }
 
       if (options.responseValidation) {
         const response = validateResponse({
-          responseType: appRoute.responses[statusCode],
+          responseType,
           response: {
             status: statusCode,
             body: result.body,

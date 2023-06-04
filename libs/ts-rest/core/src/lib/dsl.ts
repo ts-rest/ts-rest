@@ -239,16 +239,16 @@ export const initContract = (): ContractInstance => {
       ({
         symbol: NonJsonResponseSymbol,
         contentType: 'text/html',
-      } satisfies CustomResponse as unknown as string),
+      } as unknown as string),
     textResponse: () =>
       ({
         symbol: NonJsonResponseSymbol,
         contentType: 'text/plain',
-      } satisfies CustomResponse as unknown as string),
+      } as unknown as string),
     nonJsonResponse: <T>(contentType: string) =>
       ({
         symbol: NonJsonResponseSymbol,
         contentType,
-      } satisfies CustomResponse as unknown as T),
+      } as unknown as T),
   };
 };

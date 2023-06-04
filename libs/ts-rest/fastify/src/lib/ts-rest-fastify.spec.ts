@@ -251,4 +251,77 @@ describe('ts-rest-fastify', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({ foo: 'bar', bar: 'foo' });
   });
+
+  it('should handle non-json response types from contract', async () => {
+    const c = initContract();
+
+    const nonJsonContract = c.router({
+      getIndex: {
+        method: 'GET',
+        path: `/index.html`,
+        responses: {
+          200: c.htmlResponse(),
+        },
+      },
+      getRobots: {
+        method: 'GET',
+        path: `/robots.txt`,
+        responses: {
+          200: c.textResponse(),
+        },
+      },
+      getCss: {
+        method: 'GET',
+        path: '/style.css',
+        responses: {
+          200: c.nonJsonResponse('text/css'),
+        },
+      },
+    });
+
+    const nonJsonRouter = s.router(nonJsonContract, {
+      getIndex: async () => {
+        return {
+          status: 200,
+          body: '<h1>hello world</h1>',
+        };
+      },
+      getRobots: async () => {
+        return {
+          status: 200,
+          body: 'User-agent: * Disallow: /',
+        };
+      },
+      getCss: async () => {
+        return {
+          status: 200,
+          body: 'body { color: red; }',
+        };
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(nonJsonContract, nonJsonRouter, app, {
+      logInitialization: false,
+      responseValidation: false,
+    });
+
+    await app.ready();
+
+    const responseHtml = await supertest(app.server).get('/index.html');
+    expect(responseHtml.status).toEqual(200);
+    expect(responseHtml.text).toEqual('<h1>hello world</h1>');
+    expect(responseHtml.header['content-type']).toEqual('text/html');
+
+    const responseTextPlain = await supertest(app.server).get('/robots.txt');
+    expect(responseTextPlain.status).toEqual(200);
+    expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
+    expect(responseTextPlain.header['content-type']).toEqual('text/plain');
+
+    const responseCss = await supertest(app.server).get('/style.css');
+    expect(responseCss.status).toEqual(200);
+    expect(responseCss.text).toEqual('body { color: red; }');
+    expect(responseCss.header['content-type']).toEqual('text/css');
+  });
 });
