@@ -13,6 +13,8 @@ type AppRouterMethodShape<T extends AppRoute> = (
 type AppRouterControllerShape<T extends AppRouter> = Without<
   {
     [K in keyof T]: T[K] extends AppRoute ? AppRouterMethodShape<T[K]> : never;
+  } & {
+    handler?: (...args: any[]) => unknown;
   },
   never
 >;
@@ -26,9 +28,7 @@ type AppRouterRequestShapes<T extends AppRouter> = Without<
 
 type AppRouterResponseShapes<T extends AppRouter> = Without<
   {
-    [K in keyof T]: T[K] extends AppRoute
-      ? ServerInferResponses<T[K]>
-      : never;
+    [K in keyof T]: T[K] extends AppRoute ? ServerInferResponses<T[K]> : never;
   },
   never
 >;
@@ -57,6 +57,16 @@ export type NestControllerInterface<T extends AppRouter> =
 export type NestRequestShapes<T extends AppRouter> = AppRouterRequestShapes<T>;
 export type NestResponseShapes<T extends AppRouter> =
   AppRouterResponseShapes<T>;
+
+type NestHandlerImplementation<T extends AppRouter> = {
+  [K in keyof T]: T[K] extends AppRoute
+    ? (args: TsRestRequestShape<T[K]>) => Promise<ServerInferResponses<T[K]>>
+    : never;
+};
+
+export type TsRestHandlerImpl<T extends AppRouter> = (
+  implementation: NestHandlerImplementation<T>
+) => NestHandlerImplementation<T>;
 
 /**
  * Returns the contract containing only non-nested routes required by a NestJS controller
