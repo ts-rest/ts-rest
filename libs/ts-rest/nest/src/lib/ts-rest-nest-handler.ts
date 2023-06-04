@@ -22,12 +22,14 @@ import {
   parseJsonQueryObject,
   validateResponse,
   zodErrorResponse,
+  ServerInferResponses,
 } from '@ts-rest/core';
 import {
   JsonQuerySymbol,
   TsRestAppRouterMetadataKey,
   ValidateResponsesSymbol,
 } from './constants';
+import { TsRestRequestShape } from './ts-rest-request.decorator';
 
 export const TsRestHandler = (appRouter: AppRouter): MethodDecorator => {
   const decorators = [];
@@ -49,11 +51,16 @@ export const TsRestHandler = (appRouter: AppRouter): MethodDecorator => {
   return applyDecorators(...decorators);
 };
 
-export const TsRestHandlerArgs = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    return (x: any) => x;
-  }
-);
+type NestHandlerImplementation<T extends AppRouter> = {
+  [K in keyof T]: T[K] extends AppRoute
+    ? (args: TsRestRequestShape<T[K]>) => Promise<ServerInferResponses<T[K]>>
+    : never;
+};
+
+export const tsRestHandler = <T extends AppRouter>(
+  contract: T,
+  implementation: NestHandlerImplementation<T>
+) => implementation;
 
 export const doesUrlMatchContractPath = (
   /**

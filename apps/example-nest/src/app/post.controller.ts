@@ -1,22 +1,15 @@
 import { Controller } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
-import {
-  nestControllerContract,
-  TsRestHandlerImpl,
-  TsRestHandlerArgs,
-  TsRestHandler,
-} from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { PostService } from './post.service';
-
-const c = nestControllerContract(apiBlog);
 
 @Controller()
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @TsRestHandler(c)
-  handler(@TsRestHandlerArgs(c) impl: TsRestHandlerImpl<typeof c>) {
-    return impl({
+  @TsRestHandler(apiBlog)
+  handler() {
+    return tsRestHandler(apiBlog, {
       getPosts: async ({ query: { take, skip, search }, headers }) => {
         const { posts, totalPosts } = await this.postService.getPosts({
           take,
