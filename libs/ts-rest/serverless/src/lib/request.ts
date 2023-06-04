@@ -1,52 +1,32 @@
-import { ParsedQuery } from './query';
+import { IRequest } from 'itty-router';
 
 type TsRestRequestInit = {
-  remoteAddress?: string;
   method: string;
-  path: string;
-  query: ParsedQuery;
+  url: string;
   headers: Headers;
   body: ArrayBuffer;
 };
 
-export class TsRestRequest {
-  protected _remoteAddress?: string;
-  protected _method: string;
-  protected _path: string;
-  protected _query: ParsedQuery;
-  protected _headers: Headers;
-  protected _body: ArrayBuffer;
+export class TsRestRequest implements Omit<IRequest, 'body'> {
+  public method: string;
+  public url: string;
+  public headers: Headers;
+  public body: ArrayBuffer;
+  public route: string;
+  public params: {
+    [key: string]: string;
+  };
+  public query: {
+    [key: string]: string | string[] | undefined;
+  };
 
   constructor(init: TsRestRequestInit) {
-    this._remoteAddress = init.remoteAddress;
-    this._method = init.method;
-    this._path = init.path;
-    this._query = init.query;
-    this._headers = init.headers;
-    this._body = init.body;
-  }
-
-  public get remoteAddress() {
-    return this._remoteAddress;
-  }
-
-  public get method() {
-    return this._method;
-  }
-
-  public get path() {
-    return this._path;
-  }
-
-  public get query() {
-    return this._query;
-  }
-
-  public get headers() {
-    return this._headers;
-  }
-
-  public get body() {
-    return this._body;
+    this.method = init.method;
+    this.url = init.url;
+    this.headers = init.headers;
+    this.body = init.body;
+    this.route = '';
+    this.params = {};
+    this.query = {};
   }
 }

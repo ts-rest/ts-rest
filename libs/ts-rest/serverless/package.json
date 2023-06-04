@@ -1,11 +1,12 @@
 {
   "name": "@ts-rest/serverless",
   "version": "3.25.0",
-  "peerDependencies": {
-    "zod": "^3.0.0"
-  },
   "devDependencies": {
     "@types/node": "^18.15.3"
+  },
+  "peerDependencies": {
+    "zod": "^3.0.0",
+    "path-to-regexp": "^6.0.0"
   },
   "peerDependenciesMeta": {
     "zod": {

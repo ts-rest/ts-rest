@@ -1,36 +1,34 @@
 import { TextEncoder } from 'util';
 import type {
-  APIGatewayEventRequestContextV2,
-  APIGatewayProxyEventV2WithRequestContext,
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
   // APIGatewayProxyResult,
-  APIGatewayProxyEventBase,
 } from 'aws-lambda';
 import { TsRestRequest } from '../../request';
-import { parseQueryString } from '../../query';
 
-type EventV1 = APIGatewayProxyEventBase<unknown>;
-type EventV2 =
-  APIGatewayProxyEventV2WithRequestContext<APIGatewayEventRequestContextV2>;
+type EventV1 = APIGatewayProxyEvent;
+type EventV2 = APIGatewayProxyEventV2;
+export type ApiGatewayEvent = EventV1 | EventV2;
 
-export function isV2(event: EventV1 | EventV2): event is EventV2 {
+export function isV2(event: ApiGatewayEvent): event is EventV2 {
   return 'version' in event && event.version === '2.0';
 }
 
-export function requestMethod(event: EventV1 | EventV2) {
+export function requestMethod(event: ApiGatewayEvent) {
   if (isV2(event)) {
     return event.requestContext.http.method;
   }
   return event.httpMethod;
 }
 
-export function requestRemoteAddress(event: EventV1 | EventV2) {
+export function requestRemoteAddress(event: ApiGatewayEvent) {
   if (isV2(event)) {
     return event.requestContext.http.sourceIp;
   }
   return event.requestContext.identity.sourceIp;
 }
 
-export function requestHeaders(event: EventV1 | EventV2) {
+export function requestHeaders(event: ApiGatewayEvent) {
   const headers = new Headers();
 
   if (isV2(event) && event.cookies?.length) {
@@ -58,7 +56,7 @@ export function requestHeaders(event: EventV1 | EventV2) {
   return headers;
 }
 
-export function requestBody(event: EventV1 | EventV2): ArrayBuffer {
+export function requestBody(event: ApiGatewayEvent): ArrayBuffer {
   if (event.body === undefined || event.body === null) {
     return new ArrayBuffer(0);
   }
@@ -77,15 +75,15 @@ export function requestBody(event: EventV1 | EventV2): ArrayBuffer {
   throw new Error(`Unexpected event.body type: ${typeof event.body}`);
 }
 
-export function requestUrl(event: EventV1 | EventV2) {
+export function requestUrl(event: ApiGatewayEvent) {
   if (isV2(event)) {
-    return {
-      path: event.rawPath,
-      queryString: event.rawQueryString,
-    };
+    const url = new URL(event.rawPath, 'http://localhost');
+    url.search = event.rawQueryString;
+
+    return url.href;
   }
 
-  const url = new URL(event.path, 'https://ts-rest.com');
+  const url = new URL(event.path, 'http://localhost');
 
   if (event.multiValueQueryStringParameters) {
     Object.entries(event.multiValueQueryStringParameters).forEach(
@@ -107,21 +105,13 @@ export function requestUrl(event: EventV1 | EventV2) {
     });
   }
 
-  return {
-    path: url.pathname,
-    queryString:
-      url.search.indexOf('?') === 0 ? url.search.slice(1) : url.search,
-  };
+  return url.href;
 }
 
-export function requestFromEvent(event: EventV1 | EventV2) {
-  const { path, queryString } = requestUrl(event);
-
+export function requestFromEvent(event: ApiGatewayEvent) {
   return new TsRestRequest({
-    path,
-    remoteAddress: requestRemoteAddress(event),
     method: requestMethod(event),
-    query: parseQueryString(queryString),
+    url: requestUrl(event),
     headers: requestHeaders(event),
     body: requestBody(event),
   });

@@ -132,14 +132,10 @@ describe('ApiGateway', () => {
     it('should work for v1 event', () => {
       const request = requestFromEvent(apiGatewayEventV1 as any);
 
-      expect(request.remoteAddress).toEqual('52.255.255.12');
       expect(request.method).toEqual('GET');
-      expect(request.path).toEqual('/');
-      expect(request.query).toEqual({
-        parameter1: 'value1',
-        parameter2: 'value',
-        parameter3: ['value3', 'value4'],
-      });
+      expect(request.url).toEqual(
+        '/?parameter1=value1&parameter3=value3&parameter3=value4&parameter2=value'
+      );
       expect(headerToObject(request.headers)).toEqual({
         accept:
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -165,10 +161,8 @@ describe('ApiGateway', () => {
     it('should work for v1 post event', () => {
       const request = requestFromEvent(apiGatewayPostEventV1 as any);
 
-      expect(request.remoteAddress).toEqual('203.0.113.203');
       expect(request.method).toEqual('POST');
-      expect(request.path).toEqual('/post');
-      expect(request.query).toEqual({});
+      expect(request.url).toEqual('/post');
       expect(headerToObject(request.headers)).toEqual({
         accept: '*/*',
         authorization: 'Bearer REDACTED',
