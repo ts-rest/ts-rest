@@ -237,7 +237,7 @@ Here is an example of how to use the `pathPrefix` option. In this example, the r
 const c = initContract();
 export const contract = c.router({
     getPost: {
-      path: 'mypath',
+      path: '/mypath',
       //... Your Contract
     },
   }, {
@@ -250,7 +250,7 @@ You can also use this feature in nested contracts, as shown below. In this case,
 ```typescript
 const nestedContract = c.router({
     getPost: {
-      path: 'mypath',
+      path: '/mypath',
       //... Your Contract
     },
   }, { 
