@@ -206,14 +206,11 @@ set the `strictStatusCodes` option to `true` when initializing the contract.
 
 ```typescript
 const c = initContract();
-export const contract = c.router(
-  {
-    // ...endpoints
-  },
-  {
-    strictStatusCodes: true,
-  }
-);
+export const contract = c.router({
+  // ...endpoints
+}, {
+  strictStatusCodes: true,
+});
 ```
 
 You can also set this option on a per-route basis which will also override the global option.
