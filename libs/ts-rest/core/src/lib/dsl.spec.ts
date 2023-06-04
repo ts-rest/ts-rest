@@ -498,6 +498,34 @@ describe('contract', () => {
       );
       expect(postsContractNested.getPost.path).toStrictEqual('/posts/:id');
       expect(postsContract.posts.getPost.path).toStrictEqual('/v1/posts/:id');
+
+      type PostsContractNestedShape = Expect<
+        Equal<
+          typeof postsContractNested,
+          {
+            getPost: {
+              path: '/posts/:id';
+              method: 'GET';
+              responses: { 200: { id: string } };
+            };
+          }
+        >
+      >;
+
+      type PostsContractShape = Expect<
+        Equal<
+          typeof postsContract,
+          {
+            posts: {
+              getPost: {
+                path: '/v1/posts/:id';
+                method: 'GET';
+                responses: { 200: { id: string } };
+              };
+            };
+          }
+        >
+      >;
     });
   });
 });
