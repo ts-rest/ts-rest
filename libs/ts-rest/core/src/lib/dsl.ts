@@ -181,7 +181,7 @@ type ContractInstance = {
    */
   textResponse: () => string;
   /**
-   * Define an plain text response type
+   * Define a custom response type
    */
   nonJsonResponse: <T>(contentType: string) => T;
 };
