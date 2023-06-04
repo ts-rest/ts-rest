@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from 'zod';
-import { initContract } from './dsl';
+import { initContract, NonJsonResponseSymbol } from './dsl';
 import type { Equal, Expect } from './test-helpers';
+
 const c = initContract();
 
 describe('contract', () => {
@@ -475,6 +476,27 @@ describe('contract', () => {
           strictStatusCodes: false;
         }
       >
+    >;
+  });
+
+  it('should set type correctly for non-json response', () => {
+    const contract = c.router({
+      getCss: {
+        method: 'GET',
+        path: '/style.css',
+        responses: {
+          200: c.nonJsonResponse<string>('text/css'),
+        },
+      },
+    });
+
+    expect(contract.getCss.responses['200']).toEqual({
+      symbol: NonJsonResponseSymbol,
+      contentType: 'text/css',
+    });
+
+    type ResponseType = Expect<
+      Equal<typeof contract.getCss.responses['200'], string>
     >;
   });
 });

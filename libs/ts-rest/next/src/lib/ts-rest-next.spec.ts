@@ -308,7 +308,7 @@ describe('createNextRouter', () => {
         method: 'GET',
         path: '/style.css',
         responses: {
-          200: c.nonJsonResponse('text/css'),
+          200: c.nonJsonResponse<string>('text/css'),
         },
       },
     });
