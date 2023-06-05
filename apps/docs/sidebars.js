@@ -77,9 +77,13 @@ const sidebars = {
       id: 'react-query',
     },
     {
-      type: 'doc',
+      type: 'category',
       label: '@ts-rest/nest',
-      id: 'nest',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'nest/nest' },
+        { type: 'doc', id: 'nest/legacy' },
+      ],
     },
     {
       type: 'doc',
