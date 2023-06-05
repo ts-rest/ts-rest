@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.26.0-rc.0
+
+### Minor Changes
+
+- e8ea535: Add new `SingleHandler` and `MultiHandler` API to `@ts-rest/nest`
+- 2763208: Added `pathPrefix` to contract options to allow recursive path prefixing.
+
 ## 3.25.1
 
 ### Patch Changes

@@ -1,0 +1,18 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "@ts-rest/core": "3.25.1",
+    "@ts-rest/express": "3.25.1",
+    "@ts-rest/fastify": "3.25.1",
+    "@ts-rest/nest": "3.25.1",
+    "@ts-rest/next": "3.25.1",
+    "@ts-rest/open-api": "3.25.1",
+    "@ts-rest/react-query": "3.25.1",
+    "@ts-rest/solid-query": "3.25.1"
+  },
+  "changesets": [
+    "five-phones-smile",
+    "ten-buckets-punch"
+  ]
+}
