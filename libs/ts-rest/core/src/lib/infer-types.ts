@@ -3,6 +3,8 @@ import {
   AppRouteMutation,
   AppRouter,
   AppRouteStrictStatusCodes,
+  ContractAnyType,
+  ContractOtherResponse,
 } from './dsl';
 import { HTTPStatusCode } from './status-codes';
 import {
@@ -52,6 +54,10 @@ type PathParamsWithCustomValidators<
         : ZodInputOrType<T['pathParams']>
     >;
 
+export type ResolveResponseType<
+  T extends ContractAnyType | ContractOtherResponse<ContractAnyType>
+> = T extends ContractOtherResponse<infer U> ? U : T;
+
 type AppRouteResponses<
   T extends AppRoute,
   TStatus extends HTTPStatusCode,
@@ -62,8 +68,8 @@ type AppRouteResponses<
       [K in keyof T['responses'] & TStatus]: {
         status: K;
         body: TClientOrServer extends 'server'
-          ? ZodInputOrType<T['responses'][K]>
-          : ZodInferOrType<T['responses'][K]>;
+          ? ZodInputOrType<ResolveResponseType<T['responses'][K]>>
+          : ZodInferOrType<ResolveResponseType<T['responses'][K]>>;
       } & (TClientOrServer extends 'client'
         ? {
             headers: Headers;
@@ -144,7 +150,7 @@ export type ServerInferRequest<
   ? Prettify<
       Without<
         {
-          params: [undefined] extends PathParamsWithCustomValidators<T>
+          params: [keyof PathParamsWithCustomValidators<T>] extends [never]
             ? never
             : Prettify<PathParamsWithCustomValidators<T>>;
           body: T extends AppRouteMutation

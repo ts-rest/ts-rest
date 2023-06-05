@@ -10,6 +10,7 @@ import { TsRestRequest } from './ts-rest-request.decorator';
 import { Controller, INestApplication, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
+import { z } from 'zod';
 
 const c = initContract();
 const postsRouter = c.router({
@@ -109,38 +110,56 @@ describe('ts-rest-nest', () => {
   it('should handle non-json response types from contract', async () => {
     const c = initContract();
     const nonJsonContract = c.router({
-      getIndex: {
-        method: 'GET',
+      postIndex: {
+        method: 'POST',
         path: `/index.html`,
+        body: z.object({
+          echoHtml: z.string(),
+        }),
         responses: {
-          200: c.htmlResponse(),
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string().regex(/^<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>$/im),
+          }),
         },
       },
       getRobots: {
         method: 'GET',
         path: `/robots.txt`,
         responses: {
-          200: c.textResponse(),
+          200: c.otherResponse({
+            contentType: 'text/plain',
+            body: c.type<string>(),
+          }),
         },
       },
       getCss: {
         method: 'GET',
         path: '/style.css',
         responses: {
-          200: c.nonJsonResponse<string>('text/css'),
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.type<string>(),
+          }),
         },
       },
     });
 
+    @TsRest({ validateResponses: true })
     @Controller()
     class NonJsonController
       implements NestControllerInterface<typeof nonJsonContract>
     {
-      @TsRest(nonJsonContract.getIndex)
-      async getIndex(@TsRestRequest() _: any) {
+      @TsRest(nonJsonContract.postIndex)
+      async postIndex(
+        @TsRestRequest()
+        {
+          body: { echoHtml },
+        }: NestRequestShapes<typeof nonJsonContract>['postIndex']
+      ) {
         return {
           status: 200,
-          body: '<h1>hello world</h1>',
+          body: echoHtml,
         } as const;
       }
 
@@ -163,11 +182,25 @@ describe('ts-rest-nest', () => {
 
     const server = await initializeApp(NonJsonController);
 
-    const responseHtml = await supertest(server).get('/index.html');
+    const responseHtml = await supertest(server)
+      .post('/index.html')
+      .send({ echoHtml: '<h1>hello world</h1>' });
     expect(responseHtml.status).toEqual(200);
     expect(responseHtml.text).toEqual('<h1>hello world</h1>');
     expect(responseHtml.header['content-type']).toEqual(
       'text/html; charset=utf-8'
+    );
+
+    const responseHtmlFail = await supertest(server).post('/index.html').send({
+      echoHtml: 'hello world',
+    });
+    expect(responseHtmlFail.status).toEqual(500);
+    expect(responseHtmlFail.body).toEqual({
+      message: 'Internal server error',
+      statusCode: 500,
+    });
+    expect(responseHtmlFail.header['content-type']).toEqual(
+      'application/json; charset=utf-8'
     );
 
     const responseTextPlain = await supertest(server).get('/robots.txt');

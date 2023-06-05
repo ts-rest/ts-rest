@@ -256,34 +256,46 @@ describe('ts-rest-fastify', () => {
     const c = initContract();
 
     const nonJsonContract = c.router({
-      getIndex: {
-        method: 'GET',
+      postIndex: {
+        method: 'POST',
         path: `/index.html`,
+        body: z.object({
+          echoHtml: z.string(),
+        }),
         responses: {
-          200: c.htmlResponse(),
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string().regex(/^<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>$/im),
+          }),
         },
       },
       getRobots: {
         method: 'GET',
         path: `/robots.txt`,
         responses: {
-          200: c.textResponse(),
+          200: c.otherResponse({
+            contentType: 'text/plain',
+            body: c.type<string>(),
+          }),
         },
       },
       getCss: {
         method: 'GET',
         path: '/style.css',
         responses: {
-          200: c.nonJsonResponse<string>('text/css'),
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.type<string>(),
+          }),
         },
       },
     });
 
     const nonJsonRouter = s.router(nonJsonContract, {
-      getIndex: async () => {
+      postIndex: async ({ body: { echoHtml } }) => {
         return {
           status: 200,
-          body: '<h1>hello world</h1>',
+          body: echoHtml,
         };
       },
       getRobots: async () => {
@@ -304,15 +316,32 @@ describe('ts-rest-fastify', () => {
 
     s.registerRouter(nonJsonContract, nonJsonRouter, app, {
       logInitialization: false,
-      responseValidation: false,
+      responseValidation: true,
+    });
+
+    app.setErrorHandler((err, request, reply) => {
+      reply.status(500).send(err.message);
     });
 
     await app.ready();
 
-    const responseHtml = await supertest(app.server).get('/index.html');
+    const responseHtml = await supertest(app.server).post('/index.html').send({
+      echoHtml: '<h1>hello world</h1>',
+    });
     expect(responseHtml.status).toEqual(200);
     expect(responseHtml.text).toEqual('<h1>hello world</h1>');
     expect(responseHtml.header['content-type']).toEqual('text/html');
+
+    const responseHtmlFail = await supertest(app.server)
+      .post('/index.html')
+      .send({
+        echoHtml: 'hello world',
+      });
+    expect(responseHtmlFail.status).toEqual(500);
+    expect(responseHtmlFail.text).toEqual('Response validation failed');
+    expect(responseHtmlFail.header['content-type']).toEqual(
+      'text/plain; charset=utf-8'
+    );
 
     const responseTextPlain = await supertest(app.server).get('/robots.txt');
     expect(responseTextPlain.status).toEqual(200);

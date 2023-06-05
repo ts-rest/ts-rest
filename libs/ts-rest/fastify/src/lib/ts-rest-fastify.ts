@@ -4,7 +4,7 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
-  isAppRouteNonJsonResponse,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
@@ -223,10 +223,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
       const statusCode = result.status;
       const responseType = appRoute.responses[statusCode];
 
-      if (isAppRouteNonJsonResponse(responseType)) {
-        reply.header('content-type', responseType.contentType);
-        return reply.status(statusCode).send(result.body);
-      }
+      let validatedResponseBody = result.body;
 
       if (options.responseValidation) {
         const response = validateResponse({
@@ -237,10 +234,14 @@ const registerRoute = <TAppRoute extends AppRoute>(
           },
         });
 
-        return reply.status(statusCode).send(response.body);
+        validatedResponseBody = response.body;
       }
 
-      return reply.status(statusCode).send(result.body);
+      if (isAppRouteOtherResponse(responseType)) {
+        reply.header('content-type', responseType.contentType);
+      }
+
+      return reply.status(statusCode).send(validatedResponseBody);
     },
   });
 };

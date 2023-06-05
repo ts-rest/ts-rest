@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from 'zod';
-import { initContract, NonJsonResponseSymbol } from './dsl';
+import {
+  initContract,
+  ContractOtherResponse,
+  ContractPlainType,
+  ContractPlainTypeRuntimeSymbol,
+} from './dsl';
 import type { Equal, Expect } from './test-helpers';
 
 const c = initContract();
@@ -355,9 +360,9 @@ describe('contract', () => {
             method: 'GET';
             path: '/posts/:id';
             responses: {
-              200: {
+              200: ContractPlainType<{
                 id: number;
-              };
+              }>;
             };
           };
         }
@@ -485,18 +490,24 @@ describe('contract', () => {
         method: 'GET',
         path: '/style.css',
         responses: {
-          200: c.nonJsonResponse<string>('text/css'),
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.response<string>(),
+          }),
         },
       },
     });
 
     expect(contract.getCss.responses['200']).toEqual({
-      symbol: NonJsonResponseSymbol,
       contentType: 'text/css',
+      body: ContractPlainTypeRuntimeSymbol,
     });
 
     type ResponseType = Expect<
-      Equal<typeof contract.getCss.responses['200'], string>
+      Equal<
+        typeof contract.getCss.responses['200'],
+        ContractOtherResponse<ContractPlainType<string>>
+      >
     >;
   });
 });

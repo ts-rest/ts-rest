@@ -11,7 +11,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
-  isAppRouteNonJsonResponse,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
@@ -250,10 +250,7 @@ export const createNextRouter = <T extends AppRouter>(
       const statusCode = Number(status);
       const responseType = route.responses[statusCode];
 
-      if (isAppRouteNonJsonResponse(responseType)) {
-        res.setHeader('content-type', responseType.contentType);
-        return res.status(statusCode).send(body);
-      }
+      let validatedResponseBody = body;
 
       if (responseValidation) {
         const response = validateResponse({
@@ -264,10 +261,15 @@ export const createNextRouter = <T extends AppRouter>(
           },
         });
 
-        return res.status(statusCode).json(response.body);
+        validatedResponseBody = response.body;
       }
 
-      return res.status(statusCode).json(body);
+      if (isAppRouteOtherResponse(responseType)) {
+        res.setHeader('content-type', responseType.contentType);
+        return res.status(statusCode).send(validatedResponseBody);
+      }
+
+      return res.status(statusCode).json(validatedResponseBody);
     } catch (e) {
       if (options?.errorHandler) {
         options.errorHandler(e, req, res);

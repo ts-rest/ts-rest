@@ -10,15 +10,32 @@ type MixedZodError<A, B> = Opaque<{ a: A; b: B }, 'MixedZodError'>;
  */
 type Path = string;
 
+declare const NullSymbol: unique symbol;
+
+export type ContractPlainType<T> = Opaque<T, 'ContractPlainType'>;
+export type ContractNullType = Opaque<typeof NullSymbol, 'ContractNullType'>;
+export type ContractAnyType =
+  | z.ZodTypeAny
+  | ContractPlainType<unknown>
+  | ContractNullType
+  | null;
+export type ContractOtherResponse<T extends ContractAnyType> = Opaque<
+  { contentType: string; body: T },
+  'ContractOtherResponse'
+>;
+
 type AppRouteCommon = {
   path: Path;
-  pathParams?: unknown;
-  query?: unknown;
-  headers?: unknown;
+  pathParams?: ContractAnyType;
+  query?: ContractAnyType;
+  headers?: ContractAnyType;
   summary?: string;
   description?: string;
   deprecated?: boolean;
-  responses: Record<number, unknown>;
+  responses: Record<
+    number,
+    ContractAnyType | ContractOtherResponse<ContractAnyType>
+  >;
   strictStatusCodes?: boolean;
   metadata?: unknown;
 };
@@ -37,7 +54,7 @@ export type AppRouteQuery = AppRouteCommon & {
 export type AppRouteMutation = AppRouteCommon & {
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
   contentType?: 'application/json' | 'multipart/form-data';
-  body: unknown;
+  body: ContractAnyType;
 };
 
 type ValidatedHeaders<
@@ -165,25 +182,29 @@ type ContractInstance = {
    */
   mutation: <T extends AppRouteMutation>(mutation: T) => T;
   /**
+   * @deprecated Please use type() instead.
    * Exists to allow storing a Type in the contract (at compile time only)
    */
-  response: <T>() => T;
+  response: <T>() => T extends null ? ContractNullType : ContractPlainType<T>;
+  /**
+   * @deprecated Please use type() instead.
+   * Exists to allow storing a Type in the contract (at compile time only)
+   */
+  body: <T>() => T extends null ? ContractNullType : ContractPlainType<T>;
   /**
    * Exists to allow storing a Type in the contract (at compile time only)
    */
-  body: <T>() => T;
-  /**
-   * Define an HTML response type
-   */
-  htmlResponse: () => string;
-  /**
-   * Define an plain text response type
-   */
-  textResponse: () => string;
+  type: <T>() => T extends null ? ContractNullType : ContractPlainType<T>;
   /**
    * Define a custom response type
    */
-  nonJsonResponse: <T>(contentType: string) => T;
+  otherResponse: <T extends ContractAnyType>({
+    contentType,
+    body,
+  }: {
+    contentType: string;
+    body: T;
+  }) => ContractOtherResponse<T>;
 };
 
 /**
@@ -215,12 +236,9 @@ const recursivelyApplyOptions = <T extends AppRouter>(
   );
 };
 
-export const NonJsonResponseSymbol = Symbol('NonJsonResponse');
-
-type CustomResponse = {
-  symbol: typeof NonJsonResponseSymbol;
-  contentType: string;
-};
+export const ContractPlainTypeRuntimeSymbol = Symbol(
+  'ContractPlainType'
+) as any;
 
 /**
  * Instantiate a ts-rest client, primarily to access `router`, `response`, and `body`
@@ -233,22 +251,19 @@ export const initContract = (): ContractInstance => {
     router: (endpoints, options) => recursivelyApplyOptions(endpoints, options),
     query: (args) => args,
     mutation: (args) => args,
-    response: <T>() => undefined as unknown as T,
-    body: <T>() => undefined as unknown as T,
-    htmlResponse: () =>
+    response: () => ContractPlainTypeRuntimeSymbol,
+    body: () => ContractPlainTypeRuntimeSymbol,
+    type: () => ContractPlainTypeRuntimeSymbol,
+    otherResponse: <T extends ContractAnyType>({
+      contentType,
+      body,
+    }: {
+      contentType: string;
+      body: T;
+    }) =>
       ({
-        symbol: NonJsonResponseSymbol,
-        contentType: 'text/html',
-      } as unknown as string),
-    textResponse: () =>
-      ({
-        symbol: NonJsonResponseSymbol,
-        contentType: 'text/plain',
-      } as unknown as string),
-    nonJsonResponse: <T>(contentType: string) =>
-      ({
-        symbol: NonJsonResponseSymbol,
         contentType,
-      } as unknown as T),
+        body,
+      } as ContractOtherResponse<T>),
   };
 };

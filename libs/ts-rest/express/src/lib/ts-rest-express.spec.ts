@@ -1,7 +1,8 @@
-import { initContract } from '@ts-rest/core';
+import { initContract, ResponseValidationError } from '@ts-rest/core';
 import { createExpressEndpoints, initServer } from './ts-rest-express';
 import * as supertest from 'supertest';
 import * as express from 'express';
+import { z } from 'zod';
 
 const c = initContract();
 const postsRouter = c.router({
@@ -57,25 +58,37 @@ describe('ts-rest-express', () => {
     const c = initContract();
 
     const contract = c.router({
-      getIndex: {
-        method: 'GET',
+      postIndex: {
+        method: 'POST',
         path: `/index.html`,
+        body: z.object({
+          echoHtml: z.string(),
+        }),
         responses: {
-          200: c.htmlResponse(),
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string().regex(/^<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>$/im),
+          }),
         },
       },
       getRobots: {
         method: 'GET',
         path: `/robots.txt`,
         responses: {
-          200: c.textResponse(),
+          200: c.otherResponse({
+            contentType: 'text/plain',
+            body: c.type<string>(),
+          }),
         },
       },
       getCss: {
         method: 'GET',
         path: '/style.css',
         responses: {
-          200: c.nonJsonResponse<string>('text/css'),
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.type<string>(),
+          }),
         },
       },
     });
@@ -83,10 +96,10 @@ describe('ts-rest-express', () => {
     const server = initServer();
 
     const router = server.router(contract, {
-      getIndex: async () => {
+      postIndex: async ({ body: { echoHtml } }) => {
         return {
           status: 200,
-          body: '<h1>hello world</h1>',
+          body: echoHtml,
         };
       },
       getRobots: async () => {
@@ -105,12 +118,44 @@ describe('ts-rest-express', () => {
 
     const app = express();
 
-    createExpressEndpoints(contract, router, app);
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-    const responseHtml = await supertest(app).get('/index.html');
+    createExpressEndpoints(contract, router, app, {
+      responseValidation: true,
+    });
+
+    app.use(
+      (
+        err: any,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+      ) => {
+        if (err instanceof ResponseValidationError) {
+          res.status(500).send(err.message);
+          return;
+        }
+
+        next(err);
+      }
+    );
+
+    const responseHtml = await supertest(app)
+      .post('/index.html')
+      .send({ echoHtml: '<h1>hello world</h1>' });
     expect(responseHtml.status).toEqual(200);
     expect(responseHtml.text).toEqual('<h1>hello world</h1>');
     expect(responseHtml.header['content-type']).toEqual(
+      'text/html; charset=utf-8'
+    );
+
+    const responseHtmlFail = await supertest(app)
+      .post('/index.html')
+      .send({ echoHtml: 'hello world' });
+    expect(responseHtmlFail.status).toEqual(500);
+    expect(responseHtmlFail.text).toEqual('Response validation failed');
+    expect(responseHtmlFail.header['content-type']).toEqual(
       'text/html; charset=utf-8'
     );
 

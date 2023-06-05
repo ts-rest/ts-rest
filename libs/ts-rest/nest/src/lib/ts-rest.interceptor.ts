@@ -7,7 +7,7 @@ import {
 import { map, Observable } from 'rxjs';
 import {
   AppRoute,
-  isAppRouteNonJsonResponse,
+  isAppRouteOtherResponse,
   isAppRouteResponse,
   validateResponse,
 } from '@ts-rest/core';
@@ -48,18 +48,16 @@ export class TsRestInterceptor implements NestInterceptor {
           const statusCode = value.status;
           const responseType = appRoute.responses[statusCode];
 
-          if (isAppRouteNonJsonResponse(responseType)) {
-            res.setHeader('content-type', responseType.contentType);
-            res.status(statusCode);
-            return value.body;
-          }
-
           const response = isValidationEnabled
             ? validateResponse({
                 responseType,
                 response: value,
               })
             : value;
+
+          if (isAppRouteOtherResponse(responseType)) {
+            res.setHeader('content-type', responseType.contentType);
+          }
 
           res.status(response.status);
           return response.body;
