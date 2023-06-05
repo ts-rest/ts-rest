@@ -138,8 +138,5 @@ Currently any existing Nest global prefix, versioning, or controller prefixes wi
 
 If this feature is highly requested, we can investigate a solution.
 
-Currently the path in your contract must be the **full path**, your client may specify a different base url, with a prefix, but this cannot be done at the contract level currently.
-
-e.g. if your client is at `https://api.example.com/v1` and your contract is at `/posts`, the client will make a request to `https://api.example.com/v1/posts`.
-
+We have added the ability to [prefix paths](/docs/core/#path-prefix), allowing more flexibility in defining your API endpoints. This can be used as a workaround for this functionality.
 :::

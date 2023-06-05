@@ -119,8 +119,11 @@ type UniversalMerge<A, B> = A extends z.AnyZodObject
 type ApplyOptions<
   TRoute extends AppRoute,
   TOptions extends RouterOptions
-> = Omit<TRoute, 'headers'> &
+> = Omit<TRoute, 'headers' | 'path'> &
   WithoutUnknown<{
+    path: TOptions['pathPrefix'] extends string
+      ? `${TOptions['pathPrefix']}${TRoute['path']}`
+      : TRoute['path'];
     headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
     strictStatusCodes: TRoute['strictStatusCodes'] extends boolean
       ? TRoute['strictStatusCodes']
@@ -145,9 +148,10 @@ export type AppRouter = {
   [key: string]: AppRouter | AppRoute;
 };
 
-export type RouterOptions = {
+export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
+  pathPrefix?: TPrefix;
 };
 
 /**
@@ -167,7 +171,11 @@ type ContractInstance = {
   /**
    * A collection of routes or routers
    */
-  router: <TRouter extends AppRouter, TOptions extends RouterOptions>(
+  router: <
+    TRouter extends AppRouter,
+    TPrefix extends string,
+    TOptions extends RouterOptions<TPrefix>
+  >(
     endpoints: RecursivelyProcessAppRouter<TRouter, TOptions>,
     options?: TOptions
   ) => RecursivelyApplyOptions<TRouter, TOptions>;
@@ -183,12 +191,10 @@ type ContractInstance = {
   mutation: <T extends AppRouteMutation>(mutation: T) => T;
   /**
    * @deprecated Please use type() instead.
-   * Exists to allow storing a Type in the contract (at compile time only)
    */
   response: <T>() => T extends null ? ContractNullType : ContractPlainType<T>;
   /**
    * @deprecated Please use type() instead.
-   * Exists to allow storing a Type in the contract (at compile time only)
    */
   body: <T>() => T extends null ? ContractNullType : ContractPlainType<T>;
   /**
@@ -224,6 +230,9 @@ const recursivelyApplyOptions = <T extends AppRouter>(
           key,
           {
             ...value,
+            path: options?.pathPrefix
+              ? options.pathPrefix + value.path
+              : value.path,
             headers: zodMerge(options?.baseHeaders, value.headers),
             strictStatusCodes:
               value.strictStatusCodes ?? options?.strictStatusCodes,

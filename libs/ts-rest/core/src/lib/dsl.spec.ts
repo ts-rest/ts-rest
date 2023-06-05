@@ -484,6 +484,57 @@ describe('contract', () => {
     >;
   });
 
+  describe('pathPrefix', () => {
+    it('Should recursively apply pathPrefix to path', () => {
+      const postsContractNested = c.router(
+        {
+          getPost: {
+            path: '/:id',
+            method: 'GET',
+            responses: { 200: c.response<{ id: string }>() },
+          },
+        },
+        { pathPrefix: '/posts' }
+      );
+      const postsContract = c.router(
+        {
+          posts: postsContractNested,
+        },
+        { pathPrefix: '/v1' }
+      );
+      expect(postsContractNested.getPost.path).toStrictEqual('/posts/:id');
+      expect(postsContract.posts.getPost.path).toStrictEqual('/v1/posts/:id');
+
+      type PostsContractNestedShape = Expect<
+        Equal<
+          typeof postsContractNested,
+          {
+            getPost: {
+              path: '/posts/:id';
+              method: 'GET';
+              responses: { 200: ContractPlainType<{ id: string }> };
+            };
+          }
+        >
+      >;
+
+      type PostsContractShape = Expect<
+        Equal<
+          typeof postsContract,
+          {
+            posts: {
+              getPost: {
+                path: '/v1/posts/:id';
+                method: 'GET';
+                responses: { 200: ContractPlainType<{ id: string }> };
+              };
+            };
+          }
+        >
+      >;
+    });
+  });
+
   it('should set type correctly for non-json response', () => {
     const contract = c.router({
       getCss: {

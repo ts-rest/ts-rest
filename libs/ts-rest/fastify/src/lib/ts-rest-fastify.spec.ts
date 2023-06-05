@@ -252,6 +252,42 @@ describe('ts-rest-fastify', () => {
     expect(response.body).toEqual({ foo: 'bar', bar: 'foo' });
   });
 
+  it('prefixed contract should work with fastify', async () => {
+    const postsContractNested = c.router(
+      {
+        getPost: {
+          path: '/:postId',
+          method: 'GET',
+          responses: { 200: c.response<{ id: string }>() },
+        },
+      },
+      { pathPrefix: '/posts' }
+    );
+    const postsContract = c.router(
+      {
+        posts: postsContractNested,
+      },
+      { pathPrefix: '/v1' }
+    );
+    const router = s.router(postsContract, {
+      posts: {
+        getPost: async ({ params }) => {
+          console.log(params);
+          return { status: 200, body: { id: params.postId } };
+        },
+      },
+    });
+    const app = fastify();
+    s.registerRouter(postsContract, router, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/v1/posts/10');
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toEqual({ id: '10' });
+  });
+
   it('should handle non-json response types from contract', async () => {
     const c = initContract();
 
