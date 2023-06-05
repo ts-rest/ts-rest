@@ -13,6 +13,12 @@ import {
   createParamDecorator,
   BadRequestException,
   NotFoundException,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   AppRouter,
@@ -20,44 +26,114 @@ import {
   AppRoute,
   checkZodSchema,
   parseJsonQueryObject,
-  validateResponse,
-  zodErrorResponse,
   ServerInferResponses,
+  isAppRouteResponse,
 } from '@ts-rest/core';
 import {
   JsonQuerySymbol,
+  TsRestAppRouteMetadataKey,
   TsRestAppRouterMetadataKey,
   ValidateResponsesSymbol,
 } from './constants';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
+import { z } from 'zod';
+import { TsRestOptions } from './ts-rest.decorator';
+import { JsonQuery } from './json-query.decorator';
 
-export const TsRestHandler = (appRouter: AppRouter): MethodDecorator => {
+export class RequestValidationError extends BadRequestException {
+  constructor(
+    public pathParams: z.ZodError | null,
+    public headers: z.ZodError | null,
+    public query: z.ZodError | null,
+    public body: z.ZodError | null
+  ) {
+    super({
+      paramsResult: pathParams,
+      headersResult: headers,
+      queryResult: query,
+      bodyResult: body,
+    });
+  }
+}
+
+export class ResponseValidationError extends InternalServerErrorException {
+  constructor(appRoute: AppRoute, error: z.ZodError) {
+    super(
+      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`
+    );
+  }
+}
+
+export const TsRestHandler = (
+  appRouterOrRoute: AppRouter | AppRoute,
+  options: TsRestOptions = {}
+): MethodDecorator => {
   const decorators = [];
 
-  const routerPaths: string[] = [];
+  if (options.jsonQuery !== undefined) {
+    decorators.push(JsonQuery(options.jsonQuery));
+  }
 
-  Object.entries(appRouter).forEach(([key, value]) => {
-    if (isAppRoute(value)) {
-      routerPaths.push(value.path);
-    }
-  });
+  if (options.validateResponses !== undefined) {
+    decorators.push(
+      SetMetadata(ValidateResponsesSymbol, options.validateResponses)
+    );
+  }
 
-  decorators.push(
-    All(routerPaths),
-    SetMetadata(TsRestAppRouterMetadataKey, appRouter),
-    UseInterceptors(TsRestHandlerInterceptor)
-  );
+  const isMultiHandler = !isAppRoute(appRouterOrRoute);
+
+  if (isMultiHandler) {
+    const routerPaths: string[] = [];
+
+    Object.entries(appRouterOrRoute).forEach(([key, value]) => {
+      if (isAppRoute(value)) {
+        routerPaths.push(value.path);
+      }
+    });
+
+    decorators.push(
+      All(routerPaths),
+      SetMetadata(TsRestAppRouterMetadataKey, appRouterOrRoute),
+      UseInterceptors(TsRestHandlerInterceptor)
+    );
+  } else {
+    const apiDecorator = (() => {
+      switch (appRouterOrRoute.method) {
+        case 'GET':
+          return Get(appRouterOrRoute.path);
+        case 'POST':
+          return Post(appRouterOrRoute.path);
+        case 'PUT':
+          return Put(appRouterOrRoute.path);
+        case 'PATCH':
+          return Patch(appRouterOrRoute.path);
+        case 'DELETE':
+          return Delete(appRouterOrRoute.path);
+      }
+    })();
+
+    decorators.push(
+      apiDecorator,
+      SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
+      UseInterceptors(TsRestHandlerInterceptor)
+    );
+  }
 
   return applyDecorators(...decorators);
 };
 
-type NestHandlerImplementation<T extends AppRouter> = {
-  [K in keyof T]: T[K] extends AppRoute
-    ? (args: TsRestRequestShape<T[K]>) => Promise<ServerInferResponses<T[K]>>
-    : never;
-};
+type NestHandlerImplementation<T extends AppRouter | AppRoute> =
+  T extends AppRoute
+    ? (args: TsRestRequestShape<T>) => Promise<ServerInferResponses<T>>
+    : {
+        [K in keyof T]: T[K] extends AppRoute
+          ? (
+              args: TsRestRequestShape<T[K]>
+            ) => Promise<ServerInferResponses<T[K]>>
+          : never;
+      };
 
-export const tsRestHandler = <T extends AppRouter>(
+export const tsRestHandler = <T extends AppRouter | AppRoute>(
   contract: T,
   implementation: NestHandlerImplementation<T>
 ) => implementation;
@@ -100,10 +176,24 @@ export const doesUrlMatchContractPath = (
 export class TsRestHandlerInterceptor implements NestInterceptor {
   constructor(private reflector: Reflector) {}
 
-  intercept(ctx: ExecutionContext, next: CallHandler<any>): Observable<any> {
-    const res: Response = ctx.switchToHttp().getResponse();
+  private getAppRouteFromContext(ctx: ExecutionContext) {
     const req: Request = ctx.switchToHttp().getRequest();
 
+    const appRoute = this.reflector.get<AppRoute | undefined>(
+      TsRestAppRouteMetadataKey,
+      ctx.getHandler()
+    );
+
+    if (appRoute) {
+      return {
+        appRoute,
+        routeAlias: undefined,
+      };
+    }
+
+    /**
+     * Therefore we must be on a multi-handler so let's get the route in the router
+     */
     const appRouter = this.reflector.get<AppRouter | undefined>(
       TsRestAppRouterMetadataKey,
       ctx.getHandler()
@@ -111,7 +201,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     if (!appRouter) {
       throw new Error(
-        'Make sure your route is decorated with @TsRestHandler()'
+        'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method'
       );
     }
 
@@ -130,7 +220,17 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       throw new NotFoundException("Couldn't find route handler for this path");
     }
 
-    const [appRouteAlias, appRoute] = foundAppRoute;
+    return {
+      appRoute: foundAppRoute[1],
+      routeAlias: foundAppRoute[0],
+    };
+  }
+
+  intercept(ctx: ExecutionContext, next: CallHandler<any>): Observable<any> {
+    const res: Response = ctx.switchToHttp().getResponse();
+    const req: Request = ctx.switchToHttp().getRequest();
+
+    const { appRoute, routeAlias } = this.getAppRouteFromContext(ctx);
 
     const isJsonQuery = !!(
       Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ??
@@ -148,17 +248,9 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       passThroughExtraKeys: true,
     });
 
-    if (!paramsResult.success) {
-      throw new BadRequestException(zodErrorResponse(paramsResult.error));
-    }
-
     const headersResult = checkZodSchema(req.headers, appRoute.headers, {
       passThroughExtraKeys: true,
     });
-
-    if (!headersResult.success) {
-      throw new BadRequestException(zodErrorResponse(headersResult.error));
-    }
 
     const query = isJsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
@@ -166,33 +258,43 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const queryResult = checkZodSchema(query, appRoute.query);
 
-    if (!queryResult.success) {
-      throw new BadRequestException(zodErrorResponse(queryResult.error));
-    }
-
     const bodyResult = checkZodSchema(
       req.body,
       'body' in appRoute ? appRoute.body : null
     );
 
-    if (!bodyResult.success) {
-      throw new BadRequestException(zodErrorResponse(bodyResult.error));
+    if (
+      !paramsResult.success ||
+      !headersResult.success ||
+      !queryResult.success ||
+      !bodyResult.success
+    ) {
+      throw new RequestValidationError(
+        !paramsResult.success ? paramsResult.error : null,
+        !headersResult.success ? headersResult.error : null,
+        !queryResult.success ? queryResult.error : null,
+        !bodyResult.success ? bodyResult.error : null
+      );
     }
 
     return next.handle().pipe(
       map(async (impl) => {
-        const result = await impl[appRouteAlias]({
-          query: queryResult.data,
-          params: paramsResult.data,
-          body: bodyResult.data,
-          headers: headersResult.data,
-        });
+        const result = routeAlias
+          ? await impl[routeAlias]({
+              query: queryResult.data,
+              params: paramsResult.data,
+              body: bodyResult.data,
+              headers: headersResult.data,
+            })
+          : await impl({
+              query: queryResult.data,
+              params: paramsResult.data,
+              body: bodyResult.data,
+              headers: headersResult.data,
+            });
 
         const responseAfterValidation = isValidationEnabled
-          ? validateResponse({
-              responseType: appRoute.responses[result.status],
-              response: result.body,
-            })
+          ? validateResponse(appRoute, result)
           : result;
 
         res.status(responseAfterValidation.status);
@@ -201,3 +303,34 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     );
   }
 }
+
+export const validateResponse = (
+  appRoute: AppRoute,
+  response: { status: number; body?: unknown }
+) => {
+  const { body } = response;
+
+  const responseSchema = appRoute.responses[response.status];
+
+  if (!responseSchema) {
+    throw new InternalServerErrorException(
+      `[ts-rest] Couldn't find a response schema for ${response.status} on route ${appRoute.path}`
+    );
+  }
+
+  const responseValidation = checkZodSchema(
+    body,
+    appRoute.responses[response.status]
+  );
+
+  if (!responseValidation.success) {
+    const { error } = responseValidation;
+
+    throw new ResponseValidationError(appRoute, error);
+  }
+
+  return {
+    status: response.status,
+    body: responseValidation.data,
+  };
+};
