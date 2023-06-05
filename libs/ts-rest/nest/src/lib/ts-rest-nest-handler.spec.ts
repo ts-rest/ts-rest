@@ -344,6 +344,95 @@ describe('ts-rest-nest-handler', () => {
 
       expect(response.status).toBe(500);
     });
+
+    it('should remove extra body keys with response validation enabled on the `TsRestHandler` decorator', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        test: {
+          path: '/returns-too-much',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+              nestedObject: z.object({
+                nestedString: z.string(),
+              }),
+            }),
+          },
+        },
+        testArray: {
+          path: '/returns-too-much-array',
+          method: 'GET',
+          responses: {
+            200: z.array(
+              z.object({
+                message: z.string(),
+              })
+            ),
+          },
+        },
+      });
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract, {
+          validateResponses: true,
+        })
+        async postRequest() {
+          return tsRestHandler(contract, {
+            test: async () => ({
+              status: 200,
+              body: {
+                message: 'valid string',
+                extra: 'SHOULD NOT BE IN RESPONSE',
+                nestedObject: {
+                  nestedString: 'valid string',
+                  nestedExtra: 'SHOULD NOT BE IN RESPONSE',
+                },
+              },
+            }),
+            testArray: async () => ({
+              status: 200,
+              body: [
+                {
+                  message: 'valid string',
+                  extra: 'SHOULD NOT BE IN RESPONSE',
+                },
+              ],
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer())
+        .get('/returns-too-much')
+        .send();
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: 'valid string',
+        nestedObject: { nestedString: 'valid string' },
+      });
+
+      const responseArray = await supertest(app.getHttpServer())
+        .get('/returns-too-much-array')
+        .send();
+
+      expect(responseArray.status).toBe(200);
+      expect(responseArray.body).toEqual([
+        {
+          message: 'valid string',
+        },
+      ]);
+    });
   });
 
   it('should be able to combine single-handler, multi-handler and vanilla nest controllers', async () => {

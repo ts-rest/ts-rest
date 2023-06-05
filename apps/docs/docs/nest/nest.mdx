@@ -12,7 +12,7 @@ The old API will likely be deprecated in 4.0.0, so we recommend using the new AP
 
 <InstallTabs packageName="@ts-rest/nest" />
 
-## Usage
+## Approaches
 
 Nest has always been a tricky framework to integrate with ts-rest, due to the way Nest handles routing and controllers. Nest normally uses large amounts of untyped decorators for each route, with ts-rest we introduce two new approaches to handle most of the heavy lifting for you.
 
@@ -103,6 +103,29 @@ The key difference here is you pass the entire contract (or a subset of a contra
 - Less room for error, you are forced to implement all routes in a contract
 - Less boilerplate
 - Easier to move code between `@ts-rest/next`, `@ts-rest/express` and `@ts-rest/fastify` servers
+
+## Using Nest Decorators
+
+Despite using `@TsRestHandler` rather than `@Get` or `@Post` (etc.) you can still use all of the existing Nest decorators on your controller methods.
+
+```typescript
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+
+@Controller()
+export class MyController {
+  constructor(private readonly service: Service) {}
+
+  @TsRestHandler(c.test)
+  async myMethod(@Req() req: Request) {
+    return tsRestHandler(c.test, async ({ params }) => {
+      // ...
+
+      console.log(req.headers);
+      // ^ You can still use Nest decorators
+    });
+  }
+}
+```
 
 ## Configuration
 
