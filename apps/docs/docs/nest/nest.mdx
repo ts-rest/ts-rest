@@ -127,6 +127,35 @@ export class MyController {
 }
 ```
 
+In this example above we're using the `@Req` decorator to get access to the `Request` object, this is a great example of how you can use Nest decorators to get access to the underlying request/response objects.
+
+This isn't limited to Param decorators, you can use any Nest decorator on your controllers as you would normally.
+
+## Throwing Type-Safe Errors 🍀
+
+Generally speaking you should try to return all errors as a response, so that you get the benefits of `ts-rest` typing in the contract (to let your consumers know what errors to expect).
+
+However, sometimes it's much cleaner and simpler to throw an error rather than passing a response back to your handler - the problem is that you normally **loose all type safety** when you do this.
+
+With `TsRestException` you can throw a Nest exception and it will be handled by the `tsRestHandler` function and returned as a fully typed response.
+
+```typescript
+throw new TsRestException(contract.test, {
+  status: 400,
+  body: { code: 'UserAlreadySignedUp', message: 'User has already signed up' },
+});
+```
+
+This example above will provide you autocomplete for the given `status` within the `contract.test` responses contract.
+
+:::caution
+
+The only risk of doing it this way is that you throw the wrong exception for a given route, which can happen if you throw from a piece of code used by multiple routes. If you want to be 100% sure you are throwing the correct exception you should use the `tsRestHandler` function to return the response.
+
+This can be somewhat mitigated if you share the error code schema between multiple routes, so that you can't throw the wrong error code.
+
+:::
+
 ## Configuration
 
 To configure certain ts-rest options you can use the `@TsRest` decorator on either your Controller or use the existing `@Api` decorator.

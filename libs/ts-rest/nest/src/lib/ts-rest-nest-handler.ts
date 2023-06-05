@@ -18,6 +18,7 @@ import {
   Patch,
   Delete,
   InternalServerErrorException,
+  HttpException,
 } from '@nestjs/common';
 import {
   AppRouter,
@@ -142,6 +143,15 @@ export const tsRestHandler = <T extends AppRouter | AppRoute>(
   contract: T,
   implementation: NestHandlerImplementation<T>
 ) => implementation;
+
+/**
+ * Error you can throw to return a response from a handler
+ */
+export class TsRestException<T extends AppRoute> extends HttpException {
+  constructor(route: T, response: ServerInferResponses<T>) {
+    super(response.body as Record<string, any>, response.status);
+  }
+}
 
 export const doesUrlMatchContractPath = (
   /**
@@ -284,19 +294,33 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map(async (impl) => {
-        const result = routeAlias
-          ? await impl[routeAlias]({
-              query: queryResult.data,
-              params: paramsResult.data,
-              body: bodyResult.data,
-              headers: headersResult.data,
-            })
-          : await impl({
+        let result = null;
+        try {
+          if (routeAlias) {
+            result = await impl[routeAlias]({
               query: queryResult.data,
               params: paramsResult.data,
               body: bodyResult.data,
               headers: headersResult.data,
             });
+          } else {
+            result = await impl({
+              query: queryResult.data,
+              params: paramsResult.data,
+              body: bodyResult.data,
+              headers: headersResult.data,
+            });
+          }
+        } catch (e) {
+          if (e instanceof TsRestException) {
+            result = {
+              status: e.getStatus(),
+              body: e.getResponse(),
+            };
+          } else {
+            throw e;
+          }
+        }
 
         const responseAfterValidation = isValidationEnabled
           ? validateResponse(appRoute, result)

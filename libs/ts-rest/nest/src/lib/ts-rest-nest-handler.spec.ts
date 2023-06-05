@@ -1,6 +1,7 @@
 import { initContract } from '@ts-rest/core';
 import {
   doesUrlMatchContractPath,
+  TsRestException,
   tsRestHandler,
   TsRestHandler,
 } from './ts-rest-nest-handler';
@@ -8,6 +9,7 @@ import { z } from 'zod';
 import { Controller, Get, INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
+import { TsRest } from './ts-rest.decorator';
 
 describe('doesUrlMatchContractPath', () => {
   it.each`
@@ -432,6 +434,175 @@ describe('ts-rest-nest-handler', () => {
           message: 'valid string',
         },
       ]);
+    });
+
+    it("should be able to override the behaviour of the class's response validation", async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        test: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      @TsRest({
+        validateResponses: true,
+      })
+      class SingleHandlerTestController {
+        @TsRestHandler(contract.test, {
+          validateResponses: false,
+        })
+        async postRequest() {
+          return tsRestHandler(contract.test, async () => ({
+            status: 200,
+            // shouldn't throw an error as we disabled it
+            body: { message: 123123 as unknown as string },
+          }));
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer()).get('/test').send();
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 123123 });
+    });
+
+    it('should be able to throw a type-safe response', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        test: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+            400: z.object({
+              myError: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract, { validateResponses: true })
+        async postRequest() {
+          return tsRestHandler(contract, {
+            test: async () => {
+              throw new TsRestException(contract.test, {
+                status: 400,
+                body: {
+                  myError: 'my error',
+                  // @ts-expect-error we want to make sure `validateResponses` is working
+                  extraProp: 'should not be in response',
+                },
+              });
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer()).get('/test').send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ myError: 'my error' });
+    });
+
+    it('should return a 500 if you throw an invalid response in a handler that has response validation enabled on the `TsRestHandler` decorator', async () => {
+      const c = initContract();
+
+      const contract = c.router(
+        {
+          test: {
+            path: '/test/:id',
+            pathParams: z.object({
+              id: z.coerce.number(),
+            }),
+            method: 'GET',
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
+              400: z.object({
+                numberOfFuckUps: z.number(),
+              }),
+            },
+          },
+        },
+        {
+          strictStatusCodes: true,
+        }
+      );
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract, { validateResponses: true })
+        async postRequest() {
+          return tsRestHandler(contract, {
+            test: async ({ params }) => {
+              const id = params.id;
+
+              if (id === 666) {
+                throw new TsRestException(contract.test, {
+                  status: 400,
+                  body: {
+                    // @ts-expect-error intentionally bad response
+                    bad_response: 666,
+                  },
+                });
+              }
+
+              return {
+                status: 200,
+                body: {
+                  message: 'All is OK',
+                },
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer())
+        .get('/test/666')
+        .send();
+
+      console.log({
+        status: response.status,
+        body: response.body,
+      });
+
+      expect(response.status).toBe(500);
     });
   });
 
