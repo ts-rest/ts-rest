@@ -10,7 +10,6 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  createParamDecorator,
   BadRequestException,
   NotFoundException,
   Get,
@@ -133,6 +132,12 @@ type NestHandlerImplementation<T extends AppRouter | AppRoute> =
           : never;
       };
 
+/**
+ *
+ * @param contract - The contract or route to implement
+ * @param implementation - Implementation of the route or entire contract as an object
+ * @returns
+ */
 export const tsRestHandler = <T extends AppRouter | AppRoute>(
   contract: T,
   implementation: NestHandlerImplementation<T>
@@ -304,7 +309,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
   }
 }
 
-export const validateResponse = (
+const validateResponse = (
   appRoute: AppRoute,
   response: { status: number; body?: unknown }
 ) => {
