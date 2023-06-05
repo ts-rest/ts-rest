@@ -16,8 +16,10 @@ import {
 } from '@tanstack/react-query';
 import {
   AppRoute,
+  AppRouteMutation,
   AppRouter,
   ClientArgs,
+  ClientInferRequest,
   fetchApi,
   getCompleteUrl,
   getRouteQuery,
@@ -30,13 +32,12 @@ import {
   AppRouteFunctions,
   AppRouteFunctionsWithQueryClient,
   DataReturnQueries,
-  FullClientInferRequest,
 } from './inner-types';
 
 const queryFn = <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
   route: TAppRoute,
   clientArgs: TClientArgs,
-  args?: FullClientInferRequest
+  args?: ClientInferRequest<AppRouteMutation, ClientArgs>
 ): QueryFunction<TAppRoute['responses']> => {
   return async (queryFnContext?: QueryFunctionContext) => {
     const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
@@ -82,7 +83,7 @@ const getRouteUseQuery = <
 ) => {
   return (
     queryKey: QueryKey,
-    args?: FullClientInferRequest,
+    args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
     options?: TanStackUseQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn = queryFn(route, clientArgs, args);
@@ -122,7 +123,9 @@ const getRouteUseInfiniteQuery = <
 ) => {
   return (
     queryKey: QueryKey,
-    argsMapper: (context: QueryFunctionContext) => FullClientInferRequest,
+    argsMapper: (
+      context: QueryFunctionContext
+    ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
     options?: TanStackUseInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (context) => {
@@ -145,7 +148,9 @@ const getRouteUseMutation = <
   clientArgs: TClientArgs
 ) => {
   return (options?: TanStackUseMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (args?: FullClientInferRequest) => {
+    const mutationFunction = async (
+      args?: ClientInferRequest<AppRouteMutation, ClientArgs>
+    ) => {
       const dataFn = queryFn(route, clientArgs, args);
 
       return dataFn(undefined as any);
@@ -196,7 +201,7 @@ export const initQueryClient = <
               fetchQuery: (
                 queryClient: QueryClient,
                 queryKey: QueryKey,
-                args: FullClientInferRequest,
+                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) => {
                 const dataFn = queryFn(subRouter, clientArgs, args);
@@ -207,7 +212,7 @@ export const initQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext
-                ) => FullClientInferRequest,
+                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) => {
                 return queryClient.fetchInfiniteQuery(
@@ -229,7 +234,7 @@ export const initQueryClient = <
               prefetchQuery: (
                 queryClient: QueryClient,
                 queryKey: QueryKey,
-                args: FullClientInferRequest,
+                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) => {
                 const dataFn = queryFn(subRouter, clientArgs, args);
@@ -241,7 +246,7 @@ export const initQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext
-                ) => FullClientInferRequest,
+                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) => {
                 return queryClient.prefetchInfiniteQuery(
@@ -270,7 +275,7 @@ export const initQueryClient = <
               ensureQueryData: (
                 queryClient: QueryClient,
                 queryKey: QueryKey,
-                args: FullClientInferRequest,
+                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) => {
                 const dataFn = queryFn(subRouter, clientArgs, args);
@@ -352,7 +357,7 @@ export const useTsRestQueryClient = <
               ...routeFunctions,
               fetchQuery: (
                 queryKey: QueryKey,
-                args: FullClientInferRequest,
+                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) =>
                 routeFunctions.fetchQuery(
@@ -365,7 +370,7 @@ export const useTsRestQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext
-                ) => FullClientInferRequest,
+                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) =>
                 routeFunctions.fetchInfiniteQuery(
@@ -376,7 +381,7 @@ export const useTsRestQueryClient = <
                 ),
               prefetchQuery: (
                 queryKey: QueryKey,
-                args: FullClientInferRequest,
+                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) =>
                 routeFunctions.prefetchQuery(
@@ -389,7 +394,7 @@ export const useTsRestQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext
-                ) => FullClientInferRequest,
+                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) =>
                 routeFunctions.prefetchInfiniteQuery(
@@ -402,7 +407,7 @@ export const useTsRestQueryClient = <
                 routeFunctions.getQueryData(queryClient, queryKey, filters),
               ensureQueryData: (
                 queryKey: QueryKey,
-                args: FullClientInferRequest,
+                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
                 options?: FetchQueryOptions<any>
               ) =>
                 routeFunctions.ensureQueryData(

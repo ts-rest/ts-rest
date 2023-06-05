@@ -124,11 +124,6 @@ type DataReturnMutation<
   unknown
 >;
 
-type FullClientInferRequest = ClientInferRequest<
-  AppRouteMutation & { path: '/:placeholder' },
-  ClientArgs
->;
-
 const getRouteUseQuery = <
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs
@@ -138,7 +133,7 @@ const getRouteUseQuery = <
 ) => {
   return (
     queryKey: () => QueryKey,
-    args: FullClientInferRequest,
+    args: ClientInferRequest<AppRouteMutation, ClientArgs>,
     options?: CreateQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async ({
@@ -190,7 +185,9 @@ const getRouteUseInfiniteQuery = <
 ) => {
   return (
     queryKey: () => QueryKey,
-    args: (context: QueryFunctionContext) => FullClientInferRequest,
+    args: (
+      context: QueryFunctionContext
+    ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
     options?: CreateInfiniteQueryOptions<TAppRoute['responses']>
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (
@@ -243,7 +240,9 @@ const getRouteUseMutation = <
   clientArgs: TClientArgs
 ) => {
   return (options?: CreateMutationOptions<TAppRoute['responses']>) => {
-    const mutationFunction = async (args: FullClientInferRequest) => {
+    const mutationFunction = async (
+      args: ClientInferRequest<AppRouteMutation, ClientArgs>
+    ) => {
       const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
         args || {};
 

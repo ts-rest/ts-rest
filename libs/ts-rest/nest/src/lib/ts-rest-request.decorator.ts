@@ -19,20 +19,17 @@ export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
   Request['headers']
 >;
 
-type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
-
 /**
  * Parameter decorator used to parse, validate and return the typed request object
  */
 export const TsRestRequest = createParamDecorator(
-  (
-    _: unknown,
-    ctx: ExecutionContext
-  ): TsRestRequestShape<AppRouteMutationWithParams> => {
+  (_: unknown, ctx: ExecutionContext): TsRestRequestShape<AppRouteMutation> => {
     const req: Request = ctx.switchToHttp().getRequest();
 
-    const appRoute: AppRouteMutationWithParams | undefined =
-      Reflect.getMetadata(TsRestAppRouteMetadataKey, ctx.getHandler());
+    const appRoute: AppRouteMutation | undefined = Reflect.getMetadata(
+      TsRestAppRouteMetadataKey,
+      ctx.getHandler()
+    );
 
     if (!appRoute) {
       // this will respond with a 500 error without revealing this error message in the response body

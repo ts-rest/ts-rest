@@ -180,8 +180,6 @@ const requestValidationErrorHandler = (
   };
 };
 
-type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
-
 /**
  *
  * @param routeImpl - User's implementation of the route
@@ -190,7 +188,7 @@ type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
  * @param options - options for the routers
  */
 const registerRoute = <TAppRoute extends AppRoute>(
-  routeImpl: AppRouteImplementation<AppRouteMutationWithParams>,
+  routeImpl: AppRouteImplementation<AppRoute>,
   appRoute: TAppRoute,
   fastify: fastify.FastifyInstance,
   options: RegisterRouterOptions

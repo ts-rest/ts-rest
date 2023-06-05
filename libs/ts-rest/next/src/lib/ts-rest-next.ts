@@ -7,7 +7,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import {
   AppRoute,
-  AppRouteMutation,
   AppRouteQuery,
   AppRouter,
   checkZodSchema,

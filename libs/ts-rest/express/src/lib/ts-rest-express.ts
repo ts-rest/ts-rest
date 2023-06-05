@@ -25,8 +25,6 @@ import {
 } from './types';
 import { RequestValidationError } from './request-validation-error';
 
-type AppRouteWithParams = AppRoute & { path: '/:placeholder' };
-
 export const initServer = () => {
   return {
     router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
@@ -123,7 +121,7 @@ const initializeExpressRoute = ({
   app,
   options,
 }: {
-  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteWithParams>;
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRoute>;
   schema: AppRoute;
   app: IRouter;
   options: TsRestExpressOptions<any>;
@@ -181,7 +179,7 @@ const initializeExpressRoute = ({
     }
   };
 
-  const handlers: TsRestRequestHandler<AppRouteWithParams>[] = [
+  const handlers: TsRestRequestHandler<AppRoute>[] = [
     (req, res, next) => {
       req.tsRestRoute = schema as any;
       next();
@@ -272,7 +270,7 @@ export const createExpressEndpoints = <TRouter extends AppRouter>(
     processRoute: (implementation, innerSchema) => {
       initializeExpressRoute({
         implementationOrOptions:
-          implementation as AppRouteImplementationOrOptions<AppRouteWithParams>,
+          implementation as AppRouteImplementationOrOptions<AppRoute>,
         schema: innerSchema,
         app,
         options,

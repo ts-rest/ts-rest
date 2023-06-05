@@ -186,7 +186,9 @@ type ClientInferRequestBase<
 > = Prettify<
   Without<
     {
-      params: [undefined] extends PathParamsWithCustomValidators<T, 'client'>
+      params: [keyof PathParamsWithCustomValidators<T, 'client'>] extends [
+        never
+      ]
         ? never
         : Prettify<PathParamsWithCustomValidators<T, 'client'>>;
       body: T extends AppRouteMutation
