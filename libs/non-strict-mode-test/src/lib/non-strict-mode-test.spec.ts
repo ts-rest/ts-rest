@@ -82,3 +82,9 @@ export const prefixedContract = c.router(
 );
 
 prefixedContract.createPost.path;
+
+describe('non-strict-mode-test', () => {
+  it('should work', () => {
+    expect(true).toEqual(true);
+  });
+});
