@@ -157,7 +157,7 @@ type ContractInstance = {
   router: <
     TRouter extends AppRouter,
     TPrefix extends string,
-    TOptions extends RouterOptions<TPrefix>
+    TOptions extends RouterOptions<TPrefix> = {}
   >(
     endpoints: RecursivelyProcessAppRouter<TRouter, TOptions>,
     options?: TOptions
