@@ -234,7 +234,7 @@ function transform(context: ts.TransformationContext) {
                         Object.keys(headersMap).map((key) =>
                           factory.createBindingElement(
                             undefined,
-                            factory.createStringLiteral(key),
+                            factory.createStringLiteral(key.toLowerCase()),
                             factory.createIdentifier(headersMap[key]),
                             undefined
                           )
@@ -245,7 +245,8 @@ function transform(context: ts.TransformationContext) {
 
                     if (
                       tsRestRequestParam &&
-                      ts.isObjectBindingPattern(tsRestRequestParam.name)
+                      ts.isObjectBindingPattern(tsRestRequestParam.name) &&
+                      Object.keys(headersMap).length > 0
                     ) {
                       console.log('if');
                       nameUpdatedWithHeaders =
