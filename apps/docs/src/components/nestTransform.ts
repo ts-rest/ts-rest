@@ -171,6 +171,51 @@ function transform(context: ts.TransformationContext) {
                 contractIdentifier,
                 factory.createObjectLiteralExpression(
                   tsRestMethods.map((controllerMethod) => {
+                    const headersMap: { [key: string]: string } = {};
+
+                    // Find parameters with the @Headers decorator
+                    controllerMethod.parameters.forEach((param) => {
+                      if (
+                        ts.canHaveDecorators(param) &&
+                        ts
+                          .getDecorators(param)
+                          ?.some((decorator) =>
+                            decorator.expression.getText().includes('Headers')
+                          )
+                      ) {
+                        const paramName = param.name.getText();
+
+                        // Extract the header name from the decorator
+                        const decorator = ts
+                          .getDecorators(param)
+                          ?.find((decorator) =>
+                            decorator.expression.getText().includes('Headers')
+                          );
+
+                        let headerName: string | undefined;
+                        if (
+                          decorator &&
+                          ts.isCallExpression(decorator.expression)
+                        ) {
+                          const args = decorator.expression.arguments;
+                          if (
+                            args &&
+                            args.length > 0 &&
+                            ts.isStringLiteral(args[0])
+                          ) {
+                            headerName = args[0].text;
+                          }
+                        }
+
+                        if (headerName) {
+                          // Store the header name and parameter name in the headers map
+                          headersMap[headerName] = paramName;
+                        }
+                      }
+                    });
+
+                    console.log('headersMap', headersMap);
+
                     // Find the parameter with the @TsRestRequest() decorator.
                     const tsRestRequestParam = controllerMethod.parameters.find(
                       (param) =>
@@ -183,6 +228,8 @@ function transform(context: ts.TransformationContext) {
                               .includes('TsRestRequest')
                           )
                     );
+
+                    // New code here, then mutate the ts-rest parameter
 
                     // Create a new parameter based on the old one, but without the decorator and type.
                     const newParam = tsRestRequestParam
