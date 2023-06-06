@@ -1,5 +1,7 @@
 # @ts-rest/next
 
+## 3.26.0-rc3.0
+
 ## 3.25.1
 
 ### Patch Changes

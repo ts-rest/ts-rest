@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.26.0-rc3.0
+
+### Minor Changes
+
+- e8ea535: Add new `SingleHandler` and `MultiHandler` API to `@ts-rest/nest`
+
 ## 3.25.1
 
 ### Patch Changes
