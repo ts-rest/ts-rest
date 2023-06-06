@@ -229,7 +229,38 @@ function transform(context: ts.TransformationContext) {
                           )
                     );
 
-                    // New code here, then mutate the ts-rest parameter
+                    const headersObjectLiteral =
+                      factory.createObjectBindingPattern(
+                        Object.keys(headersMap).map((key) =>
+                          factory.createBindingElement(
+                            undefined,
+                            factory.createStringLiteral(key),
+                            factory.createIdentifier(headersMap[key]),
+                            undefined
+                          )
+                        )
+                      );
+
+                    let nameUpdatedWithHeaders;
+
+                    if (
+                      tsRestRequestParam &&
+                      ts.isObjectBindingPattern(tsRestRequestParam.name)
+                    ) {
+                      console.log('if');
+                      nameUpdatedWithHeaders =
+                        factory.createObjectBindingPattern([
+                          ...tsRestRequestParam.name.elements,
+                          factory.createBindingElement(
+                            undefined,
+                            'headers',
+                            headersObjectLiteral
+                          ),
+                        ]);
+                    } else {
+                      console.log('else');
+                      nameUpdatedWithHeaders = tsRestRequestParam?.name;
+                    }
 
                     // Create a new parameter based on the old one, but without the decorator and type.
                     const newParam = tsRestRequestParam
@@ -237,10 +268,9 @@ function transform(context: ts.TransformationContext) {
                           undefined, // No decorators.
                           undefined, // No modifiers.
                           undefined, // No dotDotDotToken.
-                          tsRestRequestParam.name, // Keep the old parameter's name.
+                          nameUpdatedWithHeaders, // Keep the old parameter's name.
                           undefined, // No questionToken.
-                          undefined, // No type.
-                          undefined // No initializer.
+                          undefined // No type.
                         )
                       : undefined;
 
@@ -250,7 +280,6 @@ function transform(context: ts.TransformationContext) {
                         [factory.createModifier(ts.SyntaxKind.AsyncKeyword)],
                         undefined,
                         newParam ? [newParam] : [], // Use the new parameter.
-
                         undefined,
                         factory.createToken(
                           ts.SyntaxKind.EqualsGreaterThanToken
