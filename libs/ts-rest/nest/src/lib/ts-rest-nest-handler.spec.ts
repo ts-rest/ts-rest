@@ -11,6 +11,14 @@ import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
 
+export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
+  T
+>() => T extends b ? 1 : 2
+  ? true
+  : false;
+
+export type Expect<a extends true> = a;
+
 describe('doesUrlMatchContractPath', () => {
   it.each`
     contractPath    | url           | expected
@@ -603,6 +611,42 @@ describe('ts-rest-nest-handler', () => {
       });
 
       expect(response.status).toBe(500);
+    });
+
+    it('types should work well', () => {
+      const c = initContract();
+
+      const contract = c.router({
+        test: {
+          path: '/test/:id',
+          method: 'POST',
+          body: c.body<any>(),
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract)
+        async postRequest() {
+          return tsRestHandler(contract, {
+            test: async ({ body }) => {
+              type BodyShouldBeAny = Expect<Equal<typeof body, any>>;
+
+              return {
+                status: 200,
+                body: {
+                  message: 'All is OK',
+                },
+              };
+            },
+          });
+        }
+      }
     });
   });
 
