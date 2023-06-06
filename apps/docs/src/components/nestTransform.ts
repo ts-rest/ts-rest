@@ -214,8 +214,6 @@ function transform(context: ts.TransformationContext) {
                       }
                     });
 
-                    console.log('headersMap', headersMap);
-
                     // Find the parameter with the @TsRestRequest() decorator.
                     const tsRestRequestParam = controllerMethod.parameters.find(
                       (param) =>
@@ -248,7 +246,6 @@ function transform(context: ts.TransformationContext) {
                       ts.isObjectBindingPattern(tsRestRequestParam.name) &&
                       Object.keys(headersMap).length > 0
                     ) {
-                      console.log('if');
                       nameUpdatedWithHeaders =
                         factory.createObjectBindingPattern([
                           ...tsRestRequestParam.name.elements,
@@ -259,7 +256,6 @@ function transform(context: ts.TransformationContext) {
                           ),
                         ]);
                     } else {
-                      console.log('else');
                       nameUpdatedWithHeaders = tsRestRequestParam?.name;
                     }
 
