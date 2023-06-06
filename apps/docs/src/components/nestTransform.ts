@@ -1,5 +1,25 @@
 import * as ts from 'typescript';
 
+const isClassDecoratorImplementation = (str: string): boolean => {
+  return (
+    str.includes('NestControllerInterface') || str.includes('ControllerShape')
+  );
+};
+
+const isNestControllerContract = (str: string): boolean => {
+  return (
+    str.includes('initNestServer') || str.includes('nestControllerContract')
+  );
+};
+
+const isTsRestParameterDecoratorName = (str: string): boolean => {
+  return str.includes('ApiDecorator') || str.includes('TsRestRequest');
+};
+
+const isTsRestMethodDecorator = (str: string): boolean => {
+  return str.includes('Api') || str.includes('TsRest');
+};
+
 function transform(context: ts.TransformationContext) {
   const { factory } = context;
 
@@ -10,19 +30,6 @@ function transform(context: ts.TransformationContext) {
       // Look for the variable assignment to 'nestControllerContract' and store the contract Identifier
       if (ts.isVariableStatement(node)) {
         const declaration = node.declarationList.declarations[0];
-        if (
-          declaration &&
-          declaration.initializer &&
-          ts.isCallExpression(declaration.initializer)
-        ) {
-          if (
-            declaration.initializer.expression.getText() ===
-            'nestControllerContract'
-          ) {
-            contractIdentifier = declaration.initializer
-              .arguments[0] as ts.Identifier;
-          }
-        }
 
         if (
           declaration &&
@@ -30,23 +37,31 @@ function transform(context: ts.TransformationContext) {
           ts.isCallExpression(declaration.initializer)
         ) {
           if (
-            declaration.initializer.expression.getText() ===
-            'nestControllerContract'
+            isNestControllerContract(
+              declaration.initializer.expression.getText()
+            )
           ) {
+            console.log(
+              'transform - found the nestControllerContract function, saving contract name and deleting line'
+            );
+
+            contractIdentifier = declaration.initializer
+              .arguments[0] as ts.Identifier;
             return factory.createEmptyStatement();
           }
         }
       }
 
       if (ts.isClassDeclaration(node)) {
+        console.log('transform - found class, trying to transform');
+
         const newMembers = transformMethods(node.members);
 
         if (newMembers) {
           const newHeritageClauses = node.heritageClauses?.filter(
             (heritageClause) =>
-              !heritageClause.types.some(
-                (type) =>
-                  type.expression.getText() === 'NestControllerInterface'
+              !heritageClause.types.some((type) =>
+                isClassDecoratorImplementation(type.expression.getText())
               )
           );
 
@@ -125,7 +140,7 @@ function transform(context: ts.TransformationContext) {
               ts
                 .getDecorators(member)
                 ?.some((decorator) =>
-                  decorator.expression.getText().includes('TsRest')
+                  isTsRestMethodDecorator(decorator.expression.getText())
                 )) ??
             false;
 
@@ -152,6 +167,8 @@ function transform(context: ts.TransformationContext) {
           [contractIdentifier]
         )
       );
+
+      console.log('transform - trying to generate the handler function');
 
       const handlerFunction = factory.createMethodDeclaration(
         [decorator],
@@ -214,6 +231,10 @@ function transform(context: ts.TransformationContext) {
                       }
                     });
 
+                    console.log(
+                      'transform - trying to find the parameter with the @TsRestRequest decorator'
+                    );
+
                     // Find the parameter with the @TsRestRequest() decorator.
                     const tsRestRequestParam = controllerMethod.parameters.find(
                       (param) =>
@@ -221,10 +242,15 @@ function transform(context: ts.TransformationContext) {
                         ts
                           .getDecorators(param)
                           ?.some((decorator) =>
-                            decorator.expression
-                              .getText()
-                              .includes('TsRestRequest')
+                            isTsRestParameterDecoratorName(
+                              decorator.expression.getText()
+                            )
                           )
+                    );
+
+                    console.log(
+                      `transform - found @Headers with values`,
+                      headersMap
                     );
 
                     const headersObjectLiteral =
@@ -350,6 +376,8 @@ export const transformLegacyNestController = (oldCode: string) => {
     ts.ScriptTarget.ES2015,
     true
   );
+
+  console.log('transformer - starting transformation');
 
   const result = ts.transform(sourceFile, [
     transform,
