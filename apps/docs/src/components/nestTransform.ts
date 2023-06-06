@@ -117,6 +117,10 @@ function transform(context: ts.TransformationContext) {
         | ts.MethodDeclaration[]
         | undefined;
 
+      // Preserve property declarations
+      const propertyDeclarations = members.filter(ts.isPropertyDeclaration) as
+        | ts.PropertyDeclaration[];
+
       if (!constructor || !controllerMethods || !contractIdentifier) {
         return;
       }
@@ -199,6 +203,7 @@ function transform(context: ts.TransformationContext) {
       const newMembers = factory.createNodeArray([
         constructor,
         handlerFunction,
+        ...propertyDeclarations,
       ]);
 
       return newMembers;
