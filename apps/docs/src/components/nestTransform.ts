@@ -113,15 +113,35 @@ function transform(context: ts.TransformationContext) {
       const constructor = members.find(ts.isConstructorDeclaration) as
         | ts.ConstructorDeclaration
         | undefined;
-      const controllerMethods = members.filter(ts.isMethodDeclaration) as
-        | ts.MethodDeclaration[]
-        | undefined;
+
+      // Split methods into ones that have the TsRest decorator and ones that do not
+      const tsRestMethods: ts.MethodDeclaration[] = [];
+      const nonTsRestMethods: ts.MethodDeclaration[] = [];
+
+      members.forEach((member) => {
+        if (ts.isMethodDeclaration(member)) {
+          const hasTsRestDecorator =
+            (ts.canHaveDecorators(member) &&
+              ts
+                .getDecorators(member)
+                ?.some((decorator) =>
+                  decorator.expression.getText().includes('TsRest')
+                )) ??
+            false;
+
+          if (hasTsRestDecorator) {
+            tsRestMethods.push(member);
+          } else {
+            nonTsRestMethods.push(member);
+          }
+        }
+      });
 
       // Preserve property declarations
       const propertyDeclarations = members.filter(ts.isPropertyDeclaration) as
         | ts.PropertyDeclaration[];
 
-      if (!constructor || !controllerMethods || !contractIdentifier) {
+      if (!constructor || !tsRestMethods.length || !contractIdentifier) {
         return;
       }
 
@@ -150,7 +170,7 @@ function transform(context: ts.TransformationContext) {
               [
                 contractIdentifier,
                 factory.createObjectLiteralExpression(
-                  controllerMethods.map((controllerMethod) => {
+                  tsRestMethods.map((controllerMethod) => {
                     // Find the parameter with the @TsRestRequest() decorator.
                     const tsRestRequestParam = controllerMethod.parameters.find(
                       (param) =>
@@ -202,6 +222,7 @@ function transform(context: ts.TransformationContext) {
 
       const newMembers = factory.createNodeArray([
         constructor,
+        ...nonTsRestMethods, // Add non-TsRest methods to the top level of the class
         handlerFunction,
         ...propertyDeclarations,
       ]);
