@@ -32,7 +32,6 @@ import {
 import {
   JsonQuerySymbol,
   TsRestAppRouteMetadataKey,
-  TsRestAppRouterMetadataKey,
   ValidateResponsesSymbol,
 } from './constants';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
@@ -93,7 +92,7 @@ export const TsRestHandler = (
 
     decorators.push(
       All(routerPaths),
-      SetMetadata(TsRestAppRouterMetadataKey, appRouterOrRoute),
+      SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
       UseInterceptors(TsRestHandlerInterceptor)
     );
   } else {
@@ -194,31 +193,25 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
   private getAppRouteFromContext(ctx: ExecutionContext) {
     const req: Request = ctx.switchToHttp().getRequest();
 
-    const appRoute = this.reflector.get<AppRoute | undefined>(
+    const appRoute = this.reflector.get<AppRoute | AppRouter | undefined>(
       TsRestAppRouteMetadataKey,
       ctx.getHandler()
     );
 
-    if (appRoute) {
+    if (!appRoute) {
+      throw new Error(
+        'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method'
+      );
+    }
+
+    if (isAppRoute(appRoute)) {
       return {
         appRoute,
         routeAlias: undefined,
       };
     }
 
-    /**
-     * Therefore we must be on a multi-handler so let's get the route in the router
-     */
-    const appRouter = this.reflector.get<AppRouter | undefined>(
-      TsRestAppRouterMetadataKey,
-      ctx.getHandler()
-    );
-
-    if (!appRouter) {
-      throw new Error(
-        'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method'
-      );
-    }
+    const appRouter = appRoute;
 
     const foundAppRoute = Object.entries(appRouter).find(([key, value]) => {
       if (isAppRoute(value)) {

@@ -14,7 +14,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import {
   TsRestAppRouteMetadataKey,
-  TsRestAppRouterMetadataKey,
   ValidateResponsesSymbol,
 } from './constants';
 import type { Response } from 'express-serve-static-core';
