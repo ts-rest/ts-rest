@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Headers, Query } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
 import {
   nestControllerContract,
@@ -54,7 +54,12 @@ export class PostController implements NestControllerInterface<typeof c> {
   }
 
   @TsRest(c.createPost)
-  async createPost(@TsRestRequest() { body }: RequestShapes['createPost']) {
+  async createPost(
+    @TsRestRequest() { body }: RequestShapes['createPost'],
+    @Headers('x-test') test: string
+  ) {
+    console.log(test);
+
     const post = await this.postService.createPost({
       title: body.title,
       content: body.content,

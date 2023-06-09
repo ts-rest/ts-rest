@@ -162,6 +162,88 @@ const getTransformer = (output: 'single-handler' | 'multiple-handler') => {
           return;
         }
 
+        console.log('transform - trying to generate the handler function');
+
+        const singleHandlers = tsRestMethods.map((controllerMethod) => {
+          const contractAccess = factory.createPropertyAccessExpression(
+            contractIdentifier!,
+            factory.createIdentifier(controllerMethod.name.getText())
+          );
+
+          const decorator = factory.createDecorator(
+            factory.createCallExpression(
+              factory.createIdentifier('TsRestHandler'),
+              undefined,
+              [contractAccess]
+            )
+          );
+
+          const paramsWithoutTsRestDecorators =
+            controllerMethod.parameters.filter(
+              (param) =>
+                !ts
+                  .getDecorators(param)
+                  ?.some((decorator) =>
+                    isTsRestParameterDecoratorName(
+                      decorator.expression.getText()
+                    )
+                  )
+            );
+
+          const originalTsRestParamDecorator = controllerMethod.parameters.find(
+            (param) =>
+              ts
+                .getDecorators(param)
+                ?.some((decorator) =>
+                  isTsRestParameterDecoratorName(decorator.expression.getText())
+                )
+          );
+
+          // Create a new parameter based on the old one, but without the decorator and type.
+          const newParam = originalTsRestParamDecorator
+            ? factory.createParameterDeclaration(
+                undefined, // No decorators.
+                undefined, // No modifiers.
+                undefined, // No dotDotDotToken.
+                originalTsRestParamDecorator.name, // Keep the old parameter's name.
+                undefined, // No questionToken.
+                undefined // No type.
+              )
+            : undefined;
+
+          const handler = factory.createMethodDeclaration(
+            [decorator, ...(controllerMethod.decorators ?? [])],
+            undefined,
+            undefined,
+            controllerMethod.name,
+            undefined,
+            undefined,
+            paramsWithoutTsRestDecorators,
+            controllerMethod.type,
+            factory.createBlock([
+              factory.createReturnStatement(
+                factory.createCallExpression(
+                  factory.createIdentifier('tsRestHandler'),
+                  undefined,
+                  [
+                    contractAccess,
+                    factory.createArrowFunction(
+                      [factory.createModifier(ts.SyntaxKind.AsyncKeyword)],
+                      undefined,
+                      [...(newParam ? [newParam] : [])],
+                      undefined,
+                      factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                      controllerMethod.body || factory.createBlock([])
+                    ),
+                  ]
+                )
+              ),
+            ])
+          );
+
+          return handler;
+        });
+
         const decorator = factory.createDecorator(
           factory.createCallExpression(
             factory.createIdentifier('TsRestHandler'),
@@ -170,9 +252,7 @@ const getTransformer = (output: 'single-handler' | 'multiple-handler') => {
           )
         );
 
-        console.log('transform - trying to generate the handler function');
-
-        const handlerFunction = factory.createMethodDeclaration(
+        const combinedHandlerFunction = factory.createMethodDeclaration(
           [decorator],
           undefined,
           undefined,
@@ -325,7 +405,9 @@ const getTransformer = (output: 'single-handler' | 'multiple-handler') => {
         const newMembers = factory.createNodeArray([
           constructor,
           ...nonTsRestMethods, // Add non-TsRest methods to the top level of the class
-          handlerFunction,
+          ...(output === 'single-handler'
+            ? singleHandlers
+            : [combinedHandlerFunction]),
           ...propertyDeclarations,
         ]);
 
