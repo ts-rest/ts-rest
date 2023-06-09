@@ -7,11 +7,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import {
   AppRoute,
-  AppRouteMutation,
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
@@ -248,20 +248,28 @@ export const createNextRouter = <T extends AppRouter>(
       });
 
       const statusCode = Number(status);
+      const responseType = route.responses[statusCode];
+
+      let validatedResponseBody = body;
 
       if (responseValidation) {
         const response = validateResponse({
-          responseType: route.responses[statusCode],
+          responseType,
           response: {
             status: statusCode,
             body: body,
           },
         });
 
-        return res.status(statusCode).json(response.body);
+        validatedResponseBody = response.body;
       }
 
-      return res.status(statusCode).json(body);
+      if (isAppRouteOtherResponse(responseType)) {
+        res.setHeader('content-type', responseType.contentType);
+        return res.status(statusCode).send(validatedResponseBody);
+      }
+
+      return res.status(statusCode).json(validatedResponseBody);
     } catch (e) {
       if (options?.errorHandler) {
         options.errorHandler(e, req, res);

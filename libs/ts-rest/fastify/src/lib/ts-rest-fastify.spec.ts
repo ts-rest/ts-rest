@@ -287,4 +287,106 @@ describe('ts-rest-fastify', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({ id: '10' });
   });
+
+  it('should handle non-json response types from contract', async () => {
+    const c = initContract();
+
+    const nonJsonContract = c.router({
+      postIndex: {
+        method: 'POST',
+        path: `/index.html`,
+        body: z.object({
+          echoHtml: z.string(),
+        }),
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string().regex(/^<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>$/im),
+          }),
+        },
+      },
+      getRobots: {
+        method: 'GET',
+        path: `/robots.txt`,
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/plain',
+            body: c.type<string>(),
+          }),
+        },
+      },
+      getCss: {
+        method: 'GET',
+        path: '/style.css',
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.type<string>(),
+          }),
+        },
+      },
+    });
+
+    const nonJsonRouter = s.router(nonJsonContract, {
+      postIndex: async ({ body: { echoHtml } }) => {
+        return {
+          status: 200,
+          body: echoHtml,
+        };
+      },
+      getRobots: async () => {
+        return {
+          status: 200,
+          body: 'User-agent: * Disallow: /',
+        };
+      },
+      getCss: async () => {
+        return {
+          status: 200,
+          body: 'body { color: red; }',
+        };
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(nonJsonContract, nonJsonRouter, app, {
+      logInitialization: false,
+      responseValidation: true,
+    });
+
+    app.setErrorHandler((err, request, reply) => {
+      reply.status(500).send(err.message);
+    });
+
+    await app.ready();
+
+    const responseHtml = await supertest(app.server).post('/index.html').send({
+      echoHtml: '<h1>hello world</h1>',
+    });
+    expect(responseHtml.status).toEqual(200);
+    expect(responseHtml.text).toEqual('<h1>hello world</h1>');
+    expect(responseHtml.header['content-type']).toEqual('text/html');
+
+    const responseHtmlFail = await supertest(app.server)
+      .post('/index.html')
+      .send({
+        echoHtml: 'hello world',
+      });
+    expect(responseHtmlFail.status).toEqual(500);
+    expect(responseHtmlFail.text).toEqual('Response validation failed');
+    expect(responseHtmlFail.header['content-type']).toEqual(
+      'text/plain; charset=utf-8'
+    );
+
+    const responseTextPlain = await supertest(app.server).get('/robots.txt');
+    expect(responseTextPlain.status).toEqual(200);
+    expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
+    expect(responseTextPlain.header['content-type']).toEqual('text/plain');
+
+    const responseCss = await supertest(app.server).get('/style.css');
+    expect(responseCss.status).toEqual(200);
+    expect(responseCss.text).toEqual('body { color: red; }');
+    expect(responseCss.header['content-type']).toEqual('text/css');
+  });
 });

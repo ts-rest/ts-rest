@@ -5,7 +5,6 @@ import {
   AppRouteQuery,
   AreAllPropertiesOptional,
   ClientArgs,
-  ClientInferRequest,
   PartialClientInferRequest,
 } from '@ts-rest/core';
 import {
@@ -25,11 +24,6 @@ import {
   QueryFunctionContext,
   QueryKey,
 } from '@tanstack/react-query';
-
-export type FullClientInferRequest = ClientInferRequest<
-  AppRouteMutation & { path: '/:placeholder' },
-  ClientArgs
->;
 
 export type AppRouteFunctions<
   TAppRoute extends AppRoute,

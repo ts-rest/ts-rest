@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from 'zod';
-import { initContract } from './dsl';
+import {
+  initContract,
+  ContractOtherResponse,
+  ContractPlainType,
+  ContractPlainTypeRuntimeSymbol,
+} from './dsl';
 import type { Equal, Expect } from './test-helpers';
+
 const c = initContract();
 
 describe('contract', () => {
@@ -354,9 +360,9 @@ describe('contract', () => {
             method: 'GET';
             path: '/posts/:id';
             responses: {
-              200: {
+              200: ContractPlainType<{
                 id: number;
-              };
+              }>;
             };
           };
         }
@@ -506,7 +512,7 @@ describe('contract', () => {
             getPost: {
               path: '/posts/:id';
               method: 'GET';
-              responses: { 200: { id: string } };
+              responses: { 200: ContractPlainType<{ id: string }> };
             };
           }
         >
@@ -520,12 +526,39 @@ describe('contract', () => {
               getPost: {
                 path: '/v1/posts/:id';
                 method: 'GET';
-                responses: { 200: { id: string } };
+                responses: { 200: ContractPlainType<{ id: string }> };
               };
             };
           }
         >
       >;
     });
+  });
+
+  it('should set type correctly for non-json response', () => {
+    const contract = c.router({
+      getCss: {
+        method: 'GET',
+        path: '/style.css',
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.response<string>(),
+          }),
+        },
+      },
+    });
+
+    expect(contract.getCss.responses['200']).toEqual({
+      contentType: 'text/css',
+      body: ContractPlainTypeRuntimeSymbol,
+    });
+
+    type ResponseType = Expect<
+      Equal<
+        typeof contract.getCss.responses['200'],
+        ContractOtherResponse<ContractPlainType<string>>
+      >
+    >;
   });
 });

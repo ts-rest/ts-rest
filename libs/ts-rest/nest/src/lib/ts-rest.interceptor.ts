@@ -5,7 +5,12 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { AppRoute, isAppRouteResponse, validateResponse } from '@ts-rest/core';
+import {
+  AppRoute,
+  isAppRouteOtherResponse,
+  isAppRouteResponse,
+  validateResponse,
+} from '@ts-rest/core';
 import { Reflector } from '@nestjs/core';
 import {
   TsRestAppRouteMetadataKey,
@@ -41,12 +46,19 @@ export class TsRestInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((value) => {
         if (isAppRouteResponse(value)) {
+          const statusCode = value.status;
+          const responseType = appRoute.responses[statusCode];
+
           const response = isValidationEnabled
             ? validateResponse({
-                responseType: appRoute.responses[value.status],
+                responseType,
                 response: value,
               })
             : value;
+
+          if (isAppRouteOtherResponse(responseType)) {
+            res.setHeader('content-type', responseType.contentType);
+          }
 
           res.status(response.status);
           return response.body;

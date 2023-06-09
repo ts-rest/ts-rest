@@ -32,11 +32,9 @@ export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
   T,
   {}
 > extends infer U
-  ? keyof U extends never
-    ? undefined
-    : {
-        [key in keyof U]: U[key];
-      }
+  ? {
+      [key in keyof U]: U[key];
+    }
   : never;
 
 /**
@@ -53,7 +51,7 @@ export const insertParamsIntoPath = <T extends string>({
 }) => {
   return path
     .replace(/:([^/]+)/g, (_, p) => {
-      return params?.[p] || '';
+      return (params as any)[p] || '';
     })
     .replace(/\/\//g, '/');
 };
