@@ -8,16 +8,27 @@ export const NestLegacyTransformer = () => {
   const [outputCode, setOutputCode] = useState<string>('');
 
   const handleTransform = () => {
-    setOutputCode(transformLegacyNestController(inputCode));
+    setOutputCode(transformLegacyNestController(inputCode, 'single-handler'));
   };
 
   return (
     <div>
-      <h2>Legacy Controller Migrator</h2>
+      <h2>Legacy Controller Migrator 🪄</h2>
       <p>
-        This is likely to have issues, so please contribute, but it's a basic
-        AST converter to help you transform from Legacy to the new Approach
+        Our mission has always been to reduce friction, allow for incremental
+        adoption and speed up your delivery. That also goes for us making large
+        updates to our API/Libraries
       </p>
+      <ol>
+        <li>
+          Copy your legacy NestJS controller code into the input box below
+        </li>
+        <li>
+          Select the output type you want to transform to (single or multiple
+          handlers)
+        </li>
+        <li>Click transform 🤑</li>
+      </ol>
       <div>
         <textarea
           value={inputCode}
@@ -35,6 +46,10 @@ export const NestLegacyTransformer = () => {
         >
           Copy output to clipboard
         </button>
+        <select>
+          <option value="single-handler">Single Handler</option>
+          <option value="multiple-handlers">Multiple Handlers</option>
+        </select>
       </div>
       <textarea value={outputCode} style={{ width: '100%', height: '200px' }} />
     </div>
