@@ -27,7 +27,7 @@ import {
   checkZodSchema,
   parseJsonQueryObject,
   ServerInferResponses,
-  isAppRouteResponse,
+  isAppRouteOtherResponse,
 } from '@ts-rest/core';
 import {
   JsonQuerySymbol,
@@ -85,7 +85,7 @@ export const TsRestHandler = (
   if (isMultiHandler) {
     const routerPaths: string[] = [];
 
-    Object.entries(appRouterOrRoute).forEach(([key, value]) => {
+    Object.values(appRouterOrRoute).forEach((value) => {
       if (isAppRoute(value)) {
         routerPaths.push(value.path);
       }
@@ -316,6 +316,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
             result = {
               status: e.getStatus(),
               body: e.getResponse(),
+              error: true,
             };
           } else {
             throw e;
@@ -325,6 +326,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         const responseAfterValidation = isValidationEnabled
           ? validateResponse(appRoute, result)
           : result;
+
+        const responseType = appRoute.responses[result.status];
+        if (!result.error && isAppRouteOtherResponse(responseType)) {
+          res.setHeader('content-type', responseType.contentType);
+        }
 
         res.status(responseAfterValidation.status);
         return responseAfterValidation.body;
@@ -339,7 +345,10 @@ const validateResponse = (
 ) => {
   const { body } = response;
 
-  const responseSchema = appRoute.responses[response.status];
+  const responseType = appRoute.responses[response.status];
+  const responseSchema = isAppRouteOtherResponse(responseType)
+    ? responseType.body
+    : responseType;
 
   if (!responseSchema) {
     throw new InternalServerErrorException(
