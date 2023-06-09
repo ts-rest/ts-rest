@@ -1,0 +1,24 @@
+{
+  "name": "non-strict-mode-test",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/non-strict-mode-test/src",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["coverage/libs/non-strict-mode-test"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/libs/non-strict-mode-test"
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/non-strict-mode-test/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}

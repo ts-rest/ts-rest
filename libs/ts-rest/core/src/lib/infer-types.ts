@@ -137,11 +137,10 @@ export type ClientInferResponseBody<
   TStatus extends keyof T['responses'] = keyof T['responses']
 > = Prettify<AppRouteResponses<T, TStatus & HTTPStatusCode, 'client'>['body']>;
 
-type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> = Prettify<
+type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
     ? Without<ZodInferOrType<T['body']>, File>
-    : ZodInferOrType<T['body']>
->;
+    : ZodInferOrType<T['body']>;
 
 export type ServerInferRequest<
   T extends AppRoute | AppRouter,

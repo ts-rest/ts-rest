@@ -28,6 +28,7 @@ export const apiBlog = c.router(
       path: '/posts',
       responses: {
         201: PostSchema,
+        400: z.object({ message: z.string() }),
       },
       body: z.object({
         title: z.string().transform((v) => v.trim()),

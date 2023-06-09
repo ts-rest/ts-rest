@@ -54,6 +54,18 @@ describe('checkZodSchema', () => {
     expect(result.data).toEqual({ a: 1, b: 2 });
   });
 
+  it('should not pass through extra keys if passThroughExtraKeys is false', () => {
+    const result = checkZodSchema({ a: 1, b: 2 }, z.object({ a: z.number() }));
+
+    expect(result.success).toBe(true);
+
+    if (!result.success) {
+      throw new Error('This should not happen');
+    }
+
+    expect(result.data).toEqual({ a: 1 });
+  });
+
   it.each([undefined, null, '', { a: '123' }])(
     'should return true if schema is not a valid zod schema - $i',
     (i) => {
