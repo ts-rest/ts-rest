@@ -219,7 +219,7 @@ const getTransformer = (output: 'single-handler' | 'multiple-handler') => {
             undefined,
             undefined,
             paramsWithoutTsRestDecorators,
-            controllerMethod.type,
+            undefined,
             factory.createBlock([
               factory.createReturnStatement(
                 factory.createCallExpression(
