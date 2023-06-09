@@ -20,7 +20,7 @@ const isTsRestMethodDecorator = (str: string): boolean => {
   return str.includes('Api') || str.includes('TsRest');
 };
 
-function transform(context: ts.TransformationContext) {
+const transform = (context: ts.TransformationContext) => {
   const { factory } = context;
 
   let contractIdentifier: ts.Identifier | undefined;
@@ -331,7 +331,7 @@ function transform(context: ts.TransformationContext) {
 
     return ts.visitNode(rootNode, visit);
   };
-}
+};
 
 function removeAsConst(context: ts.TransformationContext) {
   const visitor: ts.Visitor = (node: ts.Node): ts.VisitResult<ts.Node> => {
@@ -369,7 +369,10 @@ function removeNestRequestShapesTypes(context: ts.TransformationContext) {
   return (rootNode: ts.Node) => ts.visitNode(rootNode, visitor);
 }
 
-export const transformLegacyNestController = (oldCode: string) => {
+export const transformLegacyNestController = (
+  oldCode: string,
+  output: 'single-handler' | 'multiple-handler'
+) => {
   const sourceFile = ts.createSourceFile(
     'old.ts',
     oldCode,
