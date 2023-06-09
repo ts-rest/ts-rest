@@ -237,7 +237,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     return {
       appRoute: foundAppRoute[1],
-      routeAlias: foundAppRoute[0],
+      routeKey: foundAppRoute[0],
     };
   }
 
@@ -245,7 +245,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const res: Response = ctx.switchToHttp().getResponse();
     const req: Request = ctx.switchToHttp().getRequest();
 
-    const { appRoute, routeAlias } = this.getAppRouteFromContext(ctx);
+    const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
     const isJsonQuery = !!(
       Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ??
@@ -296,8 +296,8 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       map(async (impl) => {
         let result = null;
         try {
-          if (routeAlias) {
-            result = await impl[routeAlias]({
+          if (routeKey) {
+            result = await impl[routeKey]({
               query: queryResult.data,
               params: paramsResult.data,
               body: bodyResult.data,
