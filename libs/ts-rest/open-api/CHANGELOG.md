@@ -1,5 +1,7 @@
 # @ts-rest/open-api
 
+## 3.26.0
+
 ## 3.25.1
 
 ### Patch Changes
