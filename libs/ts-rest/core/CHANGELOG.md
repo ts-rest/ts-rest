@@ -1,5 +1,13 @@
 # @ts-rest/core
 
+## 3.26.0
+
+### Minor Changes
+
+- fcf877d: Allow defining non-json response types in the contract
+- 48b138d: Add new `SingleHandler` and `MultiHandler` API to `@ts-rest/nest`
+- 2763208: Added `pathPrefix` to contract options to allow recursive path prefixing.
+
 ## 3.25.1
 
 ### Patch Changes

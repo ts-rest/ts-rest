@@ -1,5 +1,12 @@
 # @ts-rest/nest
 
+## 3.26.0
+
+### Minor Changes
+
+- fcf877d: Allow defining non-json response types in the contract
+- 48b138d: Add new `SingleHandler` and `MultiHandler` API to `@ts-rest/nest`
+
 ## 3.25.1
 
 ### Patch Changes

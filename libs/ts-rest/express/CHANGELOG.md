@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.26.0
+
+### Minor Changes
+
+- fcf877d: Allow defining non-json response types in the contract
+
 ## 3.25.1
 
 ### Patch Changes
