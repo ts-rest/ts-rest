@@ -57,7 +57,7 @@ export class RequestValidationError extends BadRequestException {
 }
 
 export class ResponseValidationError extends InternalServerErrorException {
-  constructor(appRoute: AppRoute, error: z.ZodError) {
+  constructor(public appRoute: AppRoute, public error: z.ZodError) {
     super(
       `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`
     );
