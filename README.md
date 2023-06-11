@@ -7,20 +7,12 @@
 <p align="center">RPC-like client and server helpers for a magical end to end typed experience</p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@ts-rest/core">
-    <img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript"/>
-  </a>
+  <a href="https://www.npmjs.com/package/@ts-rest/core"><img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript"/></a>
   <img alt="Github Workflow Status" src="https://img.shields.io/github/actions/workflow/status/ts-rest/ts-rest/release.yml?branch=main"/>
-  <a href="https://www.npmjs.com/package/@ts-rest/core">
-    <img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core"/>
-  </a>
-  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
-    <img alt="License" src="https://img.shields.io/github/license/ts-rest/ts-rest"/>
-  </a>
+  <a href="https://www.npmjs.com/package/@ts-rest/core"><img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core"/></a>
+  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ts-rest/ts-rest"/></a>
   <img alt="Bundle Size" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore"/>
-  <a href="https://discord.com/invite/2Megk85k5a">  
-    <img alt="Discord" src="https://img.shields.io/discord/1055855205960392724"/>
-  </a>
+  <a href="https://discord.com/invite/2Megk85k5a"><img alt="Discord" src="https://img.shields.io/discord/1055855205960392724"/></a>
 </p>
 
 # Introduction
@@ -51,7 +43,7 @@ const contract = c.contract({
       take: z.number(),
     }), // <-- Zod schema
     responses: {
-      200: c.response<Post[]>(), // <-- OR normal TS types
+      200: c.type<Post[]>(), // <-- OR normal TS types
     },
     headers: z.object({
       'x-pagination-page': z.coerce.number().optional(),
