@@ -26,7 +26,7 @@ const contract = c.contract({
       take: z.number(),
     }), // <-- Zod schema
     responses: {
-      200: c.response<Post[]>(), // <-- OR normal TS types
+      200: c.type<Post[]>(), // <-- OR normal TS types
     },
     headers: z.object({
       'x-pagination-page': z.coerce.number().optional(),

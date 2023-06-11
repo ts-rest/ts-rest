@@ -104,16 +104,16 @@ export const contract = c.router({
     method: 'POST',
     path: '/posts',
     responses: {
-      201: c.response<Post>(),
+      201: c.type<Post>(),
     },
-    body: c.body<{title: string}>()
+    body: c.type<{title: string}>()
     summary: 'Create a post',
   },
   getPost: {
     method: 'GET',
     path: `/posts/:id`,
     responses: {
-      200: c.response<Post | null>(),
+      200: c.type<Post | null>(),
     },
     summary: 'Get a post by id',
   },

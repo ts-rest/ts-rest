@@ -17,7 +17,7 @@ export const postsApi = c.router({
     method: 'POST',
     path: '/posts/:id/thumbnail',
     contentType: 'multipart/form-data', // <- Only difference
-    body: c.body<{ thumbnail: File }>(), // <- Use File type in here
+    body: c.type<{ thumbnail: File }>(), // <- Use File type in here
     responses: {
       200: z.object({
         uploadedFile: z.object({
