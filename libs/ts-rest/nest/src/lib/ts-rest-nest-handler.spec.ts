@@ -6,10 +6,20 @@ import {
   TsRestHandler,
 } from './ts-rest-nest-handler';
 import { z } from 'zod';
-import { Controller, Get, INestApplication } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  INestApplication,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
+import path = require('path');
+import { FileInterceptor } from '@nestjs/platform-express';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T
@@ -353,6 +363,125 @@ describe('ts-rest-nest-handler', () => {
       const response = await supertest(app.getHttpServer()).get('/test').send();
 
       expect(response.status).toBe(500);
+    });
+
+    it('should be able to upload files and other multipart/form-data', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        multi: {
+          method: 'POST',
+          path: '/multi',
+          body: z.object({
+            messageAsField: z.string(),
+            file: z.custom<File>((v) => true),
+          }),
+          contentType: 'multipart/form-data',
+          responses: {
+            200: z.object({
+              messageAsField: z.string(),
+              fileSize: z.number(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class SingleHandlerTestController {
+        @Post('/nest-multi')
+        @UseInterceptors(FileInterceptor('file'))
+        nestMulti(
+          @Body() body: { messageAsField: string },
+          @UploadedFile() file: File
+        ) {
+          return {
+            messageAsField: body.messageAsField,
+            fileSize: file.size,
+          };
+        }
+
+        @TsRestHandler(contract.multi)
+        @UseInterceptors(FileInterceptor('file'))
+        async postRequest(@UploadedFile() file: File) {
+          return tsRestHandler(contract.multi, async (args) => {
+            return {
+              status: 200,
+              body: {
+                messageAsField: args.body.messageAsField,
+                fileSize: file.size,
+              },
+            };
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      app = moduleRef.createNestApplication();
+      await app.init();
+
+      const responseNested = await supertest(app.getHttpServer())
+        .post('/nest-multi')
+        .field('messageAsField', 'hello from nest')
+        .attach('file', path.join(__dirname, './nest.png'));
+
+      expect({
+        status: responseNested.status,
+        body: responseNested.body,
+      }).toEqual({
+        status: 201,
+        body: {
+          messageAsField: 'hello from nest',
+          fileSize: 11338,
+        },
+      });
+
+      const response = await supertest(app.getHttpServer())
+        .post('/multi')
+        .field('messageAsField', 'hello from ts-rest')
+        .attach('file', path.join(__dirname, './nest.png'));
+
+      expect({
+        status: response.status,
+        body: response.body,
+      }).toEqual({
+        status: 200,
+        body: {
+          messageAsField: 'hello from ts-rest',
+          fileSize: 11338,
+        },
+      });
+
+      const errorsForBadField = await supertest(app.getHttpServer())
+        .post('/multi')
+        .attach('file', path.join(__dirname, './nest.png'));
+
+      expect({
+        status: errorsForBadField.status,
+        body: errorsForBadField.body,
+      }).toEqual({
+        status: 400,
+        body: {
+          bodyResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+
+                path: ['messageAsField'],
+                message: 'Required',
+              },
+            ],
+            name: 'ZodError',
+          },
+          headersResult: null,
+          paramsResult: null,
+          queryResult: null,
+        },
+      });
     });
 
     it('should remove extra body keys with response validation enabled on the `TsRestHandler` decorator', async () => {
