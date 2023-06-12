@@ -5,32 +5,18 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
-  parseJsonQueryObject,
-  ServerInferRequest,
-  ServerInferResponses,
+  isAppRouteOtherResponse,
   validateResponse,
 } from '@ts-rest/core';
-import { ApiGatewayEvent, requestFromEvent } from './providers/aws/api-gateway';
 import { Router, withContent, withParams } from 'itty-router';
 import { TsRestRequest } from './request';
-import { Context } from 'aws-lambda';
-import { Request, Response } from 'express-serve-static-core';
-import { RequestValidationError } from '@ts-rest/express';
-
-type AppRouteImplementation<T extends AppRoute> = (
-  args: ServerInferRequest<T, Headers> & {
-    requestContext: ApiGatewayEvent['requestContext'];
-    lambdaContext: Context;
-  }
-) => Promise<ServerInferResponses<T>>;
-
-type RecursiveRouterObj<T extends AppRouter> = {
-  [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey]>
-    : T[TKey] extends AppRoute
-    ? AppRouteImplementation<T[TKey]>
-    : never;
-};
+import { TsRestResponse } from './response';
+import {
+  AppRouteImplementation,
+  RecursiveRouterObj,
+  RequestValidationError,
+  ServerlessHandlerOptions,
+} from './types';
 
 const recursivelyProcessContract = ({
   schema,
@@ -38,9 +24,9 @@ const recursivelyProcessContract = ({
   processRoute,
 }: {
   schema: AppRouter | AppRoute;
-  router: RecursiveRouterObj<any> | AppRouteImplementation<any>;
+  router: RecursiveRouterObj<any, any> | AppRouteImplementation<any, any>;
   processRoute: (
-    implementation: AppRouteImplementation<AppRoute>,
+    implementation: AppRouteImplementation<AppRoute, any>,
     schema: AppRoute
   ) => void;
 }): void => {
@@ -52,7 +38,7 @@ const recursivelyProcessContract = ({
 
       recursivelyProcessContract({
         schema: schema[key],
-        router: (router as RecursiveRouterObj<any>)[key],
+        router: router[key],
         processRoute,
       });
     }
@@ -61,7 +47,7 @@ const recursivelyProcessContract = ({
       throw new Error(`[ts-rest] Expected AppRoute but received AppRouter`);
     }
 
-    processRoute(router as AppRouteImplementation<AppRoute>, schema);
+    processRoute(router as AppRouteImplementation<AppRoute, any>, schema);
   }
 };
 
@@ -82,7 +68,7 @@ const validateRequest = (
   const queryResult = checkZodSchema(query, schema.query);
 
   const bodyResult = checkZodSchema(
-    req.body,
+    req.content,
     'body' in schema ? schema.body : null
   );
 
@@ -108,17 +94,23 @@ const validateRequest = (
   };
 };
 
-export const createLambdaHandler = <T extends AppRouter>(
+export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
   routes: T,
-  obj: RecursiveRouterObj<T>,
-  options?: {}
+  obj: RecursiveRouterObj<T, TPlatformArgs>,
+  options: ServerlessHandlerOptions = {}
 ) => {
-  const router = Router<
-    TsRestRequest,
-    [requestContext: ApiGatewayEvent['requestContext'], lambdaContext: Context]
-  >();
+  const router = Router<TsRestRequest, [TPlatformArgs]>();
 
-  router.all('*', withParams as any);
+  router.all('*', withParams, withContent, async (req) => {
+    if (
+      !req.content &&
+      req.method !== 'GET' &&
+      req.method !== 'HEAD' &&
+      req.headers.get('content-type')?.startsWith('text/')
+    ) {
+      req.content = await req.text();
+    }
+  });
 
   recursivelyProcessContract({
     schema: routes,
@@ -126,30 +118,58 @@ export const createLambdaHandler = <T extends AppRouter>(
     processRoute: (implementation, schema) => {
       const routeHandler = async (
         request: TsRestRequest,
-        requestContext: ApiGatewayEvent['requestContext'],
-        lambdaContext: Context
+        platformArgs: TPlatformArgs
       ) => {
         const validationResults = validateRequest(request, schema);
 
         const result = await implementation({
-          // @ts-expect-error TODO: fix this
           params: validationResults.paramsResult.data as any,
           body: validationResults.bodyResult.data as any,
           query: validationResults.queryResult.data as any,
           headers: validationResults.headersResult.data as any,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          files: req.files,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          file: req.file,
-          requestContext,
-          lambdaContext,
+          request,
+          ...platformArgs,
         });
 
         const statusCode = Number(result.status);
+        const responseType = schema.responses[statusCode];
 
-        return result.body;
+        let validatedResponseBody = result.body;
+
+        if (options.responseValidation) {
+          const response = validateResponse({
+            responseType,
+            response: {
+              status: statusCode,
+              body: result.body,
+            },
+          });
+
+          validatedResponseBody = response.body;
+        }
+
+        if (isAppRouteOtherResponse(responseType)) {
+          return new TsRestResponse({
+            statusCode: statusCode,
+            body: validatedResponseBody,
+            headers: {
+              ...result.headers,
+              'content-type':
+                validatedResponseBody instanceof Blob
+                  ? validatedResponseBody.type || responseType.contentType
+                  : responseType.contentType,
+            },
+          });
+        }
+
+        return new TsRestResponse({
+          statusCode: statusCode,
+          body: JSON.stringify(validatedResponseBody),
+          headers: {
+            ...result.headers,
+            'content-type': 'application/json',
+          },
+        });
       };
 
       switch (schema.method) {
@@ -172,11 +192,44 @@ export const createLambdaHandler = <T extends AppRouter>(
     },
   });
 
-  return async (event: ApiGatewayEvent, context: Context) => {
-    const request = requestFromEvent(event);
+  return router;
+};
 
-    return router.handle(request, event.requestContext, context).then(() => {
-      return new Response('Not Found', { status: 404 });
+export const serverlessErrorHandler = async (
+  err: any,
+  request: TsRestRequest,
+  options: ServerlessHandlerOptions = {}
+) => {
+  if (err instanceof RequestValidationError) {
+    if (options?.requestValidationErrorHandler) {
+      return new TsRestResponse(
+        await options.requestValidationErrorHandler(err, request)
+      );
+    }
+
+    return new TsRestResponse({
+      statusCode: 400,
+      body: JSON.stringify({
+        pathParameterErrors: err.pathParams,
+        headerErrors: err.headers,
+        queryParameterErrors: err.query,
+        bodyErrors: err.body,
+      }),
+      headers: {
+        'content-type': 'application/json',
+      },
     });
-  };
+  }
+
+  if (options?.errorHandler) {
+    return new TsRestResponse(await options.errorHandler(err, request));
+  }
+
+  return new TsRestResponse({
+    statusCode: 500,
+    body: JSON.stringify({ message: 'Server Error' }),
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
 };

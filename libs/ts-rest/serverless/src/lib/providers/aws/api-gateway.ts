@@ -1,14 +1,18 @@
-import { TextEncoder } from 'util';
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
-  // APIGatewayProxyResult,
+  APIGatewayProxyResult,
+  APIGatewayProxyResultV2,
 } from 'aws-lambda';
 import { TsRestRequest } from '../../request';
+import { TsRestResponse } from '../../response';
 
 type EventV1 = APIGatewayProxyEvent;
 type EventV2 = APIGatewayProxyEventV2;
 export type ApiGatewayEvent = EventV1 | EventV2;
+export type ApiGatewayResponse =
+  | APIGatewayProxyResult
+  | APIGatewayProxyResultV2;
 
 export function isV2(event: ApiGatewayEvent): event is EventV2 {
   return 'version' in event && event.version === '2.0';
@@ -56,9 +60,11 @@ export function requestHeaders(event: ApiGatewayEvent) {
   return headers;
 }
 
-export function requestBody(event: ApiGatewayEvent): ArrayBuffer {
+export function requestBody(
+  event: ApiGatewayEvent
+): ArrayBuffer | string | undefined {
   if (event.body === undefined || event.body === null) {
-    return new ArrayBuffer(0);
+    return;
   }
 
   if (Buffer.isBuffer(event.body)) {
@@ -67,9 +73,9 @@ export function requestBody(event: ApiGatewayEvent): ArrayBuffer {
     if (event.isBase64Encoded) {
       return Uint8Array.from(atob(event.body), (c) => c.charCodeAt(0));
     }
-    return new TextEncoder().encode(event.body);
+    return event.body;
   } else if (typeof event.body === 'object') {
-    return new TextEncoder().encode(JSON.stringify(event.body));
+    return JSON.stringify(event.body);
   }
 
   throw new Error(`Unexpected event.body type: ${typeof event.body}`);
@@ -109,10 +115,107 @@ export function requestUrl(event: ApiGatewayEvent) {
 }
 
 export function requestFromEvent(event: ApiGatewayEvent) {
-  return new TsRestRequest({
+  return new TsRestRequest(requestUrl(event), {
     method: requestMethod(event),
     url: requestUrl(event),
     headers: requestHeaders(event),
     body: requestBody(event),
   });
+}
+
+async function arrayBufferToBase64(bufferOrBlob: ArrayBuffer | Blob) {
+  const blob =
+    bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
+  return await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const [, base64] = (reader.result as string).split(',');
+      resolve(base64);
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function arrayBufferToString(bufferOrBlob: ArrayBuffer | Blob) {
+  const blob =
+    bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
+  return await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.readAsText(blob);
+  });
+}
+
+export async function responseToResult(
+  event: ApiGatewayEvent,
+  response: TsRestResponse
+): Promise<ApiGatewayResponse> {
+  const { headers, multiValueHeaders } = Object.entries(
+    response.headers
+  ).reduce(
+    (headerDto, [key, value]) => {
+      const normalizedKey = key.toLowerCase();
+
+      if (Array.isArray(value)) {
+        headerDto.multiValueHeaders[normalizedKey] = value;
+
+        if (normalizedKey !== 'set-cookie') {
+          headerDto.headers[normalizedKey] = value.join(', ');
+        }
+      } else {
+        headerDto.headers[key] = value;
+      }
+
+      return headerDto;
+    },
+    {
+      headers: {} as Record<string, string>,
+      multiValueHeaders: {} as Record<string, string[]>,
+    }
+  );
+
+  let cookies = [] as string[];
+
+  if (multiValueHeaders['set-cookie']) {
+    cookies = multiValueHeaders['set-cookie'];
+  }
+
+  const isTextContentType =
+    headers['content-type']?.startsWith('text/') ||
+    (response.body instanceof Blob && response.body.type.startsWith('text/'));
+
+  const isBase64Encoded =
+    typeof response.body !== 'string' && !isTextContentType;
+
+  const body = await (async () => {
+    if (typeof response.body === 'string') {
+      return response.body;
+    }
+
+    if (isTextContentType) {
+      return arrayBufferToString(response.body);
+    }
+
+    return arrayBufferToBase64(response.body);
+  })();
+
+  if (isV2(event)) {
+    return {
+      statusCode: response.statusCode,
+      headers,
+      body,
+      ...(cookies.length && { cookies }),
+      isBase64Encoded,
+    } satisfies APIGatewayProxyResultV2;
+  }
+
+  return {
+    statusCode: response.statusCode,
+    headers,
+    ...(Object.keys(multiValueHeaders).length && { multiValueHeaders }),
+    body,
+    isBase64Encoded,
+  } satisfies APIGatewayProxyResult;
 }

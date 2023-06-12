@@ -5,7 +5,7 @@
   "headers": {
     "accept": "*/*",
     "Authorization": "Bearer REDACTED",
-    "content-type": "application/x-www-form-urlencoded",
+    "content-type": "application/json",
     "Host": "myapi.example.com",
     "User-Agent": "curl/7.58.0",
     "X-Amzn-Trace-Id": "Root=1-5f2330a4-6a0de1cd0e17c0508d386a64",
@@ -21,7 +21,7 @@
       "Bearer REDACTED"
     ],
     "content-type": [
-      "application/x-www-form-urlencoded"
+      "application/json"
     ],
     "Host": [
       "myapi.example.com"

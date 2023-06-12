@@ -1,14 +1,15 @@
 {
   "name": "@ts-rest/serverless",
-  "version": "3.25.0",
-  "devDependencies": {
-    "@types/node": "^18.15.3"
-  },
+  "version": "3.26.0",
+  "dependencies": {},
   "peerDependencies": {
-    "zod": "^3.0.0",
-    "path-to-regexp": "^6.0.0"
+    "@types/aws-lambda": "^8.10.115",
+    "zod": "^3.0.0"
   },
   "peerDependenciesMeta": {
+    "@types/aws-lambda": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }

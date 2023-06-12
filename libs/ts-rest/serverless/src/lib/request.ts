@@ -1,17 +1,13 @@
 import { IRequest } from 'itty-router';
 
-type TsRestRequestInit = {
+export type TsRestRequestInit = {
   method: string;
   url: string;
   headers: Headers;
-  body: ArrayBuffer;
+  body?: ArrayBuffer | string;
 };
 
-export class TsRestRequest implements Omit<IRequest, 'body'> {
-  public method: string;
-  public url: string;
-  public headers: Headers;
-  public body: ArrayBuffer;
+export class TsRestRequest extends Request implements IRequest {
   public route: string;
   public params: {
     [key: string]: string;
@@ -19,12 +15,11 @@ export class TsRestRequest implements Omit<IRequest, 'body'> {
   public query: {
     [key: string]: string | string[] | undefined;
   };
+  public content?: any;
 
-  constructor(init: TsRestRequestInit) {
-    this.method = init.method;
-    this.url = init.url;
-    this.headers = init.headers;
-    this.body = init.body;
+  constructor(url: string, init: TsRestRequestInit) {
+    super(url, init);
+
     this.route = '';
     this.params = {};
     this.query = {};

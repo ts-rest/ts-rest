@@ -16,7 +16,8 @@
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
         "generateExportsField": true,
-        "skipTypeField": true
+        "skipTypeField": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
       }
     },
     "lint": {
@@ -27,12 +28,11 @@
       }
     },
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/serverless"],
+      "executor": "@nx/vite:test",
+      "outputs": ["coverage/libs/ts-rest/serverless"],
       "options": {
-        "jestConfig": "libs/ts-rest/serverless/jest.config.ts",
         "passWithNoTests": true,
-        "coverageReporters": ["lcov", "text-summary"]
+        "reportsDirectory": "../../coverage/libs/ts-rest/serverless"
       }
     }
   },
