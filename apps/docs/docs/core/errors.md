@@ -8,10 +8,10 @@ export const routerBasic = c.router({
     method: 'PATCH',
     path: `/basic/users/:id`,
     response: {
-      200: c.response<User>(),
-      400: c.response<{ message: string }>(),
+      200: c.type<User>(),
+      400: c.type<{ message: string }>(),
     },
-    body: c.body<{ name: string | null; email: string | null }>(),
+    body: c.type<{ name: string | null; email: string | null }>(),
     summary: 'Update a user',
   },
 });

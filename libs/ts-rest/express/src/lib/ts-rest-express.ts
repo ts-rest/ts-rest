@@ -5,6 +5,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   validateResponse,
 } from '@ts-rest/core';
@@ -23,8 +24,6 @@ import {
   isAppRouteImplementation,
 } from './types';
 import { RequestValidationError } from './request-validation-error';
-
-type AppRouteWithParams = AppRoute & { path: '/:placeholder' };
 
 export const initServer = () => {
   return {
@@ -122,7 +121,7 @@ const initializeExpressRoute = ({
   app,
   options,
 }: {
-  implementationOrOptions: AppRouteImplementationOrOptions<AppRouteWithParams>;
+  implementationOrOptions: AppRouteImplementationOrOptions<AppRoute>;
   schema: AppRoute;
   app: IRouter;
   options: TsRestExpressOptions<any>;
@@ -155,26 +154,34 @@ const initializeExpressRoute = ({
       });
 
       const statusCode = Number(result.status);
+      const responseType = schema.responses[statusCode];
+
+      let validatedResponseBody = result.body;
 
       if (options.responseValidation) {
         const response = validateResponse({
-          responseType: schema.responses[statusCode],
+          responseType,
           response: {
             status: statusCode,
             body: result.body,
           },
         });
 
-        return res.status(statusCode).json(response.body);
+        validatedResponseBody = response.body;
       }
 
-      return res.status(statusCode).json(result.body);
+      if (isAppRouteOtherResponse(responseType)) {
+        res.setHeader('content-type', responseType.contentType);
+        return res.status(statusCode).send(validatedResponseBody);
+      }
+
+      return res.status(statusCode).json(validatedResponseBody);
     } catch (e) {
       return next(e);
     }
   };
 
-  const handlers: TsRestRequestHandler<AppRouteWithParams>[] = [
+  const handlers: TsRestRequestHandler<AppRoute>[] = [
     (req, res, next) => {
       req.tsRestRoute = schema as any;
       next();
@@ -265,7 +272,7 @@ export const createExpressEndpoints = <TRouter extends AppRouter>(
     processRoute: (implementation, innerSchema) => {
       initializeExpressRoute({
         implementationOrOptions:
-          implementation as AppRouteImplementationOrOptions<AppRouteWithParams>,
+          implementation as AppRouteImplementationOrOptions<AppRoute>,
         schema: innerSchema,
         app,
         options,

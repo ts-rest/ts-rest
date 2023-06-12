@@ -60,9 +60,13 @@ const contract = c.router(
       contentType: 'multipart/form-data',
       body: c.body<{ image: File }>(),
       responses: {
-        201: z.object({
-          id: z.number(),
-          url: z.string(),
+        201: c.otherResponse({
+          contentType: 'text/plain',
+          body: c.type<'Image uploaded successfully'>(),
+        }),
+        500: c.otherResponse({
+          contentType: 'text/plain',
+          body: z.literal('Image upload failed'),
         }),
       },
     },
@@ -85,9 +89,7 @@ const contract = c.router(
               })
             ),
           }),
-          404: z.object({
-            message: z.string(),
-          }),
+          404: c.type<null>(),
         },
       },
     },
@@ -125,16 +127,20 @@ it('type inference helpers', () => {
         uploadImage:
           | {
               status: 201;
-              body: { id: number; url: string };
+              body: 'Image uploaded successfully';
             }
-          | { status: Exclude<HTTPStatusCode, 201>; body: unknown };
+          | {
+              status: 500;
+              body: 'Image upload failed';
+            }
+          | { status: Exclude<HTTPStatusCode, 201 | 500>; body: unknown };
         nested: {
           getComments:
             | {
                 status: 200;
                 body: { comments: { id: number; content: string }[] };
               }
-            | { status: 404; body: { message: string } }
+            | { status: 404; body: null }
             | { status: Exclude<HTTPStatusCode, 200 | 404>; body: unknown };
         };
       }
@@ -155,17 +161,22 @@ it('type inference helpers', () => {
           status: 201;
           body: { id: number; title: string; content: string };
         };
-        uploadImage: {
-          status: 201;
-          body: { id: number; url: string };
-        };
+        uploadImage:
+          | {
+              status: 201;
+              body: 'Image uploaded successfully';
+            }
+          | {
+              status: 500;
+              body: 'Image upload failed';
+            };
         nested: {
           getComments:
             | {
                 status: 200;
                 body: { comments: { id: number; content: string }[] };
               }
-            | { status: 404; body: { message: string } };
+            | { status: 404; body: null };
         };
       }
     >
@@ -191,16 +202,20 @@ it('type inference helpers', () => {
         uploadImage:
           | {
               status: 201;
-              body: { id: number; url: string };
+              body: 'Image uploaded successfully';
             }
-          | { status: Exclude<HTTPStatusCode, 201>; body: unknown };
+          | {
+              status: 500;
+              body: 'Image upload failed';
+            }
+          | { status: Exclude<HTTPStatusCode, 201 | 500>; body: unknown };
         nested: {
           getComments:
             | {
                 status: 200;
                 body: { comments: { id: number; content: string }[] };
               }
-            | { status: 404; body: { message: string } }
+            | { status: 404; body: null }
             | { status: Exclude<HTTPStatusCode, 200 | 404>; body: unknown };
         };
       }
@@ -271,10 +286,15 @@ it('type inference helpers', () => {
           | { status: 404; body: { message: string } }
           | { status: Exclude<ErrorHttpStatusCode, 404>; body: unknown };
         createPost: { status: ErrorHttpStatusCode; body: unknown };
-        uploadImage: { status: ErrorHttpStatusCode; body: unknown };
+        uploadImage:
+          | {
+              status: 500;
+              body: 'Image upload failed';
+            }
+          | { status: Exclude<ErrorHttpStatusCode, 500>; body: unknown };
         nested: {
           getComments:
-            | { status: 404; body: { message: string } }
+            | { status: 404; body: null }
             | { status: Exclude<ErrorHttpStatusCode, 404>; body: unknown };
         };
       }
@@ -295,7 +315,7 @@ it('type inference helpers', () => {
         };
         uploadImage: {
           status: 201;
-          body: { id: number; url: string };
+          body: 'Image uploaded successfully';
         };
         nested: {
           getComments: {
@@ -341,11 +361,16 @@ it('type inference helpers', () => {
         uploadImage:
           | {
               status: 201;
-              body: { id: number; url: string };
+              body: 'Image uploaded successfully';
               headers: Headers;
             }
           | {
-              status: Exclude<HTTPStatusCode, 201>;
+              status: 500;
+              body: 'Image upload failed';
+              headers: Headers;
+            }
+          | {
+              status: Exclude<HTTPStatusCode, 201 | 500>;
               body: unknown;
               headers: Headers;
             };
@@ -358,7 +383,7 @@ it('type inference helpers', () => {
               }
             | {
                 status: 404;
-                body: { message: string };
+                body: null;
                 headers: Headers;
               }
             | {

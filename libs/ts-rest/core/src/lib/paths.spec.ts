@@ -15,7 +15,7 @@ const url3 = '/post/:id';
 expectType<{ id: string }>(type<ParamsFromUrl<typeof url3>>());
 
 const urlNoParams = '/posts';
-expectType<undefined>(type<ParamsFromUrl<typeof urlNoParams>>());
+expectType<{}>(type<ParamsFromUrl<typeof urlNoParams>>());
 
 const urlManyParams = '/post/:id/comments/:commentId/:commentId2';
 expectType<{ id: string; commentId: string; commentId2: string }>(
@@ -39,7 +39,7 @@ describe('insertParamsIntoPath', () => {
   it('should insert params into path with no params', () => {
     const path = '/posts';
 
-    const result = insertParamsIntoPath({ path, params: undefined });
+    const result = insertParamsIntoPath({ path, params: {} });
 
     expect(result).toBe('/posts');
   });

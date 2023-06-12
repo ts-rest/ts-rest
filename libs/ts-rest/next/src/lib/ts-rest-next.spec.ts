@@ -103,12 +103,15 @@ const nextEndpoint = createNextRoute(contract, {
 });
 
 const jsonMock = jest.fn();
+const sendMock = jest.fn();
 
 const mockRes = {
   status: jest.fn(() => ({
     end: jest.fn(),
     json: jsonMock,
+    send: sendMock,
   })),
+  setHeader: jest.fn(),
 } as unknown as NextApiResponse;
 
 describe('strict mode', () => {
@@ -281,6 +284,108 @@ describe('createNextRouter', () => {
 
       expect(errorHandler).toHaveBeenCalled();
     });
+  });
+
+  it('should handle non-json response types from contract', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      postIndex: {
+        method: 'POST',
+        path: `/index.html`,
+        body: z.object({
+          echoHtml: z.string(),
+        }),
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string().regex(/^<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>$/im),
+          }),
+        },
+      },
+      getRobots: {
+        method: 'GET',
+        path: `/robots.txt`,
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/plain',
+            body: c.type<string>(),
+          }),
+        },
+      },
+      getCss: {
+        method: 'GET',
+        path: '/style.css',
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.type<string>(),
+          }),
+        },
+      },
+    });
+
+    const router = createNextRouter(
+      contract,
+      {
+        postIndex: async ({ body: { echoHtml } }) => {
+          return {
+            status: 200,
+            body: echoHtml,
+          };
+        },
+        getRobots: async () => {
+          return {
+            status: 200,
+            body: 'User-agent: * Disallow: /',
+          };
+        },
+        getCss: async () => {
+          return {
+            status: 200,
+            body: 'body { color: red; }',
+          };
+        },
+      },
+      {
+        responseValidation: true,
+        errorHandler: (err: any, req, res) => {
+          res.status(500).send(err?.message || 'Error');
+        },
+      }
+    );
+
+    let req = mockReq('/index.html', {
+      method: 'POST',
+      body: { echoHtml: '<h1>hello world</h1>' },
+    });
+    await router(req, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.setHeader).toHaveBeenCalledWith('content-type', 'text/html');
+    expect(sendMock).toHaveBeenCalledWith('<h1>hello world</h1>');
+
+    req = mockReq('/index.html', {
+      method: 'POST',
+      body: { echoHtml: 'hello world' },
+    });
+    await router(req, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(sendMock).toHaveBeenCalledWith('Response validation failed');
+
+    req = mockReq('/robots.txt', { method: 'GET' });
+    await router(req, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.setHeader).toHaveBeenCalledWith(
+      'content-type',
+      'text/plain'
+    );
+    expect(sendMock).toHaveBeenCalledWith('User-agent: * Disallow: /');
+
+    req = mockReq('/style.css', { method: 'GET' });
+    await router(req, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.setHeader).toHaveBeenCalledWith('content-type', 'text/css');
+    expect(sendMock).toHaveBeenCalledWith('body { color: red; }');
   });
 });
 

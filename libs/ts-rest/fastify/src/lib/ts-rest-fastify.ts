@@ -4,6 +4,7 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
@@ -244,8 +245,6 @@ const requestValidationErrorHandler = (
   };
 };
 
-type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
-
 /**
  *
  * @param routeImpl - User's implementation of the route
@@ -254,7 +253,8 @@ type AppRouteMutationWithParams = AppRouteMutation & { path: '/:placeholder' };
  * @param options - options for the routers
  */
 const registerRoute = <TAppRoute extends AppRoute>(
-  routeImpl: AppRouteImplementationOrOptions<AppRouteMutationWithParams>,
+  // routeImpl: AppRouteImplementationOrOptions<AppRouteMutationWithParams>,
+  routeImpl: AppRouteImplementation<AppRoute>,
   appRoute: TAppRoute,
   app: fastify.FastifyInstance,
   options: RegisterRouterOptions
@@ -295,20 +295,27 @@ const registerRoute = <TAppRoute extends AppRoute>(
       });
 
       const statusCode = result.status;
+      const responseType = appRoute.responses[statusCode];
+
+      let validatedResponseBody = result.body;
 
       if (options.responseValidation) {
         const response = validateResponse({
-          responseType: appRoute.responses[statusCode],
+          responseType,
           response: {
             status: statusCode,
             body: result.body,
           },
         });
 
-        return reply.status(statusCode).send(response.body);
+        validatedResponseBody = response.body;
       }
 
-      return reply.status(statusCode).send(result.body);
+      if (isAppRouteOtherResponse(responseType)) {
+        reply.header('content-type', responseType.contentType);
+      }
+
+      return reply.status(statusCode).send(validatedResponseBody);
     },
   };
 

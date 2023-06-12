@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ContractNullType, ContractPlainType } from './dsl';
 
 type GetIndexedField<T, K> = K extends keyof T
   ? T[K]
@@ -50,9 +51,21 @@ type ExcludeKeysWithoutTypeOf<T, V> = {
 export type Without<T, V> = Pick<T, ExcludeKeysWithTypeOf<T, V>>;
 export type With<T, V> = Pick<T, ExcludeKeysWithoutTypeOf<T, V>>;
 
-export type ZodInferOrType<T> = T extends z.ZodTypeAny ? z.infer<T> : T;
+export type ZodInferOrType<T> = T extends ContractNullType
+  ? null
+  : T extends ContractPlainType<infer U>
+  ? U
+  : T extends z.ZodTypeAny
+  ? z.infer<T>
+  : T;
 
-export type ZodInputOrType<T> = T extends z.ZodTypeAny ? z.input<T> : T;
+export type ZodInputOrType<T> = T extends ContractNullType
+  ? null
+  : T extends ContractPlainType<infer U>
+  ? U
+  : T extends z.ZodTypeAny
+  ? z.input<T>
+  : T;
 
 export type Merge<T, U> = Omit<T, keyof U> & U;
 
@@ -118,6 +131,11 @@ declare type Tagged<Token> = {
 };
 
 export type Opaque<Type, Token = unknown> = Type & Tagged<Token>;
+
+export type UnwrapOpaque<OpaqueType extends Tagged<unknown>> =
+  OpaqueType extends Opaque<infer Type, OpaqueType[typeof tag]>
+    ? Type
+    : OpaqueType;
 
 export type WithoutUnknown<T> = Pick<
   T,

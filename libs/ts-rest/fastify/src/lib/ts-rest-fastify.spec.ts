@@ -289,219 +289,105 @@ describe('ts-rest-fastify', () => {
     expect(response.body).toEqual({ id: '10' });
   });
 
-  it('should allow for middleware to be used with @fastify/middie', async () => {
-    const app = fastify({ logger: false });
-    app.register(fastifyMiddie);
+  it('should handle non-json response types from contract', async () => {
+    const c = initContract();
 
-    const contract = c.router({
-      test: {
-        method: 'GET',
-        path: '/test',
+    const nonJsonContract = c.router({
+      postIndex: {
+        method: 'POST',
+        path: `/index.html`,
+        body: z.object({
+          echoHtml: z.string(),
+        }),
         responses: {
-          200: z.object({
-            foo: z.string(),
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string().regex(/^<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>$/im),
           }),
         },
       },
-      routeWithMiddleware: {
+      getRobots: {
         method: 'GET',
-        path: '/middleware',
+        path: `/robots.txt`,
         responses: {
-          200: z.object({
-            foo: z.string(),
+          200: c.otherResponse({
+            contentType: 'text/plain',
+            body: c.type<string>(),
+          }),
+        },
+      },
+      getCss: {
+        method: 'GET',
+        path: '/style.css',
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/css',
+            body: c.type<string>(),
           }),
         },
       },
     });
 
-    const router = s.router(contract, {
-      test: async () => {
+    const nonJsonRouter = s.router(nonJsonContract, {
+      postIndex: async ({ body: { echoHtml } }) => {
         return {
           status: 200,
-          body: {
-            foo: 'bar',
-          },
+          body: echoHtml,
         };
       },
-      routeWithMiddleware: {
-        middleware: [
-          async (request, response, next) => {
-            expect(request.tsRestRoute.path).toEqual('/middleware');
-            request.headers['x-foo'] = 'bar';
-            next();
-          },
-          async (request, response, next) => {
-            expect(request.headers['x-foo']).toEqual('bar');
-            next();
-          },
-        ],
-        handler: async () => {
-          return {
-            status: 200,
-            body: {
-              foo: 'bar',
-            },
-          };
-        },
-      },
-    });
-
-    app.register(s.plugin(router));
-
-    await app.ready();
-
-    const response = await supertest(app.server).get('/middleware').send();
-
-    expect(response.statusCode).toEqual(200);
-    expect(response.body).toEqual({ foo: 'bar' });
-  });
-
-  it('should allow for middleware to be used with @fastify/express', async () => {
-    const app = fastify({ logger: false });
-    app.register(fastifyExpress);
-
-    const contract = c.router({
-      test: {
-        method: 'GET',
-        path: '/test',
-        responses: {
-          200: z.object({
-            foo: z.string(),
-          }),
-        },
-      },
-      routeWithMiddleware: {
-        method: 'GET',
-        path: '/middleware',
-        responses: {
-          200: z.object({
-            foo: z.string(),
-          }),
-        },
-      },
-    });
-
-    const router = s.router(contract, {
-      test: async () => {
+      getRobots: async () => {
         return {
           status: 200,
-          body: {
-            foo: 'bar',
-          },
+          body: 'User-agent: * Disallow: /',
         };
       },
-      routeWithMiddleware: {
-        middleware: [
-          async (request, response, next) => {
-            expect(request.tsRestRoute.path).toEqual('/middleware');
-            request.headers['x-foo'] = 'bar';
-            next();
-          },
-          async (request, response, next) => {
-            expect(request.headers['x-foo']).toEqual('bar');
-            next();
-          },
-        ],
-        handler: async () => {
-          return {
-            status: 200,
-            body: {
-              foo: 'bar',
-            },
-          };
-        },
+      getCss: async () => {
+        return {
+          status: 200,
+          body: 'body { color: red; }',
+        };
       },
     });
 
-    app.register(s.plugin(router));
-
-    await app.ready();
-
-    const response = await supertest(app.server).get('/middleware').send();
-
-    expect(response.statusCode).toEqual(200);
-    expect(response.body).toEqual({ foo: 'bar' });
-  });
-
-  it('should allow for middleware to reject the request with @fastify/middie', async () => {
     const app = fastify({ logger: false });
-    app.register(fastifyMiddie);
 
-    const contract = c.router({
-      routeWithMiddleware: {
-        method: 'GET',
-        path: '/middleware',
-        responses: {
-          200: z.object({
-            foo: z.string(),
-          }),
-        },
-      },
+    s.registerRouter(nonJsonContract, nonJsonRouter, app, {
+      logInitialization: false,
+      responseValidation: true,
     });
 
-    const router = s.router(contract, {
-      routeWithMiddleware: {
-        middleware: [
-          async (request, response) => {
-            return response.writeHead(401).end();
-          },
-        ],
-        handler: async () => {
-          return {
-            status: 200,
-            body: { foo: 'bar' },
-          };
-        },
-      },
+    app.setErrorHandler((err, request, reply) => {
+      reply.status(500).send(err.message);
     });
-
-    app.register(s.plugin(router));
 
     await app.ready();
 
-    const response = await supertest(app.server).get('/middleware').send();
-
-    expect(response.statusCode).toEqual(401);
-  });
-
-  it('should allow for middleware to reject the request with @fastify/express', async () => {
-    const app = fastify({ logger: false });
-    app.register(fastifyExpress);
-
-    const contract = c.router({
-      routeWithMiddleware: {
-        method: 'GET',
-        path: '/middleware',
-        responses: {
-          200: z.object({
-            foo: z.string(),
-          }),
-        },
-      },
+    const responseHtml = await supertest(app.server).post('/index.html').send({
+      echoHtml: '<h1>hello world</h1>',
     });
+    expect(responseHtml.status).toEqual(200);
+    expect(responseHtml.text).toEqual('<h1>hello world</h1>');
+    expect(responseHtml.header['content-type']).toEqual('text/html');
 
-    const router = s.router(contract, {
-      routeWithMiddleware: {
-        middleware: [
-          async (request, response) => {
-            return response.status(401).send();
-          },
-        ],
-        handler: async () => {
-          return {
-            status: 200,
-            body: { foo: 'bar' },
-          };
-        },
-      },
-    });
+    const responseHtmlFail = await supertest(app.server)
+      .post('/index.html')
+      .send({
+        echoHtml: 'hello world',
+      });
+    expect(responseHtmlFail.status).toEqual(500);
+    expect(responseHtmlFail.text).toEqual('Response validation failed');
+    expect(responseHtmlFail.header['content-type']).toEqual(
+      'text/plain; charset=utf-8'
+    );
 
-    app.register(s.plugin(router));
+    const responseTextPlain = await supertest(app.server).get('/robots.txt');
+    expect(responseTextPlain.status).toEqual(200);
+    expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
+    expect(responseTextPlain.header['content-type']).toEqual('text/plain');
 
-    await app.ready();
-
-    const response = await supertest(app.server).get('/middleware').send();
-
-    expect(response.statusCode).toEqual(401);
+    const responseCss = await supertest(app.server).get('/style.css');
+    expect(responseCss.status).toEqual(200);
+    expect(responseCss.text).toEqual('body { color: red; }');
+    expect(responseCss.header['content-type']).toEqual('text/css');
   });
 });

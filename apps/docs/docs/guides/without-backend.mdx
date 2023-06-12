@@ -22,7 +22,7 @@ export const contract = c.router({
     method: 'GET',
     path: '/posts',
     responses: {
-      200: c.response<{ posts: Post[]; total: number }>(),
+      200: c.type<{ posts: Post[]; total: number }>(),
     },
     query: z.object({
       take: z.string().transform(Number).optional(),

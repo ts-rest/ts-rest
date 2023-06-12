@@ -3,6 +3,8 @@ import {
   AppRouteMutation,
   AppRouter,
   AppRouteStrictStatusCodes,
+  ContractAnyType,
+  ContractOtherResponse,
 } from './dsl';
 import { HTTPStatusCode } from './status-codes';
 import {
@@ -52,6 +54,10 @@ type PathParamsWithCustomValidators<
         : ZodInputOrType<T['pathParams']>
     >;
 
+export type ResolveResponseType<
+  T extends ContractAnyType | ContractOtherResponse<ContractAnyType>
+> = T extends ContractOtherResponse<infer U> ? U : T;
+
 type AppRouteResponses<
   T extends AppRoute,
   TStatus extends HTTPStatusCode,
@@ -62,8 +68,8 @@ type AppRouteResponses<
       [K in keyof T['responses'] & TStatus]: {
         status: K;
         body: TClientOrServer extends 'server'
-          ? ZodInputOrType<T['responses'][K]>
-          : ZodInferOrType<T['responses'][K]>;
+          ? ZodInputOrType<ResolveResponseType<T['responses'][K]>>
+          : ZodInferOrType<ResolveResponseType<T['responses'][K]>>;
       } & (TClientOrServer extends 'client'
         ? {
             headers: Headers;
@@ -131,11 +137,10 @@ export type ClientInferResponseBody<
   TStatus extends keyof T['responses'] = keyof T['responses']
 > = Prettify<AppRouteResponses<T, TStatus & HTTPStatusCode, 'client'>['body']>;
 
-type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> = Prettify<
+type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
     ? Without<ZodInferOrType<T['body']>, File>
-    : ZodInferOrType<T['body']>
->;
+    : ZodInferOrType<T['body']>;
 
 export type ServerInferRequest<
   T extends AppRoute | AppRouter,
@@ -144,7 +149,7 @@ export type ServerInferRequest<
   ? Prettify<
       Without<
         {
-          params: [undefined] extends PathParamsWithCustomValidators<T>
+          params: [keyof PathParamsWithCustomValidators<T>] extends [never]
             ? never
             : Prettify<PathParamsWithCustomValidators<T>>;
           body: T extends AppRouteMutation
@@ -186,7 +191,9 @@ type ClientInferRequestBase<
 > = Prettify<
   Without<
     {
-      params: [undefined] extends PathParamsWithCustomValidators<T, 'client'>
+      params: [keyof PathParamsWithCustomValidators<T, 'client'>] extends [
+        never
+      ]
         ? never
         : Prettify<PathParamsWithCustomValidators<T, 'client'>>;
       body: T extends AppRouteMutation

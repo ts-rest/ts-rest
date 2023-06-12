@@ -220,17 +220,14 @@ export const getCompleteUrl = (
   return `${baseUrl}${path}${queryComponent}`;
 };
 
-type FullClientInferRequest = ClientInferRequest<
-  AppRouteMutation & { path: '/:placeholder' },
-  ClientArgs
->;
-
 export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: InitClientArgs
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
-  return async (inputArgs?: FullClientInferRequest) => {
+  return async (
+    inputArgs?: ClientInferRequest<AppRouteMutation, ClientArgs>
+  ) => {
     const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
       inputArgs || {};
 
