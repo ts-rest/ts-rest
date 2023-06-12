@@ -87,7 +87,6 @@
     "openapi3-ts": "^2.0.2",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
-    "path-to-regexp": "^6.2.1",
     "postcss": "8.4.19",
     "prism-react-renderer": "^1.2.1",
     "react": "18.2.0",
