@@ -7,6 +7,7 @@ import {
 } from '@ts-rest/core';
 import { TsRestRequest } from './request';
 import { TsRestResponseInit } from './response';
+import { CorsConfig } from './cors';
 
 export class RequestValidationError extends Error {
   constructor(
@@ -47,4 +48,5 @@ export type ServerlessHandlerOptions = {
     err: unknown,
     req: TsRestRequest
   ) => TsRestResponseInit | Promise<TsRestResponseInit>;
+  cors?: CorsConfig;
 };

@@ -194,6 +194,10 @@ export async function responseToResult(
       return response.body;
     }
 
+    if (response.body === null) {
+      return '';
+    }
+
     if (isTextContentType) {
       return arrayBufferToString(response.body);
     }

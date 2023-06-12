@@ -5,11 +5,8 @@ import {
   ApiGatewayResponse,
   requestFromEvent,
   responseToResult,
-} from './providers/aws/api-gateway';
-import {
-  createServerlessRouter,
-  serverlessErrorHandler,
-} from './ts-rest-serverless';
+} from './mappers/aws/api-gateway';
+import { createServerlessRouter, serverlessErrorHandler } from './router';
 import { RecursiveRouterObj, ServerlessHandlerOptions } from './types';
 
 type LambdaPlatformArgs = {

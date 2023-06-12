@@ -65,6 +65,7 @@ describe('ApiGateway', () => {
         cookie:
           's_fid=7AAB6XMPLAFD9BBF-0643XMPL09956DE2; regStatus=pre-register',
         host: '70ixmpl4fl.execute-api.us-east-2.amazonaws.com',
+        origin: 'http://localhost',
         'sec-fetch-dest': 'document',
         'sec-fetch-mode': 'navigate',
         'sec-fetch-site': 'none',
@@ -88,6 +89,7 @@ describe('ApiGateway', () => {
         cookie:
           's_fid=7AABXMPL1AFD9BBF-0643XMPL09956DE2; regStatus=pre-register',
         host: 'r3pmxmplak.execute-api.us-east-2.amazonaws.com',
+        origin: 'http://localhost',
         'sec-fetch-dest': 'document',
         'sec-fetch-mode': 'navigate',
         'sec-fetch-site': 'cross-site',
@@ -143,6 +145,7 @@ describe('ApiGateway', () => {
         cookie:
           's_fid=7AAB6XMPLAFD9BBF-0643XMPL09956DE2; regStatus=pre-register',
         host: '70ixmpl4fl.execute-api.us-east-2.amazonaws.com',
+        origin: 'http://localhost',
         'sec-fetch-dest': 'document',
         'sec-fetch-mode': 'navigate',
         'sec-fetch-site': 'none',
@@ -192,6 +195,7 @@ describe('ApiGateway', () => {
         cookie:
           's_fid=7AABXMPL1AFD9BBF-0643XMPL09956DE2; regStatus=pre-register',
         host: 'r3pmxmplak.execute-api.us-east-2.amazonaws.com',
+        origin: 'http://localhost',
         'sec-fetch-dest': 'document',
         'sec-fetch-mode': 'navigate',
         'sec-fetch-site': 'cross-site',

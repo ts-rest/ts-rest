@@ -5,8 +5,8 @@ import merge from 'ts-deepmerge';
 import { PartialDeep } from 'type-fest';
 import { createLambdaHandler } from './ts-rest-lambda';
 import { z } from 'zod';
-import * as apiGatewayEventV1 from './providers/aws/test-data/api-gateway-event-v1.json';
-import * as apiGatewayEventV2 from './providers/aws/test-data/api-gateway-event-v2.json';
+import * as apiGatewayEventV1 from './mappers/aws/test-data/api-gateway-event-v1.json';
+import * as apiGatewayEventV2 from './mappers/aws/test-data/api-gateway-event-v2.json';
 
 const c = initContract();
 
@@ -158,6 +158,10 @@ describe('tsRestLambda', () => {
     },
     {
       responseValidation: true,
+      cors: {
+        origins: ['http://localhost'],
+        credentials: true,
+      },
     }
   );
 
@@ -174,7 +178,13 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
+        vary: 'origin',
+      },
+      multiValueHeaders: {
+        vary: ['origin'],
       },
       body: '{"foo":"bar"}',
       isBase64Encoded: false,
@@ -196,7 +206,10 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
+        vary: 'origin',
       },
       body: '{"foo":"bar"}',
       isBase64Encoded: false,
@@ -217,7 +230,13 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
+        vary: 'origin',
+      },
+      multiValueHeaders: {
+        vary: ['origin'],
       },
       body: '{"id":"222","pong":"foo"}',
       isBase64Encoded: false,
@@ -242,10 +261,63 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
+        vary: 'origin',
       },
       body: '{"id":"123","pong":"foo"}',
       isBase64Encoded: false,
+    });
+  });
+
+  it('should handle OPTIONS request', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'OPTIONS',
+        },
+      },
+      rawPath: '/test',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 200,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
+        'access-control-allow-origin': 'http://localhost',
+        vary: 'access-control-request-headers, origin',
+      },
+      body: '',
+      isBase64Encoded: true,
+    });
+  });
+
+  it('should handle OPTIONS request with mismatching origin', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'OPTIONS',
+        },
+      },
+      rawPath: '/test',
+      headers: {
+        origin: 'https://example.com',
+      },
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 200,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
+        vary: 'access-control-request-headers, origin',
+      },
+      body: '',
+      isBase64Encoded: true,
     });
   });
 
@@ -263,7 +335,10 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
+        vary: 'origin',
       },
       body: '{"foo":"bar"}',
       isBase64Encoded: false,
@@ -284,8 +359,11 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'cache-control': 'max-age=31536000',
         'content-type': 'text/css',
+        vary: 'origin',
       },
       body: 'body { color: red; }',
       isBase64Encoded: false,
@@ -307,9 +385,37 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'image/jpeg',
+        vary: 'origin',
       },
       body: 'AAECAw==',
+      isBase64Encoded: true,
+    });
+  });
+
+  it('should handle gif file downloads', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'GET',
+        },
+      },
+      rawPath: '/image',
+      rawQueryString: 'type=gif',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 200,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'image/gif',
+        vary: 'origin',
+      },
+      body: 'BAUGBw==',
       isBase64Encoded: true,
     });
   });
@@ -322,7 +428,14 @@ describe('tsRestLambda', () => {
         },
       },
       rawPath: '/upload',
-      body: 'LS0tLS1XZWJLaXRGb3JtQm91bmRhcnk3TUE0WVd4a1RyWnUwZ1cNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0iZmlsZSI7IGZpbGVuYW1lPSJhLmh0bWwiDQpDb250ZW50LVR5cGU6IHRleHQvaHRtbA0KDQo8aHRtbD48Ym9keT48aDE+SGVsbG8gdHMtcmVzdCE8L2gxPjwvYm9keT48L2h0bWw+DQotLS0tLVdlYktpdEZvcm1Cb3VuZGFyeTdNQTRZV3hrVHJadTBnVy0t',
+      body: Buffer.from(
+        '-----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n' +
+          'Content-Disposition: form-data; name="file"; filename="a.html"\r\n' +
+          'Content-Type: text/html\r\n' +
+          '\r\n' +
+          '<html><body><h1>Hello ts-rest!</h1></body></html>\r\n' +
+          '-----WebKitFormBoundary7MA4YWxkTrZu0gW--'
+      ).toString('base64'),
       headers: {
         'content-type':
           'multipart/form-data; boundary=---WebKitFormBoundary7MA4YWxkTrZu0gW',
@@ -334,9 +447,33 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 200,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'text/html',
+        vary: 'origin',
       },
       body: '<html><body><h1>Hello ts-rest!</h1></body></html>',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('should handle non-existent route', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'GET',
+        },
+      },
+      rawPath: '/foo',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 404,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: '{"message":"Not found"}',
       isBase64Encoded: false,
     });
   });

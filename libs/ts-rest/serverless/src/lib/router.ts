@@ -17,6 +17,7 @@ import {
   RequestValidationError,
   ServerlessHandlerOptions,
 } from './types';
+import { createCors } from './cors';
 
 const recursivelyProcessContract = ({
   schema,
@@ -101,6 +102,12 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
 ) => {
   const router = Router<TsRestRequest, [TPlatformArgs]>();
 
+  const { preflight, corsify } = createCors(options.cors ?? {});
+
+  if (options.cors) {
+    router.all('*', preflight);
+  }
+
   router.all('*', withParams, withContent, async (req) => {
     if (
       !req.content &&
@@ -172,24 +179,28 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
         });
       };
 
-      switch (schema.method) {
-        case 'GET':
-          router.get(schema.path, routeHandler);
-          break;
-        case 'DELETE':
-          router.delete(schema.path, routeHandler);
-          break;
-        case 'POST':
-          router.post(schema.path, routeHandler);
-          break;
-        case 'PUT':
-          router.put(schema.path, routeHandler);
-          break;
-        case 'PATCH':
-          router.patch(schema.path, routeHandler);
-          break;
-      }
+      const corsifiedRouteHandler = options.cors
+        ? async (request: TsRestRequest, platformArgs: TPlatformArgs) => {
+            const response = await routeHandler(request, platformArgs);
+            return corsify(request, response);
+          }
+        : routeHandler;
+
+      const routerMethod = schema.method.toLowerCase();
+      router[routerMethod](schema.path, corsifiedRouteHandler);
     },
+  });
+
+  router.all('*', () => {
+    return new TsRestResponse({
+      statusCode: 404,
+      body: JSON.stringify({
+        message: 'Not found',
+      }),
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
   });
 
   return router;

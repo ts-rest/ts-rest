@@ -13,6 +13,7 @@
     "accept-language": "en-US,en;q=0.9",
     "content-length": "0",
     "host": "r3pmxmplak.execute-api.us-east-2.amazonaws.com",
+    "origin": "http://localhost",
     "sec-fetch-dest": "document",
     "sec-fetch-mode": "navigate",
     "sec-fetch-site": "cross-site",
