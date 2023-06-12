@@ -2,18 +2,10 @@
   "name": "@ts-rest/fastify",
   "version": "3.26.0",
   "peerDependencies": {
-    "@fastify/express": "^2.0.0",
-    "@fastify/middie": "^8.0.0",
     "fastify": "^4.0.0",
     "zod": "^3.0.0"
   },
   "peerDependenciesMeta": {
-    "@fastify/express": {
-      "optional": true
-    },
-    "@fastify/middie": {
-      "optional": true
-    },
     "zod": {
       "optional": true
     }

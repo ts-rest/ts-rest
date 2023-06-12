@@ -29,7 +29,7 @@ type AppRouteImplementation<T extends AppRoute> = (
     request: fastify.FastifyRequest;
     reply: fastify.FastifyReply;
   }
-) => Promise<ServerInferResponses<T>>;
+) => Promise<ServerInferResponses<T>> | ServerInferResponses<T>;
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
@@ -48,6 +48,7 @@ type RegisterRouterOptions = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
   responseValidation?: boolean;
+  hooks?: RouteHooks;
   requestValidationErrorHandler?:
     | 'combined'
     | ((
@@ -57,58 +58,22 @@ type RegisterRouterOptions = {
       ) => void);
 };
 
-type FlattenAppRouter<T extends AppRouter | AppRoute> = T extends AppRoute
-  ? T
-  : {
-      [TKey in keyof T]: T[TKey] extends AppRoute
-        ? T[TKey]
-        : T[TKey] extends AppRouter
-        ? FlattenAppRouter<T[TKey]>
-        : never;
-    }[keyof T];
-
-export type MiddlewareRequest<
-  T extends AppRouter | AppRoute,
-  TRequest
-> = TRequest & {
-  tsRestRoute: FlattenAppRouter<T>;
-};
-
-type ExtractExpressMiddlewareFn<
-  T extends AppRouter | AppRoute,
-  Fn
-> = Fn extends (request: infer TRequest, response: infer TResponse) => unknown
-  ? (
-      req: MiddlewareRequest<T, TRequest>,
-      res: TResponse,
-      next: () => void
-    ) => unknown
-  : never;
-
-type ExtractMiddleMiddlewareFn<
-  T extends AppRouter | AppRoute,
-  Fn
-> = Fn extends (request: infer TRequest, response: infer TResponse) => unknown
-  ? (
-      req: MiddlewareRequest<T, TRequest>,
-      res: TResponse,
-      next: () => void
-    ) => unknown
-  : never;
-
-type MiddlewareHandler<T extends AppRouter | AppRoute> =
-  fastify.FastifyInstance extends {
-    express: infer TExpress;
-  }
-    ? ExtractExpressMiddlewareFn<T, TExpress>
-    : fastify.FastifyInstance extends {
-        use(routes: string[], fn: infer MiddieFn): unknown;
-      }
-    ? ExtractMiddleMiddlewareFn<T, MiddieFn>
-    : never;
+export type RouteHooks = Pick<
+  fastify.RouteOptions,
+  | 'preParsing'
+  | 'preValidation'
+  | 'preHandler'
+  | 'preSerialization'
+  | 'onRequest'
+  | 'onSend'
+  | 'onResponse'
+  | 'onTimeout'
+  | 'onError'
+  | 'onRequestAbort'
+>;
 
 type AppRouteOptions<TRoute extends AppRoute> = {
-  middleware?: MiddlewareHandler<TRoute>[];
+  hooks?: RouteHooks;
   handler: AppRouteImplementation<TRoute>;
 };
 
@@ -192,7 +157,19 @@ export const initServer = () => ({
       requestValidationErrorHandler: 'combined',
     }
   ) => {
-    recursivelyRegisterRouter(routerImpl.routes, contract, [], app, options);
+    const { hooks = {}, ...restOfOptions } = options;
+    recursivelyRegisterRouter(
+      routerImpl.routes,
+      contract,
+      [],
+      app,
+      restOfOptions
+    );
+
+    Object.keys(hooks).forEach((hookName) =>
+      // @ts-expect-error Fastify's hook overload seems to be complaining here for no reason afaik
+      app.addHook(hookName, hooks[hookName])
+    );
 
     app.setErrorHandler(
       requestValidationErrorHandler(options.requestValidationErrorHandler)
@@ -212,7 +189,19 @@ export const initServer = () => ({
       },
       done
     ) => {
-      recursivelyRegisterRouter(router.routes, router.contract, [], app, opts);
+      const { hooks = {}, ...restOfOptions } = opts;
+      recursivelyRegisterRouter(
+        router.routes,
+        router.contract,
+        [],
+        app,
+        restOfOptions
+      );
+
+      Object.keys(hooks).forEach((hookName) =>
+        // @ts-expect-error Fastify's hook overload seems to be complaining here for no reason afaik
+        app.addHook(hookName, hooks[hookName])
+      );
 
       app.setErrorHandler(
         requestValidationErrorHandler(opts.requestValidationErrorHandler)
@@ -253,8 +242,7 @@ const requestValidationErrorHandler = (
  * @param options - options for the routers
  */
 const registerRoute = <TAppRoute extends AppRoute>(
-  // routeImpl: AppRouteImplementationOrOptions<AppRouteMutationWithParams>,
-  routeImpl: AppRouteImplementation<AppRoute>,
+  routeImpl: AppRouteImplementationOrOptions<AppRoute>,
   appRoute: TAppRoute,
   app: fastify.FastifyInstance,
   options: RegisterRouterOptions
@@ -267,11 +255,12 @@ const registerRoute = <TAppRoute extends AppRoute>(
     ? routeImpl
     : routeImpl.handler;
 
-  const middleware = isAppRouteImplementation(routeImpl)
-    ? []
-    : routeImpl.middleware || [];
+  const hooks = isAppRouteImplementation(routeImpl)
+    ? {}
+    : routeImpl.hooks || {};
 
   const route: fastify.RouteOptions = {
+    ...hooks,
     method: appRoute.method,
     url: appRoute.path,
     handler: async (request, reply) => {
@@ -319,29 +308,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
     },
   };
 
-  if (middleware.length === 0) {
-    app.route(route);
-  } else {
-    if (!('use' in app) || typeof app.use !== 'function') {
-      throw new Error(
-        `[ts-rest] Middleware are only supported via additional plugins. Visit https://www.fastify.io/docs/latest/Reference/Middleware to find out more.`
-      );
-    }
-
-    app
-      .use([
-        (
-          req: MiddlewareRequest<TAppRoute, unknown>,
-          _: unknown,
-          next: () => void
-        ) => {
-          req.tsRestRoute = appRoute as FlattenAppRouter<TAppRoute>;
-          next();
-        },
-        ...middleware,
-      ])
-      .route(route);
-  }
+  app.route(route);
 };
 
 /**
@@ -377,7 +344,7 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
     typeof routerImpl?.['handler'] === 'function'
   ) {
     registerRoute(
-      routerImpl as unknown as AppRouteImplementationOrOptions<AppRouteMutationWithParams>,
+      routerImpl as unknown as AppRouteImplementationOrOptions<AppRoute>,
       appRouter as unknown as AppRoute,
       fastify,
       options

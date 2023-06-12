@@ -2,8 +2,6 @@ import { initContract } from '@ts-rest/core';
 import { initServer } from './ts-rest-fastify';
 import { z } from 'zod';
 import fastify from 'fastify';
-import fastifyExpress from '@fastify/express';
-import fastifyMiddie from '@fastify/middie';
 import * as supertest from 'supertest';
 
 const c = initContract();
@@ -389,5 +387,160 @@ describe('ts-rest-fastify', () => {
     expect(responseCss.status).toEqual(200);
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual('text/css');
+  });
+
+  it('should be able to use a hook on a single endpoint', async () => {
+    const contract = c.router({
+      getMe: {
+        method: 'GET',
+        path: '/me',
+        responses: { 200: z.boolean() },
+      },
+    });
+
+    const router = s.router(contract, {
+      getMe: {
+        hooks: {
+          preValidation: async (request, reply) => {
+            reply.status(401).send({ message: 'Unauthorized' });
+          },
+        },
+        handler() {
+          return { status: 200, body: true };
+        },
+      },
+    });
+
+    const app = fastify();
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/me');
+
+    expect(response.statusCode).toEqual(401);
+    expect(response.body).toEqual({ message: 'Unauthorized' });
+  });
+
+  it('should be able to use multiple hooks on a single endpoint', async () => {
+    let calledTimes = 0;
+    const contract = c.router({
+      getMe: {
+        method: 'GET',
+        path: '/me',
+        responses: { 200: z.boolean() },
+      },
+    });
+
+    const router = s.router(contract, {
+      getMe: {
+        hooks: {
+          preValidation: async () => {
+            calledTimes += 1;
+          },
+          onRequest: [
+            async () => {
+              calledTimes += 1;
+            },
+            (_, __, done) => {
+              calledTimes += 1;
+              done();
+            },
+          ],
+        },
+        handler() {
+          return { status: 200, body: true };
+        },
+      },
+    });
+
+    const app = fastify();
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/me');
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toBeTruthy();
+    expect(calledTimes).toEqual(3);
+  });
+
+  it('should be able to use a global hook', async () => {
+    const contract = c.router({
+      getMe: {
+        method: 'GET',
+        path: '/me',
+        responses: { 200: z.boolean() },
+      },
+    });
+
+    const router = s.router(contract, {
+      getMe: {
+        handler() {
+          return { status: 200, body: true };
+        },
+      },
+    });
+
+    const app = fastify();
+    app.register(s.plugin(router), {
+      hooks: {
+        onRequest: async (request, reply) => {
+          reply.status(401).send({ message: 'Unauthorized' });
+        },
+      },
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/me');
+
+    expect(response.statusCode).toEqual(401);
+    expect(response.body).toEqual({ message: 'Unauthorized' });
+  });
+
+  it('should be able to combine global hooks and route hooks', async () => {
+    let calledTimes = 0;
+    const contract = c.router({
+      getMe: {
+        method: 'GET',
+        path: '/me',
+        responses: { 200: z.boolean() },
+      },
+    });
+
+    const router = s.router(contract, {
+      getMe: {
+        hooks: {
+          preValidation: async () => {
+            calledTimes += 1;
+          },
+        },
+        handler() {
+          return { status: 200, body: true };
+        },
+      },
+    });
+
+    const app = fastify();
+    app.register(s.plugin(router), {
+      hooks: {
+        onRequest: async () => {
+          calledTimes += 1;
+        },
+        preValidation: async () => {
+          calledTimes += 1;
+        },
+      },
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).get('/me');
+
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toBeTruthy();
+    expect(calledTimes).toEqual(3);
   });
 });
