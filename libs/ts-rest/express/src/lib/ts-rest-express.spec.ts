@@ -133,7 +133,7 @@ describe('ts-rest-express', () => {
         next: express.NextFunction
       ) => {
         if (err instanceof ResponseValidationError) {
-          res.status(500).send(err.message);
+          res.status(500).send('Response validation failed');
           return;
         }
 

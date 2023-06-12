@@ -356,7 +356,7 @@ describe('ts-rest-fastify', () => {
     });
 
     app.setErrorHandler((err, request, reply) => {
-      reply.status(500).send(err.message);
+      reply.status(500).send('Response validation failed');
     });
 
     await app.ready();

@@ -221,13 +221,12 @@ const registerRoute = <TAppRoute extends AppRoute>(
       });
 
       const statusCode = result.status;
-      const responseType = appRoute.responses[statusCode];
 
       let validatedResponseBody = result.body;
 
       if (options.responseValidation) {
         const response = validateResponse({
-          responseType,
+          appRoute,
           response: {
             status: statusCode,
             body: result.body,
@@ -237,6 +236,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
         validatedResponseBody = response.body;
       }
 
+      const responseType = appRoute.responses[statusCode];
       if (isAppRouteOtherResponse(responseType)) {
         reply.header('content-type', responseType.contentType);
       }

@@ -154,13 +154,12 @@ const initializeExpressRoute = ({
       });
 
       const statusCode = Number(result.status);
-      const responseType = schema.responses[statusCode];
 
       let validatedResponseBody = result.body;
 
       if (options.responseValidation) {
         const response = validateResponse({
-          responseType,
+          appRoute: schema,
           response: {
             status: statusCode,
             body: result.body,
@@ -170,6 +169,7 @@ const initializeExpressRoute = ({
         validatedResponseBody = response.body;
       }
 
+      const responseType = schema.responses[statusCode];
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
         return res.status(statusCode).send(validatedResponseBody);

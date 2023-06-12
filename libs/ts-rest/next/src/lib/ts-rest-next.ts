@@ -248,13 +248,12 @@ export const createNextRouter = <T extends AppRouter>(
       });
 
       const statusCode = Number(status);
-      const responseType = route.responses[statusCode];
 
       let validatedResponseBody = body;
 
       if (responseValidation) {
         const response = validateResponse({
-          responseType,
+          appRoute: route,
           response: {
             status: statusCode,
             body: body,
@@ -264,6 +263,7 @@ export const createNextRouter = <T extends AppRouter>(
         validatedResponseBody = response.body;
       }
 
+      const responseType = route.responses[statusCode];
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
         return res.status(statusCode).send(validatedResponseBody);

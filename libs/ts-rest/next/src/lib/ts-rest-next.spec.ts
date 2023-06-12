@@ -1,4 +1,4 @@
-import { initContract } from '@ts-rest/core';
+import { initContract, ResponseValidationError } from '@ts-rest/core';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createNextRoute, createNextRouter } from './ts-rest-next';
 import { z } from 'zod';
@@ -350,7 +350,10 @@ describe('createNextRouter', () => {
       {
         responseValidation: true,
         errorHandler: (err: any, req, res) => {
-          res.status(500).send(err?.message || 'Error');
+          if (err instanceof ResponseValidationError) {
+            return res.status(500).send('Response validation failed');
+          }
+          return res.status(500).send('Server Error');
         },
       }
     );

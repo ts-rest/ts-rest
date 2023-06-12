@@ -1,7 +1,7 @@
 import { HTTPStatusCode } from './status-codes';
 import { checkZodSchema } from './zod-utils';
 import { ResponseValidationError } from './response-validation-error';
-import { ContractAnyType, ContractOtherResponse } from './dsl';
+import { AppRoute, ContractAnyType, ContractOtherResponse } from './dsl';
 
 export const isAppRouteResponse = (
   value: unknown
@@ -25,25 +25,23 @@ export const isAppRouteOtherResponse = (
 };
 
 export const validateResponse = ({
-  responseType,
+  appRoute,
   response,
 }: {
-  responseType: ContractAnyType | ContractOtherResponse<ContractAnyType>;
+  appRoute: AppRoute;
   response: { status: number; body?: unknown };
 }): { status: number; body?: unknown } => {
   if (isAppRouteResponse(response)) {
-    const { body } = response;
+    const responseType = appRoute.responses[response.status];
 
     const responseSchema = isAppRouteOtherResponse(responseType)
       ? responseType.body
       : responseType;
 
-    const responseValidation = checkZodSchema(body, responseSchema);
+    const responseValidation = checkZodSchema(response.body, responseSchema);
 
     if (!responseValidation.success) {
-      const { error } = responseValidation;
-
-      throw new ResponseValidationError(error);
+      throw new ResponseValidationError(appRoute, responseValidation.error);
     }
 
     return {
