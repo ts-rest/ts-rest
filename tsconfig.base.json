@@ -38,6 +38,8 @@
       "@ts-rest/react-query": ["libs/ts-rest/react-query/src/index.ts"],
       "@ts-rest/solid-query": ["libs/ts-rest/solid-query/src/index.ts"],
       "@ts-rest/serverless": ["libs/ts-rest/serverless/src/index.ts"],
+      "@ts-rest/serverless/fetch": ["libs/ts-rest/serverless/src/fetch.ts"],
+      "@ts-rest/serverless/lambda": ["libs/ts-rest/serverless/src/lambda.ts"],
       "@ts-rest/ts-rest/utils": ["libs/ts-rest/utils/src/index.ts"]
     }
   },

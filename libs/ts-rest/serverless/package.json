@@ -14,6 +14,18 @@
       "optional": true
     }
   },
+  "exports": {
+    "./fetch": {
+      "types": "./src/fetch.d.ts",
+      "import": "./fetch.js",
+      "require": "./fetch.cjs"
+    },
+    "./lambda": {
+      "types": "./src/lambda.d.ts",
+      "import": "./lambda.js",
+      "require": "./lambda.cjs"
+    }
+  },
   "typedoc": {
     "entryPoint": "./src/index.ts",
     "tsconfig": "./tsconfig.lib.json"

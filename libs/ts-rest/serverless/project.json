@@ -14,7 +14,7 @@
         "tsConfig": "libs/ts-rest/serverless/tsconfig.lib.json",
         "format": ["esm", "cjs"],
         "compiler": "tsc",
-        "rollupConfig": "tools/scripts/rollup.config.js",
+        "rollupConfig": "libs/ts-rest/serverless/rollup.config.js",
         "generateExportsField": true,
         "skipTypeField": true,
         "buildableProjectDepsInPackageJsonType": "dependencies"
