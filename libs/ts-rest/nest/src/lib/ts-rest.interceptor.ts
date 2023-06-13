@@ -46,15 +46,15 @@ export class TsRestInterceptor implements NestInterceptor {
       map((value) => {
         if (isAppRouteResponse(value)) {
           const statusCode = value.status;
-          const responseType = appRoute.responses[statusCode];
 
           const response = isValidationEnabled
             ? validateResponse({
-                responseType,
+                appRoute,
                 response: value,
               })
             : value;
 
+          const responseType = appRoute.responses[statusCode];
           if (isAppRouteOtherResponse(responseType)) {
             res.setHeader('content-type', responseType.contentType);
           }
