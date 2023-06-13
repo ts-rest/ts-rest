@@ -909,6 +909,21 @@ describe('ts-rest-nest-handler', () => {
           }),
         },
       },
+      createPost: {
+        path: '/posts',
+        method: 'POST',
+        body: z.object({
+          title: z.string(),
+          content: z.string(),
+        }),
+        responses: {
+          201: z.object({
+            id: z.number(),
+            title: z.string(),
+            content: z.string(),
+          }),
+        },
+      },
     });
 
     @Controller()
@@ -930,6 +945,14 @@ describe('ts-rest-nest-handler', () => {
             status: 200,
             body: {
               id: params.id,
+            },
+          }),
+          createPost: async ({ body }) => ({
+            status: 201,
+            body: {
+              id: 1,
+              title: body.title,
+              content: body.content,
             },
           }),
         });
@@ -998,6 +1021,22 @@ describe('ts-rest-nest-handler', () => {
           name: 'ZodError',
         },
         queryResult: null,
+      },
+    });
+
+    const responseCreate = await supertest(app.getHttpServer())
+      .post('/posts')
+      .send({ title: 'hello', content: 'world' });
+
+    expect({
+      status: responseCreate.status,
+      body: responseCreate.body,
+    }).toEqual({
+      status: 201,
+      body: {
+        id: 1,
+        title: 'hello',
+        content: 'world',
       },
     });
   });
