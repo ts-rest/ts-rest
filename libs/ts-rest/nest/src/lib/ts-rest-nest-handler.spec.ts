@@ -899,7 +899,7 @@ describe('ts-rest-nest-handler', () => {
       deletePost: {
         path: '/posts/:id',
         method: 'DELETE',
-        body: z.null(),
+        body: null,
         pathParams: z.object({
           id: z.coerce.number(),
         }),

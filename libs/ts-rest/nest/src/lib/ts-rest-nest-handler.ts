@@ -84,16 +84,18 @@ export const TsRestHandler = (
   const isMultiHandler = !isAppRoute(appRouterOrRoute);
 
   if (isMultiHandler) {
-    const routerPaths: string[] = [];
+    const routerPaths: Set<string> = new Set();
 
     Object.values(appRouterOrRoute).forEach((value) => {
       if (isAppRoute(value)) {
-        routerPaths.push(value.path);
+        routerPaths.add(value.path);
       }
     });
 
+    const routerPathsArray = Array.from(routerPaths);
+
     decorators.push(
-      All(routerPaths),
+      All(routerPathsArray),
       SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
       UseInterceptors(TsRestHandlerInterceptor)
     );
