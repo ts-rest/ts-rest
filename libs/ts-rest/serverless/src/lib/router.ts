@@ -6,6 +6,8 @@ import {
   checkZodSchema,
   isAppRoute,
   isAppRouteOtherResponse,
+  parseJsonQueryObject,
+  ResponseValidationError as ResponseValidationErrorCore,
   validateResponse,
 } from '@ts-rest/core';
 import { Router, withContent, withParams } from 'itty-router';
@@ -15,9 +17,11 @@ import {
   AppRouteImplementation,
   RecursiveRouterObj,
   RequestValidationError,
+  ResponseValidationError,
   ServerlessHandlerOptions,
 } from './types';
 import { createCors } from './cors';
+import { TsRestHttpError } from './http-error';
 
 const recursivelyProcessContract = ({
   schema,
@@ -54,7 +58,8 @@ const recursivelyProcessContract = ({
 
 const validateRequest = (
   req: TsRestRequest,
-  schema: AppRouteQuery | AppRouteMutation
+  schema: AppRouteQuery | AppRouteMutation,
+  options: ServerlessHandlerOptions
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -64,9 +69,12 @@ const validateRequest = (
     passThroughExtraKeys: true,
   });
 
-  const query = req.query;
-
-  const queryResult = checkZodSchema(query, schema.query);
+  const queryResult = checkZodSchema(
+    options.jsonQuery
+      ? parseJsonQueryObject(req.query as Record<string, string>)
+      : req.query,
+    schema.query
+  );
 
   const bodyResult = checkZodSchema(
     req.content,
@@ -102,12 +110,9 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
 ) => {
   const router = Router<TsRestRequest, [TPlatformArgs]>();
 
-  const { preflight, corsify } = createCors(options.cors ?? {});
+  const { preflightHandler, corsifyResponse } = createCors(options.cors);
 
-  if (options.cors) {
-    router.all('*', preflight);
-  }
-
+  router.options('*', preflightHandler);
   router.all('*', withParams, withContent, async (req) => {
     if (
       !req.content &&
@@ -122,12 +127,12 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
   recursivelyProcessContract({
     schema: routes,
     router: obj,
-    processRoute: (implementation, schema) => {
+    processRoute: (implementation, appRoute) => {
       const routeHandler = async (
         request: TsRestRequest,
         platformArgs: TPlatformArgs
       ) => {
-        const validationResults = validateRequest(request, schema);
+        const validationResults = validateRequest(request, appRoute, options);
 
         const result = await implementation({
           params: validationResults.paramsResult.data as any,
@@ -135,24 +140,33 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
           query: validationResults.queryResult.data as any,
           headers: validationResults.headersResult.data as any,
           request,
+          appRoute,
           ...platformArgs,
         });
 
         const statusCode = Number(result.status);
-        const responseType = schema.responses[statusCode];
+        const responseType = appRoute.responses[statusCode];
 
         let validatedResponseBody = result.body;
 
         if (options.responseValidation) {
-          const response = validateResponse({
-            responseType,
-            response: {
-              status: statusCode,
-              body: result.body,
-            },
-          });
+          try {
+            const response = validateResponse({
+              responseType,
+              response: {
+                status: statusCode,
+                body: result.body,
+              },
+            });
 
-          validatedResponseBody = response.body;
+            validatedResponseBody = response.body;
+          } catch (e) {
+            if (e instanceof ResponseValidationErrorCore) {
+              throw new ResponseValidationError(appRoute, e.cause);
+            }
+
+            throw e;
+          }
         }
 
         if (isAppRouteOtherResponse(responseType)) {
@@ -179,15 +193,16 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
         });
       };
 
-      const corsifiedRouteHandler = options.cors
-        ? async (request: TsRestRequest, platformArgs: TPlatformArgs) => {
-            const response = await routeHandler(request, platformArgs);
-            return corsify(request, response);
-          }
-        : routeHandler;
+      const corsifiedRouteHandler = async (
+        request: TsRestRequest,
+        platformArgs: TPlatformArgs
+      ) => {
+        const response = await routeHandler(request, platformArgs);
+        return corsifyResponse(request, response);
+      };
 
-      const routerMethod = schema.method.toLowerCase();
-      router[routerMethod](schema.path, corsifiedRouteHandler);
+      const routerMethod = appRoute.method.toLowerCase();
+      router[routerMethod](appRoute.path, corsifiedRouteHandler);
     },
   });
 
@@ -210,37 +225,35 @@ export const serverlessErrorHandler = async (
   err: any,
   request: TsRestRequest,
   options: ServerlessHandlerOptions = {}
-) => {
-  if (err instanceof RequestValidationError) {
-    if (options?.requestValidationErrorHandler) {
-      return new TsRestResponse(
-        await options.requestValidationErrorHandler(err, request)
-      );
-    }
-
-    return new TsRestResponse({
-      statusCode: 400,
-      body: JSON.stringify({
-        pathParameterErrors: err.pathParams,
-        headerErrors: err.headers,
-        queryParameterErrors: err.query,
-        bodyErrors: err.body,
-      }),
-      headers: {
-        'content-type': 'application/json',
-      },
-    });
-  }
+): Promise<TsRestResponse> => {
+  const { corsifyResponse } = createCors(options.cors);
 
   if (options?.errorHandler) {
-    return new TsRestResponse(await options.errorHandler(err, request));
+    const maybeResponse = await options.errorHandler(err, request);
+
+    if (maybeResponse) {
+      return corsifyResponse(request, new TsRestResponse(maybeResponse));
+    }
   }
 
-  return new TsRestResponse({
-    statusCode: 500,
-    body: JSON.stringify({ message: 'Server Error' }),
-    headers: {
-      'content-type': 'application/json',
-    },
-  });
+  if (err instanceof TsRestHttpError) {
+    const isJson = err.contentType.startsWith('application/json');
+
+    return corsifyResponse(
+      request,
+      new TsRestResponse({
+        statusCode: err.statusCode,
+        body: isJson ? JSON.stringify(err.body) : err.body,
+        headers: {
+          'content-type': err.contentType,
+        },
+      })
+    );
+  }
+
+  return serverlessErrorHandler(
+    new TsRestHttpError(500, { message: 'Server Error' }),
+    request,
+    options
+  );
 };

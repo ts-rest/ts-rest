@@ -7,6 +7,8 @@ import { createLambdaHandler } from './ts-rest-lambda';
 import { z } from 'zod';
 import * as apiGatewayEventV1 from './mappers/aws/test-data/api-gateway-event-v1.json';
 import * as apiGatewayEventV2 from './mappers/aws/test-data/api-gateway-event-v2.json';
+import { TsRestResponse } from './response';
+import { TsRestRouteError } from './http-error';
 
 const c = initContract();
 
@@ -16,11 +18,14 @@ const contract = c.router({
     path: '/test',
     query: z.object({
       foo: z.string(),
+      throwError: z.boolean().default(false),
+      throwDefinedError: z.boolean().default(false),
     }),
     responses: {
       200: z.object({
         foo: z.string(),
       }),
+      402: z.literal('Unauthorized'),
     },
   },
   ping: {
@@ -66,7 +71,7 @@ const contract = c.router({
     }),
     responses: {
       200: c.otherResponse({
-        contentType: 'image/jpeg',
+        contentType: 'application/octet-stream',
         body: c.type<Blob>(),
       }),
     },
@@ -99,7 +104,21 @@ describe('tsRestLambda', () => {
   const lambdaHandler = createLambdaHandler(
     contract,
     {
-      test: async ({ query: { foo } }) => {
+      test: async ({
+        appRoute,
+        query: { foo, throwError, throwDefinedError },
+      }) => {
+        if (throwError) {
+          throw new Error('Handle Me');
+        }
+
+        if (throwDefinedError) {
+          throw new TsRestRouteError(appRoute, {
+            status: 402,
+            body: 'Unauthorized',
+          });
+        }
+
         return {
           status: 200,
           body: {
@@ -157,10 +176,25 @@ describe('tsRestLambda', () => {
       },
     },
     {
+      jsonQuery: true,
       responseValidation: true,
       cors: {
         origins: ['http://localhost'],
         credentials: true,
+      },
+      errorHandler: (error) => {
+        if (error instanceof Error && error.message === 'Handle Me') {
+          return new TsRestResponse({
+            statusCode: 422,
+            body: 'Custom Error Handler',
+            headers: {
+              'content-type': 'text/plain',
+            },
+          });
+        }
+
+        // if not returning a response, should pass through to the default error handler
+        return;
       },
     }
   );
@@ -271,7 +305,7 @@ describe('tsRestLambda', () => {
     });
   });
 
-  it('should handle OPTIONS request', async () => {
+  it('OPTIONS request should return all CORS headers', async () => {
     const event = createV2LambdaRequest({
       requestContext: {
         http: {
@@ -295,7 +329,7 @@ describe('tsRestLambda', () => {
     });
   });
 
-  it('should handle OPTIONS request with mismatching origin', async () => {
+  it('OPTIONS request should return not return origin header with mismatched origin', async () => {
     const event = createV2LambdaRequest({
       requestContext: {
         http: {
@@ -318,6 +352,81 @@ describe('tsRestLambda', () => {
       },
       body: '',
       isBase64Encoded: true,
+    });
+  });
+
+  it('should handle failed request validation', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'GET',
+        },
+      },
+      rawPath: '/test',
+      rawQueryString: '',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 400,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        vary: 'origin',
+      },
+      body: '{"message":"Request validation failed","pathParameterErrors":null,"headerErrors":null,"queryParameterErrors":{"issues":[{"code":"invalid_type","expected":"string","received":"undefined","path":["foo"],"message":"Required"}],"name":"ZodError"},"bodyErrors":null}',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('should handle error handled by custom handler', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'GET',
+        },
+      },
+      rawPath: '/test',
+      rawQueryString: 'foo=bar&throwError=true',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 422,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'text/plain',
+        vary: 'origin',
+      },
+      body: 'Custom Error Handler',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('should handle error defined in contract', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'GET',
+        },
+      },
+      rawPath: '/test',
+      rawQueryString: 'foo=bar&throwDefinedError=true',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 402,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        vary: 'origin',
+      },
+      body: '"Unauthorized"',
+      isBase64Encoded: false,
     });
   });
 
@@ -370,7 +479,7 @@ describe('tsRestLambda', () => {
     });
   });
 
-  it('should handle jpeg file downloads', async () => {
+  it('should handle blob body without type defined', async () => {
     const event = createV2LambdaRequest({
       requestContext: {
         http: {
@@ -387,7 +496,7 @@ describe('tsRestLambda', () => {
       headers: {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
-        'content-type': 'image/jpeg',
+        'content-type': 'application/octet-stream',
         vary: 'origin',
       },
       body: 'AAECAw==',
@@ -395,7 +504,7 @@ describe('tsRestLambda', () => {
     });
   });
 
-  it('should handle gif file downloads', async () => {
+  it('should handle blob body with type defined', async () => {
     const event = createV2LambdaRequest({
       requestContext: {
         http: {

@@ -97,30 +97,37 @@ const createCorsHeaders = (
   return headers;
 };
 
-export const createCors = (corsConfig: CorsConfig) => {
-  const preflight = (req: TsRestRequest) => {
-    if (req.method === 'OPTIONS') {
-      const headers = createCorsHeaders(req, corsConfig, {
-        origin: true,
-        methods: true,
-        allowedHeaders: true,
-        exposedHeaders: true,
-        credentials: true,
-        maxAge: true,
-      });
-
-      return new TsRestResponse({
-        statusCode: 200,
-        body: null,
-        headers,
-      });
+export const createCors = (corsConfig?: CorsConfig) => {
+  const preflightHandler = (req: TsRestRequest) => {
+    if (!corsConfig) {
+      return;
     }
 
-    return;
+    const headers = createCorsHeaders(req, corsConfig, {
+      origin: true,
+      methods: true,
+      allowedHeaders: true,
+      exposedHeaders: true,
+      credentials: true,
+      maxAge: true,
+    });
+
+    return new TsRestResponse({
+      statusCode: 200,
+      body: null,
+      headers,
+    });
   };
 
-  const corsify = (request: TsRestRequest, response: TsRestResponse) => {
-    const headers = createCorsHeaders(request, corsConfig, {
+  const corsifyResponse = (
+    request: TsRestRequest,
+    response: TsRestResponse
+  ) => {
+    if (!corsConfig) {
+      return response;
+    }
+
+    const corsHeaders = createCorsHeaders(request, corsConfig, {
       origin: true,
       credentials: true,
       exposedHeaders: true,
@@ -128,11 +135,11 @@ export const createCors = (corsConfig: CorsConfig) => {
 
     response.headers = {
       ...response.headers,
-      ...headers,
+      ...corsHeaders,
     };
 
     return response;
   };
 
-  return { preflight, corsify };
+  return { preflightHandler, corsifyResponse };
 };

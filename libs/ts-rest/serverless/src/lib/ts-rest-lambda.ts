@@ -40,7 +40,6 @@ export const createLambdaHandler = <T extends AppRouter>(
         return responseToResult(event, response);
       })
       .catch(async (err) => {
-        console.log('error', err);
         const response = await serverlessErrorHandler(err, request, options);
         return responseToResult(event, response);
       });

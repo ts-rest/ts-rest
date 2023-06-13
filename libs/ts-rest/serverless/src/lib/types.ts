@@ -8,15 +8,32 @@ import {
 import { TsRestRequest } from './request';
 import { TsRestResponseInit } from './response';
 import { CorsConfig } from './cors';
+import { TsRestHttpError } from './http-error';
 
-export class RequestValidationError extends Error {
+export class RequestValidationError extends TsRestHttpError {
   constructor(
-    public pathParams: z.ZodError | null,
-    public headers: z.ZodError | null,
-    public query: z.ZodError | null,
-    public body: z.ZodError | null
+    public pathParamsError: z.ZodError | null,
+    public headersError: z.ZodError | null,
+    public queryError: z.ZodError | null,
+    public bodyError: z.ZodError | null
   ) {
-    super('[ts-rest] request validation failed');
+    super(400, {
+      message: 'Request validation failed',
+      pathParameterErrors: pathParamsError,
+      headerErrors: headersError,
+      queryParameterErrors: queryError,
+      bodyErrors: bodyError,
+    });
+  }
+}
+
+export class ResponseValidationError extends TsRestHttpError {
+  constructor(public appRoute: AppRoute, public error: z.ZodError) {
+    super(500, {
+      message: 'Server Error',
+    });
+
+    this.message = `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`;
   }
 }
 
@@ -24,6 +41,7 @@ export type AppRouteImplementation<T extends AppRoute, TPlatformArgs> = (
   args: ServerInferRequest<T, Headers> &
     TPlatformArgs & {
       request: TsRestRequest;
+      appRoute: T;
     }
 ) => Promise<
   ServerInferResponses<T> & { headers?: TsRestResponseInit['headers'] }
@@ -40,13 +58,9 @@ export type RecursiveRouterObj<T extends AppRouter, TPlatformArgs> = {
 export type ServerlessHandlerOptions = {
   jsonQuery?: boolean;
   responseValidation?: boolean;
-  requestValidationErrorHandler?: (
-    err: RequestValidationError,
-    req: TsRestRequest
-  ) => TsRestResponseInit | Promise<TsRestResponseInit>;
   errorHandler?: (
     err: unknown,
     req: TsRestRequest
-  ) => TsRestResponseInit | Promise<TsRestResponseInit>;
+  ) => TsRestResponseInit | Promise<TsRestResponseInit> | void | Promise<void>;
   cors?: CorsConfig;
 };
