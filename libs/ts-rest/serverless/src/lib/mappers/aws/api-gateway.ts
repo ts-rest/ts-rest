@@ -10,7 +10,7 @@ import {
   arrayBufferToBase64,
   arrayBufferToString,
   splitCookiesString,
-} from '../utils';
+} from '../../utils';
 
 type EventV1 = APIGatewayProxyEvent;
 type EventV2 = APIGatewayProxyEventV2;
@@ -115,7 +115,6 @@ export function requestUrl(event: ApiGatewayEvent) {
 export function requestFromEvent(event: ApiGatewayEvent) {
   return new TsRestRequest(requestUrl(event), {
     method: requestMethod(event),
-    url: requestUrl(event),
     headers: requestHeaders(event),
     body: requestBody(event),
   });

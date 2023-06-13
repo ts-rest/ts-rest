@@ -3,7 +3,7 @@ export async function arrayBufferToBase64(bufferOrBlob: ArrayBuffer | Blob) {
     bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
   return await new Promise<string>((resolve) => {
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onload = () => {
       const dataUrl = reader.result as string;
       const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
       resolve(base64);
@@ -17,10 +17,20 @@ export async function arrayBufferToString(bufferOrBlob: ArrayBuffer | Blob) {
     bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
   return await new Promise<string>((resolve) => {
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onload = () => {
       resolve(reader.result as string);
     };
     reader.readAsText(blob);
+  });
+}
+
+export async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve) => {
+    const fileReader = new FileReader();
+    fileReader.onload = () => {
+      resolve(fileReader.result as ArrayBuffer);
+    };
+    fileReader.readAsArrayBuffer(blob);
   });
 }
 

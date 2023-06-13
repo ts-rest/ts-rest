@@ -22,6 +22,7 @@ import {
 } from './types';
 import { createCors } from './cors';
 import { TsRestHttpError } from './http-error';
+import { blobToArrayBuffer } from './utils';
 
 const recursivelyProcessContract = ({
   schema,
@@ -154,14 +155,13 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
         corsifyResponseHeaders(request, responseHeaders);
 
         const statusCode = Number(result.status);
-        const responseType = appRoute.responses[statusCode];
 
         let validatedResponseBody = result.body;
 
         if (options.responseValidation) {
           try {
             const response = validateResponse({
-              responseType,
+              appRoute,
               response: {
                 status: statusCode,
                 body: result.body,
@@ -178,12 +178,17 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
           }
         }
 
+        const responseType = appRoute.responses[statusCode];
         if (isAppRouteOtherResponse(responseType)) {
-          if (
-            validatedResponseBody instanceof Blob &&
-            validatedResponseBody.type !== ''
-          ) {
-            responseHeaders.set('content-type', validatedResponseBody.type);
+          if (validatedResponseBody instanceof Blob) {
+            responseHeaders.set(
+              'content-type',
+              validatedResponseBody.type || responseType.contentType
+            );
+
+            validatedResponseBody = await blobToArrayBuffer(
+              validatedResponseBody
+            );
           } else {
             responseHeaders.set('content-type', responseType.contentType);
           }
