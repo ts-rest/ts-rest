@@ -31,7 +31,7 @@ const createCorsHeaders = (
     credentials,
     maxAge,
   }: CorsConfig,
-  corsHeaders: {
+  corsWhitelist: {
     origin?: boolean;
     methods?: boolean;
     allowedHeaders?: boolean;
@@ -42,11 +42,11 @@ const createCorsHeaders = (
 ) => {
   const headers = {} as Record<string, string | string[]>;
 
-  if (corsHeaders.credentials && credentials === true) {
+  if (corsWhitelist.credentials && credentials === true) {
     headers['access-control-allow-credentials'] = 'true';
   }
 
-  if (corsHeaders.allowedHeaders) {
+  if (corsWhitelist.allowedHeaders) {
     let allowedHeadersValue = allowedHeaders?.join(',');
     if (allowedHeadersValue === undefined) {
       allowedHeadersValue =
@@ -64,11 +64,11 @@ const createCorsHeaders = (
     }
   }
 
-  if (corsHeaders.methods) {
+  if (corsWhitelist.methods) {
     headers['access-control-allow-methods'] = methods.join(',');
   }
 
-  if (corsHeaders.origin) {
+  if (corsWhitelist.origin) {
     if (origins === '*') {
       headers['access-control-allow-origin'] = '*';
     } else {
@@ -86,11 +86,11 @@ const createCorsHeaders = (
     }
   }
 
-  if (corsHeaders.exposedHeaders && exposedHeaders?.length) {
+  if (corsWhitelist.exposedHeaders && exposedHeaders?.length) {
     headers['access-control-expose-headers'] = exposedHeaders.join(',');
   }
 
-  if (corsHeaders.maxAge && maxAge) {
+  if (corsWhitelist.maxAge && maxAge) {
     headers['access-control-max-age'] = maxAge.toString();
   }
 

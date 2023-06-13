@@ -325,7 +325,7 @@ describe('tsRestLambda', () => {
         vary: 'access-control-request-headers, origin',
       },
       body: '',
-      isBase64Encoded: true,
+      isBase64Encoded: false,
     });
   });
 
@@ -351,7 +351,7 @@ describe('tsRestLambda', () => {
         vary: 'access-control-request-headers, origin',
       },
       body: '',
-      isBase64Encoded: true,
+      isBase64Encoded: false,
     });
   });
 

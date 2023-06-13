@@ -6,6 +6,7 @@ import type {
 } from 'aws-lambda';
 import { TsRestRequest } from '../../request';
 import { TsRestResponse } from '../../response';
+import { arrayBufferToBase64, arrayBufferToString } from '../utils';
 
 type EventV1 = APIGatewayProxyEvent;
 type EventV2 = APIGatewayProxyEventV2;
@@ -67,18 +68,11 @@ export function requestBody(
     return;
   }
 
-  if (Buffer.isBuffer(event.body)) {
-    return event.body.buffer;
-  } else if (typeof event.body === 'string') {
-    if (event.isBase64Encoded) {
-      return Uint8Array.from(atob(event.body), (c) => c.charCodeAt(0));
-    }
-    return event.body;
-  } else if (typeof event.body === 'object') {
-    return JSON.stringify(event.body);
+  if (event.isBase64Encoded) {
+    return Buffer.from(event.body, 'base64');
   }
 
-  throw new Error(`Unexpected event.body type: ${typeof event.body}`);
+  return event.body;
 }
 
 export function requestUrl(event: ApiGatewayEvent) {
@@ -123,31 +117,6 @@ export function requestFromEvent(event: ApiGatewayEvent) {
   });
 }
 
-async function arrayBufferToBase64(bufferOrBlob: ArrayBuffer | Blob) {
-  const blob =
-    bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
-  return await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const [, base64] = (reader.result as string).split(',');
-      resolve(base64);
-    };
-    reader.readAsDataURL(blob);
-  });
-}
-
-async function arrayBufferToString(bufferOrBlob: ArrayBuffer | Blob) {
-  const blob =
-    bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
-  return await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      resolve(reader.result as string);
-    };
-    reader.readAsText(blob);
-  });
-}
-
 export async function responseToResult(
   event: ApiGatewayEvent,
   response: TsRestResponse
@@ -182,28 +151,20 @@ export async function responseToResult(
     cookies = multiValueHeaders['set-cookie'];
   }
 
-  const isTextContentType =
+  let isBase64Encoded = false;
+  let body: string;
+
+  if (typeof response.body === 'string' || response.body === null) {
+    body = response.body ?? '';
+  } else if (
     headers['content-type']?.startsWith('text/') ||
-    (response.body instanceof Blob && response.body.type.startsWith('text/'));
-
-  const isBase64Encoded =
-    typeof response.body !== 'string' && !isTextContentType;
-
-  const body = await (async () => {
-    if (typeof response.body === 'string') {
-      return response.body;
-    }
-
-    if (response.body === null) {
-      return '';
-    }
-
-    if (isTextContentType) {
-      return arrayBufferToString(response.body);
-    }
-
-    return arrayBufferToBase64(response.body);
-  })();
+    (response.body instanceof Blob && response.body.type.startsWith('text/'))
+  ) {
+    body = await arrayBufferToString(response.body);
+  } else {
+    body = await arrayBufferToBase64(response.body);
+    isBase64Encoded = true;
+  }
 
   if (isV2(event)) {
     return {
