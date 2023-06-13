@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.26.1
+
+### Patch Changes
+
+- 1afbf08: Add missing ts-rest-nest support for Fastify (thanks btravers for the GH issue)
+
 ## 3.26.0
 
 ### Minor Changes
