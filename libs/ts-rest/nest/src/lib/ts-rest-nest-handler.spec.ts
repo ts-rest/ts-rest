@@ -20,6 +20,10 @@ import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
 import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T
@@ -28,6 +32,8 @@ export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   : false;
 
 export type Expect<a extends true> = a;
+
+jest.setTimeout(10000);
 
 describe('doesUrlMatchContractPath', () => {
   it.each`
@@ -861,5 +867,208 @@ describe('ts-rest-nest-handler', () => {
 
     expect(responseBasicNestEndpoint.status).toBe(200);
     expect(responseBasicNestEndpoint.body).toEqual({ message: 'hello' });
+  });
+
+  it('should work with fastify', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      getPosts: {
+        path: '/posts',
+        method: 'GET',
+        responses: {
+          200: z.array(
+            z.object({
+              id: z.number(),
+            })
+          ),
+        },
+      },
+      getPost: {
+        path: '/posts/:id',
+        method: 'GET',
+        pathParams: z.object({
+          id: z.coerce.number(),
+        }),
+        responses: {
+          200: z.object({
+            id: z.number(),
+          }),
+        },
+      },
+      deletePost: {
+        path: '/posts/:id',
+        method: 'DELETE',
+        body: null,
+        pathParams: z.object({
+          id: z.coerce.number(),
+        }),
+        responses: {
+          200: z.object({
+            id: z.number(),
+          }),
+        },
+      },
+      createPost: {
+        path: '/posts',
+        method: 'POST',
+        body: z.object({
+          title: z.string(),
+          content: z.string(),
+        }),
+        responses: {
+          201: z.object({
+            id: z.number(),
+            title: z.string(),
+            content: z.string(),
+          }),
+        },
+      },
+      getHtml: {
+        path: '/html',
+        method: 'GET',
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string(),
+          }),
+        },
+      },
+    });
+
+    @Controller()
+    class FastifyController {
+      @TsRestHandler(contract)
+      async handler() {
+        return tsRestHandler(contract, {
+          getPosts: async () => ({
+            status: 200,
+            body: [{ id: 1 }, { id: 2 }],
+          }),
+          getPost: async ({ params }) => ({
+            status: 200,
+            body: {
+              id: params.id,
+            },
+          }),
+          deletePost: async ({ params }) => ({
+            status: 200,
+            body: {
+              id: params.id,
+            },
+          }),
+          createPost: async ({ body }) => ({
+            status: 201,
+            body: {
+              id: 1,
+              title: body.title,
+              content: body.content,
+            },
+          }),
+          getHtml: async () => ({
+            status: 200,
+            body: '<h1>hello world</h1>',
+          }),
+        });
+      }
+    }
+
+    const moduleRef = await Test.createTestingModule({
+      controllers: [FastifyController],
+    }).compile();
+
+    app = moduleRef.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter()
+    );
+
+    await app.init();
+    await app.getHttpAdapter().getInstance().ready();
+
+    const response = await supertest(app.getHttpServer()).get('/posts').send();
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([{ id: 1 }, { id: 2 }]);
+
+    const responsePost = await supertest(app.getHttpServer())
+      .get('/posts/1')
+      .send();
+
+    expect({ status: responsePost.status, body: responsePost.body }).toEqual({
+      status: 200,
+      body: { id: 1 },
+    });
+
+    const responseDelete = await supertest(app.getHttpServer())
+      .delete('/posts/1')
+      .send();
+
+    expect({
+      status: responseDelete.status,
+      body: responseDelete.body,
+    }).toEqual({
+      status: 200,
+      body: { id: 1 },
+    });
+
+    const responseDeleteBad = await supertest(app.getHttpServer())
+      .delete('/posts/jeff')
+      .send({ id: 1 });
+
+    expect({
+      status: responseDeleteBad.status,
+      body: responseDeleteBad.body,
+    }).toEqual({
+      status: 400,
+      body: {
+        bodyResult: null,
+        headersResult: null,
+        paramsResult: {
+          issues: [
+            {
+              code: 'invalid_type',
+              expected: 'number',
+              received: 'nan',
+              path: ['id'],
+              message: 'Expected number, received nan',
+            },
+          ],
+          name: 'ZodError',
+        },
+        queryResult: null,
+      },
+    });
+
+    const responseCreate = await supertest(app.getHttpServer())
+      .post('/posts')
+      .send({ title: 'hello', content: 'world' });
+
+    expect({
+      status: responseCreate.status,
+      body: responseCreate.body,
+    }).toEqual({
+      status: 201,
+      body: {
+        id: 1,
+        title: 'hello',
+        content: 'world',
+      },
+    });
+
+    const nonJsonResponse = await supertest(app.getHttpServer())
+      .get('/html')
+      .send();
+
+    expect({
+      status: nonJsonResponse.status,
+      text: nonJsonResponse.text,
+      headers: nonJsonResponse.headers,
+    }).toEqual({
+      status: 200,
+      text: '<h1>hello world</h1>',
+      headers: expect.objectContaining({
+        'content-type': 'text/html',
+        'content-length': '20',
+      }),
+    });
   });
 });

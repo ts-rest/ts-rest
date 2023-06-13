@@ -41,6 +41,7 @@
     "@nestjs/core": "9.4.0",
     "@nestjs/graphql": "^10.0.22",
     "@nestjs/platform-express": "9.4.0",
+    "@nestjs/platform-fastify": "^9.4.3",
     "@nestjs/swagger": "6.3.0",
     "@nx/rollup": "16.1.4",
     "@prisma/client": "^4.5.0",

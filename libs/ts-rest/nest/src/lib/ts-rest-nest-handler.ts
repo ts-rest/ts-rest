@@ -1,6 +1,8 @@
 import { Reflector } from '@nestjs/core';
 import { Observable, map } from 'rxjs';
 import type { Response, Request } from 'express-serve-static-core';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+
 import {
   All,
   SetMetadata,
@@ -82,16 +84,18 @@ export const TsRestHandler = (
   const isMultiHandler = !isAppRoute(appRouterOrRoute);
 
   if (isMultiHandler) {
-    const routerPaths: string[] = [];
+    const routerPaths: Set<string> = new Set();
 
     Object.values(appRouterOrRoute).forEach((value) => {
       if (isAppRoute(value)) {
-        routerPaths.push(value.path);
+        routerPaths.add(value.path);
       }
     });
 
+    const routerPathsArray = Array.from(routerPaths);
+
     decorators.push(
-      All(routerPaths),
+      All(routerPathsArray),
       SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
       UseInterceptors(TsRestHandlerInterceptor)
     );
@@ -191,7 +195,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
   constructor(private reflector: Reflector) {}
 
   private getAppRouteFromContext(ctx: ExecutionContext) {
-    const req: Request = ctx.switchToHttp().getRequest();
+    const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
     const appRoute = this.reflector.get<AppRoute | AppRouter | undefined>(
       TsRestAppRouteMetadataKey,
@@ -216,8 +220,10 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const foundAppRoute = Object.entries(appRouter).find(([key, value]) => {
       if (isAppRoute(value)) {
         return (
-          doesUrlMatchContractPath(value.path, req.path) &&
-          req.method === value.method
+          doesUrlMatchContractPath(
+            value.path,
+            'path' in req ? req.path : req.url
+          ) && req.method === value.method
         );
       }
 
@@ -235,8 +241,8 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
   }
 
   intercept(ctx: ExecutionContext, next: CallHandler<any>): Observable<any> {
-    const res: Response = ctx.switchToHttp().getResponse();
-    const req: Request = ctx.switchToHttp().getRequest();
+    const res: Response | FastifyReply = ctx.switchToHttp().getResponse();
+    const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
     const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
@@ -322,7 +328,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
         const responseType = appRoute.responses[result.status];
         if (!result.error && isAppRouteOtherResponse(responseType)) {
-          res.setHeader('content-type', responseType.contentType);
+          if ('setHeader' in res) {
+            res.setHeader('content-type', responseType.contentType);
+          } else {
+            res.header('content-type', responseType.contentType);
+          }
         }
 
         res.status(responseAfterValidation.status);
