@@ -10,7 +10,7 @@ import { createServerlessRouter, serverlessErrorHandler } from './router';
 import { RecursiveRouterObj, ServerlessHandlerOptions } from './types';
 
 type LambdaPlatformArgs = {
-  requestContext: ApiGatewayEvent['requestContext'];
+  rawEvent: ApiGatewayEvent;
   lambdaContext: Context;
 };
 
@@ -33,7 +33,7 @@ export const createLambdaHandler = <T extends AppRouter>(
 
     return router
       .handle(request, {
-        requestContext: event.requestContext,
+        rawEvent: event,
         lambdaContext: context,
       })
       .then(async (response) => {

@@ -110,7 +110,7 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
 ) => {
   const router = Router<TsRestRequest, [TPlatformArgs]>();
 
-  const { preflightHandler, corsifyResponse } = createCors(options.cors);
+  const { preflightHandler, corsifyResponseHeaders } = createCors(options.cors);
 
   router.options('*', preflightHandler);
   router.all('*', withParams, withContent, async (req) => {
@@ -134,15 +134,24 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
       ) => {
         const validationResults = validateRequest(request, appRoute, options);
 
-        const result = await implementation({
-          params: validationResults.paramsResult.data as any,
-          body: validationResults.bodyResult.data as any,
-          query: validationResults.queryResult.data as any,
-          headers: validationResults.headersResult.data as any,
-          request,
-          appRoute,
-          ...platformArgs,
-        });
+        const responseHeaders = new Headers();
+
+        const result = await implementation(
+          {
+            params: validationResults.paramsResult.data as any,
+            body: validationResults.bodyResult.data as any,
+            query: validationResults.queryResult.data as any,
+            headers: validationResults.headersResult.data as any,
+          },
+          {
+            appRoute,
+            request,
+            responseHeaders,
+            ...platformArgs,
+          }
+        );
+
+        corsifyResponseHeaders(request, responseHeaders);
 
         const statusCode = Number(result.status);
         const responseType = appRoute.responses[statusCode];
@@ -170,52 +179,34 @@ export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
         }
 
         if (isAppRouteOtherResponse(responseType)) {
-          return new TsRestResponse({
-            statusCode: statusCode,
-            body: validatedResponseBody,
-            headers: {
-              ...result.headers,
-              'content-type':
-                validatedResponseBody instanceof Blob
-                  ? validatedResponseBody.type || responseType.contentType
-                  : responseType.contentType,
-            },
+          if (
+            validatedResponseBody instanceof Blob &&
+            validatedResponseBody.type !== ''
+          ) {
+            responseHeaders.set('content-type', validatedResponseBody.type);
+          } else {
+            responseHeaders.set('content-type', responseType.contentType);
+          }
+
+          return new TsRestResponse(validatedResponseBody, {
+            status: statusCode,
+            headers: responseHeaders,
           });
         }
 
-        return new TsRestResponse({
-          statusCode: statusCode,
-          body: JSON.stringify(validatedResponseBody),
-          headers: {
-            ...result.headers,
-            'content-type': 'application/json',
-          },
+        return TsRestResponse.fromJson(validatedResponseBody, {
+          status: statusCode,
+          headers: responseHeaders,
         });
       };
 
-      const corsifiedRouteHandler = async (
-        request: TsRestRequest,
-        platformArgs: TPlatformArgs
-      ) => {
-        const response = await routeHandler(request, platformArgs);
-        return corsifyResponse(request, response);
-      };
-
       const routerMethod = appRoute.method.toLowerCase();
-      router[routerMethod](appRoute.path, corsifiedRouteHandler);
+      router[routerMethod](appRoute.path, routeHandler);
     },
   });
 
   router.all('*', () => {
-    return new TsRestResponse({
-      statusCode: 404,
-      body: JSON.stringify({
-        message: 'Not found',
-      }),
-      headers: {
-        'content-type': 'application/json',
-      },
-    });
+    throw new TsRestHttpError(404, { message: 'Not Found' });
   });
 
   return router;
@@ -226,29 +217,30 @@ export const serverlessErrorHandler = async (
   request: TsRestRequest,
   options: ServerlessHandlerOptions = {}
 ): Promise<TsRestResponse> => {
-  const { corsifyResponse } = createCors(options.cors);
+  const { corsifyResponseHeaders } = createCors(options.cors);
 
   if (options?.errorHandler) {
     const maybeResponse = await options.errorHandler(err, request);
 
     if (maybeResponse) {
-      return corsifyResponse(request, new TsRestResponse(maybeResponse));
+      corsifyResponseHeaders(request, maybeResponse.headers);
+      return maybeResponse;
     }
   }
 
   if (err instanceof TsRestHttpError) {
     const isJson = err.contentType.startsWith('application/json');
-
-    return corsifyResponse(
+    const headers = corsifyResponseHeaders(
       request,
-      new TsRestResponse({
-        statusCode: err.statusCode,
-        body: isJson ? JSON.stringify(err.body) : err.body,
-        headers: {
-          'content-type': err.contentType,
-        },
+      new Headers({
+        'content-type': err.contentType,
       })
     );
+
+    return new TsRestResponse(isJson ? JSON.stringify(err.body) : err.body, {
+      status: err.statusCode,
+      headers,
+    });
   }
 
   return serverlessErrorHandler(

@@ -40,58 +40,50 @@ const createCorsHeaders = (
     maxAge?: boolean;
   }
 ) => {
-  const headers = {} as Record<string, string | string[]>;
+  const headers = new Headers();
 
   if (corsWhitelist.credentials && credentials === true) {
-    headers['access-control-allow-credentials'] = 'true';
+    headers.set('Access-Control-Allow-Credentials', 'true');
   }
 
   if (corsWhitelist.allowedHeaders) {
     let allowedHeadersValue = allowedHeaders?.join(',');
     if (allowedHeadersValue === undefined) {
       allowedHeadersValue =
-        req.headers.get('access-control-request-headers') ?? undefined;
+        req.headers.get('Access-Control-Request-Headers') ?? undefined;
 
-      if (headers['vary'] && Array.isArray(headers['vary'])) {
-        headers['vary'].push('access-control-request-headers');
-      } else {
-        headers['vary'] = ['access-control-request-headers'];
-      }
+      headers.append('vary', 'Access-Control-Request-Headers');
     }
 
     if (allowedHeadersValue?.length) {
-      headers['access-control-allow-headers'] = allowedHeadersValue;
+      headers.set('Access-Control-Allow-Headers', allowedHeadersValue);
     }
   }
 
   if (corsWhitelist.methods) {
-    headers['access-control-allow-methods'] = methods.join(',');
+    headers.set('Access-Control-Allow-Methods', methods.join(','));
   }
 
   if (corsWhitelist.origin) {
     if (origins === '*') {
-      headers['access-control-allow-origin'] = '*';
+      headers.set('Access-Control-Allow-Origin', '*');
     } else {
       const origin = req.headers.get('origin') ?? '';
 
       if (isAllowedOrigin(origin, origins)) {
-        headers['access-control-allow-origin'] = origin;
+        headers.set('Access-Control-Allow-Origin', origin);
       }
 
-      if (headers['vary'] && Array.isArray(headers['vary'])) {
-        headers['vary'].push('origin');
-      } else {
-        headers['vary'] = ['origin'];
-      }
+      headers.append('Vary', 'Origin');
     }
   }
 
   if (corsWhitelist.exposedHeaders && exposedHeaders?.length) {
-    headers['access-control-expose-headers'] = exposedHeaders.join(',');
+    headers.set('Access-Control-Expose-Headers', exposedHeaders.join(','));
   }
 
   if (corsWhitelist.maxAge && maxAge) {
-    headers['access-control-max-age'] = maxAge.toString();
+    headers.set('Access-Control-Max-Age', maxAge.toString());
   }
 
   return headers;
@@ -112,19 +104,18 @@ export const createCors = (corsConfig?: CorsConfig) => {
       maxAge: true,
     });
 
-    return new TsRestResponse({
-      statusCode: 200,
-      body: null,
+    return new TsRestResponse(null, {
+      status: 200,
       headers,
     });
   };
 
-  const corsifyResponse = (
+  const corsifyResponseHeaders = (
     request: TsRestRequest,
-    response: TsRestResponse
+    responseHeaders: Headers
   ) => {
     if (!corsConfig) {
-      return response;
+      return responseHeaders;
     }
 
     const corsHeaders = createCorsHeaders(request, corsConfig, {
@@ -133,13 +124,12 @@ export const createCors = (corsConfig?: CorsConfig) => {
       exposedHeaders: true,
     });
 
-    response.headers = {
-      ...response.headers,
-      ...corsHeaders,
-    };
+    corsHeaders.forEach((value, key) => {
+      responseHeaders.set(key, value);
+    });
 
-    return response;
+    return responseHeaders;
   };
 
-  return { preflightHandler, corsifyResponse };
+  return { preflightHandler, corsifyResponseHeaders };
 };

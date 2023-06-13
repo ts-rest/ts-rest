@@ -6,7 +6,11 @@ import type {
 } from 'aws-lambda';
 import { TsRestRequest } from '../../request';
 import { TsRestResponse } from '../../response';
-import { arrayBufferToBase64, arrayBufferToString } from '../utils';
+import {
+  arrayBufferToBase64,
+  arrayBufferToString,
+  splitCookiesString,
+} from '../utils';
 
 type EventV1 = APIGatewayProxyEvent;
 type EventV2 = APIGatewayProxyEventV2;
@@ -121,29 +125,18 @@ export async function responseToResult(
   event: ApiGatewayEvent,
   response: TsRestResponse
 ): Promise<ApiGatewayResponse> {
-  const { headers, multiValueHeaders } = Object.entries(
-    response.headers
-  ).reduce(
-    (headerDto, [key, value]) => {
-      const normalizedKey = key.toLowerCase();
+  const headers = {} as Record<string, string>;
+  const multiValueHeaders = {} as Record<string, string[]>;
 
-      if (Array.isArray(value)) {
-        headerDto.multiValueHeaders[normalizedKey] = value;
+  response.headers.forEach((value, key) => {
+    headers[key] = value;
 
-        if (normalizedKey !== 'set-cookie') {
-          headerDto.headers[normalizedKey] = value.join(', ');
-        }
-      } else {
-        headerDto.headers[key] = value;
-      }
-
-      return headerDto;
-    },
-    {
-      headers: {} as Record<string, string>,
-      multiValueHeaders: {} as Record<string, string[]>,
+    if (key === 'set-cookie') {
+      multiValueHeaders[key] = splitCookiesString(value);
+    } else {
+      multiValueHeaders[key] = value.split(',').map((v) => v.trim());
     }
-  );
+  });
 
   let cookies = [] as string[];
 
@@ -154,21 +147,22 @@ export async function responseToResult(
   let isBase64Encoded = false;
   let body: string;
 
-  if (typeof response.body === 'string' || response.body === null) {
-    body = response.body ?? '';
+  if (typeof response.rawBody === 'string' || response.rawBody === null) {
+    body = response.rawBody ?? '';
   } else if (
     headers['content-type']?.startsWith('text/') ||
-    (response.body instanceof Blob && response.body.type.startsWith('text/'))
+    (response.rawBody instanceof Blob &&
+      response.rawBody.type.startsWith('text/'))
   ) {
-    body = await arrayBufferToString(response.body);
+    body = await arrayBufferToString(response.rawBody);
   } else {
-    body = await arrayBufferToBase64(response.body);
+    body = await arrayBufferToBase64(response.rawBody);
     isBase64Encoded = true;
   }
 
   if (isV2(event)) {
     return {
-      statusCode: response.statusCode,
+      statusCode: response.status,
       headers,
       body,
       ...(cookies.length && { cookies }),
@@ -177,7 +171,7 @@ export async function responseToResult(
   }
 
   return {
-    statusCode: response.statusCode,
+    statusCode: response.status,
     headers,
     ...(Object.keys(multiValueHeaders).length && { multiValueHeaders }),
     body,

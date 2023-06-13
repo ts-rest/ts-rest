@@ -6,9 +6,9 @@ import {
   ServerInferResponses,
 } from '@ts-rest/core';
 import { TsRestRequest } from './request';
-import { TsRestResponseInit } from './response';
 import { CorsConfig } from './cors';
 import { TsRestHttpError } from './http-error';
+import { TsRestResponse } from './response';
 
 export class RequestValidationError extends TsRestHttpError {
   constructor(
@@ -38,14 +38,13 @@ export class ResponseValidationError extends TsRestHttpError {
 }
 
 export type AppRouteImplementation<T extends AppRoute, TPlatformArgs> = (
-  args: ServerInferRequest<T, Headers> &
-    TPlatformArgs & {
-      request: TsRestRequest;
-      appRoute: T;
-    }
-) => Promise<
-  ServerInferResponses<T> & { headers?: TsRestResponseInit['headers'] }
->;
+  args: ServerInferRequest<T>,
+  context: TPlatformArgs & {
+    appRoute: T;
+    request: TsRestRequest;
+    responseHeaders: Headers;
+  }
+) => Promise<ServerInferResponses<T>>;
 
 export type RecursiveRouterObj<T extends AppRouter, TPlatformArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
@@ -61,6 +60,6 @@ export type ServerlessHandlerOptions = {
   errorHandler?: (
     err: unknown,
     req: TsRestRequest
-  ) => TsRestResponseInit | Promise<TsRestResponseInit> | void | Promise<void>;
+  ) => TsRestResponse | Promise<TsRestResponse> | void | Promise<void>;
   cors?: CorsConfig;
 };

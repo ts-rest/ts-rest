@@ -18,8 +18,11 @@ const contract = c.router({
     path: '/test',
     query: z.object({
       foo: z.string(),
-      throwError: z.boolean().default(false),
+      throwError: z
+        .union([z.literal('custom-json'), z.literal('custom-text')])
+        .optional(),
       throwDefinedError: z.boolean().default(false),
+      setCookies: z.boolean().default(false),
     }),
     responses: {
       200: z.object({
@@ -104,25 +107,34 @@ describe('tsRestLambda', () => {
   const lambdaHandler = createLambdaHandler(
     contract,
     {
-      test: async ({
-        appRoute,
-        query: { foo, throwError, throwDefinedError },
-      }) => {
-        if (throwError) {
-          throw new Error('Handle Me');
+      test: async ({ query }, { appRoute, responseHeaders }) => {
+        if (query.throwError) {
+          throw new Error(query.throwError);
         }
 
-        if (throwDefinedError) {
+        if (query.throwDefinedError) {
           throw new TsRestRouteError(appRoute, {
             status: 402,
             body: 'Unauthorized',
           });
         }
 
+        if (query.setCookies) {
+          responseHeaders.append(
+            'set-cookie',
+            'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict'
+          );
+
+          responseHeaders.append(
+            'set-cookie',
+            'bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict'
+          );
+        }
+
         return {
           status: 200,
           body: {
-            foo,
+            foo: query.foo,
           },
         };
       },
@@ -144,13 +156,12 @@ describe('tsRestLambda', () => {
           },
         };
       },
-      styles: async () => {
+      styles: async (_, { responseHeaders }) => {
+        responseHeaders.set('cache-control', 'max-age=31536000');
+
         return {
           status: 200,
           body: 'body { color: red; }',
-          headers: {
-            'cache-control': 'max-age=31536000',
-          },
         };
       },
       image: async ({ query: { type } }) => {
@@ -162,8 +173,10 @@ describe('tsRestLambda', () => {
               : new Blob([new Uint8Array([4, 5, 6, 7])], { type: 'image/gif' }),
         };
       },
-      upload: async ({ request, headers }) => {
-        const boundary = getBoundary(headers.get('content-type') as string);
+      upload: async (_, { request }) => {
+        const boundary = getBoundary(
+          request.headers.get('content-type') as string
+        );
 
         const bodyBuffer = await request.arrayBuffer();
         const parts = parseMultipart(Buffer.from(bodyBuffer), boundary);
@@ -183,14 +196,17 @@ describe('tsRestLambda', () => {
         credentials: true,
       },
       errorHandler: (error) => {
-        if (error instanceof Error && error.message === 'Handle Me') {
-          return new TsRestResponse({
-            statusCode: 422,
-            body: 'Custom Error Handler',
-            headers: {
-              'content-type': 'text/plain',
-            },
-          });
+        if (error instanceof Error) {
+          if (error.message === 'custom-json') {
+            return TsRestResponse.fromJson(
+              { message: 'Custom Error Handler' },
+              { status: 422 }
+            );
+          } else if (error.message === 'custom-text') {
+            return TsRestResponse.fromText('Custom Error Handler', {
+              status: 422,
+            });
+          }
         }
 
         // if not returning a response, should pass through to the default error handler
@@ -215,10 +231,13 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
-        vary: 'origin',
+        vary: 'Origin',
       },
       multiValueHeaders: {
-        vary: ['origin'],
+        'access-control-allow-credentials': ['true'],
+        'access-control-allow-origin': ['http://localhost'],
+        'content-type': ['application/json'],
+        vary: ['Origin'],
       },
       body: '{"foo":"bar"}',
       isBase64Encoded: false,
@@ -243,7 +262,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: '{"foo":"bar"}',
       isBase64Encoded: false,
@@ -267,10 +286,13 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
-        vary: 'origin',
+        vary: 'Origin',
       },
       multiValueHeaders: {
-        vary: ['origin'],
+        'access-control-allow-credentials': ['true'],
+        'access-control-allow-origin': ['http://localhost'],
+        'content-type': ['application/json'],
+        vary: ['Origin'],
       },
       body: '{"id":"222","pong":"foo"}',
       isBase64Encoded: false,
@@ -298,7 +320,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: '{"id":"123","pong":"foo"}',
       isBase64Encoded: false,
@@ -322,7 +344,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
         'access-control-allow-origin': 'http://localhost',
-        vary: 'access-control-request-headers, origin',
+        vary: 'Access-Control-Request-Headers, Origin',
       },
       body: '',
       isBase64Encoded: false,
@@ -348,7 +370,7 @@ describe('tsRestLambda', () => {
       headers: {
         'access-control-allow-credentials': 'true',
         'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
-        vary: 'access-control-request-headers, origin',
+        vary: 'Access-Control-Request-Headers, Origin',
       },
       body: '',
       isBase64Encoded: false,
@@ -373,14 +395,14 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: '{"message":"Request validation failed","pathParameterErrors":null,"headerErrors":null,"queryParameterErrors":{"issues":[{"code":"invalid_type","expected":"string","received":"undefined","path":["foo"],"message":"Required"}],"name":"ZodError"},"bodyErrors":null}',
       isBase64Encoded: false,
     });
   });
 
-  it('should handle error handled by custom handler', async () => {
+  it('should handle error handled by custom handler returning json', async () => {
     const event = createV2LambdaRequest({
       requestContext: {
         http: {
@@ -388,7 +410,32 @@ describe('tsRestLambda', () => {
         },
       },
       rawPath: '/test',
-      rawQueryString: 'foo=bar&throwError=true',
+      rawQueryString: 'foo=bar&throwError=custom-json',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 422,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        vary: 'Origin',
+      },
+      body: '{"message":"Custom Error Handler"}',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('should handle error handled by custom handler returning text', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'GET',
+        },
+      },
+      rawPath: '/test',
+      rawQueryString: 'foo=bar&throwError=custom-text',
     });
 
     const response = await lambdaHandler(event as any, {} as any);
@@ -398,7 +445,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'text/plain',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: 'Custom Error Handler',
       isBase64Encoded: false,
@@ -423,7 +470,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: '"Unauthorized"',
       isBase64Encoded: false,
@@ -447,7 +494,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: '{"foo":"bar"}',
       isBase64Encoded: false,
@@ -472,7 +519,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-origin': 'http://localhost',
         'cache-control': 'max-age=31536000',
         'content-type': 'text/css',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: 'body { color: red; }',
       isBase64Encoded: false,
@@ -497,7 +544,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/octet-stream',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: 'AAECAw==',
       isBase64Encoded: true,
@@ -522,7 +569,7 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'image/gif',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: 'BAUGBw==',
       isBase64Encoded: true,
@@ -559,9 +606,40 @@ describe('tsRestLambda', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'text/html',
-        vary: 'origin',
+        vary: 'Origin',
       },
       body: '<html><body><h1>Hello ts-rest!</h1></body></html>',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('should handle cookies returned in response', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'GET',
+        },
+      },
+      rawPath: '/test',
+      rawQueryString: 'foo=baz&setCookies=true',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 200,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        'set-cookie':
+          'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict, bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+        vary: 'Origin',
+      },
+      cookies: [
+        'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+        'bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+      ],
+      body: '{"foo":"baz"}',
       isBase64Encoded: false,
     });
   });
@@ -580,9 +658,12 @@ describe('tsRestLambda', () => {
     expect(response).toEqual({
       statusCode: 404,
       headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
+        vary: 'Origin',
       },
-      body: '{"message":"Not found"}',
+      body: '{"message":"Not Found"}',
       isBase64Encoded: false,
     });
   });
