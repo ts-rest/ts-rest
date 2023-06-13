@@ -972,5 +972,33 @@ describe('ts-rest-nest-handler', () => {
       status: 200,
       body: { id: 1 },
     });
+
+    const responseDeleteBad = await supertest(app.getHttpServer())
+      .delete('/posts/jeff')
+      .send({ id: 1 });
+
+    expect({
+      status: responseDeleteBad.status,
+      body: responseDeleteBad.body,
+    }).toEqual({
+      status: 400,
+      body: {
+        bodyResult: null,
+        headersResult: null,
+        paramsResult: {
+          issues: [
+            {
+              code: 'invalid_type',
+              expected: 'number',
+              received: 'nan',
+              path: ['id'],
+              message: 'Expected number, received nan',
+            },
+          ],
+          name: 'ZodError',
+        },
+        queryResult: null,
+      },
+    });
   });
 });

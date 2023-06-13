@@ -1,7 +1,7 @@
 import { Reflector } from '@nestjs/core';
 import { Observable, map } from 'rxjs';
 import type { Response, Request } from 'express-serve-static-core';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 import {
   All,
@@ -241,8 +241,8 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
   }
 
   intercept(ctx: ExecutionContext, next: CallHandler<any>): Observable<any> {
-    const res: Response = ctx.switchToHttp().getResponse();
-    const req: Request = ctx.switchToHttp().getRequest();
+    const res: Response | FastifyReply = ctx.switchToHttp().getResponse();
+    const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
     const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
@@ -328,7 +328,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
         const responseType = appRoute.responses[result.status];
         if (!result.error && isAppRouteOtherResponse(responseType)) {
-          res.setHeader('content-type', responseType.contentType);
+          if ('setHeader' in res) {
+            res.setHeader('content-type', responseType.contentType);
+          } else {
+            res.header('content-type', responseType.contentType);
+          }
         }
 
         res.status(responseAfterValidation.status);
