@@ -924,6 +924,16 @@ describe('ts-rest-nest-handler', () => {
           }),
         },
       },
+      getHtml: {
+        path: '/html',
+        method: 'GET',
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/html',
+            body: z.string(),
+          }),
+        },
+      },
     });
 
     @Controller()
@@ -954,6 +964,10 @@ describe('ts-rest-nest-handler', () => {
               title: body.title,
               content: body.content,
             },
+          }),
+          getHtml: async () => ({
+            status: 200,
+            body: '<h1>hello world</h1>',
           }),
         });
       }
@@ -1038,6 +1052,23 @@ describe('ts-rest-nest-handler', () => {
         title: 'hello',
         content: 'world',
       },
+    });
+
+    const nonJsonResponse = await supertest(app.getHttpServer())
+      .get('/html')
+      .send();
+
+    expect({
+      status: nonJsonResponse.status,
+      text: nonJsonResponse.text,
+      headers: nonJsonResponse.headers,
+    }).toEqual({
+      status: 200,
+      text: '<h1>hello world</h1>',
+      headers: expect.objectContaining({
+        'content-type': 'text/html',
+        'content-length': '20',
+      }),
     });
   });
 });
