@@ -1,6 +1,8 @@
 import { Reflector } from '@nestjs/core';
 import { Observable, map } from 'rxjs';
 import type { Response, Request } from 'express-serve-static-core';
+import type { FastifyRequest } from 'fastify';
+
 import {
   All,
   SetMetadata,
@@ -191,7 +193,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
   constructor(private reflector: Reflector) {}
 
   private getAppRouteFromContext(ctx: ExecutionContext) {
-    const req: Request = ctx.switchToHttp().getRequest();
+    const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
     const appRoute = this.reflector.get<AppRoute | AppRouter | undefined>(
       TsRestAppRouteMetadataKey,
@@ -216,8 +218,10 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const foundAppRoute = Object.entries(appRouter).find(([key, value]) => {
       if (isAppRoute(value)) {
         return (
-          doesUrlMatchContractPath(value.path, req.path) &&
-          req.method === value.method
+          doesUrlMatchContractPath(
+            value.path,
+            'path' in req ? req.path : req.url
+          ) && req.method === value.method
         );
       }
 
