@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/react-query",
-  "version": "3.26.1",
+  "version": "3.26.2",
   "description": "react-query client integration for @ts-rest",
   "license": "MIT",
   "keywords": [
