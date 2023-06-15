@@ -66,7 +66,12 @@ const validateRequest = (
     passThroughExtraKeys: true,
   });
 
-  const headersResult = checkZodSchema(req.headers, schema.headers, {
+  const headers: Record<string, string> = {};
+  req.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+
+  const headersResult = checkZodSchema(headers, schema.headers, {
     passThroughExtraKeys: true,
   });
 
@@ -104,7 +109,7 @@ const validateRequest = (
   };
 };
 
-export const createServerlessRouter = <TPlatformArgs, T extends AppRouter>(
+export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
   routes: T,
   obj: RecursiveRouterObj<T, TPlatformArgs>,
   options: ServerlessHandlerOptions = {}
