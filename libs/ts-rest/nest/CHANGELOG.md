@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.26.3
+
+### Patch Changes
+
+- 5365f2a: Fix multi-handler breaking in Fastify with query parameters
+
 ## 3.26.2
 
 ### Patch Changes
