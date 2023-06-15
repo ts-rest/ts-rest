@@ -30,6 +30,11 @@
       "optional": true
     }
   },
+  "devDependencies": {
+    "@nestjs/platform-express": "^9.4.3",
+    "@nestjs/platform-fastify": "^9.4.3",
+    "fastify": "^4.17.0"
+  },
   "typedoc": {
     "entryPoint": "./src/index.ts",
     "tsconfig": "./tsconfig.lib.json"
