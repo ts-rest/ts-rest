@@ -876,6 +876,9 @@ describe('ts-rest-nest-handler', () => {
       getPosts: {
         path: '/posts',
         method: 'GET',
+        query: z.object({
+          limit: z.string(),
+        }),
         responses: {
           200: z.array(
             z.object({
@@ -984,7 +987,9 @@ describe('ts-rest-nest-handler', () => {
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
 
-    const response = await supertest(app.getHttpServer()).get('/posts').send();
+    const response = await supertest(app.getHttpServer())
+      .get('/posts?limit=10')
+      .send();
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: 1 }, { id: 2 }]);

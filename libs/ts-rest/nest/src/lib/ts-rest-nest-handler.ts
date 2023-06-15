@@ -216,12 +216,12 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const appRouter = appRoute;
 
-    const foundAppRoute = Object.entries(appRouter).find(([key, value]) => {
+    const foundAppRoute = Object.entries(appRouter).find(([, value]) => {
       if (isAppRoute(value)) {
         return (
           doesUrlMatchContractPath(
             value.path,
-            'path' in req ? req.path : req.url
+            'path' in req ? req.path : req.url.split('?')[0]
           ) && req.method === value.method
         );
       }
