@@ -165,6 +165,15 @@ export const doesUrlMatchContractPath = (
    */
   url: string
 ): boolean => {
+  // strip trailing slash
+  if (contractPath !== '/' && contractPath.endsWith('/')) {
+    contractPath = contractPath.slice(0, -1);
+  }
+
+  if (url !== '/' && url.endsWith('/')) {
+    url = url.slice(0, -1);
+  }
+
   const contractPathParts = contractPath.split('/');
 
   const urlParts = url.split('/');
@@ -221,7 +230,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         return (
           doesUrlMatchContractPath(
             value.path,
-            'path' in req ? req.path : req.url.split('?')[0]
+            'path' in req ? req.path : req.routerPath
           ) && req.method === value.method
         );
       }
