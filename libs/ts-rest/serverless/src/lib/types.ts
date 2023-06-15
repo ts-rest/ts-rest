@@ -62,4 +62,5 @@ export type ServerlessHandlerOptions = {
     req: TsRestRequest
   ) => TsRestResponse | Promise<TsRestResponse> | void | Promise<void>;
   cors?: CorsConfig;
+  basePath?: string;
 };

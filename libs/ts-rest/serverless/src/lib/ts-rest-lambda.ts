@@ -14,13 +14,11 @@ type LambdaPlatformArgs = {
   lambdaContext: Context;
 };
 
-export const tsr = () => {
-  return {
-    router: <T extends AppRouter>(
-      router: T,
-      args: RecursiveRouterObj<T, LambdaPlatformArgs>
-    ) => args,
-  };
+export const tsr = {
+  router: <T extends AppRouter>(
+    contract: T,
+    router: RecursiveRouterObj<T, LambdaPlatformArgs>
+  ) => router,
 };
 
 export const createLambdaHandler = <T extends AppRouter>(

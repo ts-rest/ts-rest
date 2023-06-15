@@ -5,21 +5,9 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nrwl/webpack:webpack",
-      "outputs": ["{options.outputPath}"],
+      "executor": "nx:run-commands",
       "options": {
-        "target": "node",
-        "compiler": "tsc",
-        "outputPath": "dist/apps/example-cloudflare-worker",
-        "main": "apps/example-cloudflare-worker/src/index.ts",
-        "tsConfig": "apps/example-cloudflare-worker/tsconfig.app.json"
-      },
-      "configurations": {
-        "production": {
-          "optimization": true,
-          "extractLicenses": true,
-          "inspect": false
-        }
+        "command": "tsc -p apps/example-cloudflare-worker/tsconfig.json --noEmit"
       }
     },
     "serve": {

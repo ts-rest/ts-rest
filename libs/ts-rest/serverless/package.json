@@ -14,6 +14,9 @@
       "optional": true
     }
   },
+  "devDependencies": {
+    "next": "^12.0.0 || ^13.0.0"
+  },
   "exports": {
     "./fetch": {
       "types": "./src/fetch.d.ts",
@@ -24,6 +27,11 @@
       "types": "./src/lambda.d.ts",
       "import": "./lambda.js",
       "require": "./lambda.cjs"
+    },
+    "./next-edge": {
+      "types": "./src/next-edge.d.ts",
+      "import": "./next-edge.js",
+      "require": "./next-edge.cjs"
     }
   },
   "typedoc": {

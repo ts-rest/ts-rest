@@ -119,16 +119,29 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
   const { preflightHandler, corsifyResponseHeaders } = createCors(options.cors);
 
   router.options('*', preflightHandler);
-  router.all('*', withParams, withContent, async (req) => {
-    if (
-      !req.content &&
-      req.method !== 'GET' &&
-      req.method !== 'HEAD' &&
-      req.headers.get('content-type')?.startsWith('text/')
-    ) {
-      req.content = await req.text();
+  router.all(
+    '*',
+    withParams,
+    async (req) => {
+      if (
+        req.method !== 'GET' &&
+        req.method !== 'HEAD' &&
+        req.headers.get('content-type')?.includes('json')
+      ) {
+        req.content = await req.json();
+      }
+    },
+    async (req) => {
+      if (
+        !req.content &&
+        req.method !== 'GET' &&
+        req.method !== 'HEAD' &&
+        req.headers.get('content-type')?.startsWith('text/')
+      ) {
+        req.content = await req.text();
+      }
     }
-  });
+  );
 
   recursivelyProcessContract({
     schema: routes,
@@ -211,7 +224,10 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
       };
 
       const routerMethod = appRoute.method.toLowerCase();
-      router[routerMethod](appRoute.path, routeHandler);
+      router[routerMethod](
+        `${options.basePath ?? ''}${appRoute.path}`,
+        routeHandler
+      );
     },
   });
 

@@ -82,7 +82,7 @@
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "multer": "1.4.5-lts.1",
-    "next": "13.3.0",
+    "next": "13.4.5",
     "node-mocks-http": "^1.12.1",
     "openapi3-ts": "^2.0.2",
     "passport": "^0.6.0",
