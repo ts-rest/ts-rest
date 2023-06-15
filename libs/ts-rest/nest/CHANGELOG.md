@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.26.2
+
+### Patch Changes
+
+- b3d3868: Remove extra peer dependencies from @ts-rest/nest
+
 ## 3.26.1
 
 ### Patch Changes
