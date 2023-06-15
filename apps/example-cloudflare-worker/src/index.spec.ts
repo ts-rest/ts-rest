@@ -21,7 +21,7 @@ describe('example-cloudflare-worker', () => {
     );
 
     await waitOn({
-      resources: ['tcp:localhost:8787'],
+      resources: ['tcp:127.0.0.1:8787'],
     });
   });
 
@@ -30,7 +30,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   it('GET /posts should return an array of posts', async () => {
-    const response = await fetch('http://localhost:8787/posts?skip=0&take=10', {
+    const response = await fetch('http://127.0.0.1:8787/posts?skip=0&take=10', {
       headers: {
         'x-api-key': 'foo',
         'x-pagination': '5',
@@ -45,7 +45,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   it('should error on invalid pagination header', async () => {
-    const response = await fetch('http://localhost:8787/posts?skip=0&take=10', {
+    const response = await fetch('http://127.0.0.1:8787/posts?skip=0&take=10', {
       headers: {
         'x-api-key': 'foo',
         'x-pagination': 'not a number',
@@ -75,7 +75,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   it('should error if a required query param is missing', async () => {
-    const response = await fetch('http://localhost:8787/posts?skip=0', {
+    const response = await fetch('http://127.0.0.1:8787/posts?skip=0', {
       headers: {
         'x-api-key': 'foo',
         'x-pagination': '5',
@@ -105,7 +105,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   it('should error if body is incorrect', async () => {
-    const response = await fetch('http://localhost:8787/posts', {
+    const response = await fetch('http://127.0.0.1:8787/posts', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -140,7 +140,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   it('should error if api key header is missing', async () => {
-    const response = await fetch('http://localhost:8787/posts?skip=0&take=10');
+    const response = await fetch('http://127.0.0.1:8787/posts?skip=0&take=10');
     const body = await response.json();
 
     expect(response.status).toStrictEqual(400);
@@ -165,7 +165,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   it('should transform body correctly', async () => {
-    const response = await fetch('http://localhost:8787/posts', {
+    const response = await fetch('http://127.0.0.1:8787/posts', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -183,7 +183,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   it('should format params using pathParams correctly', async () => {
-    const response = await fetch('http://localhost:8787/test/123/name', {
+    const response = await fetch('http://127.0.0.1:8787/test/123/name', {
       headers: {
         'x-api-key': 'foo',
       },

@@ -199,10 +199,10 @@ type ClientGetPostType = Expect<
   >
 >;
 type RouterHealthStrict = Expect<
-  Equal<typeof routerStrict.health['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.health)['strictStatusCodes'], true>
 >;
 type RouterGetPostStrict = Expect<
-  Equal<typeof routerStrict.posts.getPost['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.posts.getPost)['strictStatusCodes'], true>
 >;
 type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
 type ClientGetPostResponseType = Expect<
@@ -223,9 +223,7 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -243,9 +241,7 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -263,9 +259,7 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -283,9 +277,7 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts?take=10',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -324,9 +316,7 @@ describe('client', () => {
           url: `https://api.com/posts?take=10&order=asc&published=true&filter=${encodeURIComponent(
             '{"title":"test"}'
           )}`,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -351,9 +341,7 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts?take=10',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -373,9 +361,7 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -392,9 +378,7 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         {
           headers: {
@@ -497,9 +481,7 @@ describe('client', () => {
       fetchMock.patchOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -521,9 +503,7 @@ describe('client', () => {
       fetchMock.deleteOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: {},
         },
         { body: value, status: 200 }
       );
@@ -708,7 +688,6 @@ describe('custom api', () => {
         headers: {
           'base-header': 'foo',
           'x-test': 'test',
-          'content-type': 'application/json',
         },
       })
     );

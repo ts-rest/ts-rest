@@ -28,7 +28,8 @@
     "**/*.js",
     "**/*.jsx",
     "next-env.d.ts",
-    "../../tmp/apps/example-next/.next/types/**/*.ts"
+    "../../tmp/apps/example-next/.next/types/**/*.ts",
+    "../../dist/apps/example-next/.next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

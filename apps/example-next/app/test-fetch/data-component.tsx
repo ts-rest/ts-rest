@@ -1,5 +1,5 @@
 import { ClientInferResponseBody } from '@ts-rest/core';
-import type { testContract } from '../../contracts/test';
+import type { testContract } from '../../contracts/test-contract';
 
 type TestData = ClientInferResponseBody<typeof testContract.test, 200>;
 

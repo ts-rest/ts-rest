@@ -1,5 +1,5 @@
 import { createNextHandler } from '@ts-rest/serverless/next-edge';
-import { testContract } from '../../../contracts/test';
+import { testContract } from '../../../contracts/test-contract';
 
 export const config = {
   runtime: 'edge',
