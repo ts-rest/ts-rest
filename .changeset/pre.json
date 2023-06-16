@@ -1,0 +1,18 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "@ts-rest/core": "3.26.2",
+    "@ts-rest/express": "3.26.2",
+    "@ts-rest/fastify": "3.26.2",
+    "@ts-rest/nest": "3.26.2",
+    "@ts-rest/next": "3.26.2",
+    "@ts-rest/open-api": "3.26.2",
+    "@ts-rest/react-query": "3.26.2",
+    "@ts-rest/serverless": "3.26.0",
+    "@ts-rest/solid-query": "3.26.2"
+  },
+  "changesets": [
+    "metal-crabs-pull"
+  ]
+}
