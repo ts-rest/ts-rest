@@ -91,9 +91,6 @@ const testFetchRequestHandler = (request: Request) => {
         origins: ['http://localhost'],
         credentials: true,
       },
-      errorHandler: (e) => {
-        console.log(e);
-      },
     },
     request,
   });

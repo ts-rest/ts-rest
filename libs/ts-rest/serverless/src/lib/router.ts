@@ -118,6 +118,20 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
 
   const { preflightHandler, corsifyResponseHeaders } = createCors(options.cors);
 
+  // make sure basePath is configured correctly
+  const basePath = options.basePath ?? '';
+  if (basePath !== '') {
+    router.all('*', (request) => {
+      const pathname = new URL(request.url).pathname;
+
+      if (!pathname.startsWith(basePath)) {
+        throw new Error(
+          `Expected path to start with the basePath of ${basePath}, but got a path of ${pathname}`
+        );
+      }
+    });
+  }
+
   router.options('*', preflightHandler);
   router.all(
     '*',
@@ -224,10 +238,7 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
       };
 
       const routerMethod = appRoute.method.toLowerCase();
-      router[routerMethod](
-        `${options.basePath ?? ''}${appRoute.path}`,
-        routeHandler
-      );
+      router[routerMethod](`${basePath}${appRoute.path}`, routeHandler);
     },
   });
 
@@ -252,26 +263,31 @@ export const serverlessErrorHandler = async (
       corsifyResponseHeaders(request, maybeResponse.headers);
       return maybeResponse;
     }
-  }
-
-  if (err instanceof TsRestHttpError) {
-    const isJson = err.contentType.startsWith('application/json');
-    const headers = corsifyResponseHeaders(
-      request,
-      new Headers({
-        'content-type': err.contentType,
-      })
+  } else if (!(err instanceof TsRestHttpError)) {
+    console.error(
+      '[ts-rest] Unexpected error...',
+      err instanceof Error && err.stack ? err.stack : err
     );
-
-    return new TsRestResponse(isJson ? JSON.stringify(err.body) : err.body, {
-      status: err.statusCode,
-      headers,
-    });
   }
 
-  return serverlessErrorHandler(
-    new TsRestHttpError(500, { message: 'Server Error' }),
+  const httpError =
+    err instanceof TsRestHttpError
+      ? err
+      : new TsRestHttpError(500, { message: 'Server Error' });
+
+  const isJson = httpError.contentType.startsWith('application/json');
+  const headers = corsifyResponseHeaders(
     request,
-    options
+    new Headers({
+      'content-type': httpError.contentType,
+    })
+  );
+
+  return new TsRestResponse(
+    isJson ? JSON.stringify(httpError.body) : httpError.body,
+    {
+      status: httpError.statusCode,
+      headers,
+    }
   );
 };

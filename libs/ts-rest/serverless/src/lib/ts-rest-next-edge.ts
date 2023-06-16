@@ -27,17 +27,9 @@ export const createNextHandler = <T extends AppRouter>(
   );
 
   return async (nextRequest: NextRequest): Promise<NextResponse> => {
-    const basePath = options.basePath || '/api';
-
-    if (!nextRequest.nextUrl.pathname.startsWith(basePath)) {
-      throw new Error(
-        `Invalid basePath, expected path to start with ${basePath}`
-      );
-    }
-
     if (!nextRequest.nextUrl.searchParams.has('ts-rest')) {
       throw new Error(
-        `Please make sure your catch-all route file is named [...ts-rest]`
+        'Please make sure your catch-all route file is named [...ts-rest]'
       );
     }
 
