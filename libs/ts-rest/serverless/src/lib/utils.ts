@@ -36,7 +36,7 @@ export async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
 
 // Credits: https://github.com/nfriedly/set-cookie-parser/blob/master/lib/set-cookie.js
 export const splitCookiesString = (cookiesString: string) => {
-  const cookiesStrings = [] as string[];
+  const cookiesStrings: string[] = [];
   let pos = 0;
   let start;
   let ch;

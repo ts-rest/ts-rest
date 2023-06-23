@@ -1,7 +1,7 @@
 import { AppRouter } from '@ts-rest/core';
-import { createServerlessRouter, serverlessErrorHandler } from './router';
-import { RecursiveRouterObj, ServerlessHandlerOptions } from './types';
-import { TsRestRequest } from './request';
+import { createServerlessRouter, serverlessErrorHandler } from '../router';
+import { RecursiveRouterObj, ServerlessHandlerOptions } from '../types';
+import { TsRestRequest } from '../request';
 
 export const tsr = {
   router: <T extends AppRouter>(

@@ -12,7 +12,7 @@ const rollupConfig = (config) => {
     input: [
       config.input,
       'libs/ts-rest/serverless/src/fetch.ts',
-      'libs/ts-rest/serverless/src/lambda.ts',
+      'libs/ts-rest/serverless/src/aws.ts',
       'libs/ts-rest/serverless/src/next-edge.ts',
     ],
   };

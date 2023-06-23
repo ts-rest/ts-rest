@@ -5,9 +5,9 @@ import {
   ApiGatewayResponse,
   requestFromEvent,
   responseToResult,
-} from './mappers/aws/api-gateway';
-import { createServerlessRouter, serverlessErrorHandler } from './router';
-import { RecursiveRouterObj, ServerlessHandlerOptions } from './types';
+} from '../mappers/aws/api-gateway';
+import { createServerlessRouter, serverlessErrorHandler } from '../router';
+import { RecursiveRouterObj, ServerlessHandlerOptions } from '../types';
 
 type LambdaPlatformArgs = {
   rawEvent: ApiGatewayEvent;

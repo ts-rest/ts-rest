@@ -1,1 +1,1 @@
-export * from './lib/ts-rest-next-edge';
+export * from './lib/handlers/ts-rest-next-edge';

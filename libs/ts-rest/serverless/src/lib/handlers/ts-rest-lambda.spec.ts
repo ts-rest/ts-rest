@@ -5,10 +5,10 @@ import merge from 'ts-deepmerge';
 import { PartialDeep } from 'type-fest';
 import { createLambdaHandler } from './ts-rest-lambda';
 import { z } from 'zod';
-import * as apiGatewayEventV1 from './mappers/aws/test-data/api-gateway-event-v1.json';
-import * as apiGatewayEventV2 from './mappers/aws/test-data/api-gateway-event-v2.json';
-import { TsRestResponse } from './response';
-import { TsRestRouteError } from './http-error';
+import * as apiGatewayEventV1 from '../mappers/aws/test-data/api-gateway-event-v1.json';
+import * as apiGatewayEventV2 from '../mappers/aws/test-data/api-gateway-event-v2.json';
+import { TsRestResponse } from '../response';
+import { TsRestRouteError } from '../http-error';
 
 const c = initContract();
 

@@ -1,8 +1,8 @@
 import { AppRouter } from '@ts-rest/core';
 import type { NextRequest, NextResponse } from 'next/server';
-import { createServerlessRouter, serverlessErrorHandler } from './router';
-import { RecursiveRouterObj, ServerlessHandlerOptions } from './types';
-import { TsRestRequest } from './request';
+import { createServerlessRouter, serverlessErrorHandler } from '../router';
+import { RecursiveRouterObj, ServerlessHandlerOptions } from '../types';
+import { TsRestRequest } from '../request';
 
 type NextPlatformArgs = {
   nextRequest: NextRequest;

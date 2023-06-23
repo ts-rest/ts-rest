@@ -23,10 +23,10 @@
       "import": "./fetch.js",
       "require": "./fetch.cjs"
     },
-    "./lambda": {
-      "types": "./src/lambda.d.ts",
-      "import": "./lambda.js",
-      "require": "./lambda.cjs"
+    "./aws": {
+      "types": "./src/aws.d.ts",
+      "import": "./aws.js",
+      "require": "./aws.cjs"
     },
     "./next-edge": {
       "types": "./src/next-edge.d.ts",

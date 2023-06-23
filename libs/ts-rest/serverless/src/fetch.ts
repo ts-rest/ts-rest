@@ -1,1 +1,1 @@
-export * from './lib/ts-rest-fetch';
+export * from './lib/handlers/ts-rest-fetch';
