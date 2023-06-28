@@ -1,0 +1,36 @@
+{
+  "name": "@ts-rest/vue-query",
+  "version": "3.28.0",
+  "description": "vue-query client integration for @ts-rest",
+  "license": "MIT",
+  "keywords": [
+    "rpc",
+    "rest",
+    "typescript",
+    "typescript-rest",
+    "vue-query",
+    "nestjs",
+    "http",
+    "api",
+    "type safe"
+  ],
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "libs/ts-rest/vue-query"
+  },
+  "peerDependencies": {
+    "@tanstack/vue-query": "^4.0.0",
+    "zod": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "tsconfig": "./tsconfig.lib.json"
+  }
+}

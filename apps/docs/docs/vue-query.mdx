@@ -1,0 +1,200 @@
+import { InstallTabs } from '@site/src/components/InstallTabs';
+
+# Vue Query
+
+## Installation
+
+<InstallTabs packageName="@ts-rest/vue-query @tanstack/vue-query" />
+
+This is a client using `@ts-rest/vue-query`, using `@tanstack/vue-query` under the hood.
+
+## Init TanStack Query Vue plugin
+
+To use the query client in your Vue app, you'll need to initialise the `vue-query` client in your app.
+
+```ts
+import { VueQueryPlugin } from '@tanstack/vue-query';
+
+createApp(App).use(VueQueryPlugin).mount('#app');
+```
+
+## initQueryClient
+
+The below snippet is how you'd create a query client, this is pretty much the same structure as the `@ts-rest/core` client.
+
+```tsx
+import { initQueryClient } from '@ts-rest/vue-query';
+
+export const client = initQueryClient(router, {
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {},
+  api?: () => ... // <- Optional Custom API Fetcher (see below)
+});
+```
+
+To customise the API, follow the same docs as the core client [here](/docs/core/custom)
+
+:::tip
+
+By default, ts-rest encodes query parameters as regular URL encoded strings (with support for nested objects, arrays etc) with full decode compatibility from [`qs`](https://www.npmjs.com/package/qs)
+
+To encode query parameters as JSON, you can use the `jsonQuery` option, please note you'll need to configure your backend to support decoding JSON query parameters.
+
+```tsx
+export const client = initQueryClient(router, {
+  ...,
+  jsonQuery: true
+});
+
+```
+
+:::
+
+## useQuery and useMutation
+
+Once you've created a client using `initQueryClient`, you may traverse the object (in the exact same structure as your contract layout) to find the query or mutation you want to use.
+
+```tsx
+const queryResult = client.posts.get.useQuery(
+  ['posts'], // <- queryKey
+  () => {
+    params: {
+      id: '1';
+    }
+  }, // <- Query params, Params, Body etc (all typed)
+  { staleTime: 1000 } // <- vue-query options (optional)
+);
+```
+
+### using dynamic parameters
+
+To use dynamic parameters, you can add a reactive vue `Ref` to the `queryKey` to trigger automatic refetching, when the reference changes.
+
+The following example will refetch the query everytime the `postId` changes and is truthy.
+
+```tsx
+const postId = computed(() => selectedPost.value.id);
+
+const queryResult = client.posts.get.useQuery(
+  ['posts', postId], // <- queryKey with reactive ref
+  (context) => {
+    params: {
+      id: postId.value; //  or use queryKey passed to context: context.queryKey[1]
+    }
+  },
+  { enabled: computed(() => !!postId.value) } // <- make sure to use computed values for reactive options
+);
+```
+
+:::tip
+
+The design philosophy of `@ts-rest/vue-query` is to make it as easy as possible to use `vue-query` with `@ts-rest`. This means that the `useQuery` and `useMutation` hooks are as close to the original `vue-query` hooks as possible, as such we don't abstract away from the query keys or the options. Only the query function itself!
+
+:::
+
+```html
+<template>
+  <div class="App">
+    <h1>Posts from posts-service</h1>
+
+    <div v-if="isLoading">Loading...</div>
+    <div v-if="error">Error: {{ error }}</div>
+
+    <div v-if="data">
+      <div v-for="post in data.body" :key="post.id">
+        <h2>{{ post.title }}</h2>
+        <p>{{ post.content }}</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts" setup>
+  // Effectively a useQuery hook
+  const { data, error, isLoading } = client.getPosts.useQuery(['posts']);
+
+  // Effectively a useMutation hook
+  const { mutate, isLoading } = client.posts.create.useMutation();
+</script>
+```
+
+:::info
+
+When destructing the response from `useQuery` or `useMutation`, remember that ts-rest returns a `status` and `body` property, so you'll need to destructure those as well.
+
+The reason for this is error handling! Please see the [Relevant Docs](/docs/core/errors#client-error-typing)
+
+:::
+
+## Regular Query and Mutations
+
+`@ts-rest/vue-query` allows for a regular fetch or mutation if you want, without having to initialise two different clients, one with `@ts-rest/core` and one with `@ts-rest/vue-query`.
+
+```typescript
+// Normal fetch
+const { body, status } = await client.posts.get.query();
+
+// useQuery hook
+const { data, isLoading } = client.posts.get.useQuery();
+```
+
+## useInfiniteQuery
+
+One fantastic feature of `vue-query` is the ability to create infinite queries. This is a great way to handle pagination.
+
+[Prisma's Docs](https://www.prisma.io/docs/concepts/components/prisma-client/pagination) explain the concepts of cursor and offset pagination fantastically, especially if you use Prisma client with `@ts-rest`
+
+### Cursor Pagination
+
+This is a simple cursor based pagination example,
+
+```typescript
+const { isLoading, data, hasNextPage, fetchNextPage } = useInfiniteQuery(
+  queryKey,
+  ({ pageParam = 1 }) => pageParam,
+  {
+    getNextPageParam: (lastPage, allPages) => lastPage.nextCursor,
+    getPreviousPageParam: (firstPage, allPages) => firstPage.prevCursor,
+  }
+);
+```
+
+### Offset Pagination
+
+This example specifically uses an API with `skip` and `take` query parameters, so this is requires slightly more configuration than a regular query (hence the complicated looking getNextPageParam)
+
+```tsx
+const PAGE_SIZE = 5;
+
+export function Index() {
+  const { isLoading, data, hasNextPage, fetchNextPage } =
+    client.getPosts.useInfiniteQuery(
+      ['posts'],
+      ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
+        query: { skip: pageParam.skip, take: pageParam.take },
+      }),
+      {
+        getNextPageParam: (lastPage, allPages) =>
+          lastPage.status === 200
+            ? lastPage.body.count > allPages.length * PAGE_SIZE
+              ? { take: PAGE_SIZE, skip: allPages.length * PAGE_SIZE }
+              : undefined
+            : undefined,
+      }
+    );
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!data) {
+    return <div>No posts found</div>;
+  }
+
+  const posts = data.pages.flatMap((page) =>
+    page.status === 200 ? page.body.posts : []
+  );
+
+  //...
+}
+```
