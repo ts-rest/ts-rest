@@ -77,6 +77,11 @@ const sidebars = {
       id: 'react-query',
     },
     {
+      type: 'doc',
+      label: '@ts-rest/vue-query',
+      id: 'vue-query',
+    },
+    {
       type: 'category',
       label: '@ts-rest/nest',
       collapsed: false,
