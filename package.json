@@ -60,6 +60,7 @@
     "@types/qs": "^6.9.7",
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-react": "^2.1.0",
+    "@vitejs/plugin-vue": "^4.2.3",
     "@vitest/coverage-c8": "^0.31.0",
     "apollo-server-express": "^3.10.2",
     "autoprefixer": "10.4.13",
@@ -115,6 +116,7 @@
     "typedoc-plugin-markdown": "^3.14.0",
     "uuid": "^8.3.2",
     "vitest": "^0.31.0",
+    "vue": "^3.3.4",
     "zod": "^3.20.6",
     "zustand": "^4.1.1"
   },
