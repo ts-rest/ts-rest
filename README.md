@@ -52,7 +52,7 @@ const contract = c.contract({
 });
 ```
 
-Fulfil the contract on your sever, with a type-safe router:
+Fulfil the contract on your server, with a type-safe router:
 
 ```typescript
 const router = s.router(contract, {
