@@ -41,6 +41,9 @@ describe('doesUrlMatchContractPath', () => {
     ${'/'}          | ${'/'}        | ${true}
     ${'/'}          | ${'/api'}     | ${false}
     ${'/api'}       | ${'/api'}     | ${true}
+    ${'/api/'}      | ${'/api'}     | ${true}
+    ${'/api'}       | ${'/api/'}    | ${true}
+    ${'/api/'}      | ${'/api/'}    | ${true}
     ${'/posts/:id'} | ${'/posts/1'} | ${true}
     ${'/posts/:id'} | ${'/posts/1'} | ${true}
     ${'/posts/:id'} | ${'/posts'}   | ${false}
