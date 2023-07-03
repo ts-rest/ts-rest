@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.26.4
+
+### Patch Changes
+
+- 62db9e0: fix: add support for trailing slashes in the nest multi-handler routing
+
 ## 3.26.3
 
 ### Patch Changes
