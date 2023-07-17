@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/fastify",
-  "version": "3.26.3",
+  "version": "3.26.4",
   "peerDependencies": {
     "fastify": "^4.0.0",
     "zod": "^3.0.0"
