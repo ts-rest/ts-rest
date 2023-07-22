@@ -26,6 +26,7 @@ We reccomend the single handler approach as it provides a 1-1 migration stategy 
 
 ```typescript
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { c } from './contract';
 
 @Controller()
 export class MyController {
@@ -73,6 +74,7 @@ The multi handler approach is fantastic for those of you who tend towards a more
 
 ```typescript
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { c } from './contract';
 
 @Controller()
 export class MyController {
