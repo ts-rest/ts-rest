@@ -9,7 +9,6 @@ const UserSchema = z.object({
   email: z.string(),
 });
 
-
 const c = initContract();
 const contract = c.router({
   getUser: {
@@ -23,13 +22,10 @@ const contract = c.router({
 
 describe('next-client', () => {
   it('Client Args should include "next" property if client is initNextClient', () => {
-
     const usersClient = initNextClient(contract, {
       baseHeaders: {},
       baseUrl: 'http://localhost:5002',
-
     });
-
     type UserClient = typeof usersClient;
     type Test = Parameters<UserClient['getUser']>[0]
     type ExpectedClientArgs = {
@@ -49,7 +45,6 @@ describe('next-client', () => {
     const usersClient = initNextClient(contract, {
       baseHeaders: {},
       baseUrl: 'http://localhost:5002',
-
     });
     global.fetch = jest.fn(() => Promise.resolve({
       json: () => Promise.resolve({
