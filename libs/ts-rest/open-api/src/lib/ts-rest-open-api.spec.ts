@@ -393,7 +393,7 @@ const expectedApiDoc = {
 
 describe('ts-rest-open-api', () => {
   describe('generateOpenApi', () => {
-    it.only('should generate doc with defaults', async () => {
+    it('should generate doc with defaults', async () => {
       const apiDoc = generateOpenApi(router, {
         info: { title: 'Blog API', version: '0.1' },
       });
