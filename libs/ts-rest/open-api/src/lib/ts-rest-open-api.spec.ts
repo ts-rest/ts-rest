@@ -79,7 +79,7 @@ const postsRouter = c.router({
     path: '/auth',
     deprecated: undefined,
     responses: {
-      200: c.response<Post>(),
+      200: c.response<string>(),
     },
     headers: z.object({
       'x-client-id': z.string(),
@@ -398,7 +398,6 @@ describe('ts-rest-open-api', () => {
         info: { title: 'Blog API', version: '0.1' },
       });
 
-      console.log(JSON.stringify(apiDoc))
       expect(apiDoc).toStrictEqual(expectedApiDoc);
     });
 
