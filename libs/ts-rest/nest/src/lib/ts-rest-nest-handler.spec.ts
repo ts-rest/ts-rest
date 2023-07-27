@@ -10,7 +10,6 @@ import {
   Body,
   Controller,
   Get,
-  INestApplication,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -20,10 +19,7 @@ import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
 import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T
@@ -56,12 +52,6 @@ describe('doesUrlMatchContractPath', () => {
 });
 
 describe('ts-rest-nest-handler', () => {
-  let app: INestApplication;
-
-  afterEach(async () => {
-    await app.close();
-  });
-
   describe('multi-handler api', () => {
     it('should be able to implement a whole contract', async () => {
       const c = initContract();
@@ -111,7 +101,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [TestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const responseGet = await supertest(app.getHttpServer())
@@ -164,7 +154,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer())
@@ -250,7 +240,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -299,7 +289,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer())
@@ -366,7 +356,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -428,7 +418,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const responseNested = await supertest(app.getHttpServer())
@@ -557,7 +547,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer())
@@ -618,7 +608,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -668,7 +658,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -736,7 +726,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer())
@@ -848,7 +838,7 @@ describe('ts-rest-nest-handler', () => {
       controllers: [MultiTypeHandlerController],
     }).compile();
 
-    app = moduleRef.createNestApplication();
+    const app = moduleRef.createNestApplication();
 
     await app.init();
 
@@ -983,9 +973,7 @@ describe('ts-rest-nest-handler', () => {
       controllers: [FastifyController],
     }).compile();
 
-    app = moduleRef.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter()
-    );
+    const app = moduleRef.createNestApplication(new FastifyAdapter());
 
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
