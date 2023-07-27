@@ -74,6 +74,20 @@ const postsRouter = c.router({
       200: c.response<Post | null>(),
     },
   },
+  auth: {
+    method: 'POST',
+    path: '/auth',
+    deprecated: undefined,
+    responses: {
+      200: c.response<string>(),
+    },
+    headers: z.object({
+      'x-client-id': z.string(),
+      'x-api-key': z.string(),
+      'x-tenant-id': z.string().optional(),
+    }),
+    body: z.never(),
+  },
 });
 
 const router = c.router({
@@ -326,6 +340,54 @@ const expectedApiDoc = {
         tags: ['posts'],
       },
     },
+    '/auth': {
+      post: {
+        deprecated: undefined,
+        description: undefined,
+        parameters: [
+          {
+            name: 'x-client-id',
+            in: 'header',
+            schema: {
+              type: 'string',
+            },
+            required: true,
+          },
+          {
+            name: 'x-api-key',
+            in: 'header',
+            schema: {
+              type: 'string',
+            },
+            required: true,
+          },
+          {
+            name: 'x-tenant-id',
+            in: 'header',
+            schema: {
+              type: 'string',
+            },
+          },
+        ],
+        requestBody: {
+          description: 'Body',
+          content: {
+            'application/json': {
+              schema: {
+                readOnly: true,
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: '200',
+          },
+        },
+        summary: undefined,
+        tags: ['posts'],
+      },
+    },
   },
 };
 
@@ -383,6 +445,12 @@ describe('ts-rest-open-api', () => {
             get: {
               ...expectedApiDoc.paths['/posts/{id}/comments/{commentId}'].get,
               operationId: 'getPostComment',
+            },
+          },
+          '/auth': {
+            post: {
+              ...expectedApiDoc.paths['/auth'].post,
+              operationId: 'auth',
             },
           },
         },
