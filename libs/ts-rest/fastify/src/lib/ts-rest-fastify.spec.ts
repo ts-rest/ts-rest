@@ -389,4 +389,33 @@ describe('ts-rest-fastify', () => {
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual('text/css');
   });
+
+  it('should return errors from route handlers', async () => {
+    const erroringRouter = s.router(contract, {
+      test: async () => {
+        throw new Error('not implemented');
+      },
+      ping: async () => {
+        throw new Error('not implemented');
+      },
+      testPathParams: async () => {
+        throw new Error('not implemented');
+      },
+      returnsTheWrongData: async () => {
+        throw new Error('not implemented');
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, erroringRouter, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server)
+      .get('/test')
+      .timeout(1000)
+      .send({});
+    expect(response.statusCode).toEqual(500);
+  });
 });
