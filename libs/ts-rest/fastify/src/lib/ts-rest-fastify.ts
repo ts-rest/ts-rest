@@ -176,6 +176,8 @@ const requestValidationErrorHandler = (
       } else {
         return handler(err, request, reply);
       }
+    } else {
+      throw err;
     }
   };
 };
