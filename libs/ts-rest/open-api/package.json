@@ -6,7 +6,7 @@
     "openapi3-ts": "^2.0.2"
   },
   "peerDependencies": {
-    "zod": "^3.0.0"
+    "zod": "^3.21.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",
