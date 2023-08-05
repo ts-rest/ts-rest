@@ -10,3 +10,4 @@
 ---
 
 Upgrade zod to 3.21.4
+Upgrade @anatine/zod-openapi to 2.0.1
