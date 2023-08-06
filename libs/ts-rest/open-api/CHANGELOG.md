@@ -1,5 +1,16 @@
 # @ts-rest/open-api
 
+## 3.27.0
+
+### Minor Changes
+
+- b85118a: Add support for headers (using Zod) in open-api generation, from PR #318
+
+### Patch Changes
+
+- 55411ad: Upgrade zod to 3.21.4
+  Upgrade @anatine/zod-openapi to 2.0.1
+
 ## 3.26.4
 
 ## 3.26.3
