@@ -1,5 +1,14 @@
 # @ts-rest/fastify
 
+## 3.27.0
+
+### Patch Changes
+
+- 55411ad: Upgrade zod to 3.21.4
+  Upgrade @anatine/zod-openapi to 2.0.1
+- f14ad97: Re-throw errors from route handlers
+- 4444929: Pass the parsed request body from zod to the route handler instead of the original request.
+
 ## 3.26.4
 
 ## 3.26.3
