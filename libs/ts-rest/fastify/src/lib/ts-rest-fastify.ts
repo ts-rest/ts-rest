@@ -218,7 +218,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
         headers: validationResults.headersResult.data as any,
         request,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        body: request.body as any,
+        body: validationResults.bodyResult.data as any,
         reply,
       });
 
