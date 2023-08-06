@@ -2,4 +2,4 @@
 '@ts-rest/fastify': patch
 ---
 
-Use the parsed request body from zod
+Pass the parsed request body from zod to the route handler instead of the original request. 
