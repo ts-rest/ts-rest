@@ -15,7 +15,7 @@
     "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch",
     "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts",
     "postinstall": "pnpm prisma generate",
-    "build-test-all": "pnpm nx run-many --target=lint && pnpm nx run-many --target=test && pnpm nx run-many --target=build",
+    "build-test-all": "pnpm nx run-many --targets=lint,test,build",
     "nx": "nx"
   },
   "engines": {
@@ -61,6 +61,7 @@
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-react": "4.0.3",
     "@vitest/coverage-c8": "0.32.4",
+    "@vitest/coverage-v8": "0.34.1",
     "apollo-server-express": "^3.10.2",
     "autoprefixer": "10.4.13",
     "body-parser": "^1.20.0",
