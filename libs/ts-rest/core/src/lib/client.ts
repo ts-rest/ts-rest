@@ -61,6 +61,7 @@ export type ApiFetcherArgs = {
   contentType: AppRouteMutation['contentType'];
   credentials?: RequestCredentials;
   signal?: AbortSignal;
+  cache?: RequestCache;
   /**
    * Only to be used by `@ts-rest/next`.
    * You can obtain a Nextjs Client by calling `initNextClient`
@@ -88,6 +89,7 @@ export const tsRestFetchApi: ApiFetcher = async ({
   body,
   credentials,
   signal,
+  cache,
   next
 }) => {
   const result = await fetch(path, {
@@ -96,6 +98,7 @@ export const tsRestFetchApi: ApiFetcher = async ({
     body,
     credentials,
     signal,
+    cache,
     next
     // we must type cast here because the typescript types for RequestInit
     // do not include properties like "next" for Frameworks (like Nextjs)

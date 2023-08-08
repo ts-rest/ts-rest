@@ -219,6 +219,7 @@ type ClientInferRequestBase<
       extraHeaders?: {
         [K in NonNullable<keyof THeaders>]?: never;
       } & Record<string, string | undefined>;
+      cache?: RequestCache;
       next?: Framework extends 'nextjs'
         ? NextClientArgs['next'] 
         : never;
