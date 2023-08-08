@@ -36,7 +36,8 @@ describe('next-client', () => {
         revalidate?: number | false | undefined;
         tags?: string[] | undefined;
       } | undefined;
-      extraHeaders?: Test['extraHeaders']
+      extraHeaders?: Test['extraHeaders'];
+      cache?: RequestCache
     }
     type NextClientTypeTest = Expect<Equal<Test, ExpectedClientArgs>>;
 

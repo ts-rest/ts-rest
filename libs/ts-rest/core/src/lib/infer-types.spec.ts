@@ -497,6 +497,7 @@ it('type inference helpers', () => {
       ClientInferRequest<typeof contract>,
       {
         getPost: {
+          cache?: RequestCache;
           query: { includeComments?: boolean | undefined };
           params: { id: string };
           headers: { authorization: string; age?: number };
@@ -506,6 +507,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
         };
         createPost: {
+          cache?: RequestCache;
           body: { title: string; content: string };
           headers: { authorization: string; age?: number };
           extraHeaders?: {
@@ -514,6 +516,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
         };
         uploadImage: {
+          cache?: RequestCache;
           body:
             | {
                 image: File;
@@ -527,6 +530,7 @@ it('type inference helpers', () => {
         };
         nested: {
           getComments: {
+            cache?: RequestCache;
             params: { id: string };
             headers: {
               authorization: string;

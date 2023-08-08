@@ -628,8 +628,6 @@ const customClient = initClient(router, {
   },
 });
 
-type Testing = Parameters<typeof customClient.posts.getPosts>[0]
-
 type CustomClientGetPostsType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPosts>[0],
