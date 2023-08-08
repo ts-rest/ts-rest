@@ -106,6 +106,15 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "neildobson-au",
+      "name": "Neil A. Dobson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6670753?v=4",
+      "profile": "https://nad.dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

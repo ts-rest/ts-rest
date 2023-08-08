@@ -91,6 +91,30 @@ const getPathParameters = (path: string, zodObject?: unknown) => {
   return params;
 };
 
+const getHeaderParameters = (zodObject?: unknown) => {
+  const isZodObj = isZodObject(zodObject);
+
+  if (!isZodObj) {
+    return [];
+  }
+
+  const zodShape = extractZodObjectShape(zodObject);
+
+  return Object.entries(zodShape).map(([key, value]) => {
+    const schema = getOpenApiSchemaFromZod(value)!;
+    const isRequired = !(value as z.ZodTypeAny).isOptional();
+
+    return {
+      name: key,
+      in: 'header' as const,
+      ...(isRequired && { required: true }),
+      ...({
+        schema: schema,
+      }),
+    };
+  });
+};
+
 const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   const isZodObj = isZodObject(zodObject);
 
@@ -159,6 +183,7 @@ export const generateOpenApi = (
     }
 
     const pathParams = getPathParameters(path.path, path.route.pathParams);
+    const headerParams = getHeaderParameters(path.route.headers);
 
     const querySchema = getQueryParametersFromZod(
       path.route.query,
@@ -200,7 +225,7 @@ export const generateOpenApi = (
       summary: path.route.summary,
       deprecated: path.route.deprecated,
       tags: path.paths,
-      parameters: [...pathParams, ...querySchema],
+      parameters: [...pathParams, ...headerParams, ...querySchema],
       ...(options.setOperationId ? { operationId: path.id } : {}),
       ...(bodySchema
         ? {

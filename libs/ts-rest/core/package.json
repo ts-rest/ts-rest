@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/core",
-  "version": "3.26.4",
+  "version": "3.27.0",
   "description": "RPC-like experience over a regular REST API, with type safe server implementations 🪄",
   "license": "MIT",
   "keywords": [
@@ -24,7 +24,7 @@
     }
   },
   "peerDependencies": {
-    "zod": "^3.0.0"
+    "zod": "^3.21.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

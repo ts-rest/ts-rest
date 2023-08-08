@@ -1,5 +1,13 @@
 # @ts-rest/express
 
+## 3.27.0
+
+### Patch Changes
+
+- 637142f: Exposed `AppRouteOptions` and `AppRouteImplementation` types. They allow for greater developer flexibility and can be used to split router handlers.
+- 55411ad: Upgrade zod to 3.21.4
+  Upgrade @anatine/zod-openapi to 2.0.1
+
 ## 3.26.4
 
 ## 3.26.3

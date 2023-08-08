@@ -220,6 +220,42 @@ describe('ts-rest-fastify', () => {
     expect(response.body).toEqual({ id: 'foo' });
   });
 
+  it('should remove extra properties from request body', async () => {
+    const contract = c.router({
+      echo: {
+        method: 'POST',
+        path: '/echo',
+        body: z.object({
+          foo: z.string(),
+        }),
+        responses: {
+          200: z.any(),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      echo: async ({ body }) => {
+        return {
+          status: 200,
+          body: body,
+        };
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server).post('/echo').send({
+      foo: 'bar',
+      bar: 'foo',
+    });
+    expect(response.body).toEqual({ foo: 'bar' });
+  });
+
   it('options.responseValidation true should remove extra properties', async () => {
     const app = fastify({ logger: false });
 
@@ -388,5 +424,34 @@ describe('ts-rest-fastify', () => {
     expect(responseCss.status).toEqual(200);
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual('text/css');
+  });
+
+  it('should return errors from route handlers', async () => {
+    const erroringRouter = s.router(contract, {
+      test: async () => {
+        throw new Error('not implemented');
+      },
+      ping: async () => {
+        throw new Error('not implemented');
+      },
+      testPathParams: async () => {
+        throw new Error('not implemented');
+      },
+      returnsTheWrongData: async () => {
+        throw new Error('not implemented');
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, erroringRouter, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server)
+      .get('/test')
+      .timeout(1000)
+      .send({});
+    expect(response.statusCode).toEqual(500);
   });
 });

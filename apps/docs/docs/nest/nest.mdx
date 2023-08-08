@@ -104,6 +104,13 @@ export class MyController {
 
 The key difference here is you pass the entire contract (or a subset of a contract by defining a new contract or spreading multiple contracts) to the `@TsRestHandler` decorator and the `tsRestHandler` function.
 
+:::caution
+
+As of right now, for each route in a multi handler approach we instantiate the `@All` decorator for each route, this is _potentially_ problematic if you have the same route in multiple contracts (with different methods), as it will cause a conflict.
+
+We're looking into ways to solve this, but right now this may be a Nest limitation.
+:::
+
 #### Benefits
 
 - Less room for error, you are forced to implement all routes in a contract

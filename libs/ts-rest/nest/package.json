@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/nest",
-  "version": "3.26.4",
+  "version": "3.27.0",
   "description": "Nest server integration for @ts-rest",
   "license": "MIT",
   "keywords": [
@@ -23,7 +23,7 @@
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "rxjs": "^7.1.0",
-    "zod": "^3.0.0"
+    "zod": "^3.21.0"
   },
   "peerDependenciesMeta": {
     "zod": {
