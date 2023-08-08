@@ -103,7 +103,6 @@
     "react-native-webview": "^11.23.1",
     "reflect-metadata": "^0.1.13",
     "regenerator-runtime": "0.13.9",
-    "rxjs": "7.8.1",
     "solid-js": "^1.6.11",
     "swagger-ui-express": "^4.5.0",
     "tailwind-rn": "^4.2.0",

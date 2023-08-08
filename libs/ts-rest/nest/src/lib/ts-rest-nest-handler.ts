@@ -200,7 +200,7 @@ export const doesUrlMatchContractPath = (
 
 @Injectable()
 export class TsRestHandlerInterceptor implements NestInterceptor {
-  private reflector = new Reflector();
+  constructor(private reflector: Reflector) {}
 
   private getAppRouteFromContext(ctx: ExecutionContext) {
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
@@ -284,8 +284,6 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       req.body,
       'body' in appRoute ? appRoute.body : null
     );
-
-    console.log(paramsResult, headersResult, queryResult, bodyResult);
 
     if (
       !paramsResult.success ||
