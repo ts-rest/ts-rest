@@ -1,6 +1,7 @@
 import {
   CallHandler,
   ExecutionContext,
+  Inject,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
@@ -20,7 +21,7 @@ import type { Response } from 'express-serve-static-core';
 
 @Injectable()
 export class TsRestInterceptor implements NestInterceptor {
-  constructor(private reflector: Reflector) {}
+  private reflector = new Reflector();
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const res: Response = context.switchToHttp().getResponse();
