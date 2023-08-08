@@ -91,7 +91,7 @@ export const tsRestFetchApi: ApiFetcher = async ({
   });
   const contentType = result.headers.get('content-type');
 
-  if (contentType?.includes("application/") && contentType?.includes("json")) {
+  if (contentType?.includes("application/") && contentType?.includes('json')) {
     return {
       status: result.status,
       body: await result.json(),
