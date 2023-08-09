@@ -24,6 +24,12 @@ import {
 import { ApiFetcher, ClientArgs } from './client';
 import { ParamsFromUrl } from './paths';
 
+export type Frameworks = 'nextjs' | 'none';
+
+export type NextClientArgs = {
+  next?: { revalidate?: number | false, tags?: string[]} | undefined
+}
+
 type ExtractExtraParametersFromClientArgs<
   TClientArgs extends Pick<ClientArgs, 'api'>
 > = TClientArgs['api'] extends ApiFetcher
@@ -176,6 +182,7 @@ export type ServerInferRequest<
   : never;
 
 type ClientInferRequestBase<
+  Framework extends Frameworks,
   T extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
@@ -187,7 +194,7 @@ type ClientInferRequestBase<
           keyof LowercaseKeys<TClientArgs['baseHeaders']>
         >
       >
-    : never
+    : never,
 > = Prettify<
   Without<
     {
@@ -212,6 +219,10 @@ type ClientInferRequestBase<
       extraHeaders?: {
         [K in NonNullable<keyof THeaders>]?: never;
       } & Record<string, string | undefined>;
+      cache?: RequestCache;
+      next?: Framework extends 'nextjs'
+        ? NextClientArgs['next'] 
+        : never;
     } & ExtractExtraParametersFromClientArgs<TClientArgs>,
     never
   >
@@ -221,9 +232,10 @@ export type ClientInferRequest<
   T extends AppRoute | AppRouter,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
-  }
+  },
+  Framework extends Frameworks = 'none'
 > = T extends AppRoute
-  ? ClientInferRequestBase<T, TClientArgs>
+  ? ClientInferRequestBase<Framework, T, TClientArgs>
   : T extends AppRouter
   ? { [TKey in keyof T]: ClientInferRequest<T[TKey]> }
   : never;
@@ -232,5 +244,6 @@ export type PartialClientInferRequest<
   TRoute extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
-  }
-> = OptionalIfAllOptional<ClientInferRequest<TRoute, TClientArgs>>;
+  },
+  Framework extends Frameworks = 'none'
+> = OptionalIfAllOptional<ClientInferRequest<TRoute, TClientArgs, Framework>>;

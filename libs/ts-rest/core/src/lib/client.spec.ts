@@ -156,6 +156,7 @@ type ClientGetPostsType = Expect<
   Equal<
     Parameters<typeof client.posts.getPosts>[0],
     | {
+        cache?: RequestCache;
         query?: {
           take?: number;
           skip?: number;
@@ -182,6 +183,7 @@ type ClientGetPostType = Expect<
   Equal<
     Parameters<typeof client.posts.getPost>[0],
     {
+      cache?: RequestCache;
       params: {
         id: string;
       };
@@ -338,6 +340,7 @@ describe('client', () => {
           published: true,
           filter: { title: 'test' },
         },
+        
       });
 
       expect(result.body).toStrictEqual(value);
@@ -629,6 +632,7 @@ type CustomClientGetPostsType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPosts>[0],
     {
+      cache?: RequestCache;
       query?: {
         take?: number;
         skip?: number;
@@ -655,6 +659,7 @@ type CustomClientGetPostType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPost>[0],
     {
+      cache?: RequestCache;
       params: {
         id: string;
       };

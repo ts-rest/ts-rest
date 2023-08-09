@@ -7,14 +7,16 @@ import {
   ClientInferRequest,
   ClientInferResponses,
   PartialClientInferRequest,
+  NextClientArgs,
+  Frameworks
 } from './infer-types';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-    ? AppRouteFunction<T[TKey], TClientArgs>
-    : T[TKey] extends AppRouter
-    ? RecursiveProxyObj<T[TKey], TClientArgs>
-    : never;
+  ? AppRouteFunction<T[TKey], TClientArgs>
+  : T[TKey] extends AppRouter
+  ? RecursiveProxyObj<T[TKey], TClientArgs>
+  : never;
 };
 
 /**
@@ -59,6 +61,12 @@ export type ApiFetcherArgs = {
   contentType: AppRouteMutation['contentType'];
   credentials?: RequestCredentials;
   signal?: AbortSignal;
+  cache?: RequestCache;
+  /**
+   * Only to be used by `@ts-rest/next`.
+   * You can obtain a Nextjs Client by calling `initNextClient`
+   */
+  next?: NextClientArgs['next'] | undefined;
 };
 
 export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
@@ -81,6 +89,8 @@ export const tsRestFetchApi: ApiFetcher = async ({
   body,
   credentials,
   signal,
+  cache,
+  next
 }) => {
   const result = await fetch(path, {
     method,
@@ -88,7 +98,11 @@ export const tsRestFetchApi: ApiFetcher = async ({
     body,
     credentials,
     signal,
-  });
+    cache,
+    next
+    // we must type cast here because the typescript types for RequestInit
+    // do not include properties like "next" for Frameworks (like Nextjs)
+  } as RequestInit);
   const contentType = result.headers.get('content-type');
 
   if (contentType?.includes("application/") && contentType?.includes('json')) {
@@ -143,6 +157,7 @@ export const fetchApi = ({
   extraInputArgs,
   headers,
   signal,
+  next
 }: {
   path: string;
   clientArgs: ClientArgs;
@@ -152,6 +167,12 @@ export const fetchApi = ({
   extraInputArgs: Record<string, unknown>;
   headers: Record<string, string | undefined>;
   signal?: AbortSignal;
+  // ---- Framework specific ----
+  /**
+   * only to be used by @ts-rest/next
+   * You can obtain a Nextjs Client by calling `initNextClient`
+   */
+  next?: NextClientArgs['next'] | undefined;
 }) => {
   const apiFetcher = clientArgs.api || tsRestFetchApi;
 
@@ -179,6 +200,7 @@ export const fetchApi = ({
       rawQuery: query,
       contentType: 'multipart/form-data',
       signal,
+      next,
       ...extraInputArgs,
     });
   }
@@ -198,6 +220,7 @@ export const fetchApi = ({
     rawQuery: query,
     contentType: route.method !== 'GET' ? 'application/json' : undefined,
     signal,
+    next,
     ...extraInputArgs,
   });
 };
@@ -220,16 +243,21 @@ export const getCompleteUrl = (
   return `${baseUrl}${path}${queryComponent}`;
 };
 
-export const getRouteQuery = <TAppRoute extends AppRoute>(
+export const getRouteQuery = <TAppRoute extends AppRoute, Framework extends Frameworks = 'none'>(
   route: TAppRoute,
-  clientArgs: InitClientArgs
+  clientArgs: InitClientArgs,
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
   return async (
-    inputArgs?: ClientInferRequest<AppRouteMutation, ClientArgs>
+    inputArgs?: Framework extends 'nextjs' ? 
+      ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> 
+      : ClientInferRequest<AppRouteMutation, ClientArgs>
   ) => {
-    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
-      inputArgs || {};
+    const { query, params, body, headers, extraHeaders, next, ...extraInputArgs } =
+      // ---- Merge all framework Request infer types ----
+      inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> &
+        ClientInferRequest<AppRouteMutation, ClientArgs>
+      || {};
 
     const completeUrl = getCompleteUrl(
       query,
@@ -246,6 +274,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
       body,
       query,
       extraInputArgs,
+      next,
       headers: {
         ...extraHeaders,
         ...headers,
@@ -287,7 +316,7 @@ export const initClient = <
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {
-        return [key, getRouteQuery(subRouter, args)];
+        return [key, getRouteQuery<typeof subRouter>(subRouter, args)];
       } else {
         return [key, initClient(subRouter, args)];
       }
