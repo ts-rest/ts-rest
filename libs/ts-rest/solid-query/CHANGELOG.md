@@ -1,5 +1,7 @@
 # @ts-rest/solid-query
 
+## 3.28.0
+
 ## 3.27.0
 
 ### Patch Changes
