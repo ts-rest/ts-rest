@@ -29,7 +29,7 @@
       }
     },
     "serve": {
-      "executor": "@nx/node:node",
+      "executor": "@nx/js:node",
       "options": {
         "buildTarget": "example-express:build"
       },

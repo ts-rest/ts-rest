@@ -20,8 +20,8 @@
     "directory": "libs/ts-rest/nest"
   },
   "peerDependencies": {
-    "@nestjs/common": "^9.0.0",
-    "@nestjs/core": "^9.0.0",
+    "@nestjs/common": "^9.0.0 || ^10.0.0",
+    "@nestjs/core": "^9.0.0 || ^10.0.0",
     "rxjs": "^7.1.0",
     "zod": "^3.21.0"
   },
@@ -31,9 +31,9 @@
     }
   },
   "devDependencies": {
-    "@nestjs/platform-express": "^9.4.3",
-    "@nestjs/platform-fastify": "^9.4.3",
-    "fastify": "^4.17.0"
+    "@nestjs/platform-express": "^9.0.0 || ^10.0.0",
+    "@nestjs/platform-fastify": "^9.0.0 || ^10.0.0",
+    "fastify": "^4.0.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

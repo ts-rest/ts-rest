@@ -5,7 +5,7 @@
     "module": "commonjs",
     "types": ["node"],
     "emitDecoratorMetadata": true,
-    "target": "es2015",
+    "target": "es2021",
     "strict": true,
     "strictNullChecks": true
   },
