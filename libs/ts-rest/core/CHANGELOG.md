@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- a7755ef: Adds support for fetch cache and support for Nextjs App Dir fetch, see this PR for more info: https://github.com/ts-rest/ts-rest/pull/315
+- a7755ef: Adds support for fetch cache and support for Nextjs App Dir fetch (docs coming soon), see this PR for more info: https://github.com/ts-rest/ts-rest/pull/315
 - 16501dd: tsRestFetchApi should be more flexible when determining application/json content type header
 
 ## 3.27.0
