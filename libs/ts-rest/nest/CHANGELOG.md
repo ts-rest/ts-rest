@@ -1,5 +1,15 @@
 # @ts-rest/nest
 
+## 3.28.0
+
+### Minor Changes
+
+- 207e9c5: We now support the following versions of Nestjs:
+  ```
+  "@nestjs/common": "^9.0.0 || ^10.0.0",
+  "@nestjs/core": "^9.0.0 || ^10.0.0",
+  ```
+
 ## 3.27.0
 
 ### Patch Changes
