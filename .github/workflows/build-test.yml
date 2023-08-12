@@ -87,7 +87,7 @@ jobs:
         run: pnpm install
 
       - name: 'Build ts-rest libs'
-        run: 'pnpn nx run-many --target=build --projects="ts-rest*"'
+        run: 'pnpm nx run-many --target=build --projects="ts-rest*"'
 
       - name: 'Install dependencies in example-nest-10'
         working-directory: ./test-projects/nest-10
