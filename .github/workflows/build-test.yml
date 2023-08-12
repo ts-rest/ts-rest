@@ -31,12 +31,12 @@ jobs:
     name: 'E2E > Nest 10'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.16
-      - uses: pnpm/action-setup@v2.4.0
+      - uses: pnpm/action-setup@v2
         name: Install pnpm
         id: pnpm-install
         with:
