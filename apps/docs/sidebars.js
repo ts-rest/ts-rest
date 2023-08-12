@@ -91,9 +91,13 @@ const sidebars = {
       id: 'next',
     },
     {
-      type: 'doc',
+      type: 'category',
       label: '@ts-rest/fastify',
-      id: 'fastify',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'fastify/fastify' },
+        { type: 'doc', id: 'fastify/openapi' },
+      ]
     },
     {
       type: 'category',
