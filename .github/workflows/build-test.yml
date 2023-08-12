@@ -83,14 +83,20 @@ jobs:
         with:
           version: 8.6
 
-      - name: 'cd into nest-10 test project'
-        run: cd ./test-projects/nest-10
-
       - name: 'Install dependencies'
         run: pnpm install
 
+      - name: 'Build ts-rest libs'
+        run: 'pnpn nx run-many --target=build --projects="ts-rest*"'
+
+      - name: 'Install dependencies in example-nest-10'
+        working-directory: ./test-projects/nest-10
+        run: pnpm install
+
       - name: 'Tests 🧪'
+        working-directory: ./test-projects/nest-10
         run: pnpm test
 
       - name: 'Build 🏗'
+        working-directory: ./test-projects/nest-10
         run: pnpm build
