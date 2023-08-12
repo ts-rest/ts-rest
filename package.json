@@ -216,7 +216,7 @@
     "vite-plugin-dts": "2.3.0",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-solid": "2.5.0",
-    "vite-tsconfig-paths": "^4.0.2",
+    "vite-tsconfig-paths": "~4.2.0",
     "webpack": "^5.75.0",
     "webpack-merge": "^5.8.0"
   }
