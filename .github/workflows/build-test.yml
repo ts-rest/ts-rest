@@ -7,6 +7,7 @@ on:
 
 jobs:
   main:
+    name: 'Build Test'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -66,3 +67,30 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           files: ./coverage/libs/ts-rest/core/lcov.info,./coverage/libs/ts-rest/express/lcov.info,./coverage/libs/ts-rest/nest/lcov.info,./coverage/libs/ts-rest/next/lcov.info,./coverage/libs/ts-rest/open-api/lcov.info,./coverage/libs/ts-rest/react-query/lcov.info
+
+  nest-10:
+    name: 'E2E > Nest 10'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+      - uses: pnpm/action-setup@v2.4.0
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 8.6
+
+      - name: 'cd into nest-10 test project'
+        run: cd ./test-projects/nest-10
+
+      - name: 'Install dependencies'
+        run: pnpm install
+
+      - name: 'Tests 🧪'
+        run: pnpm test
+
+      - name: 'Build 🏗'
+        run: pnpm build
