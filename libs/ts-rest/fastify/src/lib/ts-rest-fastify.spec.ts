@@ -110,7 +110,7 @@ describe('ts-rest-fastify', () => {
   it('should instantiate fastify routes using plugin instance', async () => {
     const app = fastify({ logger: false });
 
-    app.register(s.plugin(contract, router));
+    app.register(s.plugin(router));
 
     await app.ready();
 
@@ -123,7 +123,7 @@ describe('ts-rest-fastify', () => {
   it('should allow for options when using plugin instance', async () => {
     const app = fastify({ logger: false });
 
-    app.register(s.plugin(contract, router), {
+    app.register(s.plugin(router), {
       responseValidation: true,
     });
 
@@ -516,7 +516,7 @@ describe('ts-rest-fastify', () => {
 
     const app = fastify({ logger: false });
 
-    app.register(s.plugin(combinedContract, combinedRouter));
+    app.register(s.plugin(combinedRouter));
 
     await app.ready();
 
