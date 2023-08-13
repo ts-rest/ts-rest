@@ -308,7 +308,6 @@ describe('ts-rest-fastify', () => {
     const router = s.router(postsContract, {
       posts: {
         getPost: async ({ params }) => {
-          console.log(params);
           return { status: 200, body: { id: params.postId } };
         },
       },
@@ -511,8 +510,6 @@ describe('ts-rest-fastify', () => {
       apiA: routerA,
       apiB: routerB,
     });
-
-    console.log(combinedRouter);
 
     const app = fastify({ logger: false });
 
