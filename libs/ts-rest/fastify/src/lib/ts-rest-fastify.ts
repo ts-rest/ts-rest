@@ -183,7 +183,6 @@ const requestValidationErrorHandler = (
 };
 
 /**
- *
  * @param routeImpl - User's implementation of the route
  * @param appRoute - the `ts-rest` contract for this route (e.g. with Path, params, query, body, etc.)
  * @param fastify - the fastify instance to register the route on
