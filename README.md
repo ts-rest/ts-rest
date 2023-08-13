@@ -146,7 +146,9 @@ Since our first commit in 2022 we've been growing steadily. We're proud of our p
 
 <div align="center" style="padding-top: 50px">
   <div>Join us on Discord for help, feedback, and discussions!</div></br>
-  <img src="https://discordapp.com/api/guilds/1055855205960392724/widget.png?style=banner2" alt="Discord Shield"/>
+  <a href="https://discord.gg/2Megk85k5a">
+    <img src="https://discordapp.com/api/guilds/1055855205960392724/widget.png?style=banner2" alt="Discord Shield"/>
+  </a>
 </div>
 
 <div style="padding-top: 25px" align="center">
