@@ -110,7 +110,7 @@ describe('ts-rest-fastify', () => {
   it('should instantiate fastify routes using plugin instance', async () => {
     const app = fastify({ logger: false });
 
-    app.register(s.plugin(router));
+    app.register(s.plugin(contract, router));
 
     await app.ready();
 
@@ -123,7 +123,7 @@ describe('ts-rest-fastify', () => {
   it('should allow for options when using plugin instance', async () => {
     const app = fastify({ logger: false });
 
-    app.register(s.plugin(router), {
+    app.register(s.plugin(contract, router), {
       responseValidation: true,
     });
 
@@ -453,5 +453,83 @@ describe('ts-rest-fastify', () => {
       .timeout(1000)
       .send({});
     expect(response.statusCode).toEqual(500);
+  });
+
+  it('should be able to instantiate two routers and combine them together', async () => {
+    const contractA = c.router({
+      a: {
+        method: 'GET',
+        path: '/a',
+        responses: {
+          200: z.object({
+            a: z.string(),
+          }),
+        },
+      },
+    });
+
+    const contractB = c.router({
+      b: {
+        method: 'GET',
+        path: '/b',
+        responses: {
+          200: z.object({
+            b: z.string(),
+          }),
+        },
+      },
+    });
+
+    const combinedContract = c.router({
+      apiA: contractA,
+      apiB: contractB,
+    });
+
+    const routerA = s.router(contractA, {
+      a: async () => {
+        return {
+          status: 200,
+          body: {
+            a: 'return',
+          },
+        };
+      },
+    });
+
+    const routerB = s.router(contractB, {
+      b: async () => {
+        return {
+          status: 200,
+          body: {
+            b: 'return',
+          },
+        };
+      },
+    });
+
+    const combinedRouter = s.router(combinedContract, {
+      apiA: routerA,
+      apiB: routerB,
+    });
+
+    console.log(combinedRouter);
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(combinedContract, combinedRouter));
+
+    await app.ready();
+
+    const responseA = await supertest(app.server).get('/a');
+    expect(responseA.statusCode).toEqual(200);
+    expect(responseA.body).toEqual({
+      a: 'return',
+    });
+
+    const responseB = await supertest(app.server).get('/b');
+    expect(responseB.statusCode).toEqual(200);
+    expect(responseB.body).toEqual({
+      b: 'return',
+    });
   });
 });
