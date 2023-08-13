@@ -4,16 +4,27 @@
  <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height="150"></img>
 </p>
 
-<p align="center">RPC-like client and server helpers for a magical end to end typed experience</p>
+<p align="center">Incrementally adoptable RPC-like client and server helpers for a magical end to end typed experience 🪄</p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@ts-rest/core"><img src="https://img.shields.io/npm/v/@ts-rest/core.svg" alt="langue typescript"/></a>
-  <img alt="Github Workflow Status" src="https://img.shields.io/github/actions/workflow/status/ts-rest/ts-rest/release.yml?branch=main"/>
-  <a href="https://www.npmjs.com/package/@ts-rest/core"><img alt="npm" src="https://img.shields.io/npm/dw/@ts-rest/core"/></a>
-  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ts-rest/ts-rest"/></a>
-  <img alt="Bundle Size" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore"/>
-  <a href="https://discord.com/invite/2Megk85k5a"><img alt="Discord" src="https://img.shields.io/discord/1055855205960392724"/></a>
+  <a href="https://github.com/ts-rest/ts-rest">
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/ts-rest/ts-rest"
+  </a>
+  <a href="https://www.npmjs.com/package/@ts-rest/core">
+    <img src="https://img.shields.io/npm/dm/%40ts-rest/core"/>
+  </a>
+  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/ts-rest/ts-rest"/>
+  </a>
+  <a href="https://bundlephobia.com/package/@ts-rest/core">
+    <img alt="Bundle Size" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore"/>
+  </a>
 </p>
+
+<div align="center">
+  <div>Join us on Discord for help, feedback, and discussions!</div></br>
+  <img src="https://discordapp.com/api/guilds/1055855205960392724/widget.png?style=banner2" alt="Discord Shield"/>
+</div>
 
 # Introduction
 
@@ -21,13 +32,16 @@ ts-rest offers a simple way to define a contract for your API, which can be both
 
 ### Features
 
-- End to end type safety 🛟
-- RPC-like client side interface 📡
-- [Tiny bundle size 🌟](https://bundlephobia.com/package/@ts-rest/core) (1kb!)
-- Well-tested and production ready ✅
+- End-to-end type safety 🛟
+- RPC-like client side API ⚡️
+- Small Bundle Size 📉
 - No Code Generation 🏃‍♀️
-- Zod support for runtime type checks 👮‍♀️
+- Zod support for runtime validation 🔒
 - Full optional OpenAPI integration 📝
+
+<div align="center">
+  <h3>👉 Start reading the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a> 👈</h3>
+</div>
 
 ### Super Simple Example
 
@@ -77,31 +91,15 @@ const result = await client.getPosts({
 
 ## Quickstart
 
-Install the core package
-
-```bash
-yarn add @ts-rest/core
-# Optional react-query integration
-yarn add @ts-rest/react-query
-# Pick your backend
-yarn add @ts-rest/nest @ts-rest/express
-# For automatic server OpenAPI gen
-yarn add @ts-rest/open-api
-```
-
 Create a contract, implement it on your server then consume it in your client. Incrementally adopt, trial it with your team, then get shipping faster.
 
 <div align="center">
-<h3>👉 Read more on the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a> 👈</h3>
+  <h3>👉 Start reading the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a> 👈</h3>
 </div>
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline)](https://star-history.com/#ts-rest/ts-rest&Timeline)
 
 ## Contributors ✨
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+MASSIVE Thanks to all of these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)), who have helped make ts-rest possible:
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -132,9 +130,26 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+## Star History
 
-<div style={{paddingTop: "25px"}}>
+Since our first commit in 2022 we've been growing steadily. We're proud of our progress and we're excited about the future.
+
+<div align="center">
+<a href="https://star-history.com/#ts-rest/ts-rest&Timeline">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline" />
+  </picture>
+</a>
+</div>
+
+<div align="center" style="padding-top: 50px">
+  <div>Join us on Discord for help, feedback, and discussions!</div></br>
+  <img src="https://discordapp.com/api/guilds/1055855205960392724/widget.png?style=banner2" alt="Discord Shield"/>
+</div>
+
+<div style="padding-top: 25px" align="center">
   <a
     href="https://vercel.com/?utm_source=ts-rest&utm_campaign=oss"
     target="_blank"
