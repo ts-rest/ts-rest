@@ -308,7 +308,6 @@ describe('ts-rest-fastify', () => {
     const router = s.router(postsContract, {
       posts: {
         getPost: async ({ params }) => {
-          console.log(params);
           return { status: 200, body: { id: params.postId } };
         },
       },
@@ -453,5 +452,151 @@ describe('ts-rest-fastify', () => {
       .timeout(1000)
       .send({});
     expect(response.statusCode).toEqual(500);
+  });
+
+  it('should be able to instantiate two routers and combine them together', async () => {
+    const contractA = c.router({
+      a: {
+        method: 'GET',
+        path: '/a',
+        responses: {
+          200: z.object({
+            a: z.string(),
+          }),
+        },
+      },
+    });
+
+    const contractB = c.router({
+      b: {
+        method: 'GET',
+        path: '/b',
+        responses: {
+          200: z.object({
+            b: z.string(),
+          }),
+        },
+      },
+    });
+
+    const combinedContract = c.router({
+      apiA: contractA,
+      apiB: contractB,
+    });
+
+    const routerA = s.router(contractA, {
+      a: async () => {
+        return {
+          status: 200,
+          body: {
+            a: 'return',
+          },
+        };
+      },
+    });
+
+    const routerB = s.router(contractB, {
+      b: async () => {
+        return {
+          status: 200,
+          body: {
+            b: 'return',
+          },
+        };
+      },
+    });
+
+    const combinedRouter = s.router(combinedContract, {
+      apiA: routerA,
+      apiB: routerB,
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(combinedRouter));
+
+    await app.ready();
+
+    const responseA = await supertest(app.server).get('/a');
+    expect(responseA.statusCode).toEqual(200);
+    expect(responseA.body).toEqual({
+      a: 'return',
+    });
+
+    const responseB = await supertest(app.server).get('/b');
+    expect(responseB.statusCode).toEqual(200);
+    expect(responseB.body).toEqual({
+      b: 'return',
+    });
+  });
+
+  it('should be able to mix and match combining routers with direct implementation', async () => {
+    const contract = c.router({
+      apiA: {
+        a: {
+          method: 'GET',
+          path: '/a',
+          responses: {
+            200: z.object({
+              a: z.string(),
+            }),
+          },
+        },
+      },
+      apiB: {
+        b: {
+          method: 'GET',
+          path: '/b',
+          responses: {
+            200: z.object({
+              b: z.string(),
+            }),
+          },
+        },
+      },
+    });
+
+    const routerForApiA = s.router(contract.apiA, {
+      a: async () => {
+        return {
+          status: 200,
+          body: {
+            a: 'return',
+          },
+        };
+      },
+    });
+
+    const router = s.router(contract, {
+      apiA: routerForApiA,
+      apiB: {
+        b: async () => {
+          return {
+            status: 200,
+            body: {
+              b: 'return',
+            },
+          };
+        },
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const responseA = await supertest(app.server).get('/a');
+    expect(responseA.statusCode).toEqual(200);
+    expect(responseA.body).toEqual({
+      a: 'return',
+    });
+
+    const responseB = await supertest(app.server).get('/b');
+    expect(responseB.statusCode).toEqual(200);
+    expect(responseB.body).toEqual({
+      b: 'return',
+    });
   });
 });

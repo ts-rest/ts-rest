@@ -33,7 +33,7 @@ type AppRouteImplementation<T extends AppRoute> = (
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey]>
+    ? InitialisedRouter<T[TKey]> | RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
     ? AppRouteImplementation<T[TKey]>
     : never;
@@ -183,7 +183,6 @@ const requestValidationErrorHandler = (
 };
 
 /**
- *
  * @param routeImpl - User's implementation of the route
  * @param appRoute - the `ts-rest` contract for this route (e.g. with Path, params, query, body, etc.)
  * @param fastify - the fastify instance to register the route on
@@ -248,6 +247,12 @@ const registerRoute = <TAppRoute extends AppRoute>(
   });
 };
 
+const implementationIsInitialisedRouter = <T extends AppRouter>(
+  implementation: InitialisedRouter<T> | RecursiveRouterObj<T>
+): implementation is InitialisedRouter<T> => {
+  return 'contract' in implementation && 'routes' in implementation;
+};
+
 /**
  *
  * @param routerImpl - the user's implementation of the router
@@ -264,14 +269,26 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   options: RegisterRouterOptions
 ) => {
   if (typeof routerImpl === 'object') {
-    for (const key in routerImpl) {
+    console.log(routerImpl);
+
+    if (implementationIsInitialisedRouter(routerImpl)) {
       recursivelyRegisterRouter(
-        routerImpl[key] as unknown as RecursiveRouterObj<T>,
-        appRouter[key] as unknown as T,
-        [...path, key],
+        routerImpl.routes,
+        routerImpl.contract,
+        [...path],
         fastify,
         options
       );
+    } else {
+      for (const key in routerImpl) {
+        recursivelyRegisterRouter(
+          routerImpl[key] as unknown as RecursiveRouterObj<T>,
+          appRouter[key] as unknown as T,
+          [...path, key],
+          fastify,
+          options
+        );
+      }
     }
   } else if (typeof routerImpl === 'function') {
     registerRoute(
