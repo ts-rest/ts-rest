@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://github.com/ts-rest/ts-rest">
-    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/ts-rest/ts-rest"
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/ts-rest/ts-rest"/>
   </a>
   <a href="https://www.npmjs.com/package/@ts-rest/core">
     <img src="https://img.shields.io/npm/dm/%40ts-rest/core"/>
