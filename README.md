@@ -68,11 +68,11 @@ const contract = c.contract({
 });
 ```
 
-Fulfil the contract on your server, with a type-safe router:
+Fulfill the contract on your server, with a type-safe router:
 
 ```typescript
 const router = s.router(contract, {
-  getPost: async ({ params: { id } }) => {
+  getPosts: async ({ params: { id } }) => {
     return {
       status: 200,
       body: prisma.post.findUnique({ where: { id } }),
