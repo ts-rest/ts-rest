@@ -10,8 +10,7 @@
     "affected:all": "pnpm nx affected:lint && pnpm nx affected:test && pnpm nx affected:build",
     "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
     "docs:start": "nx serve docs",
-    "example-microservice:serve": "pnpm nx run-many --target=serve --projects=example-microservice-posts-service,example-microservice-users-service,example-microservice-web-app,example-microservice-web-app-solid --parallel=10",
-    "example-microservice:graph": "pnpm nx dep-graph --focus=example-microservice-posts-service,example-microservice-web-app,example-microservice-web-app-solid",
+    "example-microservice:serve": "pnpm nx run-many --target=serve --projects='example-microservice*' --parallel=10",
     "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch",
     "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts",
     "postinstall": "pnpm prisma generate",
@@ -114,8 +113,8 @@
     "typedoc": "^0.23.24",
     "typedoc-plugin-markdown": "^3.14.0",
     "uuid": "^8.3.2",
-    "zod": "^3.21.4",
     "vitest": "0.32.4",
+    "zod": "^3.21.4",
     "zustand": "^4.1.1"
   },
   "devDependencies": {
@@ -195,7 +194,7 @@
     "metro-babel-register": "0.72.0",
     "metro-resolver": "0.73.3",
     "nx": "16.5.5",
-    "nx-cloud": "16.1.1",
+    "nx-cloud": "16.3.0",
     "prettier": "^2.8.8",
     "prisma": "^4.5.0",
     "qs": "^6.11.0",
@@ -216,7 +215,7 @@
     "vite-plugin-dts": "2.3.0",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-solid": "2.5.0",
-    "vite-tsconfig-paths": "^4.0.2",
+    "vite-tsconfig-paths": "~4.2.0",
     "webpack": "^5.75.0",
     "webpack-merge": "^5.8.0"
   }

@@ -22,10 +22,11 @@
       }
     },
     "test": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/vite:test",
+      "outputs": ["coverage/apps/example-microservice/web-app"],
       "options": {
-        "command": "npx vitest --run",
-        "cwd": "apps/example-microservice/web-app"
+        "passWithNoTests": true,
+        "reportsDirectory": "../../../coverage/apps/example-microservice/web-app"
       }
     }
   },

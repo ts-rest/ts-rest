@@ -61,3 +61,4 @@ apps/expo-e2e/artifacts
 
 # example apps upload directory
 uploads/ 
+.env
