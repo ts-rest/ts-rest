@@ -57,3 +57,36 @@ jobs:
       - name: 'Build 🏗'
         working-directory: ./test-projects/nest-10
         run: pnpm run build
+
+  nest-9:
+    name: 'E2E > Nest 9'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 8.6
+
+      - name: 'Install dependencies'
+        run: pnpm install
+
+      - name: 'Build ts-rest libs'
+        run: 'pnpm exec nx run-many --target=build --projects="ts-rest*"'
+
+      - name: 'Install dependencies in example-nest-9'
+        working-directory: ./test-projects/nest-9
+        run: pnpm install
+
+      - name: 'Tests 🧪'
+        working-directory: ./test-projects/nest-9
+        run: pnpm run test
+
+      - name: 'Build 🏗'
+        working-directory: ./test-projects/nest-9
+        run: pnpm run build
