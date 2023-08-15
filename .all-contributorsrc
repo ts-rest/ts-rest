@@ -124,6 +124,17 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "fruchtzwerg",
+      "name": "Ben",
+      "avatar_url": "https://avatars.githubusercontent.com/u/15377955?v=4",
+      "profile": "https://github.com/fruchtzwerg",
+      "contributions": [
+        "code",
+        "doc",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
