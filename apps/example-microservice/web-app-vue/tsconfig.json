@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.settings.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/apps/example-microservice/web-app-vue",
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "types": ["vite/client"],
+    "noEmit": true,
+    "isolatedModules": true
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.vue"],
+}

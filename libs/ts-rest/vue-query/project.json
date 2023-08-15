@@ -1,0 +1,50 @@
+{
+  "name": "ts-rest-vue-query",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ts-rest/vue-query/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/rollup:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "project": "libs/ts-rest/vue-query/package.json",
+        "outputPath": "dist/libs/ts-rest/vue-query",
+        "main": "libs/ts-rest/vue-query/src/index.ts",
+        "tsConfig": "libs/ts-rest/vue-query/tsconfig.lib.json",
+        "assets": [
+          {
+            "glob": "CHANGELOG.md",
+            "input": "libs/ts-rest/vue-query",
+            "output": "."
+          },
+          {
+            "glob": "README.md",
+            "input": ".",
+            "output": "."
+          }
+        ],
+        "format": ["esm", "cjs"],
+        "compiler": "tsc",
+        "rollupConfig": "tools/scripts/rollup.config.js",
+        "generateExportsField": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/ts-rest/vue-query/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/ts-rest/vue-query/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}
