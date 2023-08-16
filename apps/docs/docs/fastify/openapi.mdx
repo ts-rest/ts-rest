@@ -37,7 +37,7 @@ import { openApiDocument } from './document'
 
 const app = fastify()
   .register(fastifySwagger, {
-    swagger: openApiDocument
+    transformObject: () => openApiDocument
   })
   .register(fastifySwaggerUI)
 ```
