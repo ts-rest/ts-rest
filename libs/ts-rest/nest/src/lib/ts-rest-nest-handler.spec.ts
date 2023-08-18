@@ -119,72 +119,130 @@ describe('ts-rest-nest-handler', () => {
       expect(responsePost.body).toEqual({ message: 'hello' });
     });
 
-    it('should validate body', async () => {
-      const c = initContract();
+    describe('body validation', () => {
+      it('should validate body', async () => {
+        const c = initContract();
 
-      const contract = c.router({
-        postRequest: {
-          path: '/test',
-          method: 'POST',
-          body: z.object({
-            message: z.string(),
-          }),
-          responses: {
-            200: z.object({
+        const contract = c.router({
+          postRequest: {
+            path: '/test',
+            method: 'POST',
+            body: z.object({
               message: z.string(),
             }),
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
+            },
           },
-        },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract)
+          async postRequest() {
+            return tsRestHandler(contract, {
+              postRequest: async ({ body }) => ({
+                status: 200,
+                body: body,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 'hello' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'hello' });
+
+        const responsePost = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 123 });
+
+        expect(responsePost.status).toBe(400);
+        expect(responsePost.body).toEqual({
+          bodyResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'number',
+                path: ['message'],
+                message: 'Expected string, received number',
+              },
+            ],
+            name: 'ZodError',
+          },
+          headersResult: null,
+          queryResult: null,
+          paramsResult: null,
+        });
       });
 
-      @Controller()
-      class SingleHandlerTestController {
-        @TsRestHandler(contract)
-        async postRequest() {
-          return tsRestHandler(contract, {
-            postRequest: async ({ body }) => ({
-              status: 200,
-              body: body,
+      it('shouldnt validate body', async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          postRequest: {
+            path: '/test',
+            method: 'POST',
+            body: z.object({
+              message: z.string(),
             }),
-          });
-        }
-      }
-
-      const moduleRef = await Test.createTestingModule({
-        controllers: [SingleHandlerTestController],
-      }).compile();
-
-      const app = moduleRef.createNestApplication();
-      await app.init();
-
-      const response = await supertest(app.getHttpServer())
-        .post('/test')
-        .send({ message: 'hello' });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({ message: 'hello' });
-
-      const responsePost = await supertest(app.getHttpServer())
-        .post('/test')
-        .send({ message: 123 });
-
-      expect(responsePost.status).toBe(400);
-      expect(responsePost.body).toEqual({
-        bodyResult: {
-          issues: [
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'number',
-              path: ['message'],
-              message: 'Expected string, received number',
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
             },
-          ],
-          name: 'ZodError',
-        },
-        headersResult: null,
-        queryResult: null,
-        paramsResult: null,
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract, {
+            validateRequestBody: false,
+          })
+          async postRequest() {
+            return tsRestHandler(contract, {
+              postRequest: async ({ body }) => ({
+                status: 200,
+                body: body,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 'hello' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'hello' });
+
+        const responsePost = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 123 });
+
+        console.log(responsePost.body);
+        expect(responsePost.status).toBe(200);
+        expect(responsePost.body).toEqual({ message: 123 });
       });
     });
   });

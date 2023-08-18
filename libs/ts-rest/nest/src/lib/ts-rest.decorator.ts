@@ -13,12 +13,20 @@ import { AppRoute } from '@ts-rest/core';
 import { TsRestInterceptor } from './ts-rest.interceptor';
 import {
   TsRestAppRouteMetadataKey,
+  ValidateRequestBodySymbol,
+  ValidateRequestHeadersSymbol,
+  ValidateRequestParamsSymbol,
+  ValidateRequestQuerySymbol,
   ValidateResponsesSymbol,
 } from './constants';
 
 export type TsRestOptions = {
   jsonQuery?: boolean;
   validateResponses?: boolean;
+  validateRequestParams?: boolean;
+  validateRequestHeaders?: boolean;
+  validateRequestQuery?: boolean;
+  validateRequestBody?: boolean;
 };
 
 type TsRestType = {
@@ -59,6 +67,25 @@ export const TsRest: TsRestType = (
       SetMetadata(ValidateResponsesSymbol, optionsToUse.validateResponses)
     );
   }
+
+  decorators.push(
+    SetMetadata(
+      ValidateRequestParamsSymbol,
+      optionsToUse.validateRequestParams ?? true
+    ),
+    SetMetadata(
+      ValidateRequestHeadersSymbol,
+      optionsToUse.validateRequestHeaders ?? true
+    ),
+    SetMetadata(
+      ValidateRequestQuerySymbol,
+      optionsToUse.validateRequestQuery ?? true
+    ),
+    SetMetadata(
+      ValidateRequestBodySymbol,
+      optionsToUse.validateRequestBody || true
+    )
+  );
 
   return applyDecorators(...decorators);
 };
