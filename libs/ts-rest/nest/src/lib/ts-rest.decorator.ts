@@ -15,7 +15,6 @@ import {
   TsRestAppRouteMetadataKey,
   ValidateRequestBodySymbol,
   ValidateRequestHeadersSymbol,
-  ValidateRequestParamsSymbol,
   ValidateRequestQuerySymbol,
   ValidateResponsesSymbol,
 } from './constants';
@@ -23,7 +22,6 @@ import {
 export type TsRestOptions = {
   jsonQuery?: boolean;
   validateResponses?: boolean;
-  validateRequestParams?: boolean;
   validateRequestHeaders?: boolean;
   validateRequestQuery?: boolean;
   validateRequestBody?: boolean;
@@ -69,10 +67,6 @@ export const TsRest: TsRestType = (
   }
 
   decorators.push(
-    SetMetadata(
-      ValidateRequestParamsSymbol,
-      optionsToUse.validateRequestParams ?? true
-    ),
     SetMetadata(
       ValidateRequestHeadersSymbol,
       optionsToUse.validateRequestHeaders ?? true

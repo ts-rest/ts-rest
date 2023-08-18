@@ -35,7 +35,6 @@ import {
   TsRestAppRouteMetadataKey,
   ValidateRequestBodySymbol,
   ValidateRequestHeadersSymbol,
-  ValidateRequestParamsSymbol,
   ValidateRequestQuerySymbol,
   ValidateResponsesSymbol,
 } from './constants';
@@ -85,10 +84,6 @@ export const TsRestHandler = (
   }
 
   decorators.push(
-    SetMetadata(
-      ValidateRequestParamsSymbol,
-      options.validateRequestParams ?? true
-    ),
     SetMetadata(
       ValidateRequestHeadersSymbol,
       options.validateRequestHeaders ?? true
@@ -282,7 +277,6 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const getMetadataValue = (
       key:
         | typeof ValidateResponsesSymbol
-        | typeof ValidateRequestParamsSymbol
         | typeof ValidateRequestHeadersSymbol
         | typeof ValidateRequestQuerySymbol
         | typeof ValidateRequestBodySymbol
@@ -314,8 +308,6 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     );
 
     const isValidationEnabled = getMetadataValue(ValidateResponsesSymbol);
-    const isParamsInvalid =
-      !paramsResult.success && getMetadataValue(ValidateRequestParamsSymbol);
 
     const isHeadersInvalid =
       !headersResult.success && getMetadataValue(ValidateRequestHeadersSymbol);
@@ -326,20 +318,14 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const isBodyInvalid =
       !bodyResult.success && getMetadataValue(ValidateRequestBodySymbol);
 
-    // success = false & Validate = false => response
-    // success = true & Validate = false => response
-
-    // success = false & Validate = true => throw
-    // success = true & Validate = true => response
-
     if (
-      isParamsInvalid ||
+      !paramsResult.success ||
       isHeadersInvalid ||
       isQueryInvalid ||
       isBodyInvalid
     ) {
       throw new RequestValidationError(
-        isParamsInvalid ? paramsResult.error : null,
+        !paramsResult.success ? paramsResult.error : null,
         isHeadersInvalid ? headersResult.error : null,
         isQueryInvalid ? queryResult.error : null,
         isBodyInvalid ? bodyResult.error : null
@@ -350,21 +336,14 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       map(async (impl) => {
         let result = null;
         try {
-          if (routeKey) {
-            result = await impl[routeKey]({
-              query: queryResult.data,
-              params: paramsResult.data,
-              body: bodyResult.data,
-              headers: headersResult.data,
-            });
-          } else {
-            result = await impl({
-              query: queryResult.data,
-              params: paramsResult.data,
-              body: bodyResult.data,
-              headers: headersResult.data,
-            });
-          }
+          const res = {
+            params: paramsResult.data,
+            query: queryResult.success ? queryResult.data : req.query,
+            body: bodyResult.success ? bodyResult.data : req.body,
+            headers: headersResult.success ? headersResult.data : req.headers,
+          };
+
+          result = routeKey ? await impl[routeKey](res) : await impl(res);
         } catch (e) {
           if (e instanceof TsRestException) {
             result = {
