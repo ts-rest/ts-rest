@@ -78,12 +78,16 @@ const getPathParameters = (path: string, zodObject?: unknown) => {
     })) || [];
 
   if (isZodObj) {
-    const paramsFromZod = Object.entries(zodShape).map(([key, value]) => ({
-      name: key,
-      in: 'path' as const,
-      required: true,
-      schema: getOpenApiSchemaFromZod(value),
-    }));
+    const paramsFromZod = Object.entries(zodShape).map(([key, value]) => {
+      const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
+      return {
+        name: key,
+        in: 'path' as const,
+        required: true,
+        schema,
+        ...(description && { description }),
+      }
+    });
 
     params.push(...paramsFromZod);
   }
@@ -125,13 +129,14 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   const zodShape = extractZodObjectShape(zodObject);
 
   return Object.entries(zodShape).map(([key, value]) => {
-    const schema = getOpenApiSchemaFromZod(value)!;
+    const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
     const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
     const isRequired = !(value as z.ZodTypeAny).isOptional();
 
     return {
       name: key,
       in: 'query' as const,
+      ...(description && { description }),
       ...(isRequired && { required: true }),
       ...(jsonQuery
         ? {
