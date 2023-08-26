@@ -208,7 +208,7 @@ By default, `ts-rest` validates all request components - body, headers and query
 In case of validation errors, the server responds with a `ZodError` object in the response body and a status code of 400.
 You can disable the validation of these components if you wish to perform this validation manually or handle the error differently.
 
-Using `@TsRest()` decorator
+Using the `@TsRest()` decorator, you can configure request validation parameters for the entire controller.
 ```typescript
 import { TsRest } from '@ts-rest/nest';
 
@@ -218,10 +218,30 @@ import { TsRest } from '@ts-rest/nest';
   validateRequestQuery: false,
   validateRequestHeaders: false
 })
-export class MyController {}
+class MyController {}
 ```
 
-Or only for for a specific route
+You can also override controller decorator values for a specific route
+
+```typescript
+import { TsRest } from '@ts-rest/nest';
+
+@Controller()
+@TsRest({
+  validateRequestBody: false,
+})
+class MyController {
+  @TsRest(contract.create, {
+    validateRequestBody: true
+  })
+  async create(@TsRestRequest() { body }) {
+    // body validated
+  }
+}
+```
+
+Using `@TsRestHandler()` for specific route
+
 ```typescript
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 
