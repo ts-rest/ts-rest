@@ -11,7 +11,8 @@
         "outputPath": "dist/libs/example-contracts",
         "main": "libs/example-contracts/src/index.ts",
         "tsConfig": "libs/example-contracts/tsconfig.lib.json",
-        "assets": ["libs/example-contracts/*.md"]
+        "assets": ["libs/example-contracts/*.md"],
+        "updateBuildableProjectDepsInPackageJson": true
       }
     },
     "publish": {

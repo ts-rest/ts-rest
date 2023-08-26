@@ -6,7 +6,7 @@
   "targets": {
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/libs/non-strict-mode-test"],
+      "outputs": ["{workspaceRoot}/coverage/libs/non-strict-mode-test"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/libs/non-strict-mode-test"

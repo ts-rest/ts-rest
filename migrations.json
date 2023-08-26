@@ -2,99 +2,19 @@
   "migrations": [
     {
       "cli": "nx",
-      "version": "16.2.0-beta.0",
-      "description": "Remove outputPath from run commands",
-      "implementation": "./src/migrations/update-16-2-0/remove-run-commands-output-path",
-      "package": "nx",
-      "name": "16.2.0-remove-output-path-from-run-commands"
-    },
-    {
-      "cli": "nx",
-      "version": "16.2.0-beta.0",
-      "description": "Normalize tsconfig.cy.json files to be located at '<projectRoot>/cypress/tsconfig.json'",
-      "implementation": "./src/migrations/update-16-2-0/update-cy-tsconfig",
-      "package": "@nx/cypress",
-      "name": "update-16-2-0-normalize-tsconfigs"
-    },
-    {
-      "cli": "nx",
-      "version": "16.4.0-beta.10",
-      "description": "Remove tsconfig.e2e.json and add settings to project tsconfig.json. tsConfigs executor option is now deprecated. The project level tsconfig.json file should be used instead.",
-      "implementation": "./src/migrations/update-16-4-0/tsconfig-sourcemaps",
-      "package": "@nx/cypress",
-      "name": "update-16-3-0-remove-old-tsconfigs"
-    },
-    {
-      "version": "16.4.1-beta.0",
-      "description": "Changes the testFile config in the vite:test exectutor from a string to an array of strings",
-      "cli": "nx",
-      "implementation": "./src/migrations/update-16-4-1-update-test-file-config/update-16-4-1-test-file-config",
-      "package": "@nx/vite",
-      "name": "update-16-4-1-test-file-config"
-    },
-    {
-      "cli": "nx",
-      "version": "16.5.0-beta.2",
-      "description": "Add test-setup.ts to ignored files in production input",
-      "implementation": "./src/migrations/update-16-5-0/add-test-setup-to-inputs-ignore",
-      "package": "@nx/jest",
-      "name": "add-test-setup-to-inputs-ignore"
-    },
-    {
-      "cli": "nx",
-      "version": "16.2.0-beta.0",
-      "description": "Remove react-test-renderer from package.json",
-      "implementation": "./src/migrations/update-16-2-0-remove-package/update-16-2-0-remove-package",
+      "version": "16.7.0-beta.2",
+      "description": "Add @babel/core to package.json if @babel/preset-react is present",
+      "implementation": "./src/migrations/update-16-7-0/add-babel-core",
       "package": "@nx/react",
-      "name": "update-16-2-0-remove-package"
+      "name": "add-babel-core"
     },
     {
       "cli": "nx",
-      "version": "16.3.0-beta.2",
-      "description": "Remove @types/react-router-dom from package.json",
-      "implementation": "./src/migrations/update-16-3-0/remove-types-react-router-dom-package",
+      "version": "16.7.0-beta.2",
+      "description": "Add @nx/react types to tsconfig types array",
+      "implementation": "./src/migrations/update-16-7-0-add-typings/update-16-7-0-add-typings",
       "package": "@nx/react",
-      "name": "remove-types-react-router-dom"
-    },
-    {
-      "cli": "nx",
-      "version": "16.3.1-beta.0",
-      "description": "Replace @nrwl/node:webpack and @nx/node:webpack with @nx/webpack:webpack for all project targets",
-      "implementation": "./src/migrations/update-16-3-1/update-webpack-executor",
-      "package": "@nx/node",
-      "name": "update-16-3-1-update-executor"
-    },
-    {
-      "cli": "nx",
-      "version": "16.4.0-beta.8",
-      "description": "Replace @nx/node:node with @nx/js:node for all project targets",
-      "implementation": "./src/migrations/update-16-4-0/replace-node-executor",
-      "package": "@nx/node",
-      "name": "update-16-4-0-replace-node-executor"
-    },
-    {
-      "cli": "nx",
-      "version": "16.4.0-beta.16",
-      "description": "Update TsConfig target to es2021 and CacheModule if being used. Read more at https://docs.nestjs.com/migration-guide",
-      "implementation": "./src/migrations/update-16-4-0-cache-manager/nestjs-10-updates",
-      "package": "@nx/nest",
-      "name": "update-16-4-0-support-nestjs-10"
-    },
-    {
-      "cli": "nx",
-      "version": "16.3.0-beta.9",
-      "description": "Remove root build option from project configurations since it is not needed.",
-      "implementation": "./src/migrations/update-16-3-0/remove-root-build-option",
-      "package": "@nx/next",
-      "name": "update-16-3-0-remove-root-build-option"
-    },
-    {
-      "cli": "nx",
-      "version": "16.4.0-beta.3",
-      "description": "Update package.json moving @nx/next from dependency to devDependency",
-      "implementation": "./src/migrations/update-16-4-0/update-nx-next-dependency",
-      "package": "@nx/next",
-      "name": "update-16-4-0-update-next-dependency"
+      "name": "update-16-7-0-add-typings"
     }
   ]
 }
