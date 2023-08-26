@@ -11,7 +11,8 @@
         "outputPath": "dist/libs/example-microservice/util-users-api",
         "main": "libs/example-microservice/util-users-api/src/index.ts",
         "tsConfig": "libs/example-microservice/util-users-api/tsconfig.lib.json",
-        "assets": ["libs/example-microservice/util-users-api/*.md"]
+        "assets": ["libs/example-microservice/util-users-api/*.md"],
+        "updateBuildableProjectDepsInPackageJson": true
       }
     },
     "lint": {

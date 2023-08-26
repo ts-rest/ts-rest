@@ -23,7 +23,7 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/apps/example-microservice/web-app"],
+      "outputs": ["{workspaceRoot}/coverage/apps/example-microservice/web-app"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../../coverage/apps/example-microservice/web-app"
