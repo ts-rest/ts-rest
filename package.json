@@ -115,8 +115,8 @@
     "typedoc": "^0.23.24",
     "typedoc-plugin-markdown": "^3.14.0",
     "uuid": "^8.3.2",
-    "vue": "^3.3.4",
     "vitest": "0.32.4",
+    "vue": "^3.3.4",
     "zod": "^3.21.4",
     "zustand": "^4.1.1"
   },
@@ -214,7 +214,7 @@
     "ts-jest": "29.1.0",
     "ts-node": "^10.9.1",
     "tsd": "^0.22.0",
-    "typescript": "4.9.5",
+    "typescript": "5.2.2",
     "url-loader": "^4.1.1",
     "vite": "4.4.7",
     "vite-plugin-dts": "2.3.0",
