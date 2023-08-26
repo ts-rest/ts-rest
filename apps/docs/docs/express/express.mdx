@@ -32,7 +32,7 @@ createExpressEndpoints(contract, router, app);
 ```
 
 `createExpressEndpoints` is a function that takes a contract, a corresponding router with implementations and middleware for each endpoint, and an express app, and it will
-create the corresponding express routes for each endpoint with the correct method, paths and middleware and attach them to your express app.
+create the corresponding express routes for each endpoint with the correct method, paths, and middleware and attach them to your express app.
 
 ## Options
 
@@ -54,8 +54,8 @@ type Options = {
 ### Response Validation
 
 To enable response parsing and validation, you can use the `validateResponses` option.
-If there is a corresponding response Zod schema defined in the contract for the returned status code, the response will be parsed and validated.
-If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
+If a corresponding response Zod schema is defined in the contract for the returned status code, the response will be parsed and validated.
+If validation fails, a `ResponseValidationError` will be thrown, causing a 500 response to be returned.
 
 ```typescript
 createExpressEndpoints(contract, router, app, {
@@ -65,7 +65,7 @@ createExpressEndpoints(contract, router, app, {
 
 ### Request Validation Error Handling
 
-The default functionality of handling request validation errors is to return a 400 response with the first validation error that the validator comes across.
+The default functionality of handling request validation errors is to return a 400 response with the first validation error the validator encounters.
 
 You can pass `combined` to the `requestValidationErrorHandler` option to return a 400 response with all validation errors in the body in this form.
 
