@@ -29,9 +29,5 @@
     "zod": {
       "optional": true
     }
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "tsconfig": "./tsconfig.lib.json"
   }
 }
