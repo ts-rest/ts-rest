@@ -1,3 +1,5 @@
+//@ts-nocheck
+// deprecated file for now
 import { assert, describe, expect, it } from 'vitest';
 import { transformLegacyNestController } from './nestTransform';
 import * as ts from 'typescript';

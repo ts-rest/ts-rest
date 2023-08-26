@@ -4,6 +4,9 @@ import parserTypeScript from 'prettier/parser-typescript';
 import prettier from 'prettier/standalone';
 import CodeBlock from '@theme/CodeBlock';
 
+/**
+ * @deprecated for now
+ */
 export const NestLegacyTransformer = () => {
   const [inputCode, setInputCode] = useState<string>('');
   const [outputCode, setOutputCode] = useState<string>('');

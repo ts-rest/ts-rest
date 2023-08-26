@@ -1,3 +1,5 @@
+//@ts-nocheck
+// deprecated file for now
 import * as ts from 'typescript';
 
 const isClassDecoratorImplementation = (str: string): boolean => {
