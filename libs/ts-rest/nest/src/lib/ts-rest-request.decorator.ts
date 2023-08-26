@@ -12,7 +12,14 @@ import {
   zodErrorResponse,
 } from '@ts-rest/core';
 import type { Request } from 'express-serve-static-core';
-import { JsonQuerySymbol, TsRestAppRouteMetadataKey } from './constants';
+import {
+  JsonQuerySymbol,
+  TsRestAppRouteMetadataKey,
+  ValidateRequestBodySymbol,
+  ValidateRequestHeadersSymbol,
+  ValidateRequestQuerySymbol,
+  ValidateResponsesSymbol,
+} from './constants';
 
 export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
   TRoute,
@@ -44,11 +51,37 @@ export const TsRestRequest = createParamDecorator(
       throw new BadRequestException(zodErrorResponse(pathParamsResult.error));
     }
 
+    // by default request validation metadata doesn't set for the method to take option to override class params
+    const getRequestValidationValue = (
+      key:
+        | typeof ValidateRequestHeadersSymbol
+        | typeof ValidateRequestQuerySymbol
+        | typeof ValidateRequestBodySymbol
+    ) => {
+      const handlerValue = Reflect.getMetadata(key, ctx.getHandler());
+      const classValue = Reflect.getMetadata(key, ctx.getClass());
+
+      // in case decorator used only on method & option not provided
+      if (handlerValue === undefined && classValue === undefined) {
+        return true;
+      }
+
+      // prefer to use method param if available
+      if (handlerValue !== undefined) {
+        return handlerValue;
+      }
+
+      return classValue;
+    };
+
     const headersResult = checkZodSchema(req.headers, appRoute.headers, {
       passThroughExtraKeys: true,
     });
 
-    if (!headersResult.success) {
+    const headerValidation = getRequestValidationValue(
+      ValidateRequestHeadersSymbol
+    );
+    if (!headersResult.success && headerValidation) {
       throw new BadRequestException(zodErrorResponse(headersResult.error));
     }
 
@@ -62,8 +95,10 @@ export const TsRestRequest = createParamDecorator(
       : req.query;
 
     const queryResult = checkZodSchema(query, appRoute.query);
-
-    if (!queryResult.success) {
+    const queryValidation = getRequestValidationValue(
+      ValidateRequestQuerySymbol
+    );
+    if (!queryResult.success && queryValidation) {
       throw new BadRequestException(zodErrorResponse(queryResult.error));
     }
 
@@ -72,17 +107,18 @@ export const TsRestRequest = createParamDecorator(
       (appRoute as AppRoute).method === 'GET' ? null : appRoute.body
     );
 
-    if (!bodyResult.success) {
+    const bodyValidation = getRequestValidationValue(ValidateRequestBodySymbol);
+    if (!bodyResult.success && bodyValidation) {
       throw new BadRequestException(zodErrorResponse(bodyResult.error));
     }
 
     return {
-      query: queryResult.data,
+      query: queryResult.success ? queryResult.data : req.query,
       params: pathParamsResult.data as any,
-      body: bodyResult.data as any,
-      headers: headersResult.data as TsRestRequestShape<
-        typeof appRoute
-      >['headers'],
+      body: bodyResult.success ? bodyResult.data : req.body,
+      headers: headersResult.success
+        ? (headersResult.data as TsRestRequestShape<typeof appRoute>['headers'])
+        : req.headers,
     };
   }
 );

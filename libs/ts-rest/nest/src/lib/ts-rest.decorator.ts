@@ -54,6 +54,22 @@ export const TsRest: TsRestType = (
         UseInterceptors(TsRestInterceptor),
       ]
     );
+  } else {
+    // set request validation metadata for class decoration
+    decorators.push(
+      SetMetadata(
+        ValidateRequestHeadersSymbol,
+        optionsToUse.validateRequestHeaders ?? true
+      ),
+      SetMetadata(
+        ValidateRequestQuerySymbol,
+        optionsToUse.validateRequestQuery ?? true
+      ),
+      SetMetadata(
+        ValidateRequestBodySymbol,
+        optionsToUse.validateRequestBody ?? true
+      )
+    );
   }
 
   if (optionsToUse.jsonQuery !== undefined) {
@@ -66,20 +82,25 @@ export const TsRest: TsRestType = (
     );
   }
 
-  decorators.push(
-    SetMetadata(
-      ValidateRequestHeadersSymbol,
-      optionsToUse.validateRequestHeaders ?? true
-    ),
-    SetMetadata(
-      ValidateRequestQuerySymbol,
-      optionsToUse.validateRequestQuery ?? true
-    ),
-    SetMetadata(
-      ValidateRequestBodySymbol,
-      optionsToUse.validateRequestBody || true
-    )
-  );
+  // set request validation metadata for method decoration
+  if (optionsToUse.validateRequestBody !== undefined) {
+    decorators.push(
+      SetMetadata(ValidateRequestBodySymbol, optionsToUse.validateRequestBody)
+    );
+  }
+  if (optionsToUse.validateRequestQuery !== undefined) {
+    decorators.push(
+      SetMetadata(ValidateRequestQuerySymbol, optionsToUse.validateRequestQuery)
+    );
+  }
+  if (optionsToUse.validateRequestHeaders !== undefined) {
+    decorators.push(
+      SetMetadata(
+        ValidateRequestHeadersSymbol,
+        optionsToUse.validateRequestHeaders
+      )
+    );
+  }
 
   return applyDecorators(...decorators);
 };
