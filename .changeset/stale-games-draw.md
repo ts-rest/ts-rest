@@ -1,7 +1,6 @@
 ---
-'@ts-rest/nest': major
+'@ts-rest/nest': minor
 ---
 
-Add option to disable request validation
-
-This is useful when a user wants to perform validation themselves or handle validation errors in their own way
+- feat: Add option to disable request validation
+  - This is useful when a user wants to perform validation or handle validation errors themselves 
