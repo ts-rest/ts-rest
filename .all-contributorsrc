@@ -135,6 +135,16 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "llllvvuu",
+      "name": "LW",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5601392?v=4",
+      "profile": "https://llllvvuu.dev",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

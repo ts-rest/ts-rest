@@ -2,6 +2,10 @@
   "name": "next-app-dir",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "pnpm": "8.7",
+    "node": "18.17.1"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

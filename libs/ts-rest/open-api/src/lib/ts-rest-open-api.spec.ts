@@ -68,7 +68,7 @@ const postsRouter = c.router({
     method: 'GET',
     path: `/posts/:id/comments/:commentId`,
     pathParams: z.object({
-      commentId: z.string().length(5),
+      commentId: z.string().length(5).describe("the comment ID"),
     }),
     responses: {
       200: c.response<Post | null>(),
@@ -324,6 +324,7 @@ const expectedApiDoc = {
             in: 'path',
             name: 'commentId',
             required: true,
+            description: 'the comment ID',
             schema: {
               type: 'string',
               minLength: 5,
@@ -571,7 +572,7 @@ describe('ts-rest-open-api', () => {
           },
           query: z
             .object({
-              foo: z.string(),
+              foo: z.string().describe("Foo"),
             })
             .refine((v) => v.foo === 'bar', {
               message: 'foo must be bar',
@@ -596,6 +597,7 @@ describe('ts-rest-open-api', () => {
               description: undefined,
               parameters: [
                 {
+                  description: 'Foo',
                   in: 'query',
                   name: 'foo',
                   required: true,

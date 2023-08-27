@@ -25,9 +25,5 @@
   },
   "peerDependencies": {
     "zod": "^3.21.0"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "tsconfig": "./tsconfig.lib.json"
   }
 }
