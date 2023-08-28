@@ -1,5 +1,18 @@
 # @ts-rest/nest
 
+## 3.29.0
+
+### Minor Changes
+
+- 19aeb0a: - feat: Add option to disable request validation
+  - This is useful when a user wants to perform validation or handle validation errors themselves
+
+### Patch Changes
+
+- 5f7b236: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+  - bump `@ts-rest/react-query` peer dependency `zod` to `^3.21.0`
+  - upgrades NX to 16.7 for project root
+
 ## 3.28.0
 
 ### Minor Changes
