@@ -1,38 +1,41 @@
 import { Reflector } from '@nestjs/core';
-import { Observable, map } from 'rxjs';
-import type { Response, Request } from 'express-serve-static-core';
+import { map, Observable } from 'rxjs';
+import type { Request, Response } from 'express-serve-static-core';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
   All,
-  SetMetadata,
-  UseInterceptors,
   applyDecorators,
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
   BadRequestException,
-  NotFoundException,
+  CallHandler,
+  Delete,
+  ExecutionContext,
   Get,
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NestInterceptor,
+  NotFoundException,
+  Patch,
   Post,
   Put,
-  Patch,
-  Delete,
-  InternalServerErrorException,
-  HttpException,
+  SetMetadata,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
-  AppRouter,
-  isAppRoute,
   AppRoute,
+  AppRouter,
   checkZodSchema,
+  isAppRoute,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferResponses,
-  isAppRouteOtherResponse,
 } from '@ts-rest/core';
 import {
   JsonQuerySymbol,
   TsRestAppRouteMetadataKey,
+  ValidateRequestBodySymbol,
+  ValidateRequestHeadersSymbol,
+  ValidateRequestQuerySymbol,
   ValidateResponsesSymbol,
 } from './constants';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
@@ -79,6 +82,18 @@ export const TsRestHandler = (
       SetMetadata(ValidateResponsesSymbol, options.validateResponses)
     );
   }
+
+  decorators.push(
+    SetMetadata(
+      ValidateRequestHeadersSymbol,
+      options.validateRequestHeaders ?? true
+    ),
+    SetMetadata(
+      ValidateRequestQuerySymbol,
+      options.validateRequestQuery ?? true
+    ),
+    SetMetadata(ValidateRequestBodySymbol, options.validateRequestBody ?? true)
+  );
 
   const isMultiHandler = !isAppRoute(appRouterOrRoute);
 
@@ -259,12 +274,19 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       Reflect.getMetadata(JsonQuerySymbol, ctx.getClass())
     );
 
-    const isValidationEnabled = Boolean(
-      this.reflector.getAllAndOverride<boolean | undefined>(
-        ValidateResponsesSymbol,
-        [ctx.getHandler(), ctx.getClass()]
-      )
-    );
+    const getMetadataValue = (
+      key:
+        | typeof ValidateResponsesSymbol
+        | typeof ValidateRequestHeadersSymbol
+        | typeof ValidateRequestQuerySymbol
+        | typeof ValidateRequestBodySymbol
+    ) =>
+      Boolean(
+        this.reflector.getAllAndOverride<boolean | undefined>(key, [
+          ctx.getHandler(),
+          ctx.getClass(),
+        ])
+      );
 
     const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
@@ -285,17 +307,28 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       'body' in appRoute ? appRoute.body : null
     );
 
+    const isValidationEnabled = getMetadataValue(ValidateResponsesSymbol);
+
+    const isHeadersInvalid =
+      !headersResult.success && getMetadataValue(ValidateRequestHeadersSymbol);
+
+    const isQueryInvalid =
+      !queryResult.success && getMetadataValue(ValidateRequestQuerySymbol);
+
+    const isBodyInvalid =
+      !bodyResult.success && getMetadataValue(ValidateRequestBodySymbol);
+
     if (
       !paramsResult.success ||
-      !headersResult.success ||
-      !queryResult.success ||
-      !bodyResult.success
+      isHeadersInvalid ||
+      isQueryInvalid ||
+      isBodyInvalid
     ) {
       throw new RequestValidationError(
         !paramsResult.success ? paramsResult.error : null,
-        !headersResult.success ? headersResult.error : null,
-        !queryResult.success ? queryResult.error : null,
-        !bodyResult.success ? bodyResult.error : null
+        isHeadersInvalid ? headersResult.error : null,
+        isQueryInvalid ? queryResult.error : null,
+        isBodyInvalid ? bodyResult.error : null
       );
     }
 
@@ -303,21 +336,14 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       map(async (impl) => {
         let result = null;
         try {
-          if (routeKey) {
-            result = await impl[routeKey]({
-              query: queryResult.data,
-              params: paramsResult.data,
-              body: bodyResult.data,
-              headers: headersResult.data,
-            });
-          } else {
-            result = await impl({
-              query: queryResult.data,
-              params: paramsResult.data,
-              body: bodyResult.data,
-              headers: headersResult.data,
-            });
-          }
+          const res = {
+            params: paramsResult.data,
+            query: queryResult.success ? queryResult.data : req.query,
+            body: bodyResult.success ? bodyResult.data : req.body,
+            headers: headersResult.success ? headersResult.data : req.headers,
+          };
+
+          result = routeKey ? await impl[routeKey](res) : await impl(res);
         } catch (e) {
           if (e instanceof TsRestException) {
             result = {

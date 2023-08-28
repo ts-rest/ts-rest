@@ -199,6 +199,69 @@ export class MyController {
 }
 ```
 
+### Request Validation
+By default, `ts-rest` validates all request components - body, headers and query parameters.
+In case of validation errors, the server responds with a `ZodError` object in the response body and a status code of 400.
+You can disable the validation of these components if you wish to perform the validation manually or handle the error differently.
+
+Using the `@TsRest()` decorator, you can configure request validation parameters for the entire controller:
+```typescript
+import { TsRest } from '@ts-rest/nest';
+
+@Controller()
+@TsRest({
+  validateRequestBody: false,
+  validateRequestQuery: false,
+  validateRequestHeaders: false
+})
+class MyController {}
+```
+
+You can also override controller decorator values for a specific route:
+
+```typescript
+import { TsRest } from '@ts-rest/nest';
+
+@Controller()
+@TsRest({
+  validateRequestBody: false,
+})
+class MyController {
+  @TsRest(contract.create, {
+    validateRequestBody: true
+  })
+  async create(@TsRestRequest() { body }) {
+    // body validated
+  }
+}
+```
+
+Or finally, using `@TsRestHandler()` for specific route:
+
+```typescript
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+
+@Controller()
+export class MyController {
+  constructor() {}
+
+  @TsRestHandler(c.getPost, {
+    validateRequestBody: false,
+    validateRequestQuery: false,
+    validateRequestHeaders: false
+  })
+  async getPost() {
+    return tsRestHandler(c.getPost, async ({ query, body }) => {
+      const isQueryValid = querySchema.safeParse(query);
+      console.log(isQueryValid) // => { success: false; error: ZodError }
+
+      const isBodyValid = bodySchema.safeParse(body);
+      console.log(isBodyValid) // => { success: true; data: {...} }
+    });
+  }
+}
+```
+
 ### Response Validation
 
 You can enable response validation by passing the `validateResponses` option to the `@TsRest()` decorator.
