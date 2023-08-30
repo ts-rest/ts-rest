@@ -38,6 +38,7 @@ type AppRouteCommon = {
   >;
   strictStatusCodes?: boolean;
   metadata?: unknown;
+  validateResponseOnClient?: boolean;
 };
 
 /**
@@ -152,6 +153,7 @@ export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
   pathPrefix?: TPrefix;
+  validateResponseOnClient?: boolean;
 };
 
 /**

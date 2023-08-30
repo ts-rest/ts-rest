@@ -107,17 +107,24 @@ export const tsRestFetchApi: ApiFetcher = async ({
   const contentType = result.headers.get('content-type');
 
   if (contentType?.includes('application/') && contentType?.includes('json')) {
-    const json = await result.json();
+    if (!route.validateResponseOnClient) {
+      return {
+        status: result.status,
+        body: await result.json(),
+        headers: result.headers,
+      };
+    }
 
-    const status = result.status;
-    const response = route.responses[status];
+    const jsonData = await result.json();
+    const statusCode = result.status;
+    const response = route.responses[statusCode];
 
     return {
-      status,
+      status: statusCode,
       body:
         response && typeof response !== 'symbol' && 'parse' in response
-          ? response?.parse(json)
-          : json,
+          ? response?.parse(jsonData)
+          : jsonData,
       headers: result.headers,
     };
   }
