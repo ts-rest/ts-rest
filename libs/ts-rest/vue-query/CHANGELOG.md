@@ -1,5 +1,7 @@
 # @ts-rest/vue-query
 
+## 3.30.0
+
 ## 3.29.0
 
 ### Minor Changes
