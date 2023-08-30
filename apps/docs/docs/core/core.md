@@ -180,7 +180,7 @@ If you would like to enable this functionality for all routes in the contract, y
 const c = initContract();
 export const contract = c.router({
   {
-    ... // endpoints
+    // ...endpoints
   },
   {
     validateResponseOnClient: true,
@@ -199,6 +199,23 @@ export const contract = c.router({
   }
 });
 ```
+
+:::caution
+When using `zod` as the schema, should the validation fail, the error will be thrown as a `ZodError`.
+
+You can catch this error and handle it however you like.
+
+```typescript
+try {
+  const posts = await client.getPosts();
+} catch (error) {
+  if (error instanceof ZodError) {
+    // handle error
+  }
+}
+```
+
+:::
 
 ## Combining Contracts
 
@@ -227,23 +244,6 @@ export const contract = c.router({
   posts: postContract,
 });
 ```
-
-:::caution
-When using `zod` as the schema, should the validation fail, the error will be thrown as a `ZodError`.
-
-You can catch this error and handle it however you like.
-
-```typescript
-try {
-  const posts = await client.getPosts();
-} catch (error) {
-  if (error instanceof ZodError) {
-    // handle error
-  }
-}
-```
-
-:::
 
 ## Metadata
 
