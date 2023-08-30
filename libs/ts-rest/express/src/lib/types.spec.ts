@@ -14,9 +14,9 @@ export type Expect<a extends true> = a;
 const c = initContract();
 
 const contract = c.router({
-  postIndex: {
+  postSomethingIndex: {
     method: 'POST',
-    path: `/index.html`,
+    path: `/:something/index.html`,
     body: z.object({
       echoHtml: z.string(),
     }),
@@ -25,6 +25,9 @@ const contract = c.router({
     }),
     headers: z.object({
       'x-application-index': z.literal('index'),
+    }),
+    pathParams: z.object({
+      something: z.string(),
     }),
     responses: {
       200: c.otherResponse({
@@ -37,7 +40,7 @@ const contract = c.router({
 
 it('should have type inference on req', () => {
   type PostIndexImplementation = AppRouteImplementation<
-    typeof contract.postIndex
+    typeof contract.postSomethingIndex
   >;
 
   type PostIndexParam = Parameters<PostIndexImplementation>[0];
@@ -73,6 +76,17 @@ it('should have type inference on req', () => {
       PostIndexQuery,
       {
         extraPath?: string;
+      }
+    >
+  >;
+
+  type PostIndexParams = PostIndexReq['params'];
+
+  type ShouldHaveParams = Expect<
+    Equal<
+      PostIndexParams,
+      {
+        something: string;
       }
     >
   >;
