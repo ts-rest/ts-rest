@@ -2,4 +2,4 @@
 '@ts-rest/core': minor
 ---
 
-add support for client-side response validation against the schema
+feat: add support for client-side response validation against contract schemas for `@ts-rest/core`
