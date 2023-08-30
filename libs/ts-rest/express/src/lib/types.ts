@@ -4,9 +4,15 @@ import {
   AppRouteQuery,
   AppRouter,
   ServerInferRequest,
+  ServerInferResponseBody,
   ServerInferResponses,
 } from '@ts-rest/core';
-import { Express, NextFunction, Response } from 'express-serve-static-core';
+import {
+  Express,
+  NextFunction,
+  Response,
+  Request,
+} from 'express-serve-static-core';
 import { RequestValidationError } from './request-validation-error';
 
 type AppRouteQueryImplementation<T extends AppRouteQuery> = (
@@ -32,10 +38,21 @@ export type AppRouteImplementation<T extends AppRoute> =
     ? AppRouteQueryImplementation<T>
     : never;
 
-export type TsRestRequest<T extends AppRouter | AppRoute> =
-  Express['request'] & {
-    tsRestRoute: FlattenAppRouter<T>;
-  };
+export type TsRestRequest<
+  T extends AppRouter | AppRoute,
+  F extends FlattenAppRouter<T> = FlattenAppRouter<T>,
+  S extends ServerInferRequest<F> = ServerInferRequest<F>
+> = Request<
+  'params' extends keyof S ? S['params'] : Express['request']['params'],
+  ServerInferResponseBody<F>,
+  'body' extends keyof S ? S['body'] : Express['request']['body'],
+  'query' extends keyof S ? S['query'] : Express['request']['query']
+> & {
+  tsRestRoute: F;
+  headers: 'headers' extends keyof S
+    ? S['headers']
+    : Express['request']['headers'];
+};
 
 export type TsRestRequestHandler<T extends AppRouter | AppRoute> = (
   req: TsRestRequest<T>,
