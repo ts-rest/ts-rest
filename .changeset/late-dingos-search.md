@@ -2,4 +2,4 @@
 '@ts-rest/express': minor
 ---
 
-feat: '@ts-rest/express' added stronger typing for the `req` object in the route handler for express
+feat: added stronger typing for the `req` object in the route handler for '@ts-rest/express' 
