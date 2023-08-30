@@ -90,13 +90,16 @@ This will force the client to always pass
 
 ```typescript
 const c = initContract();
-export const contract = c.router({
-  // ...endpoints
-}, {
-  baseHeaders: z.object({
-    authorization: z.string(),
-  }),
-});
+export const contract = c.router(
+  {
+    // ...endpoints
+  },
+  {
+    baseHeaders: z.object({
+      authorization: z.string(),
+    }),
+  }
+);
 ```
 
 ## Responses
@@ -164,6 +167,55 @@ export const contract = c.router({
   }
 });
 ```
+
+### Schema validation on the client
+
+By default, all responses are inferred at the type-level by the client using the contract, and are not validated at runtime.
+
+However, you can use the `validateResponseOnClient` option to validate the response at runtime by checking it against the defined schema associated with the status code in the contract. By default, this option is set to `false`.
+
+If you would like to enable this functionality for all routes in the contract, you can set the `validateResponseOnClient` option to `true` when initializing the contract.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  {
+    // ...endpoints
+  },
+  {
+    validateResponseOnClient: true,
+  }
+});
+```
+
+You can also control this option on a per-route basis which will also override the globally set option.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  getPosts: {
+    ...,
+    validateResponseOnClient: true,
+  }
+});
+```
+
+:::caution
+When using `zod` as the schema, should the validation fail, the error will be thrown as a `ZodError`.
+
+You can catch this error and handle it however you like.
+
+```typescript
+try {
+  const posts = await client.getPosts();
+} catch (error) {
+  if (error instanceof ZodError) {
+    // handle error
+  }
+}
+```
+
+:::
 
 ## Combining Contracts
 
@@ -254,13 +306,16 @@ You can assign `baseHeaders` which will be merged with the contract `headers`. H
 
 ```typescript
 const c = initContract();
-export const contract = c.router({
-  // ...endpoints
-}, {
-  baseHeaders: z.object({
+export const contract = c.router(
+  {
+    // ...endpoints
+  },
+  {
+    baseHeaders: z.object({
       authorization: z.string(),
     }),
-});
+  }
+);
 ```
 
 ### Path Prefix
