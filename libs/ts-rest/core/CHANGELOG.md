@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.30.0
+
+### Minor Changes
+
+- c056132: feat: add support for client-side response validation against contract schemas for `@ts-rest/core` (see docs for usage)
+
 ## 3.29.0
 
 ### Patch Changes

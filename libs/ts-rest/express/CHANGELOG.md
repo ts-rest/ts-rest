@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.30.0
+
+### Minor Changes
+
+- 225921c: feat: added stronger typing for the `req` object in the route handler for '@ts-rest/express'
+
 ## 3.29.0
 
 ### Patch Changes
