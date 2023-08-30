@@ -8,15 +8,15 @@ import {
   ClientInferResponses,
   PartialClientInferRequest,
   NextClientArgs,
-  Frameworks
+  Frameworks,
 } from './infer-types';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-  ? AppRouteFunction<T[TKey], TClientArgs>
-  : T[TKey] extends AppRouter
-  ? RecursiveProxyObj<T[TKey], TClientArgs>
-  : never;
+    ? AppRouteFunction<T[TKey], TClientArgs>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObj<T[TKey], TClientArgs>
+    : never;
 };
 
 /**
@@ -90,7 +90,8 @@ export const tsRestFetchApi: ApiFetcher = async ({
   credentials,
   signal,
   cache,
-  next
+  next,
+  route,
 }) => {
   const result = await fetch(path, {
     method,
@@ -99,16 +100,24 @@ export const tsRestFetchApi: ApiFetcher = async ({
     credentials,
     signal,
     cache,
-    next
+    next,
     // we must type cast here because the typescript types for RequestInit
     // do not include properties like "next" for Frameworks (like Nextjs)
   } as RequestInit);
   const contentType = result.headers.get('content-type');
 
-  if (contentType?.includes("application/") && contentType?.includes('json')) {
+  if (contentType?.includes('application/') && contentType?.includes('json')) {
+    const json = await result.json();
+
+    const status = result.status;
+    const response = route.responses[status];
+
     return {
-      status: result.status,
-      body: await result.json(),
+      status,
+      body:
+        response && typeof response !== 'symbol' && 'parse' in response
+          ? response?.parse(json)
+          : json,
       headers: result.headers,
     };
   }
@@ -157,7 +166,7 @@ export const fetchApi = ({
   extraInputArgs,
   headers,
   signal,
-  next
+  next,
 }: {
   path: string;
   clientArgs: ClientArgs;
@@ -243,21 +252,31 @@ export const getCompleteUrl = (
   return `${baseUrl}${path}${queryComponent}`;
 };
 
-export const getRouteQuery = <TAppRoute extends AppRoute, Framework extends Frameworks = 'none'>(
+export const getRouteQuery = <
+  TAppRoute extends AppRoute,
+  Framework extends Frameworks = 'none'
+>(
   route: TAppRoute,
-  clientArgs: InitClientArgs,
+  clientArgs: InitClientArgs
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
   return async (
-    inputArgs?: Framework extends 'nextjs' ? 
-      ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> 
+    inputArgs?: Framework extends 'nextjs'
+      ? ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'>
       : ClientInferRequest<AppRouteMutation, ClientArgs>
   ) => {
-    const { query, params, body, headers, extraHeaders, next, ...extraInputArgs } =
+    const {
+      query,
+      params,
+      body,
+      headers,
+      extraHeaders,
+      next,
+      ...extraInputArgs
+    } =
       // ---- Merge all framework Request infer types ----
-      inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> &
-        ClientInferRequest<AppRouteMutation, ClientArgs>
-      || {};
+      (inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> &
+        ClientInferRequest<AppRouteMutation, ClientArgs>) || {};
 
     const completeUrl = getCompleteUrl(
       query,

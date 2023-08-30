@@ -15,7 +15,7 @@ declare const NullSymbol: unique symbol;
 export type ContractPlainType<T> = Opaque<T, 'ContractPlainType'>;
 export type ContractNullType = Opaque<typeof NullSymbol, 'ContractNullType'>;
 export type ContractAnyType =
-  | z.ZodTypeAny
+  | z.ZodSchema
   | ContractPlainType<unknown>
   | ContractNullType
   | null;
