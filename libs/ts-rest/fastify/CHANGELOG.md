@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- a30326c: Remove unintentional console log in fasitfy route initialization for `@ts-rest/fastify`
+- a30326c: Remove console log in fasitfy route initialization for `@ts-rest/fastify`
 
 ## 3.30.0
 
