@@ -269,8 +269,6 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   options: RegisterRouterOptions
 ) => {
   if (typeof routerImpl === 'object') {
-    console.log(routerImpl);
-
     if (implementationIsInitialisedRouter(routerImpl)) {
       recursivelyRegisterRouter(
         routerImpl.routes,
