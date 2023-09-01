@@ -1,5 +1,11 @@
 # @ts-rest/fastify
 
+## 3.30.1
+
+### Patch Changes
+
+- a30326c: Remove console log in fasitfy route initialization for `@ts-rest/fastify`
+
 ## 3.30.0
 
 ## 3.29.0
