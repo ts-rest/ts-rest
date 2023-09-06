@@ -11,8 +11,9 @@
     "release": "npm run ci && changeset publish",
     "posttest": "pnpm attw --pack .",
     "fix-zod": "tsx build/remove-zod.ts",
-    "size-lite": "banal ./src/index-lite.ts",
-    "size-big": "banal ./src/index-big.ts"
+    "size:lite": "banal ./src/index-lite.ts",
+    "size:big": "banal ./src/index-big.ts",
+    "size": "npm run size:lite && npm run size:big"
   },
   "exports": {
     ".": {
