@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "module": "CommonJS",
+    "types": ["vitest", "node"]
+  },
+  "include": [
+    "vite.config.ts",
+    "./src/**/*.test.ts",
+    "./src/**/*.spec.ts",
+    "./**/*.d.ts"
+  ]
+}
