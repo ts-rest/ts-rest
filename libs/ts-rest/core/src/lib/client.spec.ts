@@ -21,6 +21,106 @@ export type User = {
   name: string | null;
 };
 
+const postsRouterLite = c.liteRouter({
+  getPost: {
+    method: 'GET',
+    path: `/posts/:id`,
+  },
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+  },
+  createPost: {
+    method: 'POST',
+    path: '/posts',
+  },
+  mutationWithQuery: {
+    method: 'POST',
+    path: '/posts',
+  },
+  updatePost: {
+    method: 'PUT',
+    path: `/posts/:id`,
+  },
+  patchPost: {
+    method: 'PATCH',
+    path: `/posts/:id`,
+  },
+  deletePost: {
+    method: 'DELETE',
+    path: `/posts/:id`,
+  },
+});
+
+const postsRouterBig = c.bigRouter(postsRouterLite, {
+  getPost: {
+    headers: z.object({
+      'x-api-key': z.string().optional(),
+    }),
+    responses: {
+      200: c.response<Post | null>(),
+    },
+  },
+  getPosts: {
+    headers: z.object({
+      'x-pagination': z.coerce.number().optional(),
+    }),
+    responses: {
+      200: c.response<Post[]>(),
+    },
+    query: z.object({
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      order: z.string().optional(),
+    }),
+  },
+  createPost: {
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.object({
+      title: z.string(),
+      content: z.string(),
+      published: z.boolean().optional(),
+      description: z.string().optional(),
+      authorId: z.string(),
+    }),
+  },
+  mutationWithQuery: {
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.object({}),
+    query: z.object({
+      test: z.string(),
+    }),
+  },
+  updatePost: {
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.object({
+      title: z.string(),
+      content: z.string(),
+      published: z.boolean().optional(),
+      description: z.string().optional(),
+      authorId: z.string(),
+    }),
+  },
+  patchPost: {
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: null,
+  },
+  deletePost: {
+    responses: {
+      200: c.response<boolean>(),
+    },
+    body: null,
+  },
+});
+
 const postsRouter = c.router({
   getPost: {
     method: 'GET',
@@ -134,18 +234,59 @@ export const router = c.router(
   }
 );
 
+const routerLite = c.liteRouter({
+  posts: postsRouterLite,
+  health: {
+    method: 'GET',
+    path: '/health',
+  },
+  upload: {
+    method: 'POST',
+    path: '/upload',
+    contentType: 'multipart/form-data',
+  },
+});
+
+const routerBig = c.bigRouter(
+  routerLite,
+  {
+    posts: postsRouterBig,
+    health: {
+      responses: {
+        200: c.response<{ message: string }>(),
+      },
+    },
+    upload: {
+      body: c.body<{ file: File }>(),
+      responses: {
+        200: c.response<{ message: string }>(),
+      },
+    },
+  },
+  {
+    baseHeaders: z.object({
+      'x-api-key': z.string(),
+      'x-test': z.string().optional(),
+      'base-header': z.string().optional(),
+    }),
+  }
+);
+
 const routerStrict = c.router(router, {
   strictStatusCodes: true,
 });
 
-const client = initClient(router, {
+const client = initClient<typeof routerBig>(
+  routerLite as unknown as typeof routerBig
+)({
   baseUrl: 'https://api.com',
   baseHeaders: {
     'X-Api-Key': 'foo',
   },
+  throwOnUnknownStatus: false,
 });
 
-const clientStrict = initClient(routerStrict, {
+const clientStrict = initClient(routerStrict)({
   baseUrl: 'https://api.com',
   baseHeaders: {
     'X-Api-Key': 'foo',
@@ -201,10 +342,10 @@ type ClientGetPostType = Expect<
   >
 >;
 type RouterHealthStrict = Expect<
-  Equal<typeof routerStrict.health['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.health)['strictStatusCodes'], true>
 >;
 type RouterGetPostStrict = Expect<
-  Equal<typeof routerStrict.posts.getPost['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.posts.getPost)['strictStatusCodes'], true>
 >;
 type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
 type ClientGetPostResponseType = Expect<
@@ -312,13 +453,12 @@ describe('client', () => {
               }),
             }),
           },
-        }),
-        {
-          baseUrl: 'https://api.com',
-          baseHeaders: {},
-          jsonQuery: true,
-        }
-      );
+        })
+      )({
+        baseUrl: 'https://api.com',
+        baseHeaders: {},
+        jsonQuery: true,
+      });
 
       const value = { key: 'value' };
       fetchMock.getOnce(
@@ -340,7 +480,6 @@ describe('client', () => {
           published: true,
           filter: { title: 'test' },
         },
-        
       });
 
       expect(result.body).toStrictEqual(value);
@@ -604,7 +743,7 @@ describe('client', () => {
 
 const argsCalledMock = jest.fn();
 
-const customClient = initClient(router, {
+const customClient = initClient(router)({
   baseUrl: 'https://api.com',
   baseHeaders: {
     'Base-Header': 'foo',
@@ -767,7 +906,7 @@ describe('custom api', () => {
   });
 
   it('has correct types when throwOnUnknownStatus only is configured', async () => {
-    const client = initClient(router, {
+    const client = initClient(router)({
       baseUrl: 'https://api.com',
       baseHeaders: {
         'X-Api-Key': 'foo',
@@ -795,7 +934,7 @@ describe('custom api', () => {
   });
 
   it('throws an error when throwOnUnknownStatus is configured and response is unknown', async () => {
-    const client = initClient(router, {
+    const client = initClient(router)({
       baseUrl: 'https://isolated.com',
       baseHeaders: {
         'X-Api-Key': 'foo',

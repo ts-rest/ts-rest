@@ -148,6 +148,60 @@ export type AppRouter = {
   [key: string]: AppRouter | AppRoute;
 };
 
+export type AppRouteCommonLite = {
+  path: Path;
+  summary?: string;
+  description?: string;
+  deprecated?: boolean;
+  metadata?: unknown;
+};
+
+export type AppRouteQueryLite = AppRouteCommonLite & {
+  method: 'GET';
+};
+
+export type AppRouteMutationLite = AppRouteCommonLite & {
+  method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
+  contentType?: 'application/json' | 'multipart/form-data';
+};
+
+export type AppRouteLite = AppRouteQueryLite | AppRouteMutationLite;
+/**
+ * Lite
+ */
+export type AppRouterLite = {
+  [key: string]: AppRouterLite | AppRouteLite;
+};
+
+export type AppRouteBig =
+  | Omit<AppRouteQuery, keyof AppRouteLite>
+  | Omit<AppRouteMutation, keyof AppRouteLite>;
+
+export type AppRouterBig<L extends AppRouterLite> = {
+  [K in keyof L]:
+    | AppRouteBig
+    | (L[K] extends infer R extends AppRouterLite ? AppRouterBig<R> : never);
+};
+
+export type MergedRouters<
+  L extends AppRouterLite,
+  B extends AppRouterBig<L>,
+  TOptions extends RouterOptions
+> = RecursivelyProcessAppRouter<
+  Prettify<{
+    [K in keyof L]: L[K] extends infer R
+      ? R extends AppRouteLite
+        ? R & B[K]
+        : R extends AppRouterLite
+        ? B[K] extends infer R2 extends AppRouterBig<R>
+          ? MergedRouters<R, R2, TOptions>
+          : never
+        : never
+      : never;
+  }>,
+  TOptions
+>;
+
 export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
@@ -160,7 +214,9 @@ export type RouterOptions<TPrefix extends string = string> = {
  * @param obj
  * @returns
  */
-export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
+export const isAppRoute = <A extends AppRoute | AppRouteLite | AppRouteBig>(
+  obj: A | AppRouter | AppRouterLite | AppRouterBig<any>
+): obj is A => {
   return 'method' in obj && 'path' in obj;
 };
 
@@ -184,6 +240,25 @@ type ContractInstance = {
    * a {@link AppRouter}
    */
   query: <T extends AppRouteQuery>(query: T) => T;
+
+  liteRouter: <const TRouterLite extends AppRouterLite>(
+    endpoints: TRouterLite
+  ) => TRouterLite;
+
+  bigRouter: <
+    TRouterLite extends AppRouterLite,
+    TRouterBig extends AppRouterBig<TRouterLite>,
+    TPrefix extends string,
+    TOptions extends RouterOptions<TPrefix> = {}
+  >(
+    liteRouter: TRouterLite,
+    bigRouter: TRouterBig,
+    options?: TOptions
+  ) => RecursivelyApplyOptions<
+    // @ts-expect-error Same as below
+    MergedRouters<TRouterLite, TRouterBig, TOptions>,
+    TOptions
+  >;
   /**
    * A single mutation route, should exist within
    * a {@link AppRouter}
@@ -249,6 +324,30 @@ export const ContractPlainTypeRuntimeSymbol = Symbol(
   'ContractPlainType'
 ) as any;
 
+export const mergeBigRouter = <
+  TRouterLite extends AppRouterLite,
+  TRouterBig extends AppRouterBig<TRouterLite>,
+  TOptions extends RouterOptions
+>(
+  liteRouter: TRouterLite,
+  bigRouter: TRouterBig,
+  options: TOptions
+): MergedRouters<TRouterLite, TRouterBig, TOptions> => {
+  return Object.fromEntries(
+    Object.entries(liteRouter).map(([key, value]) => {
+      if (isAppRoute(value)) {
+        return [key, { ...value, ...bigRouter[key] }];
+      } else {
+        const bigRoute = bigRouter[key];
+        if (!bigRoute || isAppRoute(bigRoute)) {
+          throw new Error(`[ts-rest] Missing big router for ${key}`);
+        }
+        return [key, mergeBigRouter(value, bigRoute, options)];
+      }
+    })
+  ) as MergedRouters<TRouterLite, TRouterBig, TOptions>;
+};
+
 /**
  * Instantiate a ts-rest client, primarily to access `router`, `response`, and `body`
  *
@@ -258,6 +357,14 @@ export const initContract = (): ContractInstance => {
   return {
     // @ts-expect-error - this is a type error, but it's not clear how to fix it
     router: (endpoints, options) => recursivelyApplyOptions(endpoints, options),
+    liteRouter: (endpoints) => endpoints,
+    bigRouter: (liteRouter, bigRouter, options) =>
+      // @ts-expect-error - this is a type error, but it's not clear how to fix it
+      recursivelyApplyOptions(
+        // @ts-expect-error - this is a type error, but it's not clear how to fix it
+        mergeBigRouter(liteRouter, bigRouter, options),
+        options
+      ),
     query: (args) => args,
     mutation: (args) => args,
     response: () => ContractPlainTypeRuntimeSymbol,

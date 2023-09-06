@@ -27,8 +27,8 @@ import { ParamsFromUrl } from './paths';
 export type Frameworks = 'nextjs' | 'none';
 
 export type NextClientArgs = {
-  next?: { revalidate?: number | false, tags?: string[]} | undefined
-}
+  next?: { revalidate?: number | false; tags?: string[] } | undefined;
+};
 
 type ExtractExtraParametersFromClientArgs<
   TClientArgs extends Pick<ClientArgs, 'api'>
@@ -194,7 +194,7 @@ type ClientInferRequestBase<
           keyof LowercaseKeys<TClientArgs['baseHeaders']>
         >
       >
-    : never,
+    : never
 > = Prettify<
   Without<
     {
@@ -220,9 +220,7 @@ type ClientInferRequestBase<
         [K in NonNullable<keyof THeaders>]?: never;
       } & Record<string, string | undefined>;
       cache?: RequestCache;
-      next?: Framework extends 'nextjs'
-        ? NextClientArgs['next'] 
-        : never;
+      next?: Framework extends 'nextjs' ? NextClientArgs['next'] : never;
     } & ExtractExtraParametersFromClientArgs<TClientArgs>,
     never
   >

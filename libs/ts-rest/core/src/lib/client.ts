@@ -8,15 +8,15 @@ import {
   ClientInferResponses,
   PartialClientInferRequest,
   NextClientArgs,
-  Frameworks
+  Frameworks,
 } from './infer-types';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-  ? AppRouteFunction<T[TKey], TClientArgs>
-  : T[TKey] extends AppRouter
-  ? RecursiveProxyObj<T[TKey], TClientArgs>
-  : never;
+    ? AppRouteFunction<T[TKey], TClientArgs>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObj<T[TKey], TClientArgs>
+    : never;
 };
 
 /**
@@ -90,7 +90,7 @@ export const tsRestFetchApi: ApiFetcher = async ({
   credentials,
   signal,
   cache,
-  next
+  next,
 }) => {
   const result = await fetch(path, {
     method,
@@ -99,13 +99,13 @@ export const tsRestFetchApi: ApiFetcher = async ({
     credentials,
     signal,
     cache,
-    next
+    next,
     // we must type cast here because the typescript types for RequestInit
     // do not include properties like "next" for Frameworks (like Nextjs)
   } as RequestInit);
   const contentType = result.headers.get('content-type');
 
-  if (contentType?.includes("application/") && contentType?.includes('json')) {
+  if (contentType?.includes('application/') && contentType?.includes('json')) {
     return {
       status: result.status,
       body: await result.json(),
@@ -157,7 +157,7 @@ export const fetchApi = ({
   extraInputArgs,
   headers,
   signal,
-  next
+  next,
 }: {
   path: string;
   clientArgs: ClientArgs;
@@ -243,21 +243,30 @@ export const getCompleteUrl = (
   return `${baseUrl}${path}${queryComponent}`;
 };
 
-export const getRouteQuery = <TAppRoute extends AppRoute, Framework extends Frameworks = 'none'>(
+export const getRouteQuery = <
+  TAppRoute extends AppRoute,
+  Framework extends Frameworks = 'none'
+>(
   route: TAppRoute,
-  clientArgs: InitClientArgs,
+  clientArgs: InitClientArgs
 ) => {
-  const knownResponseStatuses = Object.keys(route.responses);
   return async (
-    inputArgs?: Framework extends 'nextjs' ? 
-      ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> 
+    inputArgs?: Framework extends 'nextjs'
+      ? ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'>
       : ClientInferRequest<AppRouteMutation, ClientArgs>
   ) => {
-    const { query, params, body, headers, extraHeaders, next, ...extraInputArgs } =
+    const {
+      query,
+      params,
+      body,
+      headers,
+      extraHeaders,
+      next,
+      ...extraInputArgs
+    } =
       // ---- Merge all framework Request infer types ----
-      inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> &
-        ClientInferRequest<AppRouteMutation, ClientArgs>
-      || {};
+      (inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'> &
+        ClientInferRequest<AppRouteMutation, ClientArgs>) || {};
 
     const completeUrl = getCompleteUrl(
       query,
@@ -285,6 +294,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute, Framework extends Fram
       return response;
     }
 
+    const knownResponseStatuses = Object.keys(route.responses);
     if (knownResponseStatuses.includes(response.status.toString())) {
       return response;
     }
@@ -306,7 +316,23 @@ export type InitClientArgs = ClientArgs & {
   throwOnUnknownStatus?: boolean;
 };
 
-export const initClient = <
+export const initClient =
+  <T extends AppRouter>(router: T) =>
+  <TClientArgs extends InitClientArgs>(
+    args: TClientArgs
+  ): InitClientReturn<T, TClientArgs> => {
+    return Object.fromEntries(
+      Object.entries(router).map(([key, subRouter]) => {
+        if (isAppRoute(subRouter)) {
+          return [key, getRouteQuery<typeof subRouter>(subRouter, args)];
+        } else {
+          return [key, initClient(subRouter)(args)];
+        }
+      })
+    );
+  };
+
+export const initClientOld = <
   T extends AppRouter,
   TClientArgs extends InitClientArgs
 >(
@@ -318,7 +344,7 @@ export const initClient = <
       if (isAppRoute(subRouter)) {
         return [key, getRouteQuery<typeof subRouter>(subRouter, args)];
       } else {
-        return [key, initClient(subRouter, args)];
+        return [key, initClientOld(subRouter, args)];
       }
     })
   );
