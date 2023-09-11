@@ -221,20 +221,23 @@ export const fetchApi = ({
     });
   }
 
+  const includeContentTypeHeader =
+    route.method !== 'GET' && body !== null && body !== undefined;
+
   return apiFetcher({
     route,
     path,
     method: route.method,
     credentials: clientArgs.credentials,
     headers: {
-      ...(body !== null && body !== undefined && { 'content-type': 'application/json' }),
+      ...(includeContentTypeHeader ? { 'content-type': 'application/json' } : {}),
       ...combinedHeaders,
     },
     body:
       body !== null && body !== undefined ? JSON.stringify(body) : undefined,
     rawBody: body,
     rawQuery: query,
-    contentType: route.method !== 'GET' ? 'application/json' : undefined,
+    contentType: includeContentTypeHeader ? 'application/json' : undefined,
     signal,
     next,
     ...extraInputArgs,
