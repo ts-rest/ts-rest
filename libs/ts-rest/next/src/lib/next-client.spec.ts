@@ -59,11 +59,10 @@ describe('next-client', () => {
     } as Response));
     await usersClient.getUser({ params: { id: '1' }, next: { revalidate: 1, tags: ['user1'] } });
     expect(global.fetch).toHaveBeenCalledWith('http://localhost:5002/users/1', {
+      cache: undefined,
+      headers: {},
       body: undefined,
       credentials: undefined,
-      headers: {
-        'content-type': 'application/json'
-      },
       method: 'GET',
       signal: undefined,
       next: { revalidate: 1, tags: ['user1'] }
