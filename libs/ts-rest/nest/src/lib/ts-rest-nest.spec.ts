@@ -11,6 +11,11 @@ import { Controller, INestApplication, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { z } from 'zod';
+import { TsRestModule } from './ts-rest.module';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 
 const c = initContract();
 const postsRouter = c.router({
@@ -216,5 +221,76 @@ describe('ts-rest-nest', () => {
     expect(responseCss.header['content-type']).toEqual(
       'text/css; charset=utf-8'
     );
+  });
+
+  describe('should handle global configuration', () => {
+    const c = initContract();
+    const contract = c.router({
+      getIndex: {
+        method: 'GET',
+        path: '/',
+        query: z.object({
+          foo: z.boolean(),
+        }),
+        responses: {
+          200: z.object({
+            foo: z.boolean(),
+          }),
+        },
+      },
+    });
+
+    @Controller()
+    class TestController implements NestControllerInterface<typeof contract> {
+      @TsRest(contract.getIndex)
+      async getIndex(
+        @TsRestRequest()
+        { query }: NestRequestShapes<typeof contract>['getIndex']
+      ) {
+        return {
+          status: 200,
+          body: query,
+        } as const;
+      }
+    }
+
+    it('express', async () => {
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+        imports: [
+          TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+        ],
+      }).compile();
+
+      app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).get('/?foo=true');
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ foo: true });
+    });
+
+    it('fastify', async () => {
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+        imports: [
+          TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+        ],
+      }).compile();
+
+      app = moduleRef.createNestApplication<NestFastifyApplication>(
+        new FastifyAdapter()
+      );
+      await app.init();
+      await app.getHttpAdapter().getInstance().ready();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).get('/?foo=true');
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ foo: true });
+    });
   });
 });

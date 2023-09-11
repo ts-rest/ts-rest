@@ -20,6 +20,8 @@ import {
   Delete,
   InternalServerErrorException,
   HttpException,
+  Inject,
+  Optional,
 } from '@nestjs/common';
 import {
   AppRouter,
@@ -39,6 +41,7 @@ import { TsRestRequestShape } from './ts-rest-request.decorator';
 import { z } from 'zod';
 import { TsRestOptions } from './ts-rest.decorator';
 import { JsonQuery } from './json-query.decorator';
+import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
 
 export class RequestValidationError extends BadRequestException {
   constructor(
@@ -191,7 +194,12 @@ export const doesUrlMatchContractPath = (
 
 @Injectable()
 export class TsRestHandlerInterceptor implements NestInterceptor {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    @Optional()
+    @Inject(TS_REST_MODULE_OPTIONS_TOKEN)
+    private options: TsRestOptions | null
+  ) {}
 
   private getAppRouteFromContext(ctx: ExecutionContext) {
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
@@ -245,16 +253,18 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
-    const isJsonQuery = !!(
-      Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ??
-      Reflect.getMetadata(JsonQuerySymbol, ctx.getClass())
+    const isJsonQuery = Boolean(
+      this.reflector.getAllAndOverride<boolean | undefined>(JsonQuerySymbol, [
+        ctx.getHandler(),
+        ctx.getClass(),
+      ]) ?? this.options?.jsonQuery
     );
 
     const isValidationEnabled = Boolean(
       this.reflector.getAllAndOverride<boolean | undefined>(
         ValidateResponsesSymbol,
         [ctx.getHandler(), ctx.getClass()]
-      )
+      ) ?? this.options?.validateResponses
     );
 
     const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {

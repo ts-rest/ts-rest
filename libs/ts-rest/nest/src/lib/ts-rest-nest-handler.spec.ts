@@ -24,6 +24,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { TsRestModule } from './ts-rest.module';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T
@@ -1074,6 +1075,76 @@ describe('ts-rest-nest-handler', () => {
         'content-type': 'text/html',
         'content-length': '20',
       }),
+    });
+  });
+
+  describe('should handle global configuration', () => {
+    const c = initContract();
+    const contract = c.router({
+      getIndex: {
+        method: 'GET',
+        path: '/',
+        query: z.object({
+          foo: z.boolean(),
+        }),
+        responses: {
+          200: z.object({
+            foo: z.boolean(),
+          }),
+        },
+      },
+    });
+
+    @Controller()
+    class TestController {
+      @TsRestHandler(contract)
+      async handler() {
+        return tsRestHandler(contract, {
+          getIndex: async ({ query }) => ({
+            status: 200,
+            body: query,
+          }),
+        });
+      }
+    }
+
+    it('express', async () => {
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+        imports: [
+          TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+        ],
+      }).compile();
+
+      app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).get('/?foo=true');
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ foo: true });
+    });
+
+    it('fastify', async () => {
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+        imports: [
+          TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+        ],
+      }).compile();
+
+      app = moduleRef.createNestApplication<NestFastifyApplication>(
+        new FastifyAdapter()
+      );
+      await app.init();
+      await app.getHttpAdapter().getInstance().ready();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).get('/?foo=true');
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ foo: true });
     });
   });
 });

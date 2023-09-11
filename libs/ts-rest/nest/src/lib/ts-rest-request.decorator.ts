@@ -12,7 +12,9 @@ import {
   zodErrorResponse,
 } from '@ts-rest/core';
 import type { Request } from 'express-serve-static-core';
+import type { FastifyRequest } from 'fastify';
 import { JsonQuerySymbol, TsRestAppRouteMetadataKey } from './constants';
+import { TsRestOptions } from './ts-rest.decorator';
 
 export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
   TRoute,
@@ -24,7 +26,13 @@ export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
  */
 export const TsRestRequest = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): TsRestRequestShape<AppRouteMutation> => {
-    const req: Request = ctx.switchToHttp().getRequest();
+    const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
+
+    const rawRequest: any = 'raw' in req ? req.raw : req;
+    const tsRestOptions = rawRequest.tsRestOptions as
+      | TsRestOptions
+      | null
+      | undefined;
 
     const appRoute: AppRouteMutation | undefined = Reflect.getMetadata(
       TsRestAppRouteMetadataKey,
@@ -54,7 +62,8 @@ export const TsRestRequest = createParamDecorator(
 
     const isJsonQuery = !!(
       Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ??
-      Reflect.getMetadata(JsonQuerySymbol, ctx.getClass())
+      Reflect.getMetadata(JsonQuerySymbol, ctx.getClass()) ??
+      tsRestOptions?.jsonQuery
     );
 
     const query = isJsonQuery
