@@ -184,7 +184,6 @@ describe('react-query', () => {
       path: 'https://api.com/health',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.health,
@@ -225,7 +224,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -298,7 +296,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -325,7 +322,6 @@ describe('react-query', () => {
       path: 'https://api.com/health',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.health,
@@ -358,7 +354,6 @@ describe('react-query', () => {
       path: 'https://api.com/health',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.health,
@@ -468,7 +463,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -480,7 +474,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -541,7 +534,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -553,7 +545,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -618,7 +609,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -630,7 +620,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -673,7 +662,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -703,7 +691,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -739,7 +726,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -769,7 +755,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
@@ -816,7 +801,6 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
