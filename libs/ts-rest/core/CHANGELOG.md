@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.30.2
+
+### Patch Changes
+
+- bd0161b: fix: content-type application/json will not be automatically included in client request if the route is GET or body is undefined/null
+> if you need to send this header for whatever reason in a GET request/undefined body request, you can pass in runtime headers https://ts-rest.com/docs/core/#headers
+
 ## 3.30.1
 
 ## 3.30.0
