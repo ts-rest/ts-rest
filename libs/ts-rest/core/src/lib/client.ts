@@ -230,7 +230,7 @@ export const fetchApi = ({
     method: route.method,
     credentials: clientArgs.credentials,
     headers: {
-      ...(includeContentTypeHeader ? { 'content-type': 'application/json' } : {}),
+      ...(includeContentTypeHeader && { 'content-type': 'application/json' }),
       ...combinedHeaders,
     },
     body:
