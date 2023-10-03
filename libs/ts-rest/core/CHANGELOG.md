@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- da48e62: fix: apply validateResponseOnClient recursively to nested App Routers in `@ts-rest/core` client
+- da48e62: fix: apply `validateResponseOnClient` recursively to nested App Routers in `@ts-rest/core` client
 
 ## 3.30.2
 
