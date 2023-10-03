@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/nest",
-  "version": "3.30.2",
+  "version": "3.30.3",
   "description": "Nest server integration for @ts-rest",
   "license": "MIT",
   "keywords": [
