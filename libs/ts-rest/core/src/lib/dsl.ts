@@ -238,6 +238,8 @@ const recursivelyApplyOptions = <T extends AppRouter>(
             headers: zodMerge(options?.baseHeaders, value.headers),
             strictStatusCodes:
               value.strictStatusCodes ?? options?.strictStatusCodes,
+            validateResponseOnClient:
+              value.validateResponseOnClient ?? options?.validateResponseOnClient
           },
         ];
       } else {
