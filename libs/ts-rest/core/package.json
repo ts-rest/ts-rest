@@ -24,6 +24,6 @@
     }
   },
   "peerDependencies": {
-    "zod": "^3.21.0"
+    "zod": "^3.22.3"
   }
 }

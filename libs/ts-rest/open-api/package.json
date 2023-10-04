@@ -6,6 +6,6 @@
     "openapi3-ts": "^2.0.2"
   },
   "peerDependencies": {
-    "zod": "^3.21.0"
+    "zod": "^3.22.3"
   }
 }

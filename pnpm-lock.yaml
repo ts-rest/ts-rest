@@ -13,7 +13,7 @@ importers:
         version: 1.10.0
       '@anatine/zod-openapi':
         specifier: ^2.0.1
-        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.21.4)
+        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.22.3)
       '@babel/runtime':
         specifier: ^7.20.6
         version: 7.20.6
@@ -279,8 +279,8 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
       zod:
-        specifier: ^3.21.4
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
       zustand:
         specifier: ^4.1.1
         version: 4.1.1(react@18.2.0)
@@ -617,8 +617,8 @@ importers:
   libs/ts-rest/core:
     dependencies:
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/express:
     dependencies:
@@ -626,8 +626,8 @@ importers:
         specifier: ^4.0.0
         version: 4.18.1(supports-color@6.1.0)
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/fastify:
     dependencies:
@@ -635,8 +635,8 @@ importers:
         specifier: ^4.0.0
         version: 4.17.0
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/nest:
     dependencies:
@@ -650,8 +650,8 @@ importers:
         specifier: ^7.1.0
         version: 7.8.1
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
     devDependencies:
       '@nestjs/platform-express':
         specifier: ^9.0.0 || ^10.0.0
@@ -669,20 +669,20 @@ importers:
         specifier: ^12.0.0 || ^13.0.0
         version: 13.3.0(@babel/core@7.19.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.55.0)
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/open-api:
     dependencies:
       '@anatine/zod-openapi':
         specifier: ^1.12.0
-        version: 1.12.0(openapi3-ts@2.0.2)(zod@3.21.4)
+        version: 1.12.0(openapi3-ts@2.0.2)(zod@3.22.3)
       openapi3-ts:
         specifier: ^2.0.2
         version: 2.0.2
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/react-query:
     dependencies:
@@ -693,8 +693,8 @@ importers:
         specifier: ^16.8.0 || ^17.0.0 || ^18.0.0
         version: 18.2.0
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/solid-query:
     dependencies:
@@ -702,8 +702,8 @@ importers:
         specifier: ^4.0.0
         version: 4.24.9(solid-js@1.6.11)
       zod:
-        specifier: ^3.21.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/vue-query:
     dependencies:
@@ -711,8 +711,8 @@ importers:
         specifier: ^4.0.0
         version: 4.33.0(vue@3.3.4)
       zod:
-        specifier: ^3.0.0
-        version: 3.21.4
+        specifier: ^3.22.3
+        version: 3.22.3
 
 packages:
 
@@ -858,7 +858,7 @@ packages:
       '@jridgewell/gen-mapping': 0.3.2
       '@jridgewell/trace-mapping': 0.3.18
 
-  /@anatine/zod-openapi@1.12.0(openapi3-ts@2.0.2)(zod@3.21.4):
+  /@anatine/zod-openapi@1.12.0(openapi3-ts@2.0.2)(zod@3.22.3):
     resolution: {integrity: sha512-ZdkmQFXdc2us0nTBPWiJ3joHxsZoc5G79hKB8QzUuo73zp2A4t4TlBmOjS+hJfMnTBATfJutrlN/wK4DUq6ztg==}
     peerDependencies:
       openapi3-ts: ^2.0.0 || ^3.0.0
@@ -866,10 +866,10 @@ packages:
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 4.0.0
-      zod: 3.21.4
+      zod: 3.22.3
     dev: false
 
-  /@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.21.4):
+  /@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.22.3):
     resolution: {integrity: sha512-ks13oMq3wKFobQ6W+C9h893b2kYAff4Giqwmr5gxgP1HyoBhM4Iub1Z/Q3x5EsAfqfTi8qEOBuqTf0Tnv10D2w==}
     peerDependencies:
       openapi3-ts: ^4.1.2
@@ -877,7 +877,7 @@ packages:
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.0
-      zod: 3.21.4
+      zod: 3.22.3
     dev: false
 
   /@angular-devkit/core@15.2.4:
@@ -32195,8 +32195,8 @@ packages:
       commander: 9.4.1
     dev: true
 
-  /zod@3.21.4:
-    resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
+  /zod@3.22.3:
+    resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
     dev: false
 
   /zustand@4.1.1(react@18.2.0):
