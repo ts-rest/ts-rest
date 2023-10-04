@@ -10,4 +10,4 @@
 '@ts-rest/vue-query': patch
 ---
 
-address zod CVE
+ - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
