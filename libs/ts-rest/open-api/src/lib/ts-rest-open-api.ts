@@ -225,6 +225,8 @@ export const generateOpenApi = (
       };
     }, {});
 
+    const contentType = path.route?.method !== 'GET' ? path.route?.contentType ?? 'application/json' : 'application/json';
+
     const newPath: OperationObject = {
       description: path.route.description,
       summary: path.route.summary,
@@ -237,7 +239,7 @@ export const generateOpenApi = (
             requestBody: {
               description: 'Body',
               content: {
-                'application/json': {
+                [contentType]: {
                   schema: bodySchema,
                 },
               },

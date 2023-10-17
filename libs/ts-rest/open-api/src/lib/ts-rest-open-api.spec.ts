@@ -672,5 +672,65 @@ describe('ts-rest-open-api', () => {
         },
       });
     });
+
+    it('works with multipart/form-data', () => {
+      const routerWithTransform = c.router({
+        formEndpoint: {
+          method: 'POST',
+          path: '/form',
+          contentType: 'multipart/form-data',
+          body: z.object({
+            file: z.string(),
+          }),
+          responses: {
+            200: c.type<null>(),
+          },
+        },
+      });
+
+      const schema = generateOpenApi(routerWithTransform, {
+        info: { title: 'Form API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        info: {
+          title: 'Form API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/form': {
+            post: {
+              deprecated: undefined,
+              description: undefined,
+              parameters: [],
+              requestBody: {
+                content: {
+                  "multipart/form-data": {
+                    schema: {
+                      properties: {
+                        file: {
+                          type: 'string',
+                        },
+                      },
+                      required: ['file'],
+                      type: 'object',
+                    },
+                  },
+                },
+                description: "Body",
+              },
+              responses: {
+                '200': {
+                  description: '200',
+                },
+              },
+              summary: undefined,
+              tags: [],
+            },
+          },
+        },
+      });
+    });
   });
 });
