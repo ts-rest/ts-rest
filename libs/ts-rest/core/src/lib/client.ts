@@ -129,7 +129,7 @@ export const tsRestFetchApi: ApiFetcher = async ({
     };
   }
 
-  if (contentType?.includes('text/plain')) {
+  if (contentType?.includes('text/')) {
     return {
       status: result.status,
       body: await result.text(),
