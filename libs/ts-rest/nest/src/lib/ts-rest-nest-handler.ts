@@ -73,6 +73,8 @@ export const TsRestHandler = (
 ): MethodDecorator => {
   const decorators = [];
 
+  console.log(`TsRestHandler invoked`)
+
   if (options.jsonQuery !== undefined) {
     decorators.push(JsonQuery(options.jsonQuery));
   }
@@ -267,6 +269,8 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const res: Response | FastifyReply = ctx.switchToHttp().getResponse();
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
+    console.log(`TsRestHandlerInterceptor invoked`, req.url)
+
     const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
     const isJsonQuery = !!(
@@ -336,14 +340,16 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       map(async (impl) => {
         let result = null;
         try {
-          const res = {
+          const implParams = {
             params: paramsResult.data,
             query: queryResult.success ? queryResult.data : req.query,
             body: bodyResult.success ? bodyResult.data : req.body,
             headers: headersResult.success ? headersResult.data : req.headers,
           };
 
-          result = routeKey ? await impl[routeKey](res) : await impl(res);
+
+          result = routeKey ? await impl[routeKey](implParams) : await impl(implParams);
+
         } catch (e) {
           if (e instanceof TsRestException) {
             result = {
@@ -368,6 +374,8 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
             res.header('content-type', responseType.contentType);
           }
         }
+
+        console.log(`TsRestHandlerInterceptor about to return ${req.url} responseAfterValidation=`, responseAfterValidation)
 
         res.status(responseAfterValidation.status);
         return responseAfterValidation.body;

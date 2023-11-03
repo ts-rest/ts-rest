@@ -465,7 +465,7 @@ describe('ts-rest-nest-handler', () => {
     });
 
     describe('compatability with Nest decorators', () => {
-      it("should work with @Res", async () => {
+      it("should work with @Res with one handler", async () => {
         const c = initContract();
 
         const contract = c.router({
@@ -473,7 +473,7 @@ describe('ts-rest-nest-handler', () => {
             path: '/',
             method: 'GET',
             responses: {
-             302: null
+              302: null
             },
           },
         });
@@ -493,7 +493,7 @@ describe('ts-rest-nest-handler', () => {
                   body: null
                 }
 
-              }
+              },
             });
           }
         }
@@ -513,7 +513,7 @@ describe('ts-rest-nest-handler', () => {
         expect(response.header.location).toBe("https://ts-rest.com")
       })
 
-      it('should work with @Res and file upload', async () => {
+      it("should work with @Res with two handlers", async () => {
         const c = initContract();
 
         const contract = c.router({
@@ -521,15 +521,12 @@ describe('ts-rest-nest-handler', () => {
             path: '/',
             method: 'GET',
             responses: {
-              302: null
+             302: null
             },
           },
-          someUpload: {
-            path: '/upload',
-            method: 'POST',
-            body: c.type<{
-              file: File
-            }>(),
+          otherEndpoint: {
+            path: '/other',
+            method: 'GET',
             responses: {
               200: z.object({
                 message: z.string(),
@@ -541,21 +538,13 @@ describe('ts-rest-nest-handler', () => {
         @Controller()
         class MultiHandlerTestController {
           @TsRestHandler(contract)
-          @UseInterceptors(FileInterceptor('file'))
           resTest(
-            // @UploadedFile() file: File,
             @Res() res: NestResponse
           ) {
             return tsRestHandler(contract, {
-              someUpload: async () => {
-                return {
-                  status: 200,
-                  body: {
-                    message: 'ok'
-                  }
-                }
-              },
               redirectTest: async () => {
+                console.log('res from redirectTest', res)
+
                 res.redirect("https://ts-rest.com")
 
                 return {
@@ -563,6 +552,16 @@ describe('ts-rest-nest-handler', () => {
                   body: null
                 }
 
+              },
+              otherEndpoint: async () => {
+                console.log('res from otherEndpoint', res)
+
+                return {
+                  status: 200,
+                  body: {
+                    message: 'ok'
+                  }
+                }
               }
             });
           }
@@ -582,12 +581,12 @@ describe('ts-rest-nest-handler', () => {
         expect(response.status).toBe(302);
         expect(response.header.location).toBe("https://ts-rest.com")
 
-        const responseUpload = await supertest(app.getHttpServer())
-          .post('/upload')
-          .attach('file', path.join(__dirname, './nest.png'));
+        const responseOther = await supertest(app.getHttpServer())
+          .get('/other')
+          .send();
 
-        expect(responseUpload.status).toBe(200);
-        expect(responseUpload.body).toEqual({ message: 'ok' });
+        expect(responseOther.status).toBe(200);
+        expect(responseOther.body).toEqual({ message: 'ok' });
       })
     })
   });
