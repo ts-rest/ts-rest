@@ -10,10 +10,11 @@ import {
   Body,
   Controller,
   Get,
-  Post,
+  Post, Res,
   UploadedFile,
   UseInterceptors,
-} from '@nestjs/common';
+  Response as NestResponse,
+} from "@nestjs/common";
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
@@ -462,6 +463,133 @@ describe('ts-rest-nest-handler', () => {
         expect(response.body).toEqual({ message: 'ok' });
       });
     });
+
+    describe('compatability with Nest decorators', () => {
+      it("should work with @Res", async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          redirectTest: {
+            path: '/',
+            method: 'GET',
+            responses: {
+             302: null
+            },
+          },
+        });
+
+        @Controller()
+        class MultiHandlerTestController {
+          @TsRestHandler(contract)
+          resTest(
+            @Res() res: NestResponse
+          ) {
+            return tsRestHandler(contract, {
+              redirectTest: async () => {
+                res.redirect("https://ts-rest.com")
+
+                return {
+                  status: 302,
+                  body: null
+                }
+
+              }
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [MultiHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .get('/')
+          .send();
+
+        expect(response.status).toBe(302);
+        expect(response.header.location).toBe("https://ts-rest.com")
+      })
+
+      it('should work with @Res and file upload', async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          redirectTest: {
+            path: '/',
+            method: 'GET',
+            responses: {
+              302: null
+            },
+          },
+          someUpload: {
+            path: '/upload',
+            method: 'POST',
+            body: c.type<{
+              file: File
+            }>(),
+            responses: {
+              200: z.object({
+                message: z.string(),
+              })
+            }
+          }
+        });
+
+        @Controller()
+        class MultiHandlerTestController {
+          @TsRestHandler(contract)
+          @UseInterceptors(FileInterceptor('file'))
+          resTest(
+            // @UploadedFile() file: File,
+            @Res() res: NestResponse
+          ) {
+            return tsRestHandler(contract, {
+              someUpload: async () => {
+                return {
+                  status: 200,
+                  body: {
+                    message: 'ok'
+                  }
+                }
+              },
+              redirectTest: async () => {
+                res.redirect("https://ts-rest.com")
+
+                return {
+                  status: 302,
+                  body: null
+                }
+
+              }
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [MultiHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .get('/')
+          .send();
+
+        expect(response.status).toBe(302);
+        expect(response.header.location).toBe("https://ts-rest.com")
+
+        const responseUpload = await supertest(app.getHttpServer())
+          .post('/upload')
+          .attach('file', path.join(__dirname, './nest.png'));
+
+        expect(responseUpload.status).toBe(200);
+        expect(responseUpload.body).toEqual({ message: 'ok' });
+      })
+    })
   });
 
   describe('single-handler api', () => {
