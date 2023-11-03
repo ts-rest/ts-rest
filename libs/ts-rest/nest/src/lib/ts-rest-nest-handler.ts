@@ -73,7 +73,6 @@ export const TsRestHandler = (
 ): MethodDecorator => {
   const decorators = [];
 
-
   if (options.jsonQuery !== undefined) {
     decorators.push(JsonQuery(options.jsonQuery));
   }
@@ -268,7 +267,6 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const res: Response | FastifyReply = ctx.switchToHttp().getResponse();
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
-
     const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
     const isJsonQuery = !!(
@@ -345,9 +343,19 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
             headers: headersResult.success ? headersResult.data : req.headers,
           };
 
+          result = routeKey
+            ? await impl[routeKey](implParams)
+            : await impl(implParams);
 
-          result = routeKey ? await impl[routeKey](implParams) : await impl(implParams);
-
+          /**
+           * If during the implementation the response was sent (e.g. a res.redirect or res.send was called)
+           * we don't want to send the response again
+           */
+          if ('headersSent' in res && res.headersSent) {
+            return;
+          } else if ('sent' in res && res.sent) {
+            return;
+          }
         } catch (e) {
           if (e instanceof TsRestException) {
             result = {
@@ -365,6 +373,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
           : result;
 
         const responseType = appRoute.responses[result.status];
+
         if (!result.error && isAppRouteOtherResponse(responseType)) {
           if ('setHeader' in res) {
             res.setHeader('content-type', responseType.contentType);
@@ -373,8 +382,13 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
           }
         }
 
-
-        res.status(responseAfterValidation.status).send(responseAfterValidation.body);
+        res
+          .status(responseAfterValidation.status)
+          .send(
+            typeof responseAfterValidation.body === 'number'
+              ? String(responseAfterValidation.body)
+              : responseAfterValidation.body
+          );
       })
     );
   }

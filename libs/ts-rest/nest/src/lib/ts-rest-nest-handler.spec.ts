@@ -10,11 +10,12 @@ import {
   Body,
   Controller,
   Get,
-  Post, Res,
+  Post,
+  Res,
   UploadedFile,
   UseInterceptors,
   Response as NestResponse,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
@@ -465,7 +466,7 @@ describe('ts-rest-nest-handler', () => {
     });
 
     describe('compatability with Nest decorators', () => {
-      it("should work with @Res with one handler", async () => {
+      it('should work with @Res with one handler', async () => {
         const c = initContract();
 
         const contract = c.router({
@@ -473,7 +474,7 @@ describe('ts-rest-nest-handler', () => {
             path: '/',
             method: 'GET',
             responses: {
-              302: null
+              302: null,
             },
           },
         });
@@ -481,18 +482,15 @@ describe('ts-rest-nest-handler', () => {
         @Controller()
         class MultiHandlerTestController {
           @TsRestHandler(contract)
-          resTest(
-            @Res() res: NestResponse
-          ) {
+          resTest(@Res() res: NestResponse) {
             return tsRestHandler(contract, {
               redirectTest: async () => {
-                res.redirect("https://ts-rest.com")
+                res.redirect('https://ts-rest.com');
 
                 return {
                   status: 302,
-                  body: null
-                }
-
+                  body: null,
+                };
               },
             });
           }
@@ -505,15 +503,13 @@ describe('ts-rest-nest-handler', () => {
         const app = moduleRef.createNestApplication();
         await app.init();
 
-        const response = await supertest(app.getHttpServer())
-          .get('/')
-          .send();
+        const response = await supertest(app.getHttpServer()).get('/').send();
 
         expect(response.status).toBe(302);
-        expect(response.header.location).toBe("https://ts-rest.com")
-      })
+        expect(response.header.location).toBe('https://ts-rest.com');
+      });
 
-      it("should work with @Res with two handlers", async () => {
+      it('should work with @Res with two handlers', async () => {
         const c = initContract();
 
         const contract = c.router({
@@ -521,7 +517,7 @@ describe('ts-rest-nest-handler', () => {
             path: '/',
             method: 'GET',
             responses: {
-             302: null
+              302: null,
             },
           },
           otherEndpoint: {
@@ -530,37 +526,32 @@ describe('ts-rest-nest-handler', () => {
             responses: {
               200: z.object({
                 message: z.string(),
-              })
-            }
-          }
+              }),
+            },
+          },
         });
 
         @Controller()
         class MultiHandlerTestController {
           @TsRestHandler(contract)
-          resTest(
-            @Res() res: NestResponse
-          ) {
+          resTest(@Res() res: NestResponse) {
             return tsRestHandler(contract, {
               redirectTest: async () => {
-
-                res.redirect("https://ts-rest.com")
+                res.redirect('https://ts-rest.com');
 
                 return {
                   status: 302,
-                  body: null
-                }
-
+                  body: null,
+                };
               },
               otherEndpoint: async () => {
-
                 return {
                   status: 200,
                   body: {
-                    message: 'ok'
-                  }
-                }
-              }
+                    message: 'ok',
+                  },
+                };
+              },
             });
           }
         }
@@ -572,12 +563,10 @@ describe('ts-rest-nest-handler', () => {
         const app = moduleRef.createNestApplication();
         await app.init();
 
-        const response = await supertest(app.getHttpServer())
-          .get('/')
-          .send();
+        const response = await supertest(app.getHttpServer()).get('/').send();
 
         expect(response.status).toBe(302);
-        expect(response.header.location).toBe("https://ts-rest.com")
+        expect(response.header.location).toBe('https://ts-rest.com');
 
         const responseOther = await supertest(app.getHttpServer())
           .get('/other')
@@ -585,11 +574,125 @@ describe('ts-rest-nest-handler', () => {
 
         expect(responseOther.status).toBe(200);
         expect(responseOther.body).toEqual({ message: 'ok' });
-      })
-    })
+      });
+    });
   });
 
   describe('single-handler api', () => {
+    it('should be able to return primitives from a handler', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        returnsString: {
+          path: '/returns-string',
+          method: 'GET',
+          responses: {
+            200: z.string(),
+          },
+        },
+        returnsNumber: {
+          path: '/returns-number',
+          method: 'GET',
+          responses: {
+            200: z.number(),
+          },
+        },
+        returnsBoolean: {
+          path: '/returns-boolean',
+          method: 'GET',
+          responses: {
+            200: z.boolean(),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            returnsString: async () => ({
+              status: 200,
+              body: 'hello',
+            }),
+            returnsNumber: async () => ({
+              status: 200,
+              body: 12387123791273,
+            }),
+            returnsBoolean: async () => ({
+              status: 200,
+              body: true,
+            }),
+          });
+        }
+
+        @Get('/nest-returns-string')
+        nestReturnsString() {
+          return 'hello';
+        }
+
+        @Get('/nest-returns-number')
+        nestReturnsNumber() {
+          return 12387123791273;
+        }
+
+        @Get('/nest-returns-boolean')
+        nestReturnsBoolean() {
+          return true;
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+
+      await app.init();
+
+      const nestStringResponse = await supertest(app.getHttpServer())
+        .get('/nest-returns-string')
+        .send();
+
+      expect(nestStringResponse.status).toBe(200);
+      expect(nestStringResponse.text).toBe('hello');
+
+      const response = await supertest(app.getHttpServer())
+        .get('/returns-string')
+        .send();
+
+      expect(response.status).toBe(200);
+      expect(response.text).toBe('hello');
+
+      const nestNumberResponse = await supertest(app.getHttpServer())
+        .get('/nest-returns-number')
+        .send();
+
+      expect(nestNumberResponse.status).toBe(200);
+      expect(nestNumberResponse.text).toBe('12387123791273');
+
+      const responseNumber = await supertest(app.getHttpServer())
+        .get('/returns-number')
+        .send();
+
+      expect(responseNumber.status).toBe(200);
+      expect(responseNumber.text).toBe('12387123791273');
+
+      const nestBooleanResponse = await supertest(app.getHttpServer())
+        .get('/nest-returns-boolean')
+        .send();
+
+      expect(nestBooleanResponse.status).toBe(200);
+      expect(nestBooleanResponse.text).toBe('true');
+
+      const responseBoolean = await supertest(app.getHttpServer())
+        .get('/returns-boolean')
+        .send();
+
+      expect(responseBoolean.status).toBe(200);
+      expect(responseBoolean.text).toBe('true');
+    });
+
     it('should be able to implement a single `AppRoute`', async () => {
       const c = initContract();
 
