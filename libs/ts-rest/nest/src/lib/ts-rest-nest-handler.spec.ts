@@ -543,7 +543,6 @@ describe('ts-rest-nest-handler', () => {
           ) {
             return tsRestHandler(contract, {
               redirectTest: async () => {
-                console.log('res from redirectTest', res)
 
                 res.redirect("https://ts-rest.com")
 
@@ -554,7 +553,6 @@ describe('ts-rest-nest-handler', () => {
 
               },
               otherEndpoint: async () => {
-                console.log('res from otherEndpoint', res)
 
                 return {
                   status: 200,

@@ -73,7 +73,6 @@ export const TsRestHandler = (
 ): MethodDecorator => {
   const decorators = [];
 
-  console.log(`TsRestHandler invoked`)
 
   if (options.jsonQuery !== undefined) {
     decorators.push(JsonQuery(options.jsonQuery));
@@ -269,7 +268,6 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const res: Response | FastifyReply = ctx.switchToHttp().getResponse();
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
-    console.log(`TsRestHandlerInterceptor invoked`, req.url)
 
     const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
@@ -375,10 +373,8 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
           }
         }
 
-        console.log(`TsRestHandlerInterceptor about to return ${req.url} responseAfterValidation=`, responseAfterValidation)
 
-        res.status(responseAfterValidation.status);
-        return responseAfterValidation.body;
+        res.status(responseAfterValidation.status).send(responseAfterValidation.body);
       })
     );
   }
