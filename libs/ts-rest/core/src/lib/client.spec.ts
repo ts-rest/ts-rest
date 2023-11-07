@@ -368,7 +368,7 @@ describe('client', () => {
       expect(result.headers.get('Content-Length')).toBe('15');
     });
 
-    it('w/ a non json response (string)', async () => {
+    it('w/ a non json response (string, text/plain)', async () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
@@ -390,6 +390,29 @@ describe('client', () => {
       expect(result.headers.get('Content-Type')).toBe('text/plain');
     });
   });
+
+  it('w/ a non json response (string, text/html)', async () => {
+    fetchMock.getOnce(
+      {
+        url: 'https://api.com/posts',
+      },
+      {
+        headers: {
+          'Content-Type': 'text/html',
+        },
+        body: 'string',
+        status: 200,
+      }
+    );
+
+    const result = await client.posts.getPosts({});
+
+    expect(result.body).toStrictEqual('string');
+    expect(result.status).toBe(200);
+    expect(result.headers.get('Content-Length')).toBe('6');
+    expect(result.headers.get('Content-Type')).toBe('text/html');
+  });
+});
 
   describe('post', () => {
     it('w/ body', async () => {
