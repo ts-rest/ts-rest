@@ -102,7 +102,7 @@ export const contract = c.router({
     responses: {
       201: c.type<Post>(),
     },
-    body: c.type<{title: string}>()
+    body: c.type<{title: string}>(),
     summary: 'Create a post',
   },
   getPost: {
