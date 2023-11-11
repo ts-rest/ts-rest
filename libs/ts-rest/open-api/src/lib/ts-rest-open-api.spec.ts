@@ -19,7 +19,7 @@ const postsRouter = c.router({
     method: 'GET',
     path: `/posts/:id`,
     responses: {
-      200: c.response<Post | null>(),
+      200: c.type<Post | null>(),
     },
   },
   findPosts: {
@@ -34,7 +34,7 @@ const postsRouter = c.router({
       }),
     }),
     responses: {
-      200: c.response<Post[]>(),
+      200: c.type<Post[]>(),
     },
   },
   createPost: {
@@ -42,7 +42,7 @@ const postsRouter = c.router({
     path: '/posts',
     deprecated: true,
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: z.object({
       title: z.string(),
@@ -71,7 +71,7 @@ const postsRouter = c.router({
       commentId: z.string().length(5).describe("the comment ID"),
     }),
     responses: {
-      200: c.response<Post | null>(),
+      200: c.type<Post | null>(),
     },
   },
   auth: {
@@ -79,7 +79,7 @@ const postsRouter = c.router({
     path: '/auth',
     deprecated: undefined,
     responses: {
-      200: c.response<string>(),
+      200: c.type<string>(),
     },
     headers: z.object({
       'x-client-id': z.string(),
@@ -98,7 +98,7 @@ const router = c.router({
     summary: 'Health API',
     description: `Check the application's health status`,
     responses: {
-      200: c.response<{ message: string }>(),
+      200: c.type<{ message: string }>(),
     },
   },
 });
@@ -546,7 +546,7 @@ describe('ts-rest-open-api', () => {
           method: 'GET',
           path: `/posts/:id`,
           responses: {
-            200: c.response<Post | null>(),
+            200: c.type<Post | null>(),
           },
         },
       });
@@ -568,7 +568,7 @@ describe('ts-rest-open-api', () => {
           method: 'GET',
           path: '/refine',
           responses: {
-            200: c.response<null>(),
+            200: c.type<null>(),
           },
           query: z
             .object({
@@ -625,7 +625,7 @@ describe('ts-rest-open-api', () => {
           method: 'GET',
           path: '/transform',
           responses: {
-            200: c.response<null>(),
+            200: c.type<null>(),
           },
           query: z
             .object({
@@ -660,6 +660,66 @@ describe('ts-rest-open-api', () => {
                   },
                 },
               ],
+              responses: {
+                '200': {
+                  description: '200',
+                },
+              },
+              summary: undefined,
+              tags: [],
+            },
+          },
+        },
+      });
+    });
+
+    it('works with multipart/form-data', () => {
+      const routerWithTransform = c.router({
+        formEndpoint: {
+          method: 'POST',
+          path: '/form',
+          contentType: 'multipart/form-data',
+          body: z.object({
+            file: z.string(),
+          }),
+          responses: {
+            200: c.type<null>(),
+          },
+        },
+      });
+
+      const schema = generateOpenApi(routerWithTransform, {
+        info: { title: 'Form API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        info: {
+          title: 'Form API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/form': {
+            post: {
+              deprecated: undefined,
+              description: undefined,
+              parameters: [],
+              requestBody: {
+                content: {
+                  "multipart/form-data": {
+                    schema: {
+                      properties: {
+                        file: {
+                          type: 'string',
+                        },
+                      },
+                      required: ['file'],
+                      type: 'object',
+                    },
+                  },
+                },
+                description: "Body",
+              },
               responses: {
                 '200': {
                   description: '200',
