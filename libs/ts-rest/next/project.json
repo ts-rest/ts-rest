@@ -43,7 +43,7 @@
       ]
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/next/**/*.ts"]
@@ -54,7 +54,6 @@
       "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/next"],
       "options": {
         "jestConfig": "libs/ts-rest/next/jest.config.ts",
-        "passWithNoTests": true,
         "coverageReporters": ["lcov", "text-summary"]
       }
     }

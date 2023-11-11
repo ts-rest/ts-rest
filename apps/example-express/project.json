@@ -40,7 +40,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/example-express/**/*.ts"]
@@ -51,7 +51,6 @@
       "outputs": ["{workspaceRoot}/coverage/apps/example-express"],
       "options": {
         "jestConfig": "apps/example-express/jest.config.ts",
-        "passWithNoTests": true,
         "coverageReporters": ["lcov", "text-summary"]
       }
     }
