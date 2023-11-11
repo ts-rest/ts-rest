@@ -412,7 +412,6 @@ describe('client', () => {
     expect(result.headers.get('Content-Length')).toBe('6');
     expect(result.headers.get('Content-Type')).toBe('text/html');
   });
-});
 
   describe('post', () => {
     it('w/ body', async () => {
