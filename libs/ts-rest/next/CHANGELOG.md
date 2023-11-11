@@ -1,5 +1,14 @@
 # @ts-rest/next
 
+## 3.30.5
+
+### Patch Changes
+
+- 9bd7402: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+  - `@ts-rest/open-api` fix: Pass through contentType to OpenApi schema ([#414](https://github.com/ts-rest/ts-rest/pull/414))
+  - `@ts-rest/core` fix: Content-type text/html returns blob body (fixes [#418](https://github.com/ts-rest/ts-rest/issues/418))
+- 8cc95c5: add changeset for latest changes
+
 ## 3.30.4
 
 ### Patch Changes
