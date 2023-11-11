@@ -18,8 +18,8 @@
     "nx": "nx"
   },
   "engines": {
-    "pnpm": "8.8",
-    "node": "18.17.1"
+    "pnpm": "8",
+    "node": "18"
   },
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
