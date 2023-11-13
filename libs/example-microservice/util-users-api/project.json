@@ -11,12 +11,11 @@
         "outputPath": "dist/libs/example-microservice/util-users-api",
         "main": "libs/example-microservice/util-users-api/src/index.ts",
         "tsConfig": "libs/example-microservice/util-users-api/tsconfig.lib.json",
-        "assets": ["libs/example-microservice/util-users-api/*.md"],
-        "updateBuildableProjectDepsInPackageJson": true
+        "assets": ["libs/example-microservice/util-users-api/*.md"]
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/example-microservice/util-users-api/**/*.ts"]
@@ -28,8 +27,7 @@
         "{workspaceRoot}/coverage/libs/example-microservice/util-users-api"
       ],
       "options": {
-        "jestConfig": "libs/example-microservice/util-users-api/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "libs/example-microservice/util-users-api/jest.config.ts"
       }
     }
   },

@@ -11,12 +11,11 @@
         "outputPath": "dist/libs/example-microservice/util-posts-api",
         "main": "libs/example-microservice/util-posts-api/src/index.ts",
         "tsConfig": "libs/example-microservice/util-posts-api/tsconfig.lib.json",
-        "assets": ["libs/example-microservice/util-posts-api/*.md"],
-        "updateBuildableProjectDepsInPackageJson": true
+        "assets": ["libs/example-microservice/util-posts-api/*.md"]
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/example-microservice/util-posts-api/**/*.ts"]
@@ -28,8 +27,7 @@
         "{workspaceRoot}/coverage/libs/example-microservice/util-posts-api"
       ],
       "options": {
-        "jestConfig": "libs/example-microservice/util-posts-api/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "libs/example-microservice/util-posts-api/jest.config.ts"
       }
     }
   },

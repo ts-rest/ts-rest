@@ -33,7 +33,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/solid-query/**/*.{ts,tsx}"]
@@ -43,8 +43,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/solid-query"],
       "options": {
-        "jestConfig": "libs/ts-rest/solid-query/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "libs/ts-rest/solid-query/jest.config.ts"
       }
     }
   }
