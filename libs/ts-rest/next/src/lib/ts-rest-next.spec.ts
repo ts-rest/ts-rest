@@ -1,6 +1,10 @@
 import { initContract, ResponseValidationError } from '@ts-rest/core';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createNextRoute, createNextRouter } from './ts-rest-next';
+import {
+  createNextRoute,
+  createNextRouter,
+  RequestValidationError,
+} from './ts-rest-next';
 import { z } from 'zod';
 
 const c = initContract();
@@ -283,6 +287,47 @@ describe('createNextRouter', () => {
       await resultingRouter(req, mockRes);
 
       expect(errorHandler).toHaveBeenCalled();
+    });
+  });
+
+  describe('request validation', () => {
+    it('fails with invalid query type', async () => {
+      const errorHandler = jest.fn();
+      const resultingRouter = createNextRouter(contract, nextEndpoint, {
+        throwRequestValidation: true,
+        errorHandler,
+      });
+
+      const req = mockReq('/test/100/throw', {
+        method: 'GET',
+        query: { field: 42 },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(errorHandler).toHaveBeenCalledWith(
+        expect.any(RequestValidationError),
+        expect.anything(),
+        expect.anything(),
+      );
+    });
+
+    it('does not throw with invalid query type', async () => {
+      const errorHandler = jest.fn();
+      const resultingRouter = createNextRouter(contract, nextEndpoint, {
+        throwRequestValidation: false,
+        errorHandler,
+      });
+
+      const req = mockReq('/test/100/throw', {
+        method: 'GET',
+        query: { field: 42 },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(errorHandler).not.toHaveBeenCalled();
+      expect(mockRes.status).toHaveBeenCalledWith(400);
     });
   });
 
