@@ -48,7 +48,7 @@ export class RequestValidationError extends BadRequestException {
     public pathParams: z.ZodError | null,
     public headers: z.ZodError | null,
     public query: z.ZodError | null,
-    public body: z.ZodError | null
+    public body: z.ZodError | null,
   ) {
     super({
       paramsResult: pathParams,
@@ -60,16 +60,19 @@ export class RequestValidationError extends BadRequestException {
 }
 
 export class ResponseValidationError extends InternalServerErrorException {
-  constructor(public appRoute: AppRoute, public error: z.ZodError) {
+  constructor(
+    public appRoute: AppRoute,
+    public error: z.ZodError,
+  ) {
     super(
-      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`
+      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`,
     );
   }
 }
 
 export const TsRestHandler = (
   appRouterOrRoute: AppRouter | AppRoute,
-  options: TsRestOptions = {}
+  options: TsRestOptions = {},
 ): MethodDecorator => {
   const decorators = [];
 
@@ -79,20 +82,20 @@ export const TsRestHandler = (
 
   if (options.validateResponses !== undefined) {
     decorators.push(
-      SetMetadata(ValidateResponsesSymbol, options.validateResponses)
+      SetMetadata(ValidateResponsesSymbol, options.validateResponses),
     );
   }
 
   decorators.push(
     SetMetadata(
       ValidateRequestHeadersSymbol,
-      options.validateRequestHeaders ?? true
+      options.validateRequestHeaders ?? true,
     ),
     SetMetadata(
       ValidateRequestQuerySymbol,
-      options.validateRequestQuery ?? true
+      options.validateRequestQuery ?? true,
     ),
-    SetMetadata(ValidateRequestBodySymbol, options.validateRequestBody ?? true)
+    SetMetadata(ValidateRequestBodySymbol, options.validateRequestBody ?? true),
   );
 
   const isMultiHandler = !isAppRoute(appRouterOrRoute);
@@ -111,7 +114,7 @@ export const TsRestHandler = (
     decorators.push(
       All(routerPathsArray),
       SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
-      UseInterceptors(TsRestHandlerInterceptor)
+      UseInterceptors(TsRestHandlerInterceptor),
     );
   } else {
     const apiDecorator = (() => {
@@ -132,7 +135,7 @@ export const TsRestHandler = (
     decorators.push(
       apiDecorator,
       SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
-      UseInterceptors(TsRestHandlerInterceptor)
+      UseInterceptors(TsRestHandlerInterceptor),
     );
   }
 
@@ -145,7 +148,7 @@ type NestHandlerImplementation<T extends AppRouter | AppRoute> =
     : {
         [K in keyof T]: T[K] extends AppRoute
           ? (
-              args: TsRestRequestShape<T[K]>
+              args: TsRestRequestShape<T[K]>,
             ) => Promise<ServerInferResponses<T[K]>>
           : never;
       };
@@ -158,7 +161,7 @@ type NestHandlerImplementation<T extends AppRouter | AppRoute> =
  */
 export const tsRestHandler = <T extends AppRouter | AppRoute>(
   contract: T,
-  implementation: NestHandlerImplementation<T>
+  implementation: NestHandlerImplementation<T>,
 ) => implementation;
 
 /**
@@ -178,7 +181,7 @@ export const doesUrlMatchContractPath = (
   /**
    * @example '/posts/1'
    */
-  url: string
+  url: string,
 ): boolean => {
   // strip trailing slash
   if (contractPath !== '/' && contractPath.endsWith('/')) {
@@ -222,12 +225,12 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const appRoute = this.reflector.get<AppRoute | AppRouter | undefined>(
       TsRestAppRouteMetadataKey,
-      ctx.getHandler()
+      ctx.getHandler(),
     );
 
     if (!appRoute) {
       throw new Error(
-        'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method'
+        'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method',
       );
     }
 
@@ -245,7 +248,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         return (
           doesUrlMatchContractPath(
             value.path,
-            'path' in req ? req.path : req.routeOptions.url
+            'path' in req ? req.path : req.routeOptions.url,
           ) && req.method === value.method
         );
       }
@@ -279,13 +282,13 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         | typeof ValidateResponsesSymbol
         | typeof ValidateRequestHeadersSymbol
         | typeof ValidateRequestQuerySymbol
-        | typeof ValidateRequestBodySymbol
+        | typeof ValidateRequestBodySymbol,
     ) =>
       Boolean(
         this.reflector.getAllAndOverride<boolean | undefined>(key, [
           ctx.getHandler(),
           ctx.getClass(),
-        ])
+        ]),
       );
 
     const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {
@@ -304,7 +307,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const bodyResult = checkZodSchema(
       req.body,
-      'body' in appRoute ? appRoute.body : null
+      'body' in appRoute ? appRoute.body : null,
     );
 
     const isValidationEnabled = getMetadataValue(ValidateResponsesSymbol);
@@ -328,7 +331,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         !paramsResult.success ? paramsResult.error : null,
         isHeadersInvalid ? headersResult.error : null,
         isQueryInvalid ? queryResult.error : null,
-        isBodyInvalid ? bodyResult.error : null
+        isBodyInvalid ? bodyResult.error : null,
       );
     }
 
@@ -371,14 +374,14 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
         res.status(responseAfterValidation.status);
         return responseAfterValidation.body;
-      })
+      }),
     );
   }
 }
 
 const validateResponse = (
   appRoute: AppRoute,
-  response: { status: number; body?: unknown }
+  response: { status: number; body?: unknown },
 ) => {
   const { body } = response;
 
@@ -389,13 +392,13 @@ const validateResponse = (
 
   if (!responseSchema) {
     throw new InternalServerErrorException(
-      `[ts-rest] Couldn't find a response schema for ${response.status} on route ${appRoute.path}`
+      `[ts-rest] Couldn't find a response schema for ${response.status} on route ${appRoute.path}`,
     );
   }
 
   const responseValidation = checkZodSchema(
     body,
-    appRoute.responses[response.status]
+    appRoute.responses[response.status],
   );
 
   if (!responseValidation.success) {
