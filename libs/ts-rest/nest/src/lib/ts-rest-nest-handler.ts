@@ -352,7 +352,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
             result = {
               status: e.getStatus(),
               body: e.getResponse(),
-              error: true,
+              error: e,
             };
           } else {
             throw e;
@@ -364,7 +364,16 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
           : result;
 
         const responseType = appRoute.responses[result.status];
-        if (!result.error && isAppRouteOtherResponse(responseType)) {
+
+        if (result.error) {
+          throw new HttpException(
+            responseAfterValidation.body,
+            responseAfterValidation.status,
+            {
+              cause: result.error,
+            },
+          );
+        } else if (!result.error && isAppRouteOtherResponse(responseType)) {
           if ('setHeader' in res) {
             res.setHeader('content-type', responseType.contentType);
           } else {
@@ -382,7 +391,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 const validateResponse = (
   appRoute: AppRoute,
   response: { status: number; body?: unknown },
-) => {
+): { body: unknown; status: number } => {
   const { body } = response;
 
   const responseType = appRoute.responses[response.status];
