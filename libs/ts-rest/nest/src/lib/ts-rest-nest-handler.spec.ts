@@ -21,7 +21,7 @@ import { TsRest } from './ts-rest.decorator';
 import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
-import {Response} from "express-serve-static-core";
+import { Response } from 'express';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T
