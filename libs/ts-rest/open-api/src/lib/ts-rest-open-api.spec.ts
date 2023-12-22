@@ -1,6 +1,7 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 import { generateOpenApi } from './ts-rest-open-api';
+import { extendApi } from '@anatine/zod-openapi';
 
 const c = initContract();
 
@@ -101,6 +102,26 @@ const router = c.router({
       200: c.type<{ message: string }>(),
     },
   },
+  examplesMap: {
+    method: 'POST',
+    path: '/examples-map',
+    summary: 'Examples API',
+    description: `Check that examples can be added to body and response types`,
+    body: extendApi(z.object({ id: z.string() }), {
+      examplesMap: {
+        one: { value: { id: 'foo' } },
+        two: { value: { id: 'bar' } },
+      },
+    }),
+    responses: {
+      200: extendApi(z.object({ id: z.string() }), {
+        examplesMap: {
+          three: { value: { id: 'foo' } },
+          four: { value: { id: 'bar' } },
+        },
+      }),
+    },
+  },
 });
 
 const expectedApiDoc = {
@@ -121,6 +142,57 @@ const expectedApiDoc = {
           },
         },
         summary: 'Health API',
+        tags: [],
+      },
+    },
+    '/examples-map': {
+      post: {
+        deprecated: undefined,
+        description: `Check that examples can be added to body and response types`,
+        parameters: [],
+        requestBody: {
+          description: 'Body',
+          content: {
+            'application/json': {
+              schema: {
+                properties: {
+                  id: {
+                    type: 'string',
+                  },
+                },
+                required: ['id'],
+                type: 'object',
+              },
+              examples: {
+                one: { value: { id: 'foo' } },
+                two: { value: { id: 'bar' } },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            content: {
+              'application/json': {
+                examples: {
+                  three: { value: { id: 'foo' } },
+                  four: { value: { id: 'bar' } },
+                },
+                schema: {
+                  properties: {
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['id'],
+                  type: 'object',
+                },
+              },
+            },
+            description: `200`,
+          },
+        },
+        summary: 'Examples API',
         tags: [],
       },
     },
@@ -418,6 +490,12 @@ describe('ts-rest-open-api', () => {
             get: {
               ...expectedApiDoc.paths['/health'].get,
               operationId: 'health',
+            },
+          },
+          '/examples-map': {
+            post: {
+              ...expectedApiDoc.paths['/examples-map'].post,
+              operationId: 'examplesMap',
             },
           },
           '/posts': {

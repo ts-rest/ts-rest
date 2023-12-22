@@ -8,12 +8,15 @@ import {
 } from '@ts-rest/core';
 import {
   InfoObject,
+  MediaTypeObject,
   OpenAPIObject,
   OperationObject,
   PathsObject,
+  SchemaObject,
 } from 'openapi3-ts';
 import { generateSchema } from '@anatine/zod-openapi';
 import { z } from 'zod';
+import { ExamplesObject } from 'openapi3-ts';
 
 type RouterPath = {
   id: string;
@@ -154,6 +157,21 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   });
 };
 
+declare module 'openapi3-ts' {
+  interface SchemaObject {
+    examplesMap?: ExamplesObject;
+  }
+}
+
+const convertSchemaObjectToMediaTypeObject = (input: SchemaObject): MediaTypeObject => {
+  const { examplesMap: examples, ...schema } = input;
+
+  return {
+    schema,
+    ...(examples && { examples })
+  }
+};
+
 /**
  *
  * @param options.jsonQuery - Enable JSON query parameters, [see](/docs/open-api#json-query-params)
@@ -216,7 +234,7 @@ export const generateOpenApi = (
             ? {
                 content: {
                   'application/json': {
-                    schema: responseSchema,
+                    ...convertSchemaObjectToMediaTypeObject(responseSchema),
                   },
                 },
               }
@@ -240,7 +258,7 @@ export const generateOpenApi = (
               description: 'Body',
               content: {
                 [contentType]: {
-                  schema: bodySchema,
+                  ...convertSchemaObjectToMediaTypeObject(bodySchema),
                 },
               },
             },
