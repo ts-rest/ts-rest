@@ -7,6 +7,7 @@ import {
   isZodType,
 } from '@ts-rest/core';
 import {
+  ExamplesObject,
   InfoObject,
   MediaTypeObject,
   OpenAPIObject,
@@ -16,7 +17,6 @@ import {
 } from 'openapi3-ts';
 import { generateSchema } from '@anatine/zod-openapi';
 import { z } from 'zod';
-import { ExamplesObject } from 'openapi3-ts';
 
 type RouterPath = {
   id: string;
