@@ -328,7 +328,7 @@ export const client = initQueryClient(contract, {
 });
 
 export const Index = () => {
-  const { data, isLoading, error } = api.getPost.useQuery({
+  const { data, isLoading, error } = client.getPost.useQuery({
     params: { id: '1' },
   });
 
