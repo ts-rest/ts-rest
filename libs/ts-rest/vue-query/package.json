@@ -21,7 +21,7 @@
     "directory": "libs/ts-rest/vue-query"
   },
   "peerDependencies": {
-    "@tanstack/vue-query": "^4.0.0",
+    "@tanstack/vue-query": "^4.0.0 || ^5.0.0",
     "zod": "^3.22.3"
   },
   "peerDependenciesMeta": {
