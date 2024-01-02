@@ -144,7 +144,7 @@ This isn't limited to Param decorators, you can use any Nest decorator on your c
 
 Generally speaking you should try to return all errors as a response, so that you get the benefits of `ts-rest` typing in the contract (to let your consumers know what errors to expect).
 
-However, sometimes it's much cleaner and simpler to throw an error rather than passing a response back to your handler - the problem is that you normally **loose all type safety** when you do this.
+However, sometimes it's much cleaner and simpler to throw an error rather than passing a response back to your handler - the problem is that you normally **lose all type safety** when you do this.
 
 With `TsRestException` you can throw a Nest exception and it will be handled by the `tsRestHandler` function and returned as a fully typed response.
 
