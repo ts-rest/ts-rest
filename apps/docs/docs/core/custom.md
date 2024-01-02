@@ -81,7 +81,7 @@ By default ts-rest ships with an incredibly simple fetch
 implementation for data fetching, because fetch requires zero extra
 dependencies and works perfectly for most use cases, however,
 sometimes you may want to use Axios, or another data fetching strategy, for that
-you can pass a `api` attribute to the `initClient` or `initQueryClient`.
+you can pass an `api` attribute to the `initClient` or `initQueryClient`.
 
 :::info
 The `credentials` option has no effect when using a custom client. Make sure you handle credentials in your custom client
