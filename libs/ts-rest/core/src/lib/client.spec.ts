@@ -61,6 +61,15 @@ const postsRouter = c.router({
       authorId: z.string(),
     }),
   },
+  createPostXForm: {
+    method: 'POST',
+    path: '/posts',
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.string(),
+    contentType: 'application/x-www-form-urlencoded'
+  },
   mutationWithQuery: {
     method: 'POST',
     path: '/posts',
@@ -325,7 +334,7 @@ describe('client', () => {
           published: true,
           filter: { title: 'test' },
         },
-        
+
       });
 
       expect(result.body).toStrictEqual(value);
@@ -434,6 +443,32 @@ describe('client', () => {
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Length')).toBe('15');
       expect(result.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('w/ body and content-type header', async () => {
+      const value = "key=value";
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/posts',
+          headers: {
+            "content-type": "application/x-www-form-urlencoded"
+          }
+        },
+        {
+          body: value,
+          status: 200,
+          headers: {
+            "content-type": "application/x-www-form-urlencoded"
+          }
+        }
+      );
+
+      const result = await client.posts.createPostXForm({
+        body: "key=value",
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Type')).toBe('application/x-www-form-urlencoded');
     });
 
     it('w/ query params', async () => {

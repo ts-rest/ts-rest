@@ -221,6 +221,27 @@ export const fetchApi = ({
     });
   }
 
+  if (route.method !== 'GET' && route.contentType === 'application/x-www-form-urlencoded') {
+    const headers = {
+      ...combinedHeaders,
+      'content-type': 'application/x-www-form-urlencoded',
+    }
+    return apiFetcher({
+      route,
+      path,
+      method: route.method,
+      credentials: clientArgs.credentials,
+      headers,
+      body: body instanceof FormData ? body : createFormData(body),
+      rawBody: body,
+      rawQuery: query,
+      contentType: 'application/x-www-form-urlencoded',
+      signal,
+      next,
+      ...extraInputArgs,
+    });
+  }
+
   const includeContentTypeHeader =
     route.method !== 'GET' && body !== null && body !== undefined;
 

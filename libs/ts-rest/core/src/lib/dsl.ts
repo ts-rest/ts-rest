@@ -54,7 +54,7 @@ export type AppRouteQuery = AppRouteCommon & {
  */
 export type AppRouteMutation = AppRouteCommon & {
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
-  contentType?: 'application/json' | 'multipart/form-data';
+  contentType?: 'application/json' | 'multipart/form-data' | 'application/x-www-form-urlencoded';
   body: ContractAnyType;
 };
 
