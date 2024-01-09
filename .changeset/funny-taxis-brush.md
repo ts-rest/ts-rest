@@ -2,4 +2,4 @@
 '@ts-rest/nest': minor
 ---
 
-Allow TsRestException to be handled by NestJS exception filters
+feat: `@ts-rest/nest` allow TsRestException to be handled by NestJS exception filters
