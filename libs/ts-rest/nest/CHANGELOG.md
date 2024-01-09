@@ -1,5 +1,12 @@
 # @ts-rest/nest
 
+## 3.31.0
+
+### Minor Changes
+
+- dcf40a6: feat: `@ts-rest/nest` allow TsRestException to be handled by NestJS exception filters
+- 89941a2: feat: `@ts-rest/nest` Adds support to provide a `cause` to `TsRestException`
+
 ## 3.30.5
 
 ### Patch Changes

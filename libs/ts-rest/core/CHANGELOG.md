@@ -1,5 +1,7 @@
 # @ts-rest/core
 
+## 3.31.0
+
 ## 3.30.5
 
 ### Patch Changes
