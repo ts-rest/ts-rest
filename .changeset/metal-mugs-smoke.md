@@ -2,4 +2,4 @@
 '@ts-rest/nest': minor
 ---
 
-Adds support to provide a `cause` to `TsRestException`
+feat: `@ts-rest/nest` Adds support to provide a `cause` to `TsRestException`
