@@ -74,6 +74,42 @@ export default createNextRouter(api, router, {
 });
 ```
 
+#### Request Validation Error Handling
+
+The default behavior when validating request schema is to return a 400 status with the corresponding ZodError.
+To customize handling of the request validation errors enable the `throwRequestValidation` option.
+This option allows you to handle the request validation error in the global `errorHandler` function.
+
+```typescript
+export default createNextRouter(api, router, {
+  throwRequestValidation: true,
+  errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
+    if (error instanceof RequestValidationError) {
+      if (error.body !== null) {
+        return res
+          .status(400)
+          .json({ message: 'Malformed Body', errors: error.body.flatten() });
+      }
+
+      return res.status(400).json({ message: 'Bad Request' });
+    }
+  },
+});
+```
+
+```typescript
+export class RequestValidationError extends Error {
+  constructor(
+    public pathParams: z.ZodError | null,
+    public headers: z.ZodError | null,
+    public query: z.ZodError | null,
+    public body: z.ZodError | null,
+  ) {
+    super('[ts-rest] request validation failed');
+  }
+}
+```
+
 ## Future Work
 
 As this pattern doesn't support a lambda per endpoint, it is planned to provide a helper utility to allow individual endpoints to be created.
