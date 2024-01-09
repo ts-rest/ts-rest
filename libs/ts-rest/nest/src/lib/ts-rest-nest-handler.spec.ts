@@ -1337,4 +1337,38 @@ describe('ts-rest-nest-handler', () => {
       }),
     });
   });
+
+  it('should support including a nested error as the cause', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      getPosts: {
+        path: '/posts',
+        method: 'GET',
+        query: z.object({
+          limit: z.string(),
+        }),
+        responses: {
+          200: z.array(
+            z.object({
+              id: z.number(),
+            })
+          ),
+        },
+      },
+    });
+
+    const cause = new Error('the root cause');
+
+    const error = new TsRestException(contract.getPosts, {
+      status: 400,
+      body: {
+        message: 'Something went wrong'
+      }
+    }, {
+      cause
+    })
+
+    expect(error.cause).toEqual(cause);
+  })
 });
