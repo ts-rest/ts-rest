@@ -531,7 +531,7 @@ importers:
   libs/ts-rest/next:
     dependencies:
       next:
-        specifier: ^12.0.0 || ^13.0.0
+        specifier: ^12.0.0 || ^13.0.0 || ^14.0.0
         version: 13.3.0(@babel/core@7.19.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.55.0)
       zod:
         specifier: ^3.22.3
