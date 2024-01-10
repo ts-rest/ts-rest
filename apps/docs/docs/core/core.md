@@ -69,7 +69,7 @@ Check the relevant sections to see how to enable JSON query encoding/decoding on
 
 ## Path Parameters
 
-You can define URL path parameters in your contract using a Zod object.
+You can define URL path parameters in your contract using a Zod object with the `path` and `pathParams` keys.
 
 ```typescript
 const c = initContract();
