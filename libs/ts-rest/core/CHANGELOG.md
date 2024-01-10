@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.32.0
+
+### Minor Changes
+
+- c4fb3f6: feat: `@ts-rest/core`: Add support for `x-www-form-urlencoded` content-type to core client
+
 ## 3.31.0
 
 ## 3.30.5
