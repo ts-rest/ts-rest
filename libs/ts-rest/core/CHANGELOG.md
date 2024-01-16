@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- c4fb3f6: feat: `@ts-rest/core`: Add support for `x-www-form-urlencoded` content-type to core client
+- c4fb3f6: feat: `@ts-rest/core`: Add support for `x-www-form-urlencoded` content-type to core client fetcher
 
 ## 3.31.0
 
