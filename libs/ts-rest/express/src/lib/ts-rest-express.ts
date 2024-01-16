@@ -24,6 +24,7 @@ import {
   isAppRouteImplementation,
 } from './types';
 import { RequestValidationError } from './request-validation-error';
+import { Stream } from 'stream';
 
 export const initServer = () => {
   return {
@@ -155,6 +156,10 @@ const initializeExpressRoute = ({
 
       const statusCode = Number(result.status);
 
+      if (result.body instanceof Stream) {     
+        return result.body.pipe(res.status(result.status));
+      }  
+   
       let validatedResponseBody = result.body;
 
       if (options.responseValidation) {

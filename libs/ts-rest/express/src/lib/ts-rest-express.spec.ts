@@ -3,6 +3,8 @@ import { createExpressEndpoints, initServer } from './ts-rest-express';
 import * as supertest from 'supertest';
 import * as express from 'express';
 import { z } from 'zod';
+import * as fs from 'node:fs';
+import path = require('path');
 
 const c = initContract();
 const postsRouter = c.router({
@@ -171,6 +173,73 @@ describe('ts-rest-express', () => {
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual(
       'text/css; charset=utf-8'
+    );
+  });
+});
+
+describe('download', () => {
+  it('allows download image', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      getFile: {
+        method: 'GET',
+        path: `/image`,
+        headers: z.object({
+          'Content-Type': z.string().optional(),
+          'Content-disposition': z.string().optional(),
+        }),
+        responses: {
+          200: z.unknown(),
+        },
+        summary: 'Get an image',
+      },
+    });
+
+    const s = initServer();
+    const originalFilePath = path.join(__dirname, 'assets/logo.png');
+
+    const router = s.router(contract, {
+      getFile: async ({ res }) => {
+        res.setHeader('Content-type', 'image/png');
+
+        return {
+          status: 200,
+          body: fs.createReadStream(originalFilePath),
+        };
+      },
+    });
+
+    const app = express();
+
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+
+    createExpressEndpoints(contract, router, app, {
+      responseValidation: true,
+    });
+
+    app.use(
+      (
+        err: any,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+      ) => {
+        if (err instanceof ResponseValidationError) {
+          res.status(500).send('Response validation failed');
+          return;
+        }
+
+        next(err);
+      },
+    );
+
+    const responseImage = await supertest(app).get('/image');
+    expect(responseImage.status).toEqual(200);
+    expect(responseImage.body.toString()).toEqual(fs.readFileSync(originalFilePath, {encoding: 'utf-8'}));
+    expect(responseImage.headers['content-type']).toEqual(
+      'image/png',
     );
   });
 });
