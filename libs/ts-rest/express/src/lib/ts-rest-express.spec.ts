@@ -3,7 +3,6 @@ import { createExpressEndpoints, initServer } from './ts-rest-express';
 import * as supertest from 'supertest';
 import * as express from 'express';
 import { z } from 'zod';
-import { Stream } from 'stream';
 import * as fs from 'node:fs';
 import path = require('path');
 
