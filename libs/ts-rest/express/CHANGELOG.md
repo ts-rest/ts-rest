@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.33.0
+
+### Minor Changes
+
+- 820658a: feat `@ts-rest/express`: Allow file downloads with Express
+
 ## 3.32.0
 
 ## 3.31.0
