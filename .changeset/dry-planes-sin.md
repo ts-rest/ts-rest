@@ -2,4 +2,4 @@
 '@ts-rest/express': minor
 ---
 
-Allow download file with Express
+feat `@ts-rest/express`: Allow file downloads with Express
