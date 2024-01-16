@@ -1,5 +1,7 @@
 # @ts-rest/core
 
+## 3.33.0
+
 ## 3.32.0
 
 ### Minor Changes
