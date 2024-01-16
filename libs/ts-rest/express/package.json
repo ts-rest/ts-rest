@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/express",
-  "version": "3.31.0",
+  "version": "3.32.0",
   "peerDependencies": {
     "express": "^4.0.0",
     "zod": "^3.22.3"
