@@ -619,6 +619,75 @@ describe('ts-rest-open-api', () => {
       });
     });
 
+    it('works with zod optional query parameters', () => {
+      const routerWithRefine = c.router({
+        endpointWithZodRefine: {
+          method: 'GET',
+          path: '/optional',
+          responses: {
+            200: c.type<null>(),
+          },
+          query: z.object({
+            foo: z
+              .object({
+                baz: z.string().describe('Baz').optional(),
+                bar: z.string().describe('Bar').optional(),
+              })
+              .describe('Foo')
+              .optional(),
+          }),
+        },
+      });
+
+      const schema = generateOpenApi(routerWithRefine, {
+        info: { title: 'Blog API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        info: {
+          title: 'Blog API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/optional': {
+            get: {
+              deprecated: undefined,
+              description: undefined,
+              parameters: [
+                {
+                  description: 'Foo',
+                  in: 'query',
+                  name: 'foo',
+                  schema: {
+                    properties: {
+                      bar: {
+                        description: 'Bar',
+                        type: 'string',
+                      },
+                      baz: {
+                        description: 'Baz',
+                        type: 'string',
+                      },
+                    },
+                    type: 'object',
+                  },
+                  style: 'deepObject',
+                },
+              ],
+              responses: {
+                '200': {
+                  description: '200',
+                },
+              },
+              summary: undefined,
+              tags: [],
+            },
+          },
+        },
+      });
+    });
+
     it('works with zod transform', () => {
       const routerWithTransform = c.router({
         endpointWithZodTransform: {
