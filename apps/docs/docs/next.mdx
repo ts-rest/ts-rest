@@ -18,7 +18,8 @@ It is possible to split out to multiple endpoints by having multiple [...ts-rest
 // pages/api/[...ts-rest].tsx
 import { createNextRoute, createNextRouter } from '@ts-rest/next';
 
-const postsRouter = createNextRoute(api.posts, {
+// `contract` is the AppRouter returned by `c.router`
+const postsRouter = createNextRoute(contract.posts, {
   createPost: async (args) => {
     const newPost = await posts.createPost(args.body);
 
@@ -29,12 +30,12 @@ const postsRouter = createNextRoute(api.posts, {
   },
 });
 
-const router = createNextRoute(api, {
+const router = createNextRoute(contract, {
   posts: postsRouter,
 });
 
 // Actually initiate the collective endpoints
-export default createNextRouter(api, router);
+export default createNextRouter(contract, router);
 ```
 
 `createNextRouter` is a function that takes a router and a complete router, and creates endpoints, with the correct methods, paths and callbacks.
@@ -44,7 +45,7 @@ export default createNextRouter(api, router);
 To handle JSON query parameters, you can use the `jsonQuery` option.
 
 ```typescript
-export default createNextRouter(api, router, { jsonQuery: true });
+export default createNextRouter(contract, router, { jsonQuery: true });
 ```
 
 ### Response Validation
@@ -54,7 +55,7 @@ If there is a corresponding response Zod schema defined in the contract for the 
 If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
 
 ```typescript
-export default createNextRouter(api, router, { validateResponses: true });
+export default createNextRouter(contract, router, { validateResponses: true });
 ```
 
 ### Error Handling
@@ -63,7 +64,7 @@ You can create a global error handler to handle any thrown errors by using the `
 This includes response validation errors.
 
 ```typescript
-export default createNextRouter(api, router, {
+export default createNextRouter(contract, router, {
   responseValidation: true,
   errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
     if (error instanceof ResponseValidationError) {
@@ -81,7 +82,7 @@ To customize handling of the request validation errors enable the `throwRequestV
 This option allows you to handle the request validation error in the global `errorHandler` function.
 
 ```typescript
-export default createNextRouter(api, router, {
+export default createNextRouter(contract, router, {
   throwRequestValidation: true,
   errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
     if (error instanceof RequestValidationError) {
