@@ -84,7 +84,7 @@ const getRouteUseQuery = <
   return (
     queryKey: QueryKey,
     args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
-    options?: TanStackUseQueryOptions<TAppRoute['responses']>,
+    options?: Omit<TanStackUseQueryOptions<TAppRoute['responses']>, 'queryKey'>,
   ) => {
     const dataFn = queryFn(route, clientArgs, args);
 
@@ -126,7 +126,7 @@ const getRouteUseInfiniteQuery = <
     argsMapper: (
       context: QueryFunctionContext,
     ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-    options?: TanStackUseInfiniteQueryOptions<TAppRoute['responses']>,
+    options?: Omit<TanStackUseInfiniteQueryOptions<TAppRoute['responses']>, 'queryKey'>,
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (context) => {
       const resultingQueryArgs = argsMapper(context);
