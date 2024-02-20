@@ -30,6 +30,7 @@ import {
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferResponses,
+  type Awaitable,
 } from '@ts-rest/core';
 import {
   JsonQuerySymbol,
@@ -145,12 +146,12 @@ export const TsRestHandler = (
 
 type NestHandlerImplementation<T extends AppRouter | AppRoute> =
   T extends AppRoute
-    ? (args: TsRestRequestShape<T>) => Promise<ServerInferResponses<T>>
+    ? (args: TsRestRequestShape<T>) => Awaitable<ServerInferResponses<T>>
     : {
         [K in keyof T]: T[K] extends AppRoute
           ? (
               args: TsRestRequestShape<T[K]>,
-            ) => Promise<ServerInferResponses<T[K]>>
+            ) => Awaitable<ServerInferResponses<T[K]>>
           : never;
       };
 
