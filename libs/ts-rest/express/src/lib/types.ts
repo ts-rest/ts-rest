@@ -19,7 +19,7 @@ type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: ServerInferRequest<T, Express['request']['headers']> & {
     req: TsRestRequest<T>;
     res: Response;
-  }
+  },
 ) => Promise<ServerInferResponses<T>>;
 
 type AppRouteMutationImplementation<T extends AppRouteMutation> = (
@@ -28,7 +28,7 @@ type AppRouteMutationImplementation<T extends AppRouteMutation> = (
     file: unknown;
     req: TsRestRequest<T>;
     res: Response;
-  }
+  },
 ) => Promise<ServerInferResponses<T>>;
 
 export type AppRouteImplementation<T extends AppRoute> =
@@ -41,7 +41,7 @@ export type AppRouteImplementation<T extends AppRoute> =
 export type TsRestRequest<
   T extends AppRouter | AppRoute,
   F extends FlattenAppRouter<T> = FlattenAppRouter<T>,
-  S extends ServerInferRequest<F> = ServerInferRequest<F>
+  S extends ServerInferRequest<F> = ServerInferRequest<F>,
 > = Request<
   'params' extends keyof S ? S['params'] : Express['request']['params'],
   ServerInferResponseBody<F>,
@@ -57,7 +57,7 @@ export type TsRestRequest<
 export type TsRestRequestHandler<T extends AppRouter | AppRoute> = (
   req: TsRestRequest<T>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => void;
 
 export interface AppRouteOptions<TRoute extends AppRoute> {
@@ -74,7 +74,7 @@ export type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
   | AppRouteImplementation<TRoute>;
 
 export const isAppRouteImplementation = <TRoute extends AppRoute>(
-  obj: AppRouteImplementationOrOptions<TRoute>
+  obj: AppRouteImplementationOrOptions<TRoute>,
 ): obj is AppRouteImplementation<TRoute> => {
   return typeof obj === 'function';
 };
@@ -99,16 +99,17 @@ export type TsRestExpressOptions<T extends AppRouter> = {
         err: RequestValidationError,
         req: TsRestRequest<FlattenAppRouter<T>>,
         res: Response,
-        next: NextFunction
+        next: NextFunction,
       ) => void);
 };
 
-type FlattenAppRouter<T extends AppRouter | AppRoute> = T extends AppRoute
-  ? T
-  : {
-      [TKey in keyof T]: T[TKey] extends AppRoute
-        ? T[TKey]
-        : T[TKey] extends AppRouter
-        ? FlattenAppRouter<T[TKey]>
-        : never;
-    }[keyof T];
+export type FlattenAppRouter<T extends AppRouter | AppRoute> =
+  T extends AppRoute
+    ? T
+    : {
+        [TKey in keyof T]: T[TKey] extends AppRoute
+          ? T[TKey]
+          : T[TKey] extends AppRouter
+          ? FlattenAppRouter<T[TKey]>
+          : never;
+      }[keyof T];
