@@ -13,7 +13,8 @@
         "outputPath": "dist/apps/example-microservice/users-service",
         "main": "apps/example-microservice/users-service/src/main.ts",
         "tsConfig": "apps/example-microservice/users-service/tsconfig.app.json",
-        "assets": ["apps/example-microservice/users-service/src/assets"]
+        "assets": ["apps/example-microservice/users-service/src/assets"],
+        "webpackConfig": "apps/example-microservice/users-service/webpack.config.js"
       },
       "configurations": {
         "production": {
@@ -42,10 +43,7 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/example-microservice/users-service/**/*.ts"]
-      }
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",

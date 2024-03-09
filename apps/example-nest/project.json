@@ -13,7 +13,8 @@
         "outputPath": "dist/apps/example-nest",
         "main": "apps/example-nest/src/main.ts",
         "tsConfig": "apps/example-nest/tsconfig.app.json",
-        "assets": ["apps/example-nest/src/assets"]
+        "assets": ["apps/example-nest/src/assets"],
+        "webpackConfig": "apps/example-nest/webpack.config.js"
       },
       "configurations": {
         "production": {
@@ -42,10 +43,7 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/example-nest/**/*.ts"]
-      }
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",

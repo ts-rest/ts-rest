@@ -44,9 +44,7 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/ts-rest/open-api/**/*.ts"],
         "ignorePath": ".gitignore"
       }
     },

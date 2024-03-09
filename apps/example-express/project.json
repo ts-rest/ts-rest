@@ -12,7 +12,8 @@
         "compiler": "tsc",
         "outputPath": "dist/apps/example-express",
         "main": "apps/example-express/src/main.ts",
-        "tsConfig": "apps/example-express/tsconfig.app.json"
+        "tsConfig": "apps/example-express/tsconfig.app.json",
+        "webpackConfig": "apps/example-express/webpack.config.js"
       },
       "configurations": {
         "production": {
@@ -41,10 +42,7 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/example-express/**/*.ts"]
-      }
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",
