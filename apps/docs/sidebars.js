@@ -46,6 +46,11 @@ const sidebars = {
           id: 'guides/non-ts-clients',
           label: 'Non-TypeScript Clients',
         },
+        {
+          type: 'doc',
+          id: 'guides/fake-apis',
+          label: 'Fake APIs for Testing',
+        },
       ],
     },
     {
