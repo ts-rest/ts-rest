@@ -126,6 +126,9 @@ MASSIVE Thanks to all of these wonderful people ([emoji key](https://allcontribu
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/fruchtzwerg"><img src="https://avatars.githubusercontent.com/u/15377955?v=4?s=100" width="100px;" alt="Ben"/><br /><sub><b>Ben</b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=fruchtzwerg" title="Code">💻</a> <a href="https://github.com/ts-rest/ts-rest/commits?author=fruchtzwerg" title="Documentation">📖</a> <a href="https://github.com/ts-rest/ts-rest/commits?author=fruchtzwerg" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://llllvvuu.dev"><img src="https://avatars.githubusercontent.com/u/5601392?v=4?s=100" width="100px;" alt="LW"/><br /><sub><b>LW</b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=llllvvuu" title="Code">💻</a> <a href="https://github.com/ts-rest/ts-rest/issues?q=author%3Allllvvuu" title="Bug reports">🐛</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://otbeaumont.me"><img src="https://avatars.githubusercontent.com/u/21004798?v=4?s=100" width="100px;" alt="Oscar Beaumont"/><br /><sub><b>Oscar Beaumont</b></sub></a><br /><a href="https://github.com/ts-rest/ts-rest/commits?author=oscartbeaumont" title="Documentation">📖</a></td>
+    </tr>
   </tbody>
 </table>
 
