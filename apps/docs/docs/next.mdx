@@ -39,6 +39,24 @@ export default createNextRouter(api, router);
 
 `createNextRouter` is a function that takes a contract and a complete router, and creates endpoints, with the correct methods, paths and callbacks.
 
+### It's also possible to create a handler for a single contract route
+
+```typescript
+// pages/api/posts/index.tsx
+import { createSingleUrlNextRoute } from '@ts-rest/next';
+
+export default createSingleUrlNextRouter(api.posts.createPost, async (args) => {
+  const newPost = await posts.createPost(args.body);
+
+  return {
+    status: 201,
+    body: newPost,
+  };
+});
+```
+
+`createSingleUrlNextRoute` is a function that takes a single contract route and a handler, and creates a `nextApiHandler`
+
 ### JSON Query Parameters
 
 To handle JSON query parameters, you can use the `jsonQuery` option.
