@@ -19,6 +19,7 @@ import {
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 import { z } from 'zod';
+import { pathToRegexp } from 'path-to-regexp';
 
 export class RequestValidationError extends Error {
   constructor(
@@ -35,7 +36,7 @@ type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {
     req: NextApiRequest;
     res: NextApiResponse;
-  }
+  },
 ) => Promise<ServerInferResponses<T>>;
 
 type RecursiveRouterObj<T extends AppRouter> = {
@@ -54,6 +55,17 @@ type AppRouterWithImplementation = {
   [key: string]: AppRouterWithImplementation | AppRouteWithImplementation<any>;
 };
 
+type CreateNextRouterOptions = {
+  jsonQuery?: boolean;
+  responseValidation?: boolean;
+  throwRequestValidation?: boolean;
+  errorHandler?: (
+    err: unknown,
+    req: NextApiRequest,
+    res: NextApiResponse,
+  ) => void;
+};
+
 /**
  * Combine all AppRoutes with their implementations into a single object
  * which is easier to work with
@@ -63,7 +75,7 @@ type AppRouterWithImplementation = {
  */
 const mergeRouterAndImplementation = <T extends AppRouter>(
   router: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: RecursiveRouterObj<T>,
 ): AppRouterWithImplementation => {
   const keys = Object.keys(router);
 
@@ -85,7 +97,7 @@ const mergeRouterAndImplementation = <T extends AppRouter>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isAppRouteWithImplementation = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: any
+  obj: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): obj is AppRouteWithImplementation<any> => {
   return obj?.implementation !== undefined && obj?.method;
@@ -131,7 +143,7 @@ const isRouteCorrect = (route: AppRoute, query: string[], method: string) => {
 const getRouteImplementation = (
   router: AppRouterWithImplementation,
   query: string[],
-  method: string
+  method: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): AppRouteWithImplementation<any> | null => {
   const keys = Object.keys(router);
@@ -164,7 +176,7 @@ const getRouteImplementation = (
  */
 export const createNextRoute = <T extends AppRouter>(
   appRouter: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: RecursiveRouterObj<T>,
 ) => implementation;
 
 /**
@@ -186,58 +198,100 @@ export const createNextRoute = <T extends AppRouter>(
 export const createNextRouter = <T extends AppRouter>(
   routes: T,
   obj: RecursiveRouterObj<T>,
-  options?: {
-    jsonQuery?: boolean;
-    responseValidation?: boolean;
-    throwRequestValidation?: boolean;
-    errorHandler?: (
-      err: unknown,
-      req: NextApiRequest,
-      res: NextApiResponse
-    ) => void;
-  }
+  options?: CreateNextRouterOptions,
 ) => {
-  const {
-    jsonQuery = false,
-    responseValidation = false,
-    throwRequestValidation = false
-  } = options || {};
+  return handlerFactory((req) => {
+    const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
-  const combinedRouter = mergeRouterAndImplementation(routes, obj);
-
-  return async (req: NextApiRequest, res: NextApiResponse) => {
+    // eslint-disable-next-line prefer-const
     let { 'ts-rest': params, ...query } = req.query;
-    params = (params as string[]) || [];
 
+    params = (params as string[]) || [];
     const route = getRouteImplementation(
       combinedRouter,
       params,
-      req.method as string
+      req.method as string,
     );
+    let pathParams;
+    if (route) {
+      pathParams = getPathParamsFromArray(params, route);
+    } else {
+      pathParams = {};
+    }
+    return { pathParams, query, route };
+  }, options);
+};
 
+/**
+ * Turn a contract route and a handler into a Next.js compatible handler
+ * Should be exported from your pages/api/<route path>.tsx file.
+ *
+ * e.g.
+ *
+ * ```typescript
+ * export default createNextRouter(contract, implementationHandler);
+ * ```
+ *
+ * @param appRoute
+ * @param options
+ * @returns
+ */
+export const createSingleUrlNextRouter = <T extends AppRoute>(
+  appRoute: AppRoute,
+  implementationHandler: AppRouteImplementation<T>,
+  options?: CreateNextRouterOptions,
+) =>
+  handlerFactory((req) => {
+    const route = { ...appRoute, implementation: implementationHandler };
+    const pathParams = req.query as Record<string, string>;
+    const query = req.query;
+
+    const isValidRoute = pathToRegexp(route.path).test(req.url as string);
+
+    return { pathParams, query, route: isValidRoute ? route : null };
+  }, options);
+
+/**
+ * Create a next.js compatible handler for a given route
+ * @param getArgumentsFromRequest
+ * @param options
+ * @returns
+ */
+const handlerFactory =
+  (
+    getArgumentsFromRequest: (req: NextApiRequest) => {
+      pathParams: Record<string, string>;
+      query: NextApiRequest['query'];
+      route: AppRouterWithImplementation[keyof AppRouterWithImplementation];
+    },
+    options?: CreateNextRouterOptions,
+  ) =>
+  async (req: NextApiRequest, res: NextApiResponse) => {
+    const {
+      jsonQuery = false,
+      responseValidation = false,
+      throwRequestValidation = false,
+    } = options || {};
+
+    const args = getArgumentsFromRequest(req);
+    const { pathParams, route } = args;
+    let { query } = args;
     if (!route) {
       res.status(404).end();
       return;
     }
 
-    const pathParams = getPathParamsFromArray(params, route);
-
     const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
       passThroughExtraKeys: true,
     });
-
     const headersResult = checkZodSchema(req.headers, route.headers, {
       passThroughExtraKeys: true,
     });
-
     query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
-
     const queryResult = checkZodSchema(query, route.query);
-
     const bodyResult = checkZodSchema(req.body, route.body);
-
     try {
       if (
         !pathParamsResult.success ||
@@ -253,7 +307,6 @@ export const createNextRouter = <T extends AppRouter>(
             bodyResult.success ? null : bodyResult.error,
           );
         }
-
         if (!pathParamsResult.success) {
           return res.status(400).json(pathParamsResult.error);
         }
@@ -267,7 +320,6 @@ export const createNextRouter = <T extends AppRouter>(
           return res.status(400).json(bodyResult.error);
         }
       }
-
       const { body, status } = await route.implementation({
         body: bodyResult.data,
         query: queryResult.data,
@@ -276,11 +328,8 @@ export const createNextRouter = <T extends AppRouter>(
         req,
         res,
       });
-
       const statusCode = Number(status);
-
       let validatedResponseBody = body;
-
       if (responseValidation) {
         const response = validateResponse({
           appRoute: route,
@@ -289,16 +338,13 @@ export const createNextRouter = <T extends AppRouter>(
             body: body,
           },
         });
-
         validatedResponseBody = response.body;
       }
-
       const responseType = route.responses[statusCode];
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
         return res.status(statusCode).send(validatedResponseBody);
       }
-
       return res.status(statusCode).json(validatedResponseBody);
     } catch (e) {
       if (options?.errorHandler) {
@@ -309,4 +355,3 @@ export const createNextRouter = <T extends AppRouter>(
       throw e;
     }
   };
-};
