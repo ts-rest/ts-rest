@@ -224,7 +224,7 @@ export const createNextRouter = <T extends AppRouter>(
 
 /**
  * Turn a contract route and a handler into a Next.js compatible handler
- * Should be exported from your pages/api/<route path>.tsx file.
+ * Should be exported from your pages/api/path/to/handler.tsx file.
  *
  * e.g.
  *
