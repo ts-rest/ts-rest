@@ -552,7 +552,7 @@ importers:
   libs/ts-rest/react-query:
     dependencies:
       '@tanstack/react-query':
-        specifier: ^4.0.0 || ^5.0.0
+        specifier: ^4.0.0
         version: 4.33.0(react-dom@18.2.0)(react@18.2.0)
       react:
         specifier: ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -573,7 +573,7 @@ importers:
   libs/ts-rest/vue-query:
     dependencies:
       '@tanstack/vue-query':
-        specifier: ^4.0.0 || ^5.0.0
+        specifier: ^4.0.0
         version: 4.33.0(vue@3.3.4)
       zod:
         specifier: ^3.22.3
