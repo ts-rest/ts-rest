@@ -130,7 +130,13 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
 
   return Object.entries(zodShape).map(([key, value]) => {
     const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
-    const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
+    const isObject = (obj: z.ZodTypeAny) => {
+      while (obj._def.innerType) {
+        obj = obj._def.innerType;
+      }
+
+      return obj._def.typeName === 'ZodObject';
+    };
     const isRequired = !(value as z.ZodTypeAny).isOptional();
 
     return {
@@ -147,7 +153,9 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
             },
           }
         : {
-            ...(isObject && { style: 'deepObject' as const }),
+            ...(isObject(value as z.ZodTypeAny) && {
+              style: 'deepObject' as const,
+            }),
             schema: schema,
           }),
     };
