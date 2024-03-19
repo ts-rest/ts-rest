@@ -11,8 +11,8 @@ const nextConfig = {
     svgr: false,
   },
   expiremental: {
-    serverActions: true
-  }
+    serverActions: true,
+  },
 };
 
 module.exports = withNx(nextConfig);

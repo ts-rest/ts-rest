@@ -28,7 +28,7 @@ export class PostController implements NestControllerInterface<typeof c> {
     {
       query: { take, skip, search },
       headers: { 'x-pagination': pagination },
-    }: RequestShapes['getPosts']
+    }: RequestShapes['getPosts'],
   ) {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,
@@ -67,7 +67,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @TsRest(c.updatePost)
   async updatePost(
-    @TsRestRequest() { params: { id }, body }: RequestShapes['updatePost']
+    @TsRestRequest() { params: { id }, body }: RequestShapes['updatePost'],
   ) {
     const post = await this.postService.updatePost(id, {
       title: body.title,
@@ -81,7 +81,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @TsRest(c.deletePost)
   async deletePost(
-    @TsRestRequest() { params: { id } }: RequestShapes['deletePost']
+    @TsRestRequest() { params: { id } }: RequestShapes['deletePost'],
   ) {
     await this.postService.deletePost(id);
 
@@ -90,7 +90,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 
   @TsRest(c.testPathParams)
   async testPathParams(
-    @TsRestRequest() { params }: RequestShapes['testPathParams']
+    @TsRestRequest() { params }: RequestShapes['testPathParams'],
   ) {
     return { status: 200 as const, body: params };
   }

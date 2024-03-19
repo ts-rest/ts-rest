@@ -68,7 +68,7 @@ const postsRouter = c.router({
     method: 'GET',
     path: `/posts/:id/comments/:commentId`,
     pathParams: z.object({
-      commentId: z.string().length(5).describe("the comment ID"),
+      commentId: z.string().length(5).describe('the comment ID'),
     }),
     responses: {
       200: c.type<Post | null>(),
@@ -408,7 +408,7 @@ describe('ts-rest-open-api', () => {
         {
           info: { title: 'Blog API', version: '0.1' },
         },
-        { setOperationId: true }
+        { setOperationId: true },
       );
 
       expect(apiDoc).toEqual({
@@ -464,7 +464,7 @@ describe('ts-rest-open-api', () => {
         {
           info: { title: 'Blog API', version: '0.1' },
         },
-        { jsonQuery: true }
+        { jsonQuery: true },
       );
 
       expect(apiDoc).toEqual({
@@ -557,8 +557,8 @@ describe('ts-rest-open-api', () => {
           {
             info: { title: 'Blog API', version: '0.1' },
           },
-          { setOperationId: true }
-        )
+          { setOperationId: true },
+        ),
       ).toThrowError(/getPost/);
     });
 
@@ -572,7 +572,7 @@ describe('ts-rest-open-api', () => {
           },
           query: z
             .object({
-              foo: z.string().describe("Foo"),
+              foo: z.string().describe('Foo'),
             })
             .refine((v) => v.foo === 'bar', {
               message: 'foo must be bar',
@@ -775,7 +775,7 @@ describe('ts-rest-open-api', () => {
               parameters: [],
               requestBody: {
                 content: {
-                  "multipart/form-data": {
+                  'multipart/form-data': {
                     schema: {
                       properties: {
                         file: {
@@ -787,7 +787,7 @@ describe('ts-rest-open-api', () => {
                     },
                   },
                 },
-                description: "Body",
+                description: 'Body',
               },
               responses: {
                 '200': {

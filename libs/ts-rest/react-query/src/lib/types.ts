@@ -58,7 +58,7 @@ type InferClientArgs<TClient extends InitClientReturn<any, any>> =
 
 export type UseMutationOptions<
   TAppRoute extends AppRoute,
-  TClientArgsOrClient extends ClientArgs | InitClientReturn<any, any>
+  TClientArgsOrClient extends ClientArgs | InitClientReturn<any, any>,
 > = TanStackUseMutationOptions<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
@@ -72,7 +72,7 @@ export type UseMutationOptions<
 
 export type UseMutationResult<
   TAppRoute extends AppRoute,
-  TClientArgsOrClient extends ClientArgs | InitClientReturn<any, any>
+  TClientArgsOrClient extends ClientArgs | InitClientReturn<any, any>,
 > = TanStackUseMutationResult<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,

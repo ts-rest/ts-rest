@@ -3,7 +3,7 @@ import { z } from 'zod';
 const c = initContract();
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
-  T
+  T,
 >() => T extends b ? 1 : 2
   ? true
   : false;
@@ -50,7 +50,7 @@ export const emptyOptionsContract = c.router(
       },
     },
   },
-  {}
+  {},
 );
 
 emptyOptionsContract.createPost.path;
@@ -78,7 +78,7 @@ export const prefixedContract = c.router(
   },
   {
     pathPrefix: '/prefix',
-  }
+  },
 );
 
 prefixedContract.createPost.path;

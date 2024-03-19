@@ -297,13 +297,13 @@ describe('ts-rest-fastify', () => {
           responses: { 200: c.response<{ id: string }>() },
         },
       },
-      { pathPrefix: '/posts' }
+      { pathPrefix: '/posts' },
     );
     const postsContract = c.router(
       {
         posts: postsContractNested,
       },
-      { pathPrefix: '/v1' }
+      { pathPrefix: '/v1' },
     );
     const router = s.router(postsContract, {
       posts: {
@@ -411,7 +411,7 @@ describe('ts-rest-fastify', () => {
     expect(responseHtmlFail.status).toEqual(500);
     expect(responseHtmlFail.text).toEqual('Response validation failed');
     expect(responseHtmlFail.header['content-type']).toEqual(
-      'text/plain; charset=utf-8'
+      'text/plain; charset=utf-8',
     );
 
     const responseTextPlain = await supertest(app.server).get('/robots.txt');

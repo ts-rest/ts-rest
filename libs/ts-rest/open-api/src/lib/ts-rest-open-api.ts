@@ -24,7 +24,7 @@ type RouterPath = {
 
 const getPathsFromRouter = (
   router: AppRouter,
-  pathHistory?: string[]
+  pathHistory?: string[],
 ): RouterPath[] => {
   const paths: RouterPath[] = [];
 
@@ -86,7 +86,7 @@ const getPathParameters = (path: string, zodObject?: unknown) => {
         required: true,
         schema,
         ...(description && { description }),
-      }
+      };
     });
 
     params.push(...paramsFromZod);
@@ -112,9 +112,9 @@ const getHeaderParameters = (zodObject?: unknown) => {
       name: key,
       in: 'header' as const,
       ...(isRequired && { required: true }),
-      ...({
+      ...{
         schema: schema,
-      }),
+      },
     };
   });
 };
@@ -170,7 +170,7 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
 export const generateOpenApi = (
   router: AppRouter,
   apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
-  options: { setOperationId?: boolean; jsonQuery?: boolean } = {}
+  options: { setOperationId?: boolean; jsonQuery?: boolean } = {},
 ): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
@@ -189,7 +189,7 @@ export const generateOpenApi = (
       const existingOp = operationIds.get(path.id);
       if (existingOp) {
         throw new Error(
-          `Route '${path.id}' already defined under ${existingOp.join('.')}`
+          `Route '${path.id}' already defined under ${existingOp.join('.')}`,
         );
       }
       operationIds.set(path.id, path.paths);
@@ -200,7 +200,7 @@ export const generateOpenApi = (
 
     const querySchema = getQueryParametersFromZod(
       path.route.query,
-      !!options.jsonQuery
+      !!options.jsonQuery,
     );
 
     const bodySchema =
@@ -213,7 +213,7 @@ export const generateOpenApi = (
 
       const responseSchema = getOpenApiSchemaFromZod(
         path.route.responses[keyAsNumber],
-        true
+        true,
       );
 
       return {
@@ -233,7 +233,10 @@ export const generateOpenApi = (
       };
     }, {});
 
-    const contentType = path.route?.method !== 'GET' ? path.route?.contentType ?? 'application/json' : 'application/json';
+    const contentType =
+      path.route?.method !== 'GET'
+        ? path.route?.contentType ?? 'application/json'
+        : 'application/json';
 
     const newPath: OperationObject = {
       description: path.route.description,

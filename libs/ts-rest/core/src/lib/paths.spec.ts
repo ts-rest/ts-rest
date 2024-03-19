@@ -5,7 +5,7 @@ const type = <T>() => '' as unknown as T;
 
 const url = '/post/:id/comments/:commentId';
 expectType<{ id: string; commentId: string }>(
-  type<ParamsFromUrl<typeof url>>()
+  type<ParamsFromUrl<typeof url>>(),
 );
 
 const url2 = '/post/:id/comments';
@@ -19,7 +19,7 @@ expectType<{}>(type<ParamsFromUrl<typeof urlNoParams>>());
 
 const urlManyParams = '/post/:id/comments/:commentId/:commentId2';
 expectType<{ id: string; commentId: string; commentId2: string }>(
-  type<ParamsFromUrl<typeof urlManyParams>>()
+  type<ParamsFromUrl<typeof urlManyParams>>(),
 );
 
 describe('insertParamsIntoPath', () => {

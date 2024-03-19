@@ -85,7 +85,7 @@ const tokeniseValue = (key: string, value: unknown): [string, string][] => {
     return Object.keys(value).flatMap((k) =>
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      tokeniseValue(`${key}[${k}]`, value[k])
+      tokeniseValue(`${key}[${k}]`, value[k]),
     );
   }
 
@@ -109,6 +109,6 @@ export const parseJsonQueryObject = (query: Record<string, string>) => {
         parsedValue = value;
       }
       return [key, parsedValue];
-    })
+    }),
   );
 };

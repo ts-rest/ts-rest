@@ -169,7 +169,11 @@ export const tsRestHandler = <T extends AppRouter | AppRoute>(
  * Error you can throw to return a response from a handler
  */
 export class TsRestException<T extends AppRoute> extends HttpException {
-  constructor(route: T, response: ServerInferResponses<T>, options?: HttpExceptionOptions) {
+  constructor(
+    route: T,
+    response: ServerInferResponses<T>,
+    options?: HttpExceptionOptions,
+  ) {
     super(response.body as Record<string, any>, response.status, options);
   }
 }

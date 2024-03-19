@@ -27,7 +27,7 @@ import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { Response } from 'express';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
-  T
+  T,
 >() => T extends b ? 1 : 2
   ? true
   : false;
@@ -52,7 +52,7 @@ describe('doesUrlMatchContractPath', () => {
     'should return $expected when contractPath is $contractPath and url is $url',
     ({ contractPath, url, expected }) => {
       expect(doesUrlMatchContractPath(contractPath, url)).toBe(expected);
-    }
+    },
   );
 });
 
@@ -671,7 +671,7 @@ describe('ts-rest-nest-handler', () => {
         @UseInterceptors(FileInterceptor('file'))
         nestMulti(
           @Body() body: { messageAsField: string },
-          @UploadedFile() file: File
+          @UploadedFile() file: File,
         ) {
           return {
             messageAsField: body.messageAsField,
@@ -786,7 +786,7 @@ describe('ts-rest-nest-handler', () => {
             200: z.array(
               z.object({
                 message: z.string(),
-              })
+              }),
             ),
           },
         },
@@ -970,7 +970,7 @@ describe('ts-rest-nest-handler', () => {
         },
         {
           strictStatusCodes: true,
-        }
+        },
       );
 
       @Controller()
@@ -1185,7 +1185,7 @@ describe('ts-rest-nest-handler', () => {
               status: 200,
               body: { message: 'hello' },
             }),
-          }
+          },
         );
       }
     }
@@ -1232,7 +1232,7 @@ describe('ts-rest-nest-handler', () => {
           200: z.array(
             z.object({
               id: z.number(),
-            })
+            }),
           ),
         },
       },
@@ -1438,7 +1438,7 @@ describe('ts-rest-nest-handler', () => {
           200: z.array(
             z.object({
               id: z.number(),
-            })
+            }),
           ),
         },
       },
@@ -1446,15 +1446,19 @@ describe('ts-rest-nest-handler', () => {
 
     const cause = new Error('the root cause');
 
-    const error = new TsRestException(contract.getPosts, {
-      status: 400,
-      body: {
-        message: 'Something went wrong'
-      }
-    }, {
-      cause
-    })
+    const error = new TsRestException(
+      contract.getPosts,
+      {
+        status: 400,
+        body: {
+          message: 'Something went wrong',
+        },
+      },
+      {
+        cause,
+      },
+    );
 
     expect(error.cause).toEqual(cause);
-  })
+  });
 });

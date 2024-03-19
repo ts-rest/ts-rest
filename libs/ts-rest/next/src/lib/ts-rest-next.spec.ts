@@ -142,7 +142,7 @@ describe('strict mode', () => {
   it('does not allow unknown statuses when in strict mode', () => {
     const cStrict = c.router(
       { posts: postsRouter },
-      { strictStatusCodes: true }
+      { strictStatusCodes: true },
     );
     createNextRoute(cStrict, {
       posts: {
@@ -400,7 +400,7 @@ describe('createNextRouter', () => {
           }
           return res.status(500).send('Server Error');
         },
-      }
+      },
     );
 
     let req = mockReq('/index.html', {
@@ -425,7 +425,7 @@ describe('createNextRouter', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.setHeader).toHaveBeenCalledWith(
       'content-type',
-      'text/plain'
+      'text/plain',
     );
     expect(sendMock).toHaveBeenCalledWith('User-agent: * Disallow: /');
 
@@ -443,7 +443,7 @@ export const mockReq = (
     query?: Record<string, unknown>;
     body?: unknown;
     method: string;
-  }
+  },
 ): NextApiRequest => {
   const paramArray = url.split('/').splice(1);
 

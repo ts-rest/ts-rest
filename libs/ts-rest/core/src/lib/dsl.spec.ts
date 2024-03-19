@@ -171,7 +171,7 @@ describe('contract', () => {
         baseHeaders: z.object({
           'x-foo': z.string(),
         }),
-      }
+      },
     );
 
     type ContractShape = Expect<
@@ -233,7 +233,7 @@ describe('contract', () => {
         baseHeaders: z.object({
           'x-foo': z.string(),
         }),
-      }
+      },
     );
 
     type ContractShape = Expect<
@@ -298,7 +298,7 @@ describe('contract', () => {
         baseHeaders: z.object({
           'x-foo': z.string(),
         }),
-      }
+      },
     );
 
     type ContractShape = Expect<
@@ -383,7 +383,7 @@ describe('contract', () => {
       },
       {
         strictStatusCodes: true,
-      }
+      },
     );
 
     expect(contract.getPost.strictStatusCodes).toStrictEqual(true);
@@ -411,7 +411,7 @@ describe('contract', () => {
       },
       {
         strictStatusCodes: false,
-      }
+      },
     );
 
     expect(contract.getPost.strictStatusCodes).toStrictEqual(false);
@@ -440,7 +440,7 @@ describe('contract', () => {
       },
       {
         strictStatusCodes: false,
-      }
+      },
     );
 
     expect(contract.getPost.strictStatusCodes).toStrictEqual(true);
@@ -469,7 +469,7 @@ describe('contract', () => {
       },
       {
         strictStatusCodes: true,
-      }
+      },
     );
 
     expect(contract.getPost.strictStatusCodes).toStrictEqual(false);
@@ -494,13 +494,13 @@ describe('contract', () => {
             responses: { 200: c.response<{ id: string }>() },
           },
         },
-        { pathPrefix: '/posts' }
+        { pathPrefix: '/posts' },
       );
       const postsContract = c.router(
         {
           posts: postsContractNested,
         },
-        { pathPrefix: '/v1' }
+        { pathPrefix: '/v1' },
       );
       expect(postsContractNested.getPost.path).toStrictEqual('/posts/:id');
       expect(postsContract.posts.getPost.path).toStrictEqual('/v1/posts/:id');
@@ -537,24 +537,27 @@ describe('contract', () => {
 
   describe('validateResponseOnClient', () => {
     it('Should recursively apply validateResponseOnClient to routes', () => {
-      const postsContractNested = c.router(
-        {
-          getPost: {
-            path: '/:id',
-            method: 'GET',
-            responses: { 200: c.response<{ id: string }>() },
-
-          },
-        }
-      );
+      const postsContractNested = c.router({
+        getPost: {
+          path: '/:id',
+          method: 'GET',
+          responses: { 200: c.response<{ id: string }>() },
+        },
+      });
       const postsContract = c.router(
         {
           posts: postsContractNested,
         },
-        { validateResponseOnClient: true }
+        { validateResponseOnClient: true },
       );
-      expect(postsContractNested.getPost).toHaveProperty('validateResponseOnClient', undefined)
-      expect(postsContract.posts.getPost).toHaveProperty('validateResponseOnClient', true)
+      expect(postsContractNested.getPost).toHaveProperty(
+        'validateResponseOnClient',
+        undefined,
+      );
+      expect(postsContract.posts.getPost).toHaveProperty(
+        'validateResponseOnClient',
+        true,
+      );
     });
 
     it('Should not override validateResponseOnClient if set on nested router', () => {
@@ -566,16 +569,22 @@ describe('contract', () => {
             responses: { 200: c.response<{ id: string }>() },
           },
         },
-        { validateResponseOnClient: false }
+        { validateResponseOnClient: false },
       );
       const postsContract = c.router(
         {
           posts: postsContractNested,
         },
-        { validateResponseOnClient: true }
+        { validateResponseOnClient: true },
       );
-      expect(postsContractNested.getPost).toHaveProperty('validateResponseOnClient', false)
-      expect(postsContract.posts.getPost).toHaveProperty('validateResponseOnClient', false)
+      expect(postsContractNested.getPost).toHaveProperty(
+        'validateResponseOnClient',
+        false,
+      );
+      expect(postsContract.posts.getPost).toHaveProperty(
+        'validateResponseOnClient',
+        false,
+      );
     });
 
     it('Should not override validateResponseOnClient when set directly on route', () => {
@@ -593,11 +602,17 @@ describe('contract', () => {
             validateResponseOnClient: false,
           },
         },
-        { validateResponseOnClient: true }
+        { validateResponseOnClient: true },
       );
 
-      expect(postsContract.getPost).toHaveProperty('validateResponseOnClient', true)
-      expect(postsContract.getPostDangerously).toHaveProperty('validateResponseOnClient', false)
+      expect(postsContract.getPost).toHaveProperty(
+        'validateResponseOnClient',
+        true,
+      );
+      expect(postsContract.getPostDangerously).toHaveProperty(
+        'validateResponseOnClient',
+        false,
+      );
     });
   });
 
@@ -622,7 +637,7 @@ describe('contract', () => {
 
     type ResponseType = Expect<
       Equal<
-        typeof contract.getCss.responses['200'],
+        (typeof contract.getCss.responses)['200'],
         ContractOtherResponse<ContractPlainType<string>>
       >
     >;

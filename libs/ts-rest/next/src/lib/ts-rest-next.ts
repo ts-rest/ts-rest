@@ -35,7 +35,7 @@ type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {
     req: NextApiRequest;
     res: NextApiResponse;
-  }
+  },
 ) => Promise<ServerInferResponses<T>>;
 
 type RecursiveRouterObj<T extends AppRouter> = {
@@ -63,7 +63,7 @@ type AppRouterWithImplementation = {
  */
 const mergeRouterAndImplementation = <T extends AppRouter>(
   router: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: RecursiveRouterObj<T>,
 ): AppRouterWithImplementation => {
   const keys = Object.keys(router);
 
@@ -85,7 +85,7 @@ const mergeRouterAndImplementation = <T extends AppRouter>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isAppRouteWithImplementation = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: any
+  obj: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): obj is AppRouteWithImplementation<any> => {
   return obj?.implementation !== undefined && obj?.method;
@@ -131,7 +131,7 @@ const isRouteCorrect = (route: AppRoute, query: string[], method: string) => {
 const getRouteImplementation = (
   router: AppRouterWithImplementation,
   query: string[],
-  method: string
+  method: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): AppRouteWithImplementation<any> | null => {
   const keys = Object.keys(router);
@@ -164,7 +164,7 @@ const getRouteImplementation = (
  */
 export const createNextRoute = <T extends AppRouter>(
   appRouter: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: RecursiveRouterObj<T>,
 ) => implementation;
 
 /**
@@ -193,14 +193,14 @@ export const createNextRouter = <T extends AppRouter>(
     errorHandler?: (
       err: unknown,
       req: NextApiRequest,
-      res: NextApiResponse
+      res: NextApiResponse,
     ) => void;
-  }
+  },
 ) => {
   const {
     jsonQuery = false,
     responseValidation = false,
-    throwRequestValidation = false
+    throwRequestValidation = false,
   } = options || {};
 
   const combinedRouter = mergeRouterAndImplementation(routes, obj);
@@ -212,7 +212,7 @@ export const createNextRouter = <T extends AppRouter>(
     const route = getRouteImplementation(
       combinedRouter,
       params,
-      req.method as string
+      req.method as string,
     );
 
     if (!route) {

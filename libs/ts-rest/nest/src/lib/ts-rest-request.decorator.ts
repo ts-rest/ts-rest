@@ -35,7 +35,7 @@ export const TsRestRequest = createParamDecorator(
 
     const appRoute: AppRouteMutation | undefined = Reflect.getMetadata(
       TsRestAppRouteMetadataKey,
-      ctx.getHandler()
+      ctx.getHandler(),
     );
 
     if (!appRoute) {
@@ -56,7 +56,7 @@ export const TsRestRequest = createParamDecorator(
       key:
         | typeof ValidateRequestHeadersSymbol
         | typeof ValidateRequestQuerySymbol
-        | typeof ValidateRequestBodySymbol
+        | typeof ValidateRequestBodySymbol,
     ) => {
       const handlerValue = Reflect.getMetadata(key, ctx.getHandler());
       const classValue = Reflect.getMetadata(key, ctx.getClass());
@@ -79,7 +79,7 @@ export const TsRestRequest = createParamDecorator(
     });
 
     const headerValidation = getRequestValidationValue(
-      ValidateRequestHeadersSymbol
+      ValidateRequestHeadersSymbol,
     );
     if (!headersResult.success && headerValidation) {
       throw new BadRequestException(zodErrorResponse(headersResult.error));
@@ -96,7 +96,7 @@ export const TsRestRequest = createParamDecorator(
 
     const queryResult = checkZodSchema(query, appRoute.query);
     const queryValidation = getRequestValidationValue(
-      ValidateRequestQuerySymbol
+      ValidateRequestQuerySymbol,
     );
     if (!queryResult.success && queryValidation) {
       throw new BadRequestException(zodErrorResponse(queryResult.error));
@@ -104,7 +104,7 @@ export const TsRestRequest = createParamDecorator(
 
     const bodyResult = checkZodSchema(
       req.body,
-      (appRoute as AppRoute).method === 'GET' ? null : appRoute.body
+      (appRoute as AppRoute).method === 'GET' ? null : appRoute.body,
     );
 
     const bodyValidation = getRequestValidationValue(ValidateRequestBodySymbol);
@@ -120,7 +120,7 @@ export const TsRestRequest = createParamDecorator(
         ? (headersResult.data as TsRestRequestShape<typeof appRoute>['headers'])
         : req.headers,
     };
-  }
+  },
 );
 
 /**
