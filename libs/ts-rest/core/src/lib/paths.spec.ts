@@ -22,6 +22,17 @@ expectType<{ id: string; commentId: string; commentId2: string }>(
   type<ParamsFromUrl<typeof urlManyParams>>(),
 );
 
+const urlOptional = '/post/:id?';
+expectType<{
+  id: string;
+}>(type<ParamsFromUrl<typeof urlOptional>>());
+
+const urlManyOptional = '/post/:id?/comments/:commentId?';
+expectType<{
+  id: string;
+  commentId: string;
+}>(type<ParamsFromUrl<typeof urlManyOptional>>());
+
 describe('insertParamsIntoPath', () => {
   it('should insert params into path', () => {
     const path = '/post/:id/comments/:commentId';
