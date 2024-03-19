@@ -10,7 +10,7 @@ import {
   ResponseValidationError as ResponseValidationErrorCore,
   validateResponse,
 } from '@ts-rest/core';
-import { Router, withContent, withParams } from 'itty-router';
+import { Router, withParams } from 'itty-router';
 import { TsRestRequest } from './request';
 import { TsRestResponse } from './response';
 import {
@@ -33,7 +33,7 @@ const recursivelyProcessContract = ({
   router: RecursiveRouterObj<any, any> | AppRouteImplementation<any, any>;
   processRoute: (
     implementation: AppRouteImplementation<AppRoute, any>,
-    schema: AppRoute
+    schema: AppRoute,
   ) => void;
 }): void => {
   if (typeof router === 'object') {
@@ -60,7 +60,7 @@ const recursivelyProcessContract = ({
 const validateRequest = (
   req: TsRestRequest,
   schema: AppRouteQuery | AppRouteMutation,
-  options: ServerlessHandlerOptions
+  options: ServerlessHandlerOptions,
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -79,12 +79,12 @@ const validateRequest = (
     options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query,
-    schema.query
+    schema.query,
   );
 
   const bodyResult = checkZodSchema(
     req.content,
-    'body' in schema ? schema.body : null
+    'body' in schema ? schema.body : null,
   );
 
   if (
@@ -97,7 +97,7 @@ const validateRequest = (
       !paramsResult.success ? paramsResult.error : null,
       !headersResult.success ? headersResult.error : null,
       !queryResult.success ? queryResult.error : null,
-      !bodyResult.success ? bodyResult.error : null
+      !bodyResult.success ? bodyResult.error : null,
     );
   }
 
@@ -112,7 +112,7 @@ const validateRequest = (
 export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
   routes: T,
   obj: RecursiveRouterObj<T, TPlatformArgs>,
-  options: ServerlessHandlerOptions = {}
+  options: ServerlessHandlerOptions = {},
 ) => {
   const router = Router<TsRestRequest, [TPlatformArgs]>();
 
@@ -126,7 +126,7 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
 
       if (!pathname.startsWith(basePath)) {
         throw new Error(
-          `Expected path to start with the basePath of ${basePath}, but got a path of ${pathname}`
+          `Expected path to start with the basePath of ${basePath}, but got a path of ${pathname}`,
         );
       }
     });
@@ -154,7 +154,7 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
       ) {
         req.content = await req.text();
       }
-    }
+    },
   );
 
   recursivelyProcessContract({
@@ -163,7 +163,7 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
     processRoute: (implementation, appRoute) => {
       const routeHandler = async (
         request: TsRestRequest,
-        platformArgs: TPlatformArgs
+        platformArgs: TPlatformArgs,
       ) => {
         const validationResults = validateRequest(request, appRoute, options);
 
@@ -181,7 +181,7 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
             request,
             responseHeaders,
             ...platformArgs,
-          }
+          },
         );
 
         corsifyResponseHeaders(request, responseHeaders);
@@ -215,11 +215,11 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
           if (validatedResponseBody instanceof Blob) {
             responseHeaders.set(
               'content-type',
-              validatedResponseBody.type || responseType.contentType
+              validatedResponseBody.type || responseType.contentType,
             );
 
             validatedResponseBody = await blobToArrayBuffer(
-              validatedResponseBody
+              validatedResponseBody,
             );
           } else {
             responseHeaders.set('content-type', responseType.contentType);
@@ -252,7 +252,7 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
 export const serverlessErrorHandler = async (
   err: any,
   request: TsRestRequest,
-  options: ServerlessHandlerOptions = {}
+  options: ServerlessHandlerOptions = {},
 ): Promise<TsRestResponse> => {
   const { corsifyResponseHeaders } = createCors(options.cors);
 
@@ -266,7 +266,7 @@ export const serverlessErrorHandler = async (
   } else if (!(err instanceof TsRestHttpError)) {
     console.error(
       '[ts-rest] Unexpected error...',
-      err instanceof Error && err.stack ? err.stack : err
+      err instanceof Error && err.stack ? err.stack : err,
     );
   }
 
@@ -280,7 +280,7 @@ export const serverlessErrorHandler = async (
     request,
     new Headers({
       'content-type': httpError.contentType,
-    })
+    }),
   );
 
   return new TsRestResponse(
@@ -288,6 +288,6 @@ export const serverlessErrorHandler = async (
     {
       status: httpError.statusCode,
       headers,
-    }
+    },
   );
 };

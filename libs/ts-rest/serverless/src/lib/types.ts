@@ -15,7 +15,7 @@ export class RequestValidationError extends TsRestHttpError {
     public pathParamsError: z.ZodError | null,
     public headersError: z.ZodError | null,
     public queryError: z.ZodError | null,
-    public bodyError: z.ZodError | null
+    public bodyError: z.ZodError | null,
   ) {
     super(400, {
       message: 'Request validation failed',
@@ -28,7 +28,10 @@ export class RequestValidationError extends TsRestHttpError {
 }
 
 export class ResponseValidationError extends TsRestHttpError {
-  constructor(public appRoute: AppRoute, public error: z.ZodError) {
+  constructor(
+    public appRoute: AppRoute,
+    public error: z.ZodError,
+  ) {
     super(500, {
       message: 'Server Error',
     });
@@ -43,7 +46,7 @@ export type AppRouteImplementation<T extends AppRoute, TPlatformArgs> = (
     appRoute: T;
     request: TsRestRequest;
     responseHeaders: Headers;
-  }
+  },
 ) => Promise<ServerInferResponses<T>>;
 
 export type RecursiveRouterObj<T extends AppRouter, TPlatformArgs> = {
@@ -59,7 +62,7 @@ export type ServerlessHandlerOptions = {
   responseValidation?: boolean;
   errorHandler?: (
     err: unknown,
-    req: TsRestRequest
+    req: TsRestRequest,
   ) => TsRestResponse | Promise<TsRestResponse> | void | Promise<void>;
   cors?: CorsConfig;
   basePath?: string;

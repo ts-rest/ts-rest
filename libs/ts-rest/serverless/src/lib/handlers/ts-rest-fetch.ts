@@ -6,7 +6,7 @@ import { TsRestRequest } from '../request';
 export const tsr = {
   router: <T extends AppRouter>(
     contract: T,
-    router: RecursiveRouterObj<T, {}>
+    router: RecursiveRouterObj<T, {}>,
   ) => router,
 };
 
@@ -24,7 +24,7 @@ export const fetchRequestHandler = <T extends AppRouter>({
   const serverlessRouter = createServerlessRouter<T, {}>(
     contract,
     router,
-    options
+    options,
   );
   const tsRestRequest = new TsRestRequest(request);
   return serverlessRouter.handle(tsRestRequest, {}).catch(async (err) => {

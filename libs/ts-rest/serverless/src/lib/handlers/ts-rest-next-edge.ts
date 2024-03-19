@@ -11,25 +11,25 @@ type NextPlatformArgs = {
 export const tsr = {
   router: <T extends AppRouter>(
     contract: T,
-    router: RecursiveRouterObj<T, NextPlatformArgs>
+    router: RecursiveRouterObj<T, NextPlatformArgs>,
   ) => router,
 };
 
 export const createNextHandler = <T extends AppRouter>(
   contract: T,
   router: RecursiveRouterObj<T, {}>,
-  options: ServerlessHandlerOptions = {}
+  options: ServerlessHandlerOptions = {},
 ) => {
   const serverlessRouter = createServerlessRouter<T, NextPlatformArgs>(
     contract,
     router,
-    options
+    options,
   );
 
   return async (nextRequest: NextRequest): Promise<NextResponse> => {
     if (!nextRequest.nextUrl.searchParams.has('ts-rest')) {
       throw new Error(
-        'Please make sure your catch-all route file is named [...ts-rest]'
+        'Please make sure your catch-all route file is named [...ts-rest]',
       );
     }
 
@@ -37,7 +37,7 @@ export const createNextHandler = <T extends AppRouter>(
 
     const request = new TsRestRequest(
       nextRequest.nextUrl.toString(),
-      nextRequest
+      nextRequest,
     );
 
     return serverlessRouter

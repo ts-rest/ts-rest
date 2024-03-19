@@ -17,24 +17,24 @@ type LambdaPlatformArgs = {
 export const tsr = {
   router: <T extends AppRouter>(
     contract: T,
-    router: RecursiveRouterObj<T, LambdaPlatformArgs>
+    router: RecursiveRouterObj<T, LambdaPlatformArgs>,
   ) => router,
 };
 
 export const createLambdaHandler = <T extends AppRouter>(
   routes: T,
   obj: RecursiveRouterObj<T, LambdaPlatformArgs>,
-  options: ServerlessHandlerOptions = {}
+  options: ServerlessHandlerOptions = {},
 ) => {
   const router = createServerlessRouter<T, LambdaPlatformArgs>(
     routes,
     obj,
-    options
+    options,
   );
 
   return async (
     event: ApiGatewayEvent,
-    context: Context
+    context: Context,
   ): Promise<ApiGatewayResponse> => {
     const request = requestFromEvent(event);
 

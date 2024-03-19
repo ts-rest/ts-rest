@@ -1,41 +1,24 @@
 {
   "name": "@ts-rest/serverless",
-  "version": "3.26.0",
-  "dependencies": {},
+  "version": "3.34.0",
+  "dependencies": {
+    "itty-router": "^4.2.2"
+  },
   "peerDependencies": {
+    "@ts-rest/core": "3.34.0",
     "@types/aws-lambda": "^8.10.115",
-    "zod": "^3.0.0"
+    "next": "^12.0.0 || ^13.0.0 || ^14.0.0",
+    "zod": "^3.22.3"
   },
   "peerDependenciesMeta": {
     "@types/aws-lambda": {
       "optional": true
     },
+    "next": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }
-  },
-  "devDependencies": {
-    "next": "^12.0.0 || ^13.0.0"
-  },
-  "exports": {
-    "./fetch": {
-      "types": "./src/fetch.d.ts",
-      "import": "./fetch.js",
-      "require": "./fetch.cjs"
-    },
-    "./aws": {
-      "types": "./src/aws.d.ts",
-      "import": "./aws.js",
-      "require": "./aws.cjs"
-    },
-    "./next-edge": {
-      "types": "./src/next-edge.d.ts",
-      "import": "./next-edge.js",
-      "require": "./next-edge.cjs"
-    }
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "tsconfig": "./tsconfig.lib.json"
   }
 }

@@ -71,7 +71,7 @@ const testFetchRequestHandler = (request: Request) => {
       },
       upload: async (_, { request }) => {
         const boundary = getBoundary(
-          request.headers.get('content-type') as string
+          request.headers.get('content-type') as string,
         );
 
         const bodyBuffer = await request.arrayBuffer();
@@ -169,7 +169,7 @@ describe('fetchRequestHandler', () => {
           'content-type': 'text/html',
           vary: 'Origin',
         },
-      }
+      },
     );
 
     expect(response.status).toEqual(expectedResponse.status);

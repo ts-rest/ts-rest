@@ -38,7 +38,7 @@ const createCorsHeaders = (
     exposedHeaders?: boolean;
     credentials?: boolean;
     maxAge?: boolean;
-  }
+  },
 ) => {
   const headers = new Headers();
 
@@ -112,7 +112,7 @@ export const createCors = (corsConfig?: CorsConfig) => {
 
   const corsifyResponseHeaders = (
     request: TsRestRequest,
-    responseHeaders: Headers
+    responseHeaders: Headers,
   ) => {
     if (!corsConfig) {
       return responseHeaders;

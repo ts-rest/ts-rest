@@ -26,14 +26,17 @@
         ],
         "format": ["esm", "cjs"],
         "compiler": "tsc",
-        "rollupConfig": "libs/ts-rest/serverless/rollup.config.js",
+        "rollupConfig": "tools/scripts/rollup.config.js",
         "generateExportsField": true,
-        "skipTypeField": true,
-        "buildableProjectDepsInPackageJsonType": "dependencies"
+        "additionalEntryPoints": [
+          "libs/ts-rest/serverless/src/fetch.ts",
+          "libs/ts-rest/serverless/src/aws.ts",
+          "libs/ts-rest/serverless/src/next-edge.ts"
+        ]
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/serverless/**/*.ts"]
@@ -43,7 +46,6 @@
       "executor": "@nx/vite:test",
       "outputs": ["coverage/libs/ts-rest/serverless"],
       "options": {
-        "passWithNoTests": true,
         "reportsDirectory": "../../coverage/libs/ts-rest/serverless"
       }
     }

@@ -17,7 +17,7 @@ describe('example-cloudflare-worker', () => {
       ],
       {
         killOthers: ['failure', 'success'],
-      }
+      },
     );
 
     await waitOn({

@@ -98,7 +98,7 @@ const createV1LambdaRequest = (request: PartialDeep<APIGatewayProxyEvent>) => {
 };
 
 const createV2LambdaRequest = (
-  request: PartialDeep<APIGatewayProxyEventV2>
+  request: PartialDeep<APIGatewayProxyEventV2>,
 ) => {
   return merge(apiGatewayEventV2, request);
 };
@@ -122,12 +122,12 @@ describe('tsRestLambda', () => {
         if (query.setCookies) {
           responseHeaders.append(
             'set-cookie',
-            'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict'
+            'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
           );
 
           responseHeaders.append(
             'set-cookie',
-            'bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict'
+            'bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
           );
         }
 
@@ -175,7 +175,7 @@ describe('tsRestLambda', () => {
       },
       upload: async (_, { request }) => {
         const boundary = getBoundary(
-          request.headers.get('content-type') as string
+          request.headers.get('content-type') as string,
         );
 
         const bodyBuffer = await request.arrayBuffer();
@@ -200,7 +200,7 @@ describe('tsRestLambda', () => {
           if (error.message === 'custom-json') {
             return TsRestResponse.fromJson(
               { message: 'Custom Error Handler' },
-              { status: 422 }
+              { status: 422 },
             );
           } else if (error.message === 'custom-text') {
             return TsRestResponse.fromText('Custom Error Handler', {
@@ -212,7 +212,7 @@ describe('tsRestLambda', () => {
         // if not returning a response, should pass through to the default error handler
         return;
       },
-    }
+    },
   );
 
   it('v1 should handle GET with query', async () => {
@@ -590,7 +590,7 @@ describe('tsRestLambda', () => {
           'Content-Type: text/html\r\n' +
           '\r\n' +
           '<html><body><h1>Hello ts-rest!</h1></body></html>\r\n' +
-          '-----WebKitFormBoundary7MA4YWxkTrZu0gW--'
+          '-----WebKitFormBoundary7MA4YWxkTrZu0gW--',
       ).toString('base64'),
       headers: {
         'content-type':

@@ -66,7 +66,7 @@ export function requestHeaders(event: ApiGatewayEvent) {
 }
 
 export function requestBody(
-  event: ApiGatewayEvent
+  event: ApiGatewayEvent,
 ): ArrayBuffer | string | undefined {
   if (event.body === undefined || event.body === null) {
     return;
@@ -95,7 +95,7 @@ export function requestUrl(event: ApiGatewayEvent) {
         values?.forEach((value) => {
           url.searchParams.append(key, value);
         });
-      }
+      },
     );
   }
 
@@ -122,7 +122,7 @@ export function requestFromEvent(event: ApiGatewayEvent) {
 
 export async function responseToResult(
   event: ApiGatewayEvent,
-  response: TsRestResponse
+  response: TsRestResponse,
 ): Promise<ApiGatewayResponse> {
   const headers = {} as Record<string, string>;
   const multiValueHeaders = {} as Record<string, string[]>;

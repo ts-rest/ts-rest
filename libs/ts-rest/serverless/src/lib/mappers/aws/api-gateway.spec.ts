@@ -44,13 +44,13 @@ describe('ApiGateway', () => {
   describe('requestRemoteAddress', () => {
     it('should work for v1 event', () => {
       expect(requestRemoteAddress(apiGatewayEventV1 as any)).toStrictEqual(
-        '52.255.255.12'
+        '52.255.255.12',
       );
     });
 
     it('should work for v2 event', () => {
       expect(requestRemoteAddress(apiGatewayEventV2 as any)).toStrictEqual(
-        '205.255.255.176'
+        '205.255.255.176',
       );
     });
   });
@@ -118,13 +118,13 @@ describe('ApiGateway', () => {
   describe('requestUrl', () => {
     it('should work for v1 event', () => {
       expect(requestUrl(apiGatewayEventV1 as any)).toStrictEqual(
-        'http://localhost/?parameter1=value1&parameter3=value3&parameter3=value4&parameter2=value'
+        'http://localhost/?parameter1=value1&parameter3=value3&parameter3=value4&parameter2=value',
       );
     });
 
     it('should work for v2 event', () => {
       expect(requestUrl(apiGatewayEventV2 as any)).toStrictEqual(
-        'http://localhost/default/nodejs-apig-function-1G3XMPLZXVXYI?foo=bar'
+        'http://localhost/default/nodejs-apig-function-1G3XMPLZXVXYI?foo=bar',
       );
     });
   });
@@ -135,7 +135,7 @@ describe('ApiGateway', () => {
 
       expect(request.method).toEqual('GET');
       expect(request.url).toEqual(
-        'http://localhost/?parameter1=value1&parameter3=value3&parameter3=value4&parameter2=value'
+        'http://localhost/?parameter1=value1&parameter3=value3&parameter3=value4&parameter2=value',
       );
       expect(headerToObject(request.headers)).toEqual({
         accept:
@@ -184,7 +184,7 @@ describe('ApiGateway', () => {
 
       expect(request.method).toEqual('GET');
       expect(request.url).toEqual(
-        'http://localhost/default/nodejs-apig-function-1G3XMPLZXVXYI?foo=bar'
+        'http://localhost/default/nodejs-apig-function-1G3XMPLZXVXYI?foo=bar',
       );
       expect(headerToObject(request.headers)).toEqual({
         accept:

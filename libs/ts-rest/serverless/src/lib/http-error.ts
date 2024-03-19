@@ -8,7 +8,7 @@ export class TsRestHttpError extends Error {
   constructor(
     public statusCode: number,
     public body: any,
-    public contentType = 'application/json'
+    public contentType = 'application/json',
   ) {
     super();
 
