@@ -1,5 +1,7 @@
 # @ts-rest/serverless
 
+## 3.35.1
+
 ## 3.35.0
 
 ### Minor Changes

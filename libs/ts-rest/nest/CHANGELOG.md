@@ -1,5 +1,12 @@
 # @ts-rest/nest
 
+## 3.35.1
+
+### Patch Changes
+
+- b3fde9b: Fix Nest.js interceptor returninng promise when using new Nest.js handlers
+- 14f9416: Allow Nest.js handlers to return non-promise responses
+
 ## 3.35.0
 
 ## 3.34.0
