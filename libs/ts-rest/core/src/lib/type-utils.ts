@@ -177,4 +177,4 @@ export type Not<B extends boolean> = {
   true: false;
 }[`${B}`];
 
-export type Awaitable<T> = Promise<T> | T;
+export type Promisable<T> = Promise<T> | T;
