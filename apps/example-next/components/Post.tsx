@@ -18,7 +18,7 @@ export const Post = ({ postId }: { postId: string }) => {
         console.log('tried');
       },
       staleTime: 1000 * 60 * 30,
-    }
+    },
   );
 
   const { mutate: deletePost } = api.deletePost.useMutation({

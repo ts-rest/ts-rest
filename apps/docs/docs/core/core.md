@@ -1,10 +1,10 @@
 # Contract
 
-Define a contract with the `@ts-rest/core` package, you may nest routers within a router, generally you'd want a router for each nested resource e.g. `/users/:id/posts` could have a nested router `contract.users.posts`, this path is what you'd use on the client to query the API.
+Use the `@ts-rest/core` package to define a contract. Nesting routers can help organize your resources. For example, `/users/:id/posts` could have a nested router `contract.users.posts`. This is the path that you'd use on the client to query the API.
 
-Breaking down the contract to sub-routers also allows you to split up the backend implementation, for example in Nest.js you could have multiple controllers for the sub-routers.
+Breaking down the contract to sub-routers also allows you to split up the backend implementation. For example, in Nest.js you could have multiple controllers for the sub-routers.
 
-You can define your contract fields such as `body`, `query`, etc. using a plain Typescript through the `c.type` helper, or you can use Zod objects.
+You can define your contract fields such as `body`, `query`, `pathParams`, and `headers` using a plain Typescript through the `c.type` helper, or you can use Zod objects.
 
 ```typescript
 const c = initContract();
@@ -66,6 +66,38 @@ export const contract = c.router({
 ```
 
 Check the relevant sections to see how to enable JSON query encoding/decoding on the client or server.
+
+## Path Parameters
+
+You can define URL path parameters in your contract using a Zod object with the `path` and `pathParams` keys.
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  getPost: {
+    ...,
+    path: '/api/posts/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+  }
+});
+```
+
+Since URLs are just strings, any type other than `string` would need to be coerced or transformed into the required type. Using zod's `.coerce` for example:
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  getPost: {
+    ...,
+    path: '/api/posts/:id',
+    pathParams: z.object({
+      id: z.coerce.number(),
+    }),
+  }
+});
+```
 
 ## Headers
 

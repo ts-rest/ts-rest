@@ -57,11 +57,11 @@ Once you've created a client using `initQueryClient`, you may traverse the objec
 ```tsx
 const queryResult = client.posts.get.useQuery(
   ['posts'], // <- queryKey
-  () => {
+  () => ({
     params: {
       id: '1';
     }
-  }, // <- Query params, Params, Body etc (all typed)
+  }), // <- Query params, Params, Body etc (all typed)
   { staleTime: 1000 } // <- vue-query options (optional)
 );
 ```
@@ -77,11 +77,11 @@ const postId = computed(() => selectedPost.value.id);
 
 const queryResult = client.posts.get.useQuery(
   ['posts', postId], // <- queryKey with reactive ref
-  (context) => {
+  (context) => ({
     params: {
       id: postId.value; //  or use queryKey passed to context: context.queryKey[1]
     }
-  },
+  }),
   { enabled: computed(() => !!postId.value) } // <- make sure to use computed values for reactive options
 );
 ```

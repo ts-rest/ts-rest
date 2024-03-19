@@ -1,5 +1,18 @@
 # @ts-rest/next
 
+## 3.33.1
+
+## 3.33.0
+
+## 3.32.0
+
+## 3.31.0
+
+### Minor Changes
+
+- 3668247: feat: `@ts-rest/next` allow nextjs as a peer dependency
+- cb7aa3d: feat: `ts-rest/next` allow customization for zod validation errors
+
 ## 3.30.5
 
 ### Patch Changes

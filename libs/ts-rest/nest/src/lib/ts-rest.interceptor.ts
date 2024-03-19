@@ -27,7 +27,7 @@ export class TsRestInterceptor implements NestInterceptor {
 
     const appRoute = this.reflector.get<AppRoute | undefined>(
       TsRestAppRouteMetadataKey,
-      context.getHandler()
+      context.getHandler(),
     );
 
     if (!appRoute) {
@@ -38,8 +38,8 @@ export class TsRestInterceptor implements NestInterceptor {
     const isValidationEnabled = Boolean(
       this.reflector.getAllAndOverride<boolean | undefined>(
         ValidateResponsesSymbol,
-        [context.getHandler(), context.getClass()]
-      )
+        [context.getHandler(), context.getClass()],
+      ),
     );
 
     return next.handle().pipe(
@@ -64,7 +64,7 @@ export class TsRestInterceptor implements NestInterceptor {
         }
 
         return value;
-      })
+      }),
     );
   }
 }

@@ -14,7 +14,7 @@ type OwnedPost = Post & { ownerId: string };
 
 export const mockOwnedResource = (
   resource: 'post',
-  partial: Partial<OwnedPost>
+  partial: Partial<OwnedPost>,
 ): OwnedPost => ({
   id: 'mock-id',
   ownerId: 'mock-owner-id',

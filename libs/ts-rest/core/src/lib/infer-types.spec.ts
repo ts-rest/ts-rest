@@ -86,7 +86,7 @@ const contract = c.router(
               z.object({
                 id: z.number(),
                 content: z.string(),
-              })
+              }),
             ),
           }),
           404: c.type<null>(),
@@ -99,7 +99,7 @@ const contract = c.router(
       Authorization: z.string(),
       age: z.coerce.number().optional(),
     }),
-  }
+  },
 );
 
 const contractStrict = c.router(contract, {

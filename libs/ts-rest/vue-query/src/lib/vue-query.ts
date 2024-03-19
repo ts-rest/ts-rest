@@ -18,7 +18,7 @@ import { DataReturnMutation, getRouteUseMutation } from './use-mutation';
 
 type UseQueryArgs<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 > = {
   useQuery: TAppRoute extends AppRouteQuery
     ? DataReturnQuery<TAppRoute, TClientArgs>
@@ -47,15 +47,15 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
 
 export type InitClientReturn<
   T extends AppRouter,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 > = RecursiveProxyObj<T, TClientArgs>;
 
 export const initQueryClient = <
   T extends AppRouter,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 >(
   router: T,
-  args: TClientArgs
+  args: TClientArgs,
 ): InitClientReturn<T, TClientArgs> =>
   Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) =>
@@ -70,6 +70,6 @@ export const initQueryClient = <
               useMutation: getRouteUseMutation(subRouter, args),
             },
           ]
-        : [key, initQueryClient(subRouter, args)]
-    )
+        : [key, initQueryClient(subRouter, args)],
+    ),
   );

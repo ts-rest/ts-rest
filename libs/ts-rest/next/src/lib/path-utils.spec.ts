@@ -31,7 +31,7 @@ describe('getPathParamsFromArray', () => {
 
     const pathParams = getPathParamsFromArray(
       ['posts', '1', 'comments', '2'],
-      appRoute
+      appRoute,
     );
 
     expect(pathParams).toStrictEqual({ id: '1', commentId: '2' });

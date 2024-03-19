@@ -19,32 +19,32 @@ import { DataResponse, ErrorResponse, queryFn } from './common';
 export type DataReturnQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>
+  TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
       queryKey: QueryKey,
       args?: (context: QueryFunctionContext<QueryKey>) => TArgs,
-      options?: UseQueryOptions<TAppRoute>
+      options?: UseQueryOptions<TAppRoute>,
     ) => UseQueryReturnType<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>
   : (
       queryKey: QueryKey,
       args: (context: QueryFunctionContext<QueryKey>) => TArgs,
-      options?: UseQueryOptions<TAppRoute>
+      options?: UseQueryOptions<TAppRoute>,
     ) => UseQueryReturnType<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
 
 export const getRouteUseQuery = <
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 >(
   route: TAppRoute,
-  clientArgs: TClientArgs
+  clientArgs: TClientArgs,
 ) => {
   return (
     queryKey: QueryKey,
     args?: (
-      context: QueryFunctionContext<QueryKey>
+      context: QueryFunctionContext<QueryKey>,
     ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-    options?: UseQueryOptions<TAppRoute['responses']>
+    options?: UseQueryOptions<TAppRoute['responses']>,
   ) => {
     const dataFn = queryFn(route, clientArgs, args);
 

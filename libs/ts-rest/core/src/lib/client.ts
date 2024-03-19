@@ -37,7 +37,7 @@ export function getRouteResponses<T extends AppRouter>(router: T) {
 export type AppRouteFunction<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = PartialClientInferRequest<TRoute, TClientArgs>
+  TArgs = PartialClientInferRequest<TRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
   : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
@@ -160,7 +160,7 @@ const createFormData = (body: unknown) => {
 
 const normalizeHeaders = (headers: Record<string, string | undefined>) => {
   return Object.fromEntries(
-    Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v])
+    Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]),
   );
 };
 
@@ -221,6 +221,30 @@ export const fetchApi = ({
     });
   }
 
+  if (
+    route.method !== 'GET' &&
+    route.contentType === 'application/x-www-form-urlencoded'
+  ) {
+    const headers = {
+      ...combinedHeaders,
+      'content-type': 'application/x-www-form-urlencoded',
+    };
+    return apiFetcher({
+      route,
+      path,
+      method: route.method,
+      credentials: clientArgs.credentials,
+      headers,
+      body: body instanceof FormData ? body : createFormData(body),
+      rawBody: body,
+      rawQuery: query,
+      contentType: 'application/x-www-form-urlencoded',
+      signal,
+      next,
+      ...extraInputArgs,
+    });
+  }
+
   const includeContentTypeHeader =
     route.method !== 'GET' && body !== null && body !== undefined;
 
@@ -252,7 +276,7 @@ export const getCompleteUrl = (
   baseUrl: string,
   params: unknown,
   route: AppRoute,
-  jsonQuery: boolean
+  jsonQuery: boolean,
 ) => {
   const path = insertParamsIntoPath({
     path: route.path,
@@ -264,16 +288,16 @@ export const getCompleteUrl = (
 
 export const getRouteQuery = <
   TAppRoute extends AppRoute,
-  Framework extends Frameworks = 'none'
+  Framework extends Frameworks = 'none',
 >(
   route: TAppRoute,
-  clientArgs: InitClientArgs
+  clientArgs: InitClientArgs,
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
   return async (
     inputArgs?: Framework extends 'nextjs'
       ? ClientInferRequest<AppRouteMutation, ClientArgs, 'nextjs'>
-      : ClientInferRequest<AppRouteMutation, ClientArgs>
+      : ClientInferRequest<AppRouteMutation, ClientArgs>,
   ) => {
     const {
       query,
@@ -293,7 +317,7 @@ export const getRouteQuery = <
       clientArgs.baseUrl,
       params,
       route,
-      !!clientArgs.jsonQuery
+      !!clientArgs.jsonQuery,
     );
 
     const response = await fetchApi({
@@ -324,7 +348,7 @@ export const getRouteQuery = <
 
 export type InitClientReturn<
   T extends AppRouter,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 > = RecursiveProxyObj<T, TClientArgs>;
 
 export type InitClientArgs = ClientArgs & {
@@ -337,10 +361,10 @@ export type InitClientArgs = ClientArgs & {
 
 export const initClient = <
   T extends AppRouter,
-  TClientArgs extends InitClientArgs
+  TClientArgs extends InitClientArgs,
 >(
   router: T,
-  args: TClientArgs
+  args: TClientArgs,
 ): InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
@@ -349,6 +373,6 @@ export const initClient = <
       } else {
         return [key, initClient(subRouter, args)];
       }
-    })
+    }),
   );
 };

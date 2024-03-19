@@ -36,7 +36,7 @@ it('allows unknown statuses when not in strict mode', () => {
   class PostController implements NestControllerInterface<typeof nestContract> {
     @TsRest(nestContract.getPost)
     async getPost(
-      @TsRestRequest() { params: { id } }: RequestShapes['getPost']
+      @TsRestRequest() { params: { id } }: RequestShapes['getPost'],
     ) {
       return { status: 201 as const, body: null };
     }
@@ -61,7 +61,7 @@ it('does not allow unknown statuses when in strict mode', () => {
     @TsRest(nestContract.getPost)
     // @ts-expect-error 201 is not defined as a known response
     async getPost(
-      @TsRestRequest() { params: { id } }: RequestShapes['getPost']
+      @TsRestRequest() { params: { id } }: RequestShapes['getPost'],
     ) {
       return { status: 201 as const, body: null };
     }
@@ -78,7 +78,7 @@ it('allows responseShapes types to be used in controller logic', () => {
   class PostController implements NestControllerInterface<typeof nestContract> {
     @TsRest(nestContract.getPost)
     async getPost(
-      @TsRestRequest() { params: { id } }: RequestShapes['getPost']
+      @TsRestRequest() { params: { id } }: RequestShapes['getPost'],
     ) {
       const result: ResponseShapes['getPost'] = {
         status: 200 as const,
@@ -457,7 +457,7 @@ describe('ts-rest-nest', () => {
         @TsRestRequest()
         {
           body: { echoHtml },
-        }: NestRequestShapes<typeof nonJsonContract>['postIndex']
+        }: NestRequestShapes<typeof nonJsonContract>['postIndex'],
       ) {
         return {
           status: 200,
@@ -490,7 +490,7 @@ describe('ts-rest-nest', () => {
     expect(responseHtml.status).toEqual(200);
     expect(responseHtml.text).toEqual('<h1>hello world</h1>');
     expect(responseHtml.header['content-type']).toEqual(
-      'text/html; charset=utf-8'
+      'text/html; charset=utf-8',
     );
 
     const responseHtmlFail = await supertest(server).post('/index.html').send({
@@ -502,21 +502,21 @@ describe('ts-rest-nest', () => {
       statusCode: 500,
     });
     expect(responseHtmlFail.header['content-type']).toEqual(
-      'application/json; charset=utf-8'
+      'application/json; charset=utf-8',
     );
 
     const responseTextPlain = await supertest(server).get('/robots.txt');
     expect(responseTextPlain.status).toEqual(200);
     expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
     expect(responseTextPlain.header['content-type']).toEqual(
-      'text/plain; charset=utf-8'
+      'text/plain; charset=utf-8',
     );
 
     const responseCss = await supertest(server).get('/style.css');
     expect(responseCss.status).toEqual(200);
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual(
-      'text/css; charset=utf-8'
+      'text/css; charset=utf-8',
     );
   });
 });

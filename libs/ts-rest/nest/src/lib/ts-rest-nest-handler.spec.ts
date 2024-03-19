@@ -7,9 +7,13 @@ import {
 } from './ts-rest-nest-handler';
 import { z } from 'zod';
 import {
+  ArgumentsHost,
   Body,
+  Catch,
   Controller,
+  ExceptionFilter,
   Get,
+  HttpException,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -20,9 +24,10 @@ import { TsRest } from './ts-rest.decorator';
 import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
+import { Response } from 'express';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
-  T
+  T,
 >() => T extends b ? 1 : 2
   ? true
   : false;
@@ -47,7 +52,7 @@ describe('doesUrlMatchContractPath', () => {
     'should return $expected when contractPath is $contractPath and url is $url',
     ({ contractPath, url, expected }) => {
       expect(doesUrlMatchContractPath(contractPath, url)).toBe(expected);
-    }
+    },
   );
 });
 
@@ -666,7 +671,7 @@ describe('ts-rest-nest-handler', () => {
         @UseInterceptors(FileInterceptor('file'))
         nestMulti(
           @Body() body: { messageAsField: string },
-          @UploadedFile() file: File
+          @UploadedFile() file: File,
         ) {
           return {
             messageAsField: body.messageAsField,
@@ -781,7 +786,7 @@ describe('ts-rest-nest-handler', () => {
             200: z.array(
               z.object({
                 message: z.string(),
-              })
+              }),
             ),
           },
         },
@@ -965,7 +970,7 @@ describe('ts-rest-nest-handler', () => {
         },
         {
           strictStatusCodes: true,
-        }
+        },
       );
 
       @Controller()
@@ -1046,6 +1051,87 @@ describe('ts-rest-nest-handler', () => {
         }
       }
     });
+
+    it('should be able to throw a TsRestException to be handled by an exception filter', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        test: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+            400: z.object({
+              myError: z.string(),
+            }),
+          },
+        },
+      });
+
+      const httpExceptionObserver = jest.fn();
+
+      @Catch()
+      class HttpExceptionFilter implements ExceptionFilter {
+        catch(exception: unknown, host: ArgumentsHost): void {
+          httpExceptionObserver(exception);
+
+          const ctx = host.switchToHttp();
+
+          const response = ctx.getResponse<Response>();
+
+          if (exception instanceof HttpException) {
+            response
+              .status(exception.getStatus())
+              .send(exception.getResponse());
+          } else {
+            response.status(500).send('something went wrong');
+          }
+        }
+      }
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract, { validateResponses: true })
+        async postRequest() {
+          return tsRestHandler(contract, {
+            test: async () => {
+              throw new TsRestException(contract.test, {
+                status: 400,
+                body: {
+                  myError: 'my error',
+                },
+              });
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      app.useGlobalFilters(new HttpExceptionFilter());
+
+      await app.init();
+
+      const response = await supertest(app.getHttpServer()).get('/test').send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ myError: 'my error' });
+
+      // verify exception filter received error from ts-rest handler
+      expect(httpExceptionObserver).toHaveBeenCalledTimes(1);
+      expect(httpExceptionObserver.mock.calls[0][0]).toMatchObject({
+        status: 400,
+        response: { myError: 'my error' },
+        options: {
+          cause: expect.any(TsRestException),
+        },
+      });
+    });
   });
 
   it('should be able to combine single-handler, multi-handler and vanilla nest controllers', async () => {
@@ -1099,7 +1185,7 @@ describe('ts-rest-nest-handler', () => {
               status: 200,
               body: { message: 'hello' },
             }),
-          }
+          },
         );
       }
     }
@@ -1146,7 +1232,7 @@ describe('ts-rest-nest-handler', () => {
           200: z.array(
             z.object({
               id: z.number(),
-            })
+            }),
           ),
         },
       },
@@ -1336,5 +1422,43 @@ describe('ts-rest-nest-handler', () => {
         'content-length': '20',
       }),
     });
+  });
+
+  it('should support including a nested error as the cause', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      getPosts: {
+        path: '/posts',
+        method: 'GET',
+        query: z.object({
+          limit: z.string(),
+        }),
+        responses: {
+          200: z.array(
+            z.object({
+              id: z.number(),
+            }),
+          ),
+        },
+      },
+    });
+
+    const cause = new Error('the root cause');
+
+    const error = new TsRestException(
+      contract.getPosts,
+      {
+        status: 400,
+        body: {
+          message: 'Something went wrong',
+        },
+      },
+      {
+        cause,
+      },
+    );
+
+    expect(error.cause).toEqual(cause);
   });
 });

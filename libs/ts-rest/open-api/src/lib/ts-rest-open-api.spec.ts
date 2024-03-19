@@ -69,7 +69,7 @@ const postsRouter = c.router({
     method: 'GET',
     path: `/posts/:id/comments/:commentId`,
     pathParams: z.object({
-      commentId: z.string().length(5).describe("the comment ID"),
+      commentId: z.string().length(5).describe('the comment ID'),
     }),
     responses: {
       200: c.type<Post | null>(),
@@ -480,7 +480,7 @@ describe('ts-rest-open-api', () => {
         {
           info: { title: 'Blog API', version: '0.1' },
         },
-        { setOperationId: true }
+        { setOperationId: true },
       );
 
       expect(apiDoc).toEqual({
@@ -542,7 +542,7 @@ describe('ts-rest-open-api', () => {
         {
           info: { title: 'Blog API', version: '0.1' },
         },
-        { jsonQuery: true }
+        { jsonQuery: true },
       );
 
       expect(apiDoc).toEqual({
@@ -635,8 +635,8 @@ describe('ts-rest-open-api', () => {
           {
             info: { title: 'Blog API', version: '0.1' },
           },
-          { setOperationId: true }
-        )
+          { setOperationId: true },
+        ),
       ).toThrowError(/getPost/);
     });
 
@@ -650,7 +650,7 @@ describe('ts-rest-open-api', () => {
           },
           query: z
             .object({
-              foo: z.string().describe("Foo"),
+              foo: z.string().describe('Foo'),
             })
             .refine((v) => v.foo === 'bar', {
               message: 'foo must be bar',
@@ -682,6 +682,75 @@ describe('ts-rest-open-api', () => {
                   schema: {
                     type: 'string',
                   },
+                },
+              ],
+              responses: {
+                '200': {
+                  description: '200',
+                },
+              },
+              summary: undefined,
+              tags: [],
+            },
+          },
+        },
+      });
+    });
+
+    it('works with zod optional query parameters', () => {
+      const routerWithRefine = c.router({
+        endpointWithZodRefine: {
+          method: 'GET',
+          path: '/optional',
+          responses: {
+            200: c.type<null>(),
+          },
+          query: z.object({
+            foo: z
+              .object({
+                baz: z.string().describe('Baz').optional(),
+                bar: z.string().describe('Bar').optional(),
+              })
+              .describe('Foo')
+              .optional(),
+          }),
+        },
+      });
+
+      const schema = generateOpenApi(routerWithRefine, {
+        info: { title: 'Blog API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        info: {
+          title: 'Blog API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/optional': {
+            get: {
+              deprecated: undefined,
+              description: undefined,
+              parameters: [
+                {
+                  description: 'Foo',
+                  in: 'query',
+                  name: 'foo',
+                  schema: {
+                    properties: {
+                      bar: {
+                        description: 'Bar',
+                        type: 'string',
+                      },
+                      baz: {
+                        description: 'Baz',
+                        type: 'string',
+                      },
+                    },
+                    type: 'object',
+                  },
+                  style: 'deepObject',
                 },
               ],
               responses: {
@@ -784,7 +853,7 @@ describe('ts-rest-open-api', () => {
               parameters: [],
               requestBody: {
                 content: {
-                  "multipart/form-data": {
+                  'multipart/form-data': {
                     schema: {
                       properties: {
                         file: {
@@ -796,7 +865,7 @@ describe('ts-rest-open-api', () => {
                     },
                   },
                 },
-                description: "Body",
+                description: 'Body',
               },
               responses: {
                 '200': {

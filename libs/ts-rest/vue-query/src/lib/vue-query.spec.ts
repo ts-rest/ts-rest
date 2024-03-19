@@ -114,7 +114,7 @@ const postsRouter = c.router(
     baseHeaders: z.object({
       'x-test': z.string(),
     }),
-  }
+  },
 );
 
 // Three endpoints, two for posts, and one for health
@@ -157,7 +157,7 @@ const ERROR_RESPONSE = {
 
 function renderHook<Props, TResult>(
   composable: () => TResult,
-  { wrapper }: { wrapper: () => Element }
+  { wrapper }: { wrapper: () => Element },
 ): RenderHookResult<Props, TResult> {
   let result: TResult;
 
@@ -232,7 +232,7 @@ describe('react-query', () => {
         })),
       {
         wrapper,
-      }
+      },
     );
 
     expect(unref(result.current.data)).toStrictEqual(undefined);
@@ -269,7 +269,7 @@ describe('react-query', () => {
         })),
       {
         wrapper,
-      }
+      },
     );
 
     expect(unref(result.current.data)).toStrictEqual(undefined);
@@ -304,7 +304,7 @@ describe('react-query', () => {
         })),
       {
         wrapper,
-      }
+      },
     );
 
     expect(unref(result.current.data)).toStrictEqual(undefined);
@@ -363,7 +363,7 @@ describe('react-query', () => {
     const { result } = renderHook(
       () =>
         client.health.useQuery(['health'], () => ({}), { retry: () => false }),
-      { wrapper }
+      { wrapper },
     );
 
     expect(unref(result.current.data)).toStrictEqual(undefined);
@@ -411,7 +411,7 @@ describe('react-query', () => {
           content: '',
           authorId: '1',
         },
-      })
+      }),
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -468,7 +468,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current[0].data).toStrictEqual(undefined);
@@ -539,7 +539,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current[0].data).toStrictEqual(undefined);
@@ -614,7 +614,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current[0].data).toStrictEqual(undefined);
@@ -675,7 +675,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -704,7 +704,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -737,7 +737,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current).resolves.toStrictEqual(ERROR_RESPONSE);
@@ -768,7 +768,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -798,7 +798,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     await waitForNextUpdate();
@@ -810,7 +810,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current).toStrictEqual(SUCCESS_RESPONSE);
@@ -858,11 +858,11 @@ describe('react-query', () => {
           }),
           {
             staleTime: 10000,
-          }
+          },
         ),
       {
         wrapper,
-      }
+      },
     );
 
     await waitForNextUpdate();
@@ -874,7 +874,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     const { result } = renderHook(
@@ -888,11 +888,11 @@ describe('react-query', () => {
           }),
           {
             staleTime: 10000,
-          }
+          },
         ),
       {
         wrapper,
-      }
+      },
     );
 
     return waitFor(() => {
