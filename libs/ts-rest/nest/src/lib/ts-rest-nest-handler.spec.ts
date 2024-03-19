@@ -9,11 +9,15 @@ import { z } from 'zod';
 import {
   ArgumentsHost,
   Body,
+  CallHandler,
   Catch,
   Controller,
   ExceptionFilter,
+  ExecutionContext,
   Get,
   HttpException,
+  Injectable,
+  NestInterceptor,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -25,6 +29,7 @@ import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { Response } from 'express';
+import { map, Observable } from 'rxjs';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T,
@@ -465,6 +470,66 @@ describe('ts-rest-nest-handler', () => {
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ message: 'ok' });
+      });
+    });
+
+    it('should be able to intercept', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Injectable()
+      class TestInterceptor implements NestInterceptor {
+        intercept(
+          context: ExecutionContext,
+          next: CallHandler,
+        ): Observable<any> {
+          return next.handle().pipe(
+            map((data) => ({
+              message: 'intercepted',
+              oldMessage: data.message,
+            })),
+          );
+        }
+      }
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract)
+        @UseInterceptors(TestInterceptor)
+        async postRequest() {
+          return tsRestHandler(contract, {
+            getRequest: async () => ({
+              status: 200,
+              body: { message: 'ok' },
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer()).get('/').send();
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: 'intercepted',
+        oldMessage: 'ok',
       });
     });
   });

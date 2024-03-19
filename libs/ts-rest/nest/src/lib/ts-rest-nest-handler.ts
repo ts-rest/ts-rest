@@ -1,5 +1,5 @@
 import { Reflector } from '@nestjs/core';
-import { map, Observable } from 'rxjs';
+import { mergeMap, Observable } from 'rxjs';
 import type { Request, Response } from 'express-serve-static-core';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
@@ -341,7 +341,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     }
 
     return next.handle().pipe(
-      map(async (impl) => {
+      mergeMap(async (impl) => {
         let result = null;
         try {
           const res = {
