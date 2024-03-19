@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- 6fafe69: Export type `TsRestExpressOptions`
+- ea5c641: Export type `TsRestExpressOptions`
 
 ## 3.33.1
 

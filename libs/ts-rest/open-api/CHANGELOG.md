@@ -4,11 +4,11 @@
 
 ### Minor Changes
 
-- 6fafe69: Allow examples on body and responses
+- b194d2a: Allow examples on body and responses
 
 ### Patch Changes
 
-- 6fafe69: Correctly add `style: deepObject` for optional objects
+- 4665e0f: Correctly add `style: deepObject` for optional objects
 
 ## 3.33.1
 
