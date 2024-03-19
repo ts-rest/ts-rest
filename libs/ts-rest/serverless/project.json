@@ -44,9 +44,9 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/libs/ts-rest/serverless"],
+      "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/serverless"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/ts-rest/serverless"
+        "reportsDirectory": "../../../coverage/libs/ts-rest/serverless"
       }
     }
   },
