@@ -2,10 +2,6 @@
 
 ## 3.35.1
 
-### Patch Changes
-
-- @ts-rest/core@3.35.1
-
 ## 3.35.0
 
 ### Minor Changes
