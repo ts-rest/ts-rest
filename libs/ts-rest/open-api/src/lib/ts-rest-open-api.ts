@@ -132,7 +132,11 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   const zodShape = extractZodObjectShape(zodObject);
 
   return Object.entries(zodShape).map(([key, value]) => {
-    const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
+    const {
+      description,
+      mediaExamples: examples,
+      ...schema
+    } = getOpenApiSchemaFromZod(value)!;
     const isObject = (obj: z.ZodTypeAny) => {
       while (obj._def.innerType) {
         obj = obj._def.innerType;
@@ -152,6 +156,7 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
             content: {
               'application/json': {
                 schema: schema,
+                ...(examples && { examples }),
               },
             },
           }
@@ -167,17 +172,19 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
 
 declare module 'openapi3-ts' {
   interface SchemaObject {
-    examplesMap?: ExamplesObject;
+    mediaExamples?: ExamplesObject;
   }
 }
 
-const convertSchemaObjectToMediaTypeObject = (input: SchemaObject): MediaTypeObject => {
-  const { examplesMap: examples, ...schema } = input;
+const convertSchemaObjectToMediaTypeObject = (
+  input: SchemaObject,
+): MediaTypeObject => {
+  const { mediaExamples: examples, ...schema } = input;
 
   return {
     schema,
-    ...(examples && { examples })
-  }
+    ...(examples && { examples }),
+  };
 };
 
 /**

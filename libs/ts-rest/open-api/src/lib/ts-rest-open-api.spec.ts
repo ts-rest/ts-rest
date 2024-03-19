@@ -102,20 +102,29 @@ const router = c.router({
       200: c.type<{ message: string }>(),
     },
   },
-  examplesMap: {
+  mediaExamples: {
     method: 'POST',
-    path: '/examples-map',
+    path: '/media-examples',
+    query: z.object({
+      foo: extendApi(z.string(), {
+        // this will only be added when jsonQuery is enabled
+        mediaExamples: {
+          one: { value: 'foo' },
+          two: { value: 'bar' },
+        },
+      }),
+    }),
     summary: 'Examples API',
     description: `Check that examples can be added to body and response types`,
     body: extendApi(z.object({ id: z.string() }), {
-      examplesMap: {
+      mediaExamples: {
         one: { value: { id: 'foo' } },
         two: { value: { id: 'bar' } },
       },
     }),
     responses: {
       200: extendApi(z.object({ id: z.string() }), {
-        examplesMap: {
+        mediaExamples: {
           three: { value: { id: 'foo' } },
           four: { value: { id: 'bar' } },
         },
@@ -145,11 +154,20 @@ const expectedApiDoc = {
         tags: [],
       },
     },
-    '/examples-map': {
+    '/media-examples': {
       post: {
         deprecated: undefined,
         description: `Check that examples can be added to body and response types`,
-        parameters: [],
+        parameters: [
+          {
+            in: 'query',
+            name: 'foo',
+            required: true,
+            schema: {
+              type: 'string',
+            },
+          },
+        ],
         requestBody: {
           description: 'Body',
           content: {
@@ -492,10 +510,10 @@ describe('ts-rest-open-api', () => {
               operationId: 'health',
             },
           },
-          '/examples-map': {
+          '/media-examples': {
             post: {
-              ...expectedApiDoc.paths['/examples-map'].post,
-              operationId: 'examplesMap',
+              ...expectedApiDoc.paths['/media-examples'].post,
+              operationId: 'mediaExamples',
             },
           },
           '/posts': {
@@ -549,6 +567,34 @@ describe('ts-rest-open-api', () => {
         ...expectedApiDoc,
         paths: {
           ...expectedApiDoc.paths,
+          '/media-examples': {
+            ...expectedApiDoc.paths['/media-examples'],
+            post: {
+              ...expectedApiDoc.paths['/media-examples'].post,
+              parameters: [
+                {
+                  content: {
+                    'application/json': {
+                      examples: {
+                        one: {
+                          value: 'foo',
+                        },
+                        two: {
+                          value: 'bar',
+                        },
+                      },
+                      schema: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  in: 'query',
+                  name: 'foo',
+                  required: true,
+                },
+              ],
+            },
+          },
           '/posts': {
             ...expectedApiDoc.paths['/posts'],
             get: {
