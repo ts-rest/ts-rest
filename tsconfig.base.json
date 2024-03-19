@@ -38,7 +38,11 @@
       "@ts-rest/react-query": ["libs/ts-rest/react-query/src/index.ts"],
       "@ts-rest/solid-query": ["libs/ts-rest/solid-query/src/index.ts"],
       "@ts-rest/ts-rest/utils": ["libs/ts-rest/utils/src/index.ts"],
-      "@ts-rest/vue-query": ["libs/ts-rest/vue-query/src/index.ts"]
+      "@ts-rest/vue-query": ["libs/ts-rest/vue-query/src/index.ts"],
+      "@ts-rest/serverless": ["libs/ts-rest/serverless/src/index.ts"],
+      "@ts-rest/serverless/fetch": ["libs/ts-rest/serverless/src/fetch.ts"],
+      "@ts-rest/serverless/aws": ["libs/ts-rest/serverless/src/aws.ts"],
+      "@ts-rest/serverless/next-edge": ["libs/ts-rest/serverless/src/next-edge.ts"],
     }
   },
   "exclude": ["node_modules", "tmp"]
