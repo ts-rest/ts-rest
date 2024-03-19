@@ -34,7 +34,7 @@ export class AppController implements NestControllerInterface<typeof c> {
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUserAvatar(
     @TsRestRequest() { params: { id } }: RequestShapes['updateUserAvatar'],
-    @UploadedFile() avatar: Express.Multer.File
+    @UploadedFile() avatar: Express.Multer.File,
   ) {
     return {
       status: 200 as const,

@@ -10,8 +10,9 @@ const nextConfig = {
     // See: https://github.com/gregberge/svgr
     svgr: false,
   },
-  experimental: {
+  expiremental: {
     appDir: true,
+    serverActions: true,
   },
 };
 

@@ -4,7 +4,7 @@
  */
 type RecursivelyExtractPathParams<
   T extends string,
-  TAcc extends null | Record<string, string>
+  TAcc extends null | Record<string, string>,
 > = T extends `/:${infer PathParam}/${infer Right}`
   ? { [key in PathParam]: string } & RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/:${infer PathParam}`

@@ -30,7 +30,7 @@
       }
     },
     "serve": {
-      "executor": "@nx/node:node",
+      "executor": "@nx/js:node",
       "options": {
         "buildTarget": "example-nest:build"
       },
@@ -41,7 +41,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/example-nest/**/*.ts"]
@@ -52,7 +52,6 @@
       "outputs": ["{workspaceRoot}/coverage/apps/example-nest"],
       "options": {
         "jestConfig": "apps/example-nest/jest.config.ts",
-        "passWithNoTests": true,
         "coverageReporters": ["lcov", "text-summary"]
       }
     }

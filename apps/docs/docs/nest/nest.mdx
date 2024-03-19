@@ -8,10 +8,6 @@ As part of `@ts-rest/nest` 3.26.0 we introduced the `single-handler` and `multi-
 The old API will likely be deprecated in 4.0.0, so we recommend using the new API although there is no rush to migrate.
 :::
 
-:::tip
-If you're migrating an existing ts-rest codebase use our **automatic migration tools** in the legacy docs [here](/docs/nest/legacy/).
-:::
-
 ## Installation
 
 <InstallTabs packageName="@ts-rest/nest" />
@@ -22,10 +18,11 @@ Nest has always been a tricky framework to integrate with ts-rest, due to the wa
 
 ### Single Handler Approach - Easy Migration and Flexibility ⚡️
 
-We reccomend the single handler approach as it provides a 1-1 migration stategy for legacy controllers, you can swap one Nest route for one ts-rest route without affecting other routes in a Controller.
+We recommend the single handler approach as it provides a 1-1 migration strategy for legacy controllers. You can swap one Nest route for one ts-rest route without affecting other routes in a Controller.
 
 ```typescript
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { c } from './contract';
 
 @Controller()
 export class MyController {
@@ -73,6 +70,7 @@ The multi handler approach is fantastic for those of you who tend towards a more
 
 ```typescript
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { c } from './contract';
 
 @Controller()
 export class MyController {
@@ -101,6 +99,13 @@ export class MyController {
 ```
 
 The key difference here is you pass the entire contract (or a subset of a contract by defining a new contract or spreading multiple contracts) to the `@TsRestHandler` decorator and the `tsRestHandler` function.
+
+:::caution
+
+As of right now, for each route in a multi handler approach we instantiate the `@All` decorator for each route, this is _potentially_ problematic if you have the same route in multiple contracts (with different methods), as it will cause a conflict.
+
+We're looking into ways to solve this, but right now this may be a Nest limitation.
+:::
 
 #### Benefits
 
@@ -139,7 +144,7 @@ This isn't limited to Param decorators, you can use any Nest decorator on your c
 
 Generally speaking you should try to return all errors as a response, so that you get the benefits of `ts-rest` typing in the contract (to let your consumers know what errors to expect).
 
-However, sometimes it's much cleaner and simpler to throw an error rather than passing a response back to your handler - the problem is that you normally **loose all type safety** when you do this.
+However, sometimes it's much cleaner and simpler to throw an error rather than passing a response back to your handler - the problem is that you normally **lose all type safety** when you do this.
 
 With `TsRestException` you can throw a Nest exception and it will be handled by the `tsRestHandler` function and returned as a fully typed response.
 
@@ -189,6 +194,69 @@ export class MyController {
   async getPost() {
     return tsRestHandler(c.getPost, async () => {
       // ...
+    });
+  }
+}
+```
+
+### Request Validation
+By default, `ts-rest` validates all request components - body, headers and query parameters.
+In case of validation errors, the server responds with a `ZodError` object in the response body and a status code of 400.
+You can disable the validation of these components if you wish to perform the validation manually or handle the error differently.
+
+Using the `@TsRest()` decorator, you can configure request validation parameters for the entire controller:
+```typescript
+import { TsRest } from '@ts-rest/nest';
+
+@Controller()
+@TsRest({
+  validateRequestBody: false,
+  validateRequestQuery: false,
+  validateRequestHeaders: false
+})
+class MyController {}
+```
+
+You can also override controller decorator values for a specific route:
+
+```typescript
+import { TsRest } from '@ts-rest/nest';
+
+@Controller()
+@TsRest({
+  validateRequestBody: false,
+})
+class MyController {
+  @TsRest(contract.create, {
+    validateRequestBody: true
+  })
+  async create(@TsRestRequest() { body }) {
+    // body validated
+  }
+}
+```
+
+Or finally, using `@TsRestHandler()` for specific route:
+
+```typescript
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+
+@Controller()
+export class MyController {
+  constructor() {}
+
+  @TsRestHandler(c.getPost, {
+    validateRequestBody: false,
+    validateRequestQuery: false,
+    validateRequestHeaders: false
+  })
+  async getPost() {
+    return tsRestHandler(c.getPost, async ({ query, body }) => {
+      const isQueryValid = querySchema.safeParse(query);
+      console.log(isQueryValid) // => { success: false; error: ZodError }
+
+      const isBodyValid = bodySchema.safeParse(body);
+      console.log(isBodyValid) // => { success: true; data: {...} }
     });
   }
 }

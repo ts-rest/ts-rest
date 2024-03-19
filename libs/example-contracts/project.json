@@ -26,7 +26,7 @@
       ]
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/example-contracts/**/*.ts"]
@@ -37,7 +37,6 @@
       "outputs": ["{workspaceRoot}/coverage/libs/example-contracts"],
       "options": {
         "jestConfig": "libs/example-contracts/jest.config.ts",
-        "passWithNoTests": true,
         "coverageReporters": ["lcov", "text-summary"]
       }
     }

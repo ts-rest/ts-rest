@@ -9,7 +9,6 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "root": "apps/example-next",
         "outputPath": "dist/apps/example-next"
       },
       "configurations": {
@@ -48,12 +47,11 @@
       "outputs": ["{workspaceRoot}/coverage/apps/example-next"],
       "options": {
         "jestConfig": "apps/example-next/jest.config.ts",
-        "passWithNoTests": true,
         "coverageReporters": ["lcov", "text-summary"]
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/example-next/**/*.{ts,tsx,js,jsx}"]

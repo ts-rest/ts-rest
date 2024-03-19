@@ -1,17 +1,13 @@
 {
   "name": "@ts-rest/express",
-  "version": "3.26.2",
+  "version": "3.34.0",
   "peerDependencies": {
     "express": "^4.0.0",
-    "zod": "^3.0.0"
+    "zod": "^3.22.3"
   },
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
     }
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "tsconfig": "./tsconfig.lib.json"
   }
 }

@@ -15,7 +15,7 @@ declare const NullSymbol: unique symbol;
 export type ContractPlainType<T> = Opaque<T, 'ContractPlainType'>;
 export type ContractNullType = Opaque<typeof NullSymbol, 'ContractNullType'>;
 export type ContractAnyType =
-  | z.ZodTypeAny
+  | z.ZodSchema
   | ContractPlainType<unknown>
   | ContractNullType
   | null;
@@ -38,6 +38,7 @@ type AppRouteCommon = {
   >;
   strictStatusCodes?: boolean;
   metadata?: unknown;
+  validateResponseOnClient?: boolean;
 };
 
 /**
@@ -53,14 +54,17 @@ export type AppRouteQuery = AppRouteCommon & {
  */
 export type AppRouteMutation = AppRouteCommon & {
   method: 'POST' | 'DELETE' | 'PUT' | 'PATCH';
-  contentType?: 'application/json' | 'multipart/form-data';
+  contentType?:
+    | 'application/json'
+    | 'multipart/form-data'
+    | 'application/x-www-form-urlencoded';
   body: ContractAnyType;
 };
 
 type ValidatedHeaders<
   T extends AppRoute,
   TOptions extends RouterOptions,
-  TOptionsApplied = ApplyOptions<T, TOptions>
+  TOptionsApplied = ApplyOptions<T, TOptions>,
 > = 'headers' extends keyof TOptionsApplied
   ? TOptionsApplied['headers'] extends MixedZodError<infer A, infer B>
     ? {
@@ -78,7 +82,7 @@ type ValidatedHeaders<
  */
 type RecursivelyProcessAppRouter<
   T extends AppRouter,
-  TOptions extends RouterOptions
+  TOptions extends RouterOptions,
 > = {
   [K in keyof T]: T[K] extends AppRoute
     ? ValidatedHeaders<T[K], TOptions>
@@ -89,7 +93,7 @@ type RecursivelyProcessAppRouter<
 
 type RecursivelyApplyOptions<
   TRouter extends AppRouter,
-  TOptions extends RouterOptions
+  TOptions extends RouterOptions,
 > = {
   [TRouterKey in keyof TRouter]: TRouter[TRouterKey] extends AppRoute
     ? Prettify<ApplyOptions<TRouter[TRouterKey], TOptions>>
@@ -118,7 +122,7 @@ type UniversalMerge<A, B> = A extends z.AnyZodObject
 
 type ApplyOptions<
   TRoute extends AppRoute,
-  TOptions extends RouterOptions
+  TOptions extends RouterOptions,
 > = Omit<TRoute, 'headers' | 'path'> &
   WithoutUnknown<{
     path: TOptions['pathPrefix'] extends string
@@ -152,6 +156,7 @@ export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
   pathPrefix?: TPrefix;
+  validateResponseOnClient?: boolean;
 };
 
 /**
@@ -174,10 +179,10 @@ type ContractInstance = {
   router: <
     TRouter extends AppRouter,
     TPrefix extends string,
-    TOptions extends RouterOptions<TPrefix> = {}
+    TOptions extends RouterOptions<TPrefix> = {},
   >(
     endpoints: RecursivelyProcessAppRouter<TRouter, TOptions>,
-    options?: TOptions
+    options?: TOptions,
   ) => RecursivelyApplyOptions<TRouter, TOptions>;
   /**
    * A single query route, should exist within
@@ -221,7 +226,7 @@ export const initTsRest = (): ContractInstance => initContract();
 
 const recursivelyApplyOptions = <T extends AppRouter>(
   router: T,
-  options?: RouterOptions
+  options?: RouterOptions,
 ): T => {
   return Object.fromEntries(
     Object.entries(router).map(([key, value]) => {
@@ -236,17 +241,20 @@ const recursivelyApplyOptions = <T extends AppRouter>(
             headers: zodMerge(options?.baseHeaders, value.headers),
             strictStatusCodes:
               value.strictStatusCodes ?? options?.strictStatusCodes,
+            validateResponseOnClient:
+              value.validateResponseOnClient ??
+              options?.validateResponseOnClient,
           },
         ];
       } else {
         return [key, recursivelyApplyOptions(value, options)];
       }
-    })
+    }),
   );
 };
 
 export const ContractPlainTypeRuntimeSymbol = Symbol(
-  'ContractPlainType'
+  'ContractPlainType',
 ) as any;
 
 /**
@@ -273,6 +281,6 @@ export const initContract = (): ContractInstance => {
       ({
         contentType,
         body,
-      } as ContractOtherResponse<T>),
+      }) as ContractOtherResponse<T>,
   };
 };

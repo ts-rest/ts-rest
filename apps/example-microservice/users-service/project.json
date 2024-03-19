@@ -30,7 +30,7 @@
       }
     },
     "serve": {
-      "executor": "@nx/node:node",
+      "executor": "@nx/js:node",
       "options": {
         "buildTarget": "example-microservice-users-service:build"
       },
@@ -41,7 +41,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/example-microservice/users-service/**/*.ts"]
@@ -53,8 +53,7 @@
         "{workspaceRoot}/coverage/apps/example-microservice/users-service"
       ],
       "options": {
-        "jestConfig": "apps/example-microservice/users-service/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "apps/example-microservice/users-service/jest.config.ts"
       }
     }
   },

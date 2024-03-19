@@ -7,10 +7,13 @@ import {
 } from './ts-rest-nest-handler';
 import { z } from 'zod';
 import {
+  ArgumentsHost,
   Body,
+  Catch,
   Controller,
+  ExceptionFilter,
   Get,
-  INestApplication,
+  HttpException,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -20,13 +23,11 @@ import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
 import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
+import { Response } from 'express';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
-  T
+  T,
 >() => T extends b ? 1 : 2
   ? true
   : false;
@@ -41,6 +42,9 @@ describe('doesUrlMatchContractPath', () => {
     ${'/'}          | ${'/'}        | ${true}
     ${'/'}          | ${'/api'}     | ${false}
     ${'/api'}       | ${'/api'}     | ${true}
+    ${'/api/'}      | ${'/api'}     | ${true}
+    ${'/api'}       | ${'/api/'}    | ${true}
+    ${'/api/'}      | ${'/api/'}    | ${true}
     ${'/posts/:id'} | ${'/posts/1'} | ${true}
     ${'/posts/:id'} | ${'/posts/1'} | ${true}
     ${'/posts/:id'} | ${'/posts'}   | ${false}
@@ -48,17 +52,11 @@ describe('doesUrlMatchContractPath', () => {
     'should return $expected when contractPath is $contractPath and url is $url',
     ({ contractPath, url, expected }) => {
       expect(doesUrlMatchContractPath(contractPath, url)).toBe(expected);
-    }
+    },
   );
 });
 
 describe('ts-rest-nest-handler', () => {
-  let app: INestApplication;
-
-  afterEach(async () => {
-    await app.close();
-  });
-
   describe('multi-handler api', () => {
     it('should be able to implement a whole contract', async () => {
       const c = initContract();
@@ -108,7 +106,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [TestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const responseGet = await supertest(app.getHttpServer())
@@ -126,72 +124,347 @@ describe('ts-rest-nest-handler', () => {
       expect(responsePost.body).toEqual({ message: 'hello' });
     });
 
-    it('should validate body', async () => {
-      const c = initContract();
+    describe('body validation', () => {
+      it('should validate body', async () => {
+        const c = initContract();
 
-      const contract = c.router({
-        postRequest: {
-          path: '/test',
-          method: 'POST',
-          body: z.object({
-            message: z.string(),
-          }),
-          responses: {
-            200: z.object({
+        const contract = c.router({
+          postRequest: {
+            path: '/test',
+            method: 'POST',
+            body: z.object({
               message: z.string(),
             }),
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
+            },
           },
-        },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract)
+          async postRequest() {
+            return tsRestHandler(contract, {
+              postRequest: async ({ body }) => ({
+                status: 200,
+                body: body,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 'hello' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'hello' });
+
+        const responsePost = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 123 });
+
+        expect(responsePost.status).toBe(400);
+        expect(responsePost.body).toEqual({
+          bodyResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'number',
+                path: ['message'],
+                message: 'Expected string, received number',
+              },
+            ],
+            name: 'ZodError',
+          },
+          headersResult: null,
+          queryResult: null,
+          paramsResult: null,
+        });
       });
 
-      @Controller()
-      class SingleHandlerTestController {
-        @TsRestHandler(contract)
-        async postRequest() {
-          return tsRestHandler(contract, {
-            postRequest: async ({ body }) => ({
-              status: 200,
-              body: body,
+      it("shouldn't validate body", async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          postRequest: {
+            path: '/test',
+            method: 'POST',
+            body: z.object({
+              message: z.string(),
             }),
-          });
-        }
-      }
-
-      const moduleRef = await Test.createTestingModule({
-        controllers: [SingleHandlerTestController],
-      }).compile();
-
-      app = moduleRef.createNestApplication();
-      await app.init();
-
-      const response = await supertest(app.getHttpServer())
-        .post('/test')
-        .send({ message: 'hello' });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({ message: 'hello' });
-
-      const responsePost = await supertest(app.getHttpServer())
-        .post('/test')
-        .send({ message: 123 });
-
-      expect(responsePost.status).toBe(400);
-      expect(responsePost.body).toEqual({
-        bodyResult: {
-          issues: [
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'number',
-              path: ['message'],
-              message: 'Expected string, received number',
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
             },
-          ],
-          name: 'ZodError',
-        },
-        headersResult: null,
-        queryResult: null,
-        paramsResult: null,
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract, {
+            validateRequestBody: false,
+          })
+          async postRequest() {
+            return tsRestHandler(contract, {
+              postRequest: async ({ body }) => ({
+                status: 200,
+                body: body,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 'hello' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'hello' });
+
+        const responsePost = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 123 });
+
+        expect(responsePost.status).toBe(200);
+        expect(responsePost.body).toEqual({ message: 123 });
+      });
+    });
+
+    describe('validate headers', () => {
+      it('should validate', async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          getRequest: {
+            path: '/',
+            method: 'GET',
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
+            },
+            headers: z.object({
+              some: z.string(),
+            }),
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract)
+          async postRequest() {
+            return tsRestHandler(contract, {
+              getRequest: async () => ({
+                status: 200,
+                body: { message: 'ok' },
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer()).get('/').send();
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+          headersResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                message: 'Required',
+                path: ['some'],
+                received: 'undefined',
+              },
+            ],
+            name: 'ZodError',
+          },
+          bodyResult: null,
+          queryResult: null,
+          paramsResult: null,
+        });
+      });
+
+      it("shouldn't validate", async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          getRequest: {
+            path: '/',
+            method: 'GET',
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
+            },
+            headers: z.object({
+              some: z.string(),
+            }),
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract, { validateRequestHeaders: false })
+          async postRequest() {
+            return tsRestHandler(contract, {
+              getRequest: async () => ({
+                status: 200,
+                body: { message: 'ok' },
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer()).get('/').send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+          message: 'ok',
+        });
+      });
+    });
+
+    describe('validate query', () => {
+      it('should validate', async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          getRequest: {
+            path: '/',
+            method: 'GET',
+            query: z.object({
+              ids: z.array(z.string()),
+            }),
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
+            },
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract)
+          async postRequest() {
+            return tsRestHandler(contract, {
+              getRequest: async () => ({
+                status: 200,
+                body: { message: 'ok' },
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .get('/?id=some-id')
+          .send();
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+          headersResult: null,
+          bodyResult: null,
+          queryResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'array',
+                message: 'Required',
+                path: ['ids'],
+                received: 'undefined',
+              },
+            ],
+            name: 'ZodError',
+          },
+          paramsResult: null,
+        });
+      });
+
+      it("shouldn't validate", async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          getRequest: {
+            path: '/',
+            method: 'GET',
+            query: z.object({
+              ids: z.array(z.string()),
+            }),
+            responses: {
+              200: z.object({
+                message: z.string(),
+              }),
+            },
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract, { validateRequestQuery: false })
+          async postRequest() {
+            return tsRestHandler(contract, {
+              getRequest: async () => ({
+                status: 200,
+                body: { message: 'ok' },
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .get('/?id=some-id')
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'ok' });
       });
     });
   });
@@ -247,7 +520,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -296,7 +569,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer())
@@ -363,7 +636,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -398,7 +671,7 @@ describe('ts-rest-nest-handler', () => {
         @UseInterceptors(FileInterceptor('file'))
         nestMulti(
           @Body() body: { messageAsField: string },
-          @UploadedFile() file: File
+          @UploadedFile() file: File,
         ) {
           return {
             messageAsField: body.messageAsField,
@@ -425,7 +698,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const responseNested = await supertest(app.getHttpServer())
@@ -513,7 +786,7 @@ describe('ts-rest-nest-handler', () => {
             200: z.array(
               z.object({
                 message: z.string(),
-              })
+              }),
             ),
           },
         },
@@ -554,7 +827,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer())
@@ -615,7 +888,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -665,7 +938,7 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer()).get('/test').send();
@@ -697,7 +970,7 @@ describe('ts-rest-nest-handler', () => {
         },
         {
           strictStatusCodes: true,
-        }
+        },
       );
 
       @Controller()
@@ -733,17 +1006,12 @@ describe('ts-rest-nest-handler', () => {
         controllers: [SingleHandlerTestController],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const response = await supertest(app.getHttpServer())
         .get('/test/666')
         .send();
-
-      console.log({
-        status: response.status,
-        body: response.body,
-      });
 
       expect(response.status).toBe(500);
     });
@@ -782,6 +1050,87 @@ describe('ts-rest-nest-handler', () => {
           });
         }
       }
+    });
+
+    it('should be able to throw a TsRestException to be handled by an exception filter', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        test: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+            400: z.object({
+              myError: z.string(),
+            }),
+          },
+        },
+      });
+
+      const httpExceptionObserver = jest.fn();
+
+      @Catch()
+      class HttpExceptionFilter implements ExceptionFilter {
+        catch(exception: unknown, host: ArgumentsHost): void {
+          httpExceptionObserver(exception);
+
+          const ctx = host.switchToHttp();
+
+          const response = ctx.getResponse<Response>();
+
+          if (exception instanceof HttpException) {
+            response
+              .status(exception.getStatus())
+              .send(exception.getResponse());
+          } else {
+            response.status(500).send('something went wrong');
+          }
+        }
+      }
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract, { validateResponses: true })
+        async postRequest() {
+          return tsRestHandler(contract, {
+            test: async () => {
+              throw new TsRestException(contract.test, {
+                status: 400,
+                body: {
+                  myError: 'my error',
+                },
+              });
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      app.useGlobalFilters(new HttpExceptionFilter());
+
+      await app.init();
+
+      const response = await supertest(app.getHttpServer()).get('/test').send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({ myError: 'my error' });
+
+      // verify exception filter received error from ts-rest handler
+      expect(httpExceptionObserver).toHaveBeenCalledTimes(1);
+      expect(httpExceptionObserver.mock.calls[0][0]).toMatchObject({
+        status: 400,
+        response: { myError: 'my error' },
+        options: {
+          cause: expect.any(TsRestException),
+        },
+      });
     });
   });
 
@@ -836,7 +1185,7 @@ describe('ts-rest-nest-handler', () => {
               status: 200,
               body: { message: 'hello' },
             }),
-          }
+          },
         );
       }
     }
@@ -845,7 +1194,7 @@ describe('ts-rest-nest-handler', () => {
       controllers: [MultiTypeHandlerController],
     }).compile();
 
-    app = moduleRef.createNestApplication();
+    const app = moduleRef.createNestApplication();
 
     await app.init();
 
@@ -876,11 +1225,14 @@ describe('ts-rest-nest-handler', () => {
       getPosts: {
         path: '/posts',
         method: 'GET',
+        query: z.object({
+          limit: z.string(),
+        }),
         responses: {
           200: z.array(
             z.object({
               id: z.number(),
-            })
+            }),
           ),
         },
       },
@@ -977,14 +1329,14 @@ describe('ts-rest-nest-handler', () => {
       controllers: [FastifyController],
     }).compile();
 
-    app = moduleRef.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter()
-    );
+    const app = moduleRef.createNestApplication(new FastifyAdapter());
 
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
 
-    const response = await supertest(app.getHttpServer()).get('/posts').send();
+    const response = await supertest(app.getHttpServer())
+      .get('/posts?limit=10')
+      .send();
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: 1 }, { id: 2 }]);
@@ -1070,5 +1422,43 @@ describe('ts-rest-nest-handler', () => {
         'content-length': '20',
       }),
     });
+  });
+
+  it('should support including a nested error as the cause', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      getPosts: {
+        path: '/posts',
+        method: 'GET',
+        query: z.object({
+          limit: z.string(),
+        }),
+        responses: {
+          200: z.array(
+            z.object({
+              id: z.number(),
+            }),
+          ),
+        },
+      },
+    });
+
+    const cause = new Error('the root cause');
+
+    const error = new TsRestException(
+      contract.getPosts,
+      {
+        status: 400,
+        body: {
+          message: 'Something went wrong',
+        },
+      },
+      {
+        cause,
+      },
+    );
+
+    expect(error.cause).toEqual(cause);
   });
 });

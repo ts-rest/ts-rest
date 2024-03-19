@@ -18,12 +18,24 @@ import {
   validateResponse,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
+import { z } from 'zod';
+
+export class RequestValidationError extends Error {
+  constructor(
+    public pathParams: z.ZodError | null,
+    public headers: z.ZodError | null,
+    public query: z.ZodError | null,
+    public body: z.ZodError | null,
+  ) {
+    super('[ts-rest] request validation failed');
+  }
+}
 
 type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {
     req: NextApiRequest;
     res: NextApiResponse;
-  }
+  },
 ) => Promise<ServerInferResponses<T>>;
 
 type RecursiveRouterObj<T extends AppRouter> = {
@@ -51,7 +63,7 @@ type AppRouterWithImplementation = {
  */
 const mergeRouterAndImplementation = <T extends AppRouter>(
   router: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: RecursiveRouterObj<T>,
 ): AppRouterWithImplementation => {
   const keys = Object.keys(router);
 
@@ -73,7 +85,7 @@ const mergeRouterAndImplementation = <T extends AppRouter>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isAppRouteWithImplementation = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: any
+  obj: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): obj is AppRouteWithImplementation<any> => {
   return obj?.implementation !== undefined && obj?.method;
@@ -119,7 +131,7 @@ const isRouteCorrect = (route: AppRoute, query: string[], method: string) => {
 const getRouteImplementation = (
   router: AppRouterWithImplementation,
   query: string[],
-  method: string
+  method: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): AppRouteWithImplementation<any> | null => {
   const keys = Object.keys(router);
@@ -152,7 +164,7 @@ const getRouteImplementation = (
  */
 export const createNextRoute = <T extends AppRouter>(
   appRouter: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: RecursiveRouterObj<T>,
 ) => implementation;
 
 /**
@@ -177,14 +189,19 @@ export const createNextRouter = <T extends AppRouter>(
   options?: {
     jsonQuery?: boolean;
     responseValidation?: boolean;
+    throwRequestValidation?: boolean;
     errorHandler?: (
       err: unknown,
       req: NextApiRequest,
-      res: NextApiResponse
+      res: NextApiResponse,
     ) => void;
-  }
+  },
 ) => {
-  const { jsonQuery = false, responseValidation = false } = options || {};
+  const {
+    jsonQuery = false,
+    responseValidation = false,
+    throwRequestValidation = false,
+  } = options || {};
 
   const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
@@ -195,7 +212,7 @@ export const createNextRouter = <T extends AppRouter>(
     const route = getRouteImplementation(
       combinedRouter,
       params,
-      req.method as string
+      req.method as string,
     );
 
     if (!route) {
@@ -209,17 +226,9 @@ export const createNextRouter = <T extends AppRouter>(
       passThroughExtraKeys: true,
     });
 
-    if (!pathParamsResult.success) {
-      return res.status(400).json(pathParamsResult.error);
-    }
-
     const headersResult = checkZodSchema(req.headers, route.headers, {
       passThroughExtraKeys: true,
     });
-
-    if (!headersResult.success) {
-      return res.status(400).send(headersResult.error);
-    }
 
     query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
@@ -227,17 +236,38 @@ export const createNextRouter = <T extends AppRouter>(
 
     const queryResult = checkZodSchema(query, route.query);
 
-    if (!queryResult.success) {
-      return res.status(400).json(queryResult.error);
-    }
-
     const bodyResult = checkZodSchema(req.body, route.body);
 
-    if (!bodyResult.success) {
-      return res.status(400).json(bodyResult.error);
-    }
-
     try {
+      if (
+        !pathParamsResult.success ||
+        !headersResult.success ||
+        !queryResult.success ||
+        !bodyResult.success
+      ) {
+        if (throwRequestValidation) {
+          throw new RequestValidationError(
+            pathParamsResult.success ? null : pathParamsResult.error,
+            headersResult.success ? null : headersResult.error,
+            queryResult.success ? null : queryResult.error,
+            bodyResult.success ? null : bodyResult.error,
+          );
+        }
+
+        if (!pathParamsResult.success) {
+          return res.status(400).json(pathParamsResult.error);
+        }
+        if (!headersResult.success) {
+          return res.status(400).send(headersResult.error);
+        }
+        if (!queryResult.success) {
+          return res.status(400).json(queryResult.error);
+        }
+        if (!bodyResult.success) {
+          return res.status(400).json(bodyResult.error);
+        }
+      }
+
       const { body, status } = await route.implementation({
         body: bodyResult.data,
         query: queryResult.data,

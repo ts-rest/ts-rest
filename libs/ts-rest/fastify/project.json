@@ -5,7 +5,7 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/rollup:rollup",
+      "executor": "@nx/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
         "project": "libs/ts-rest/fastify/package.json",
@@ -27,11 +27,12 @@
         "format": ["esm", "cjs"],
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
-        "generateExportsField": true
+        "generateExportsField": true,
+        "updateBuildableProjectDepsInPackageJson": true
       }
     },
     "publish": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "options": {
         "command": "node tools/scripts/publish.mjs ts-rest-fastify {args.ver} {args.tag}"
       },
@@ -43,14 +44,14 @@
       ]
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/fastify/**/*.ts"]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/fastify"],
       "options": {
         "jestConfig": "libs/ts-rest/fastify/jest.config.ts",

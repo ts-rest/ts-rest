@@ -30,7 +30,7 @@ describe('checkZodSchema', () => {
       z
         .object({ a: z.number() })
         .refine(() => true)
-        .refine(() => true)
+        .refine(() => true),
     );
     expect(result.success).toBe(false);
 
@@ -77,6 +77,6 @@ describe('checkZodSchema', () => {
       }
 
       expect(result.data).toEqual({ a: 1 });
-    }
+    },
   );
 });

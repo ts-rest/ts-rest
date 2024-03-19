@@ -24,6 +24,7 @@ import {
   isAppRouteImplementation,
 } from './types';
 import { RequestValidationError } from './request-validation-error';
+import { Stream } from 'stream';
 
 export const initServer = () => {
   return {
@@ -41,7 +42,7 @@ const recursivelyApplyExpressRouter = ({
   router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<any>;
   processRoute: (
     implementation: AppRouteImplementationOrOptions<AppRoute>,
-    schema: AppRoute
+    schema: AppRoute,
   ) => void;
 }): void => {
   if (typeof router === 'object' && typeof router?.handler !== 'function') {
@@ -72,7 +73,7 @@ const validateRequest = (
   req: Request,
   res: Response,
   schema: AppRouteQuery | AppRouteMutation,
-  options: TsRestExpressOptions<AppRouter>
+  options: TsRestExpressOptions<AppRouter>,
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -90,7 +91,7 @@ const validateRequest = (
 
   const bodyResult = checkZodSchema(
     req.body,
-    'body' in schema ? schema.body : null
+    'body' in schema ? schema.body : null,
   );
 
   if (
@@ -103,7 +104,7 @@ const validateRequest = (
       !paramsResult.success ? paramsResult.error : null,
       !headersResult.success ? headersResult.error : null,
       !queryResult.success ? queryResult.error : null,
-      !bodyResult.success ? bodyResult.error : null
+      !bodyResult.success ? bodyResult.error : null,
     );
   }
 
@@ -154,6 +155,10 @@ const initializeExpressRoute = ({
       });
 
       const statusCode = Number(result.status);
+
+      if (result.body instanceof Stream) {
+        return result.body.pipe(res.status(result.status));
+      }
 
       let validatedResponseBody = result.body;
 
@@ -221,7 +226,7 @@ const initializeExpressRoute = ({
 };
 
 const requestValidationErrorHandler = (
-  handler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default'
+  handler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default',
 ) => {
   return (err: unknown, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof RequestValidationError) {
@@ -264,7 +269,7 @@ export const createExpressEndpoints = <TRouter extends AppRouter>(
     jsonQuery: false,
     responseValidation: false,
     requestValidationErrorHandler: 'default',
-  }
+  },
 ) => {
   recursivelyApplyExpressRouter({
     schema,
