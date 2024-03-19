@@ -1,5 +1,7 @@
 # @ts-rest/open-api
 
+## 3.35.0
+
 ## 3.34.0
 
 ### Minor Changes
