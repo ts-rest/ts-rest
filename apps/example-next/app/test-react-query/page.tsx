@@ -15,7 +15,7 @@ export default async function Test() {
     },
     {
       staleTime: 5000,
-    }
+    },
   );
   const dehydratedState = dehydrate(client);
 

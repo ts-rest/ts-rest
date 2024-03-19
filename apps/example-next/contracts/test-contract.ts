@@ -26,5 +26,5 @@ export const testContract = c.router(
   },
   {
     strictStatusCodes: true,
-  }
+  },
 );

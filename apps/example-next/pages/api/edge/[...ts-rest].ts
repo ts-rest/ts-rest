@@ -23,5 +23,5 @@ export default createNextHandler(
     basePath: '/api/edge',
     jsonQuery: true,
     responseValidation: true,
-  }
+  },
 );

@@ -11,7 +11,7 @@ export function ClientComponent() {
     },
     {
       staleTime: 5000,
-    }
+    },
   );
 
   if (isLoading) return <div>Loading...</div>;
