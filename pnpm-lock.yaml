@@ -593,19 +593,21 @@ importers:
 
   libs/ts-rest/serverless:
     dependencies:
+      '@ts-rest/core':
+        specifier: 3.34.0
+        version: link:../core
       '@types/aws-lambda':
         specifier: ^8.10.115
         version: 8.10.136
       itty-router:
         specifier: ^4.2.2
         version: 4.2.2
+      next:
+        specifier: ^12.0.0 || ^13.0.0 || ^14.0.0
+        version: 13.4.5(@babel/core@7.19.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.55.0)
       zod:
         specifier: ^3.22.3
         version: 3.22.3
-    devDependencies:
-      next:
-        specifier: ^12.0.0 || ^13.0.0
-        version: 13.4.5(@babel/core@7.19.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.55.0)
 
   libs/ts-rest/solid-query:
     dependencies:
@@ -6567,7 +6569,7 @@ packages:
       semver: 7.3.4
       tmp: 0.2.1
       tslib: 2.6.2
-      yargs: 17.6.2
+      yargs: 17.7.2
       yargs-parser: 21.0.1
     transitivePeerDependencies:
       - '@swc-node/register'
@@ -12040,7 +12042,7 @@ packages:
       sanitize-filename: 1.6.3
       semver: 7.5.4
       serialize-error: 8.1.0
-      shell-quote: 1.7.3
+      shell-quote: 1.8.1
       signal-exit: 3.0.7
       stream-json: 1.7.5
       strip-ansi: 6.0.1
@@ -12049,7 +12051,7 @@ packages:
       trace-event-lib: 1.3.1
       which: 1.3.1
       ws: 7.5.9
-      yargs: 17.6.2
+      yargs: 17.7.2
       yargs-parser: 21.1.1
       yargs-unparser: 2.0.0
     transitivePeerDependencies:
@@ -17466,7 +17468,7 @@ packages:
       tsconfig-paths: 3.14.2
       tslib: 2.6.2
       v8-compile-cache: 2.3.0
-      yargs: 17.6.2
+      yargs: 17.7.2
       yargs-parser: 21.0.1
     transitivePeerDependencies:
       - debug
@@ -20432,10 +20434,10 @@ packages:
 
   /shell-quote@1.7.3:
     resolution: {integrity: sha512-Vpfqwm4EnqGdlsBFNmHhxhElJYrdfcxPThu+ryKS5J8L/fhAwLazFZtq+S+TWZ9ANj2piSQLGj6NQg+lKPmxrw==}
+    dev: false
 
   /shell-quote@1.8.1:
     resolution: {integrity: sha512-6j1W9l1iAs/4xYBI1SYOVZyFcCis9b4KCLQ8fgAGG07QvzaRLVVRQvAy85yNmmZSjYjg4MWh4gNvlPujU/5LpA==}
-    dev: false
 
   /shelljs@0.8.5:
     resolution: {integrity: sha512-TiwcRcrkhHvbrZbnRcFYMLl30Dfov3HKqzp5tO5b4pt6G/SezKcYhmDg15zXVBswHmctSAQKznqNW2LO5tTDow==}
@@ -23144,7 +23146,6 @@ packages:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-    dev: false
 
   /yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}

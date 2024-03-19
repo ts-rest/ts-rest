@@ -2,10 +2,10 @@
   "name": "@ts-rest/serverless",
   "version": "3.34.0",
   "dependencies": {
+    "@ts-rest/core": "3.34.0",
     "itty-router": "^4.2.2"
   },
   "peerDependencies": {
-    "@ts-rest/core": "3.34.0",
     "@types/aws-lambda": "^8.10.115",
     "next": "^12.0.0 || ^13.0.0 || ^14.0.0",
     "zod": "^3.22.3"
