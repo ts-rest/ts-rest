@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.34.0
+
+### Patch Changes
+
+- 6fafe69: Export type `TsRestExpressOptions`
+
 ## 3.33.1
 
 ## 3.33.0

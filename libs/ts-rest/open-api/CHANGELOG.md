@@ -1,5 +1,15 @@
 # @ts-rest/open-api
 
+## 3.34.0
+
+### Minor Changes
+
+- 6fafe69: Allow examples on body and responses
+
+### Patch Changes
+
+- 6fafe69: Correctly add `style: deepObject` for optional objects
+
 ## 3.33.1
 
 ## 3.33.0
