@@ -7,10 +7,13 @@ import {
   isZodType,
 } from '@ts-rest/core';
 import {
+  ExamplesObject,
   InfoObject,
+  MediaTypeObject,
   OpenAPIObject,
   OperationObject,
   PathsObject,
+  SchemaObject,
 } from 'openapi3-ts';
 import { generateSchema } from '@anatine/zod-openapi';
 import { z } from 'zod';
@@ -129,7 +132,11 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   const zodShape = extractZodObjectShape(zodObject);
 
   return Object.entries(zodShape).map(([key, value]) => {
-    const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
+    const {
+      description,
+      mediaExamples: examples,
+      ...schema
+    } = getOpenApiSchemaFromZod(value)!;
     const isObject = (obj: z.ZodTypeAny) => {
       while (obj._def.innerType) {
         obj = obj._def.innerType;
@@ -149,6 +156,7 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
             content: {
               'application/json': {
                 schema: schema,
+                ...(examples && { examples }),
               },
             },
           }
@@ -160,6 +168,23 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
           }),
     };
   });
+};
+
+declare module 'openapi3-ts' {
+  interface SchemaObject {
+    mediaExamples?: ExamplesObject;
+  }
+}
+
+const convertSchemaObjectToMediaTypeObject = (
+  input: SchemaObject,
+): MediaTypeObject => {
+  const { mediaExamples: examples, ...schema } = input;
+
+  return {
+    schema,
+    ...(examples && { examples }),
+  };
 };
 
 /**
@@ -224,7 +249,7 @@ export const generateOpenApi = (
             ? {
                 content: {
                   'application/json': {
-                    schema: responseSchema,
+                    ...convertSchemaObjectToMediaTypeObject(responseSchema),
                   },
                 },
               }
@@ -251,7 +276,7 @@ export const generateOpenApi = (
               description: 'Body',
               content: {
                 [contentType]: {
-                  schema: bodySchema,
+                  ...convertSchemaObjectToMediaTypeObject(bodySchema),
                 },
               },
             },

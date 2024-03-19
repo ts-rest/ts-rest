@@ -1,6 +1,7 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 import { generateOpenApi } from './ts-rest-open-api';
+import { extendApi } from '@anatine/zod-openapi';
 
 const c = initContract();
 
@@ -101,6 +102,35 @@ const router = c.router({
       200: c.type<{ message: string }>(),
     },
   },
+  mediaExamples: {
+    method: 'POST',
+    path: '/media-examples',
+    query: z.object({
+      foo: extendApi(z.string(), {
+        // this will only be added when jsonQuery is enabled
+        mediaExamples: {
+          one: { value: 'foo' },
+          two: { value: 'bar' },
+        },
+      }),
+    }),
+    summary: 'Examples API',
+    description: `Check that examples can be added to body and response types`,
+    body: extendApi(z.object({ id: z.string() }), {
+      mediaExamples: {
+        one: { value: { id: 'foo' } },
+        two: { value: { id: 'bar' } },
+      },
+    }),
+    responses: {
+      200: extendApi(z.object({ id: z.string() }), {
+        mediaExamples: {
+          three: { value: { id: 'foo' } },
+          four: { value: { id: 'bar' } },
+        },
+      }),
+    },
+  },
 });
 
 const expectedApiDoc = {
@@ -121,6 +151,66 @@ const expectedApiDoc = {
           },
         },
         summary: 'Health API',
+        tags: [],
+      },
+    },
+    '/media-examples': {
+      post: {
+        deprecated: undefined,
+        description: `Check that examples can be added to body and response types`,
+        parameters: [
+          {
+            in: 'query',
+            name: 'foo',
+            required: true,
+            schema: {
+              type: 'string',
+            },
+          },
+        ],
+        requestBody: {
+          description: 'Body',
+          content: {
+            'application/json': {
+              schema: {
+                properties: {
+                  id: {
+                    type: 'string',
+                  },
+                },
+                required: ['id'],
+                type: 'object',
+              },
+              examples: {
+                one: { value: { id: 'foo' } },
+                two: { value: { id: 'bar' } },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            content: {
+              'application/json': {
+                examples: {
+                  three: { value: { id: 'foo' } },
+                  four: { value: { id: 'bar' } },
+                },
+                schema: {
+                  properties: {
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['id'],
+                  type: 'object',
+                },
+              },
+            },
+            description: `200`,
+          },
+        },
+        summary: 'Examples API',
         tags: [],
       },
     },
@@ -420,6 +510,12 @@ describe('ts-rest-open-api', () => {
               operationId: 'health',
             },
           },
+          '/media-examples': {
+            post: {
+              ...expectedApiDoc.paths['/media-examples'].post,
+              operationId: 'mediaExamples',
+            },
+          },
           '/posts': {
             get: {
               ...expectedApiDoc.paths['/posts'].get,
@@ -471,6 +567,34 @@ describe('ts-rest-open-api', () => {
         ...expectedApiDoc,
         paths: {
           ...expectedApiDoc.paths,
+          '/media-examples': {
+            ...expectedApiDoc.paths['/media-examples'],
+            post: {
+              ...expectedApiDoc.paths['/media-examples'].post,
+              parameters: [
+                {
+                  content: {
+                    'application/json': {
+                      examples: {
+                        one: {
+                          value: 'foo',
+                        },
+                        two: {
+                          value: 'bar',
+                        },
+                      },
+                      schema: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  in: 'query',
+                  name: 'foo',
+                  required: true,
+                },
+              ],
+            },
+          },
           '/posts': {
             ...expectedApiDoc.paths['/posts'],
             get: {

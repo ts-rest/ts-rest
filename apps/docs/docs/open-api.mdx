@@ -64,6 +64,16 @@ export const contract = c.router({
         .openapi({
           title: 'User',
           description: 'A user schema',
+          mediaExamples: {
+            myExample: {
+              value: {
+                id: '123e4567-e89b-12d3-a456-426614174000',
+                name: 'John Doe',
+                phoneNumber: '555-555-5555',
+              },
+              summary: 'Example of a user',
+            },
+          },
         }),
     },
   },
@@ -75,6 +85,13 @@ See the [official `@anatine/zod-openapi` docs](https://www.npmjs.com/package/@an
 :::info
 All Zod schemas defined in your contract can benefit from the additional OpenAPI schema, including `pathParams`, `queryParams`, and `responses`. These keys are all used when generating the OpenAPI JSON file. This could improve the quality of your generated documentation.
 :::
+
+### Adding Examples to the Media Type
+
+In order to add examples to the media type rather than to the schema itself (this is useful if you want to show multiple examples), we have added a `mediaExamples` property to the `.openapi()` method options.
+This will only work for the schemas of the body, responses and individual query parameters if you are using `jsonQuery` option.
+
+You can see an example of its usage in the code snippet above.
 
 ## Serving a Swagger UI
 
