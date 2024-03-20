@@ -287,14 +287,19 @@ function handlerFactory(
     const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
       passThroughExtraKeys: true,
     });
+
     const headersResult = checkZodSchema(req.headers, route.headers, {
       passThroughExtraKeys: true,
     });
+
     query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
+
     const queryResult = checkZodSchema(query, route.query);
+
     const bodyResult = checkZodSchema(req.body, route.body);
+
     try {
       if (
         !pathParamsResult.success ||
@@ -313,6 +318,7 @@ function handlerFactory(
         if (!pathParamsResult.success) {
           return res.status(400).json(pathParamsResult.error);
         }
+
         if (!headersResult.success) {
           return res.status(400).send(headersResult.error);
         }
@@ -323,6 +329,7 @@ function handlerFactory(
           return res.status(400).json(bodyResult.error);
         }
       }
+
       const { body, status } = await route.implementation({
         body: bodyResult.data,
         query: queryResult.data,
@@ -332,7 +339,9 @@ function handlerFactory(
         res,
       });
       const statusCode = Number(status);
+
       let validatedResponseBody = body;
+
       if (responseValidation) {
         const response = validateResponse({
           appRoute: route,
@@ -343,11 +352,13 @@ function handlerFactory(
         });
         validatedResponseBody = response.body;
       }
+
       const responseType = route.responses[statusCode];
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
         return res.status(statusCode).send(validatedResponseBody);
       }
+
       return res.status(statusCode).json(validatedResponseBody);
     } catch (e) {
       if (options?.errorHandler) {
