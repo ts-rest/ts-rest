@@ -34,8 +34,6 @@ You can disable the validation of these components if you wish to perform the va
 
 #### Default values: `true`
 
-#### Example
-
 ```typescript
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 
