@@ -235,12 +235,12 @@ export const createNextRouter = <T extends AppRouter>(
  * @param options
  * @returns
  */
-export const createSingleUrlNextHandler = <T extends AppRoute>(
+export function createSingleUrlNextHandler<T extends AppRoute>(
   appRoute: AppRoute,
   implementationHandler: AppRouteImplementation<T>,
   options?: CreateNextRouterOptions,
-) =>
-  handlerFactory(function (req) {
+) {
+  return handlerFactory((req) => {
     const route = { ...appRoute, implementation: implementationHandler };
     const pathParams = req.query as Record<string, string>;
     const query = req.query;
@@ -253,6 +253,7 @@ export const createSingleUrlNextHandler = <T extends AppRoute>(
 
     return { pathParams, query, route: isValidRoute ? route : null };
   }, options);
+}
 
 /**
  * Create a next.js compatible handler for a given route
@@ -260,15 +261,15 @@ export const createSingleUrlNextHandler = <T extends AppRoute>(
  * @param options
  * @returns
  */
-const handlerFactory = (
+function handlerFactory(
   getArgumentsFromRequest: (req: NextApiRequest) => {
     pathParams: Record<string, string>;
     query: NextApiRequest['query'];
     route: AppRouterWithImplementation[keyof AppRouterWithImplementation];
   },
   options?: CreateNextRouterOptions,
-) =>
-  async function (req: NextApiRequest, res: NextApiResponse) {
+) {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
     const {
       jsonQuery = false,
       responseValidation = false,
@@ -357,3 +358,4 @@ const handlerFactory = (
       throw e;
     }
   };
+}
