@@ -199,7 +199,7 @@ export const createNextRouter = <T extends AppRouter>(
   obj: RecursiveRouterObj<T>,
   options?: CreateNextRouterOptions,
 ) => {
-  return handlerFactory(function (req) {
+  return handlerFactory((req) => {
     const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
     // eslint-disable-next-line prefer-const
@@ -268,18 +268,15 @@ export function createSingleRouteHandler<T extends AppRoute>(
  * @param options
  * @returns
  */
-function handlerFactory(
+const handlerFactory = (
   getArgumentsFromRequest: (req: NextApiRequest) => {
     pathParams: Record<string, string>;
     query: NextApiRequest['query'];
     route: AppRouterWithImplementation[keyof AppRouterWithImplementation];
   },
   options?: CreateNextRouterOptions,
-) {
-  return async function nextJsHandler(
-    req: NextApiRequest,
-    res: NextApiResponse,
-  ) {
+) => {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
     const {
       jsonQuery = false,
       responseValidation = false,
@@ -381,4 +378,4 @@ function handlerFactory(
       throw e;
     }
   };
-}
+};
