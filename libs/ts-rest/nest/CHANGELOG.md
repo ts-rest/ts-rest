@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.36.0-beta.0
+
+### Minor Changes
+
+- 766b8a1: Add functionality to be able to set configuration options globally using `TsRestModule`
+
 ## 3.35.1
 
 ### Patch Changes

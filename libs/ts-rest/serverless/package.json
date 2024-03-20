@@ -1,8 +1,8 @@
 {
   "name": "@ts-rest/serverless",
-  "version": "3.35.1",
+  "version": "3.36.0-beta.0",
   "dependencies": {
-    "@ts-rest/core": "3.35.1",
+    "@ts-rest/core": "3.36.0-beta.0",
     "itty-router": "^4.2.2"
   },
   "peerDependencies": {

@@ -1,0 +1,20 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@ts-rest/core": "3.35.1",
+    "@ts-rest/express": "3.35.1",
+    "@ts-rest/fastify": "3.35.1",
+    "@ts-rest/nest": "3.35.1",
+    "@ts-rest/next": "3.35.1",
+    "@ts-rest/open-api": "3.35.1",
+    "@ts-rest/react-query": "3.35.1",
+    "@ts-rest/serverless": "3.35.1",
+    "@ts-rest/solid-query": "3.35.1",
+    "@ts-rest/vue-query": "3.35.1"
+  },
+  "changesets": [
+    "three-pillows-tan",
+    "unlucky-pets-attack"
+  ]
+}
