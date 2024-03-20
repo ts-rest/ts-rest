@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.36.0
+
+### Minor Changes
+
+- ab4dd27: Add support for creating single url routes in Next.js
+
 ## 3.35.1
 
 ## 3.35.0
