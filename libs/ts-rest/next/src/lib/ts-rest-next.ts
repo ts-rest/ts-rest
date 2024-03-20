@@ -269,7 +269,10 @@ function handlerFactory(
   },
   options?: CreateNextRouterOptions,
 ) {
-  return async (req: NextApiRequest, res: NextApiResponse) => {
+  return async function nextJsHandler(
+    req: NextApiRequest,
+    res: NextApiResponse,
+  ) {
     const {
       jsonQuery = false,
       responseValidation = false,
