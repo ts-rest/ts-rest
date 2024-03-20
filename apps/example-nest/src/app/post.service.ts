@@ -89,7 +89,7 @@ export class PostService {
       content: string | undefined;
       published: boolean | undefined;
       description: string | undefined;
-    }
+    },
   ) {
     const post = await this.prisma.post.update({
       where: { id },

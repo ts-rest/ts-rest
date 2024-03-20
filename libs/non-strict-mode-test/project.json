@@ -6,14 +6,14 @@
   "targets": {
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/libs/non-strict-mode-test"],
+      "outputs": ["{workspaceRoot}/coverage/libs/non-strict-mode-test"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/libs/non-strict-mode-test"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/non-strict-mode-test/**/*.ts"]

@@ -1,40 +1,43 @@
 import { Reflector } from '@nestjs/core';
-import { Observable, map } from 'rxjs';
-import type { Response, Request } from 'express-serve-static-core';
+import { mergeMap, Observable } from 'rxjs';
+import type { Request, Response } from 'express-serve-static-core';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
   All,
-  SetMetadata,
-  UseInterceptors,
   applyDecorators,
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
   BadRequestException,
-  NotFoundException,
+  CallHandler,
+  Delete,
+  ExecutionContext,
   Get,
+  HttpException,
+  HttpExceptionOptions,
+  Injectable,
+  InternalServerErrorException,
+  NestInterceptor,
+  NotFoundException,
+  Patch,
   Post,
   Put,
-  Patch,
-  Delete,
-  InternalServerErrorException,
-  HttpException,
-  Inject,
-  Optional,
+  SetMetadata,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
-  AppRouter,
-  isAppRoute,
   AppRoute,
+  AppRouter,
   checkZodSchema,
+  isAppRoute,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferResponses,
-  isAppRouteOtherResponse,
+  Promisable,
 } from '@ts-rest/core';
 import {
   JsonQuerySymbol,
   TsRestAppRouteMetadataKey,
+  ValidateRequestBodySymbol,
+  ValidateRequestHeadersSymbol,
+  ValidateRequestQuerySymbol,
   ValidateResponsesSymbol,
 } from './constants';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
@@ -48,7 +51,7 @@ export class RequestValidationError extends BadRequestException {
     public pathParams: z.ZodError | null,
     public headers: z.ZodError | null,
     public query: z.ZodError | null,
-    public body: z.ZodError | null
+    public body: z.ZodError | null,
   ) {
     super({
       paramsResult: pathParams,
@@ -60,16 +63,19 @@ export class RequestValidationError extends BadRequestException {
 }
 
 export class ResponseValidationError extends InternalServerErrorException {
-  constructor(public appRoute: AppRoute, public error: z.ZodError) {
+  constructor(
+    public appRoute: AppRoute,
+    public error: z.ZodError,
+  ) {
     super(
-      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`
+      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`,
     );
   }
 }
 
 export const TsRestHandler = (
   appRouterOrRoute: AppRouter | AppRoute,
-  options: TsRestOptions = {}
+  options: TsRestOptions = {},
 ): MethodDecorator => {
   const decorators = [];
 
@@ -79,9 +85,21 @@ export const TsRestHandler = (
 
   if (options.validateResponses !== undefined) {
     decorators.push(
-      SetMetadata(ValidateResponsesSymbol, options.validateResponses)
+      SetMetadata(ValidateResponsesSymbol, options.validateResponses),
     );
   }
+
+  decorators.push(
+    SetMetadata(
+      ValidateRequestHeadersSymbol,
+      options.validateRequestHeaders ?? true,
+    ),
+    SetMetadata(
+      ValidateRequestQuerySymbol,
+      options.validateRequestQuery ?? true,
+    ),
+    SetMetadata(ValidateRequestBodySymbol, options.validateRequestBody ?? true),
+  );
 
   const isMultiHandler = !isAppRoute(appRouterOrRoute);
 
@@ -99,7 +117,7 @@ export const TsRestHandler = (
     decorators.push(
       All(routerPathsArray),
       SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
-      UseInterceptors(TsRestHandlerInterceptor)
+      UseInterceptors(TsRestHandlerInterceptor),
     );
   } else {
     const apiDecorator = (() => {
@@ -120,7 +138,7 @@ export const TsRestHandler = (
     decorators.push(
       apiDecorator,
       SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
-      UseInterceptors(TsRestHandlerInterceptor)
+      UseInterceptors(TsRestHandlerInterceptor),
     );
   }
 
@@ -129,12 +147,12 @@ export const TsRestHandler = (
 
 type NestHandlerImplementation<T extends AppRouter | AppRoute> =
   T extends AppRoute
-    ? (args: TsRestRequestShape<T>) => Promise<ServerInferResponses<T>>
+    ? (args: TsRestRequestShape<T>) => Promisable<ServerInferResponses<T>>
     : {
         [K in keyof T]: T[K] extends AppRoute
           ? (
-              args: TsRestRequestShape<T[K]>
-            ) => Promise<ServerInferResponses<T[K]>>
+              args: TsRestRequestShape<T[K]>,
+            ) => Promisable<ServerInferResponses<T[K]>>
           : never;
       };
 
@@ -146,15 +164,19 @@ type NestHandlerImplementation<T extends AppRouter | AppRoute> =
  */
 export const tsRestHandler = <T extends AppRouter | AppRoute>(
   contract: T,
-  implementation: NestHandlerImplementation<T>
+  implementation: NestHandlerImplementation<T>,
 ) => implementation;
 
 /**
  * Error you can throw to return a response from a handler
  */
 export class TsRestException<T extends AppRoute> extends HttpException {
-  constructor(route: T, response: ServerInferResponses<T>) {
-    super(response.body as Record<string, any>, response.status);
+  constructor(
+    route: T,
+    response: ServerInferResponses<T>,
+    options?: HttpExceptionOptions,
+  ) {
+    super(response.body as Record<string, any>, response.status, options);
   }
 }
 
@@ -166,8 +188,17 @@ export const doesUrlMatchContractPath = (
   /**
    * @example '/posts/1'
    */
-  url: string
+  url: string,
 ): boolean => {
+  // strip trailing slash
+  if (contractPath !== '/' && contractPath.endsWith('/')) {
+    contractPath = contractPath.slice(0, -1);
+  }
+
+  if (url !== '/' && url.endsWith('/')) {
+    url = url.slice(0, -1);
+  }
+
   const contractPathParts = contractPath.split('/');
 
   const urlParts = url.split('/');
@@ -198,7 +229,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     private reflector: Reflector,
     @Optional()
     @Inject(TS_REST_MODULE_OPTIONS_TOKEN)
-    private options: TsRestOptions | null
+    private options: TsRestOptions | null,
   ) {}
 
   private getAppRouteFromContext(ctx: ExecutionContext) {
@@ -206,12 +237,12 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const appRoute = this.reflector.get<AppRoute | AppRouter | undefined>(
       TsRestAppRouteMetadataKey,
-      ctx.getHandler()
+      ctx.getHandler(),
     );
 
     if (!appRoute) {
       throw new Error(
-        'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method'
+        'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method',
       );
     }
 
@@ -229,7 +260,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         return (
           doesUrlMatchContractPath(
             value.path,
-            'path' in req ? req.path : req.url.split('?')[0]
+            'path' in req ? req.path : req.routeOptions.url,
           ) && req.method === value.method
         );
       }
@@ -260,12 +291,19 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       ]) ?? this.options?.jsonQuery
     );
 
-    const isValidationEnabled = Boolean(
-      this.reflector.getAllAndOverride<boolean | undefined>(
-        ValidateResponsesSymbol,
-        [ctx.getHandler(), ctx.getClass()]
-      ) ?? this.options?.validateResponses
-    );
+    const getMetadataValue = (
+      key:
+        | typeof ValidateResponsesSymbol
+        | typeof ValidateRequestHeadersSymbol
+        | typeof ValidateRequestQuerySymbol
+        | typeof ValidateRequestBodySymbol,
+    ) =>
+      Boolean(
+        this.reflector.getAllAndOverride<boolean | undefined>(key, [
+          ctx.getHandler(),
+          ctx.getClass(),
+        ]),
+      );
 
     const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
@@ -283,48 +321,52 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const bodyResult = checkZodSchema(
       req.body,
-      'body' in appRoute ? appRoute.body : null
+      'body' in appRoute ? appRoute.body : null,
     );
+
+    const isValidationEnabled = getMetadataValue(ValidateResponsesSymbol);
+
+    const isHeadersInvalid =
+      !headersResult.success && getMetadataValue(ValidateRequestHeadersSymbol);
+
+    const isQueryInvalid =
+      !queryResult.success && getMetadataValue(ValidateRequestQuerySymbol);
+
+    const isBodyInvalid =
+      !bodyResult.success && getMetadataValue(ValidateRequestBodySymbol);
 
     if (
       !paramsResult.success ||
-      !headersResult.success ||
-      !queryResult.success ||
-      !bodyResult.success
+      isHeadersInvalid ||
+      isQueryInvalid ||
+      isBodyInvalid
     ) {
       throw new RequestValidationError(
         !paramsResult.success ? paramsResult.error : null,
-        !headersResult.success ? headersResult.error : null,
-        !queryResult.success ? queryResult.error : null,
-        !bodyResult.success ? bodyResult.error : null
+        isHeadersInvalid ? headersResult.error : null,
+        isQueryInvalid ? queryResult.error : null,
+        isBodyInvalid ? bodyResult.error : null,
       );
     }
 
     return next.handle().pipe(
-      map(async (impl) => {
+      mergeMap(async (impl) => {
         let result = null;
         try {
-          if (routeKey) {
-            result = await impl[routeKey]({
-              query: queryResult.data,
-              params: paramsResult.data,
-              body: bodyResult.data,
-              headers: headersResult.data,
-            });
-          } else {
-            result = await impl({
-              query: queryResult.data,
-              params: paramsResult.data,
-              body: bodyResult.data,
-              headers: headersResult.data,
-            });
-          }
+          const res = {
+            params: paramsResult.data,
+            query: queryResult.success ? queryResult.data : req.query,
+            body: bodyResult.success ? bodyResult.data : req.body,
+            headers: headersResult.success ? headersResult.data : req.headers,
+          };
+
+          result = routeKey ? await impl[routeKey](res) : await impl(res);
         } catch (e) {
           if (e instanceof TsRestException) {
             result = {
               status: e.getStatus(),
               body: e.getResponse(),
-              error: true,
+              error: e,
             };
           } else {
             throw e;
@@ -336,7 +378,16 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
           : result;
 
         const responseType = appRoute.responses[result.status];
-        if (!result.error && isAppRouteOtherResponse(responseType)) {
+
+        if (result.error) {
+          throw new HttpException(
+            responseAfterValidation.body,
+            responseAfterValidation.status,
+            {
+              cause: result.error,
+            },
+          );
+        } else if (!result.error && isAppRouteOtherResponse(responseType)) {
           if ('setHeader' in res) {
             res.setHeader('content-type', responseType.contentType);
           } else {
@@ -346,15 +397,15 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
         res.status(responseAfterValidation.status);
         return responseAfterValidation.body;
-      })
+      }),
     );
   }
 }
 
 const validateResponse = (
   appRoute: AppRoute,
-  response: { status: number; body?: unknown }
-) => {
+  response: { status: number; body?: unknown },
+): { body: unknown; status: number } => {
   const { body } = response;
 
   const responseType = appRoute.responses[response.status];
@@ -364,13 +415,13 @@ const validateResponse = (
 
   if (!responseSchema) {
     throw new InternalServerErrorException(
-      `[ts-rest] Couldn't find a response schema for ${response.status} on route ${appRoute.path}`
+      `[ts-rest] Couldn't find a response schema for ${response.status} on route ${appRoute.path}`,
     );
   }
 
   const responseValidation = checkZodSchema(
     body,
-    appRoute.responses[response.status]
+    appRoute.responses[response.status],
   );
 
   if (!responseValidation.success) {

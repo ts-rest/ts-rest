@@ -13,12 +13,18 @@ import { AppRoute } from '@ts-rest/core';
 import { TsRestInterceptor } from './ts-rest.interceptor';
 import {
   TsRestAppRouteMetadataKey,
+  ValidateRequestBodySymbol,
+  ValidateRequestHeadersSymbol,
+  ValidateRequestQuerySymbol,
   ValidateResponsesSymbol,
 } from './constants';
 
 export type TsRestOptions = {
   jsonQuery?: boolean;
   validateResponses?: boolean;
+  validateRequestHeaders?: boolean;
+  validateRequestQuery?: boolean;
+  validateRequestBody?: boolean;
 };
 
 type TsRestType = {
@@ -33,7 +39,7 @@ type TsRestType = {
  */
 export const TsRest: TsRestType = (
   appRouteOrOptions: AppRoute | TsRestOptions,
-  options: TsRestOptions = {}
+  options: TsRestOptions = {},
 ) => {
   const decorators = [];
 
@@ -46,7 +52,23 @@ export const TsRest: TsRestType = (
         SetMetadata(TsRestAppRouteMetadataKey, appRouteOrOptions),
         getMethodDecorator(appRouteOrOptions),
         UseInterceptors(TsRestInterceptor),
-      ]
+      ],
+    );
+  } else {
+    // set request validation metadata for class decoration
+    decorators.push(
+      SetMetadata(
+        ValidateRequestHeadersSymbol,
+        optionsToUse.validateRequestHeaders ?? true,
+      ),
+      SetMetadata(
+        ValidateRequestQuerySymbol,
+        optionsToUse.validateRequestQuery ?? true,
+      ),
+      SetMetadata(
+        ValidateRequestBodySymbol,
+        optionsToUse.validateRequestBody ?? true,
+      ),
     );
   }
 
@@ -56,7 +78,30 @@ export const TsRest: TsRestType = (
 
   if (optionsToUse.validateResponses !== undefined) {
     decorators.push(
-      SetMetadata(ValidateResponsesSymbol, optionsToUse.validateResponses)
+      SetMetadata(ValidateResponsesSymbol, optionsToUse.validateResponses),
+    );
+  }
+
+  // set request validation metadata for method decoration
+  if (optionsToUse.validateRequestBody !== undefined) {
+    decorators.push(
+      SetMetadata(ValidateRequestBodySymbol, optionsToUse.validateRequestBody),
+    );
+  }
+  if (optionsToUse.validateRequestQuery !== undefined) {
+    decorators.push(
+      SetMetadata(
+        ValidateRequestQuerySymbol,
+        optionsToUse.validateRequestQuery,
+      ),
+    );
+  }
+  if (optionsToUse.validateRequestHeaders !== undefined) {
+    decorators.push(
+      SetMetadata(
+        ValidateRequestHeadersSymbol,
+        optionsToUse.validateRequestHeaders,
+      ),
     );
   }
 

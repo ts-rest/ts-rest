@@ -4,7 +4,7 @@ import { ResponseValidationError } from './response-validation-error';
 import { AppRoute, ContractAnyType, ContractOtherResponse } from './dsl';
 
 export const isAppRouteResponse = (
-  value: unknown
+  value: unknown,
 ): value is { status: HTTPStatusCode; body?: any } => {
   return (
     value != null &&
@@ -15,7 +15,7 @@ export const isAppRouteResponse = (
 };
 
 export const isAppRouteOtherResponse = (
-  response: ContractAnyType | ContractOtherResponse<ContractAnyType>
+  response: ContractAnyType | ContractOtherResponse<ContractAnyType>,
 ): response is ContractOtherResponse<ContractAnyType> => {
   return (
     response != null &&

@@ -80,7 +80,7 @@ const openApiSchema = generateOpenApi(
   },
   {
     jsonQuery: true,
-  }
+  },
 );
 
 app.use('/api', swaggerUi.serve, swaggerUi.setup(openApiSchema));

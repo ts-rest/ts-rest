@@ -4,24 +4,28 @@ import { InstallTabs } from '@site/src/components/InstallTabs';
 
 # Quickstart
 
-Setting up `ts-rest` is easy! You can opt to use either just the front-end, just the backend, or just the contract (if you really wanted)
+Embarking on your journey with `ts-rest` is a breeze! You have the liberty to utilize just the front-end, the backend, or merely the contract (should you choose to do so).
 
-Once you've got to grips with the basics, the developer experience is like butter. 🧈🪄✨
+Once you've mastered the fundamentals, you'll find the developer experience to be smooth as silk. ✨
 
 ## Installation
 
-Install the core package
+Install the core package and zod - Some of our generics rely on zod being installed, so make sure to install it (even as a dev dependency if you don't plan to use Zod)
 
-<InstallTabs packageName="@ts-rest/core" />
+If you don't install zod, some confusing errors may appear but it should mostly work [#303](https://github.com/ts-rest/ts-rest/issues/303)
+
+<InstallTabs packageName="@ts-rest/core zod" />
 
 ## Create a contract
 
 <Tabs groupId="contract">
   <TabItem value="zod" label="Zod">
 
-### **Install Zod**
-
-<InstallTabs packageName="zod" />
+<p>
+  This should ideally be shared between your consumers and producers, e.g. in a
+  shared library in a monorepo, or a shared npm package. Think of this as your
+  HTTP Schema that both your client and backend can use.
+</p>
 
 :::caution Make sure to use `strict` with Zod
 Enable `strict` in your `tsconfig.json`! This is required as part of [Zod](https://github.com/colinhacks/zod#requirements)
@@ -33,17 +37,9 @@ Enable `strict` in your `tsconfig.json`! This is required as part of [Zod](https
   }
 ```
 
-If you don't do this, ts-rest will still work, but you may face performance issues [#162](https://github.com/ts-rest/ts-rest/issues/162)
+If you don't enable strict mode, ts-rest will still work, but you may face performance issues [#162](https://github.com/ts-rest/ts-rest/issues/162)
 
 :::
-
-### **Create a contract!**
-
-<p>
-  This should ideally be shared between your consumers and producers, e.g. in a
-  shared library in a monorepo, or a shared npm package. Think of this as your
-  HTTP Schema that both your client and backend can use.
-</p>
 
 ```typescript
 // contract.ts
@@ -106,7 +102,7 @@ export const contract = c.router({
     responses: {
       201: c.type<Post>(),
     },
-    body: c.type<{title: string}>()
+    body: c.type<{title: string}>(),
     summary: 'Create a post',
   },
   getPost: {
@@ -175,6 +171,7 @@ If you were to change the `body` return type to `{ body: true }` for example, th
 ```typescript
 // main.ts
 
+import { initServer } from '@ts-rest/express';
 const app = express();
 
 app.use(cors());
@@ -220,6 +217,7 @@ const server = app.listen(port, () => {
 ```typescript
 // main.ts
 
+import { initServer } from '@ts-rest/fastify';
 const app = fastify();
 
 const s = initServer();
@@ -266,7 +264,8 @@ start();
 ```typescript
 // pages/api/[...ts-rest].tsx
 
-const postsRouter = createNextRoute(api.posts, {
+// `contract` is the AppRouter returned by `c.router`
+const postsRouter = createNextRoute(contract.posts, {
   createPost: async (args) => {
     const newPost = await posts.createPost(args.body);
 
@@ -277,12 +276,12 @@ const postsRouter = createNextRoute(api.posts, {
   },
 });
 
-const router = createNextRoute(api, {
+const router = createNextRoute(contract, {
   posts: postsRouter,
 });
 
 // Actually initiate the collective endpoints
-export default createNextRouter(api, router);
+export default createNextRouter(contract, router);
 ```
 
   </TabItem>
@@ -300,6 +299,7 @@ export default createNextRouter(api, router);
 ```typescript
 // client.ts
 
+// `contract` is the AppRouter returned by `c.router`
 const client = initClient(contract, {
   baseUrl: 'http://localhost:3000',
   baseHeaders: {},
@@ -332,7 +332,7 @@ export const client = initQueryClient(contract, {
 });
 
 export const Index = () => {
-  const { data, isLoading, error } = api.getPost.useQuery({
+  const { data, isLoading, error } = client.getPost.useQuery({
     params: { id: '1' },
   });
 

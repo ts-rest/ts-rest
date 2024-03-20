@@ -46,6 +46,11 @@ const sidebars = {
           id: 'guides/non-ts-clients',
           label: 'Non-TypeScript Clients',
         },
+        {
+          type: 'doc',
+          id: 'guides/fake-apis',
+          label: 'Fake APIs for Testing',
+        },
       ],
     },
     {
@@ -77,6 +82,11 @@ const sidebars = {
       id: 'react-query',
     },
     {
+      type: 'doc',
+      label: '@ts-rest/vue-query',
+      id: 'vue-query',
+    },
+    {
       type: 'category',
       label: '@ts-rest/nest',
       collapsed: false,
@@ -91,9 +101,13 @@ const sidebars = {
       id: 'next',
     },
     {
-      type: 'doc',
+      type: 'category',
       label: '@ts-rest/fastify',
-      id: 'fastify',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'fastify/fastify' },
+        { type: 'doc', id: 'fastify/openapi' },
+      ]
     },
     {
       type: 'category',

@@ -24,8 +24,14 @@ import {
 import { ApiFetcher, ClientArgs } from './client';
 import { ParamsFromUrl } from './paths';
 
+export type Frameworks = 'nextjs' | 'none';
+
+export type NextClientArgs = {
+  next?: { revalidate?: number | false; tags?: string[] } | undefined;
+};
+
 type ExtractExtraParametersFromClientArgs<
-  TClientArgs extends Pick<ClientArgs, 'api'>
+  TClientArgs extends Pick<ClientArgs, 'api'>,
 > = TClientArgs['api'] extends ApiFetcher
   ? Omit<Parameters<TClientArgs['api']>[0], keyof Parameters<ApiFetcher>[0]>
   : {};
@@ -44,7 +50,7 @@ type PathParamsFromUrl<T extends AppRoute> = ParamsFromUrl<
  */
 type PathParamsWithCustomValidators<
   T extends AppRoute,
-  TClientOrServer extends 'client' | 'server' = 'server'
+  TClientOrServer extends 'client' | 'server' = 'server',
 > = T['pathParams'] extends undefined
   ? PathParamsFromUrl<T>
   : Merge<
@@ -55,14 +61,14 @@ type PathParamsWithCustomValidators<
     >;
 
 export type ResolveResponseType<
-  T extends ContractAnyType | ContractOtherResponse<ContractAnyType>
+  T extends ContractAnyType | ContractOtherResponse<ContractAnyType>,
 > = T extends ContractOtherResponse<infer U> ? U : T;
 
 type AppRouteResponses<
   T extends AppRoute,
   TStatus extends HTTPStatusCode,
   TClientOrServer extends 'client' | 'server',
-  TStrictStatusCodes extends 'default' | 'ignore' | 'force' = 'default'
+  TStrictStatusCodes extends 'default' | 'ignore' | 'force' = 'default',
 > =
   | {
       [K in keyof T['responses'] & TStatus]: {
@@ -98,7 +104,7 @@ type AppRouteResponses<
 export type ServerInferResponses<
   T extends AppRoute | AppRouter,
   TStatus extends HTTPStatusCode = HTTPStatusCode,
-  TStrictStatusCodes extends 'default' | 'ignore' | 'force' = 'default'
+  TStrictStatusCodes extends 'default' | 'ignore' | 'force' = 'default',
 > = T extends AppRoute
   ? Prettify<AppRouteResponses<T, TStatus, 'server', TStrictStatusCodes>>
   : T extends AppRouter
@@ -114,7 +120,7 @@ export type ServerInferResponses<
 export type ClientInferResponses<
   T extends AppRoute | AppRouter,
   TStatus extends HTTPStatusCode = HTTPStatusCode,
-  TStrictStatusCodes extends 'default' | 'ignore' | 'force' = 'default'
+  TStrictStatusCodes extends 'default' | 'ignore' | 'force' = 'default',
 > = T extends AppRoute
   ? Prettify<AppRouteResponses<T, TStatus, 'client', TStrictStatusCodes>>
   : T extends AppRouter
@@ -129,12 +135,12 @@ export type ClientInferResponses<
 
 export type ServerInferResponseBody<
   T extends AppRoute,
-  TStatus extends keyof T['responses'] = keyof T['responses']
+  TStatus extends keyof T['responses'] = keyof T['responses'],
 > = Prettify<AppRouteResponses<T, TStatus & HTTPStatusCode, 'server'>['body']>;
 
 export type ClientInferResponseBody<
   T extends AppRoute,
-  TStatus extends keyof T['responses'] = keyof T['responses']
+  TStatus extends keyof T['responses'] = keyof T['responses'],
 > = Prettify<AppRouteResponses<T, TStatus & HTTPStatusCode, 'client'>['body']>;
 
 type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
@@ -144,7 +150,7 @@ type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
 
 export type ServerInferRequest<
   T extends AppRoute | AppRouter,
-  TServerHeaders = never
+  TServerHeaders = never,
 > = T extends AppRoute
   ? Prettify<
       Without<
@@ -176,6 +182,7 @@ export type ServerInferRequest<
   : never;
 
 type ClientInferRequestBase<
+  Framework extends Frameworks,
   T extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
@@ -187,12 +194,12 @@ type ClientInferRequestBase<
           keyof LowercaseKeys<TClientArgs['baseHeaders']>
         >
       >
-    : never
+    : never,
 > = Prettify<
   Without<
     {
       params: [keyof PathParamsWithCustomValidators<T, 'client'>] extends [
-        never
+        never,
       ]
         ? never
         : Prettify<PathParamsWithCustomValidators<T, 'client'>>;
@@ -212,6 +219,8 @@ type ClientInferRequestBase<
       extraHeaders?: {
         [K in NonNullable<keyof THeaders>]?: never;
       } & Record<string, string | undefined>;
+      cache?: RequestCache;
+      next?: Framework extends 'nextjs' ? NextClientArgs['next'] : never;
     } & ExtractExtraParametersFromClientArgs<TClientArgs>,
     never
   >
@@ -221,9 +230,10 @@ export type ClientInferRequest<
   T extends AppRoute | AppRouter,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
-  }
+  },
+  Framework extends Frameworks = 'none',
 > = T extends AppRoute
-  ? ClientInferRequestBase<T, TClientArgs>
+  ? ClientInferRequestBase<Framework, T, TClientArgs>
   : T extends AppRouter
   ? { [TKey in keyof T]: ClientInferRequest<T[TKey]> }
   : never;
@@ -232,5 +242,6 @@ export type PartialClientInferRequest<
   TRoute extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
-  }
-> = OptionalIfAllOptional<ClientInferRequest<TRoute, TClientArgs>>;
+  },
+  Framework extends Frameworks = 'none',
+> = OptionalIfAllOptional<ClientInferRequest<TRoute, TClientArgs, Framework>>;

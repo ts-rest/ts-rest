@@ -1,5 +1,84 @@
 # @ts-rest/core
 
+## 3.35.1
+
+## 3.35.0
+
+## 3.34.0
+
+## 3.33.1
+
+## 3.33.0
+
+## 3.32.0
+
+### Minor Changes
+
+- c4fb3f6: feat: `@ts-rest/core`: Add support for `x-www-form-urlencoded` content-type to core client fetcher
+
+## 3.31.0
+
+## 3.30.5
+
+### Patch Changes
+
+- 9bd7402: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+  - `@ts-rest/open-api` fix: Pass through contentType to OpenApi schema ([#414](https://github.com/ts-rest/ts-rest/pull/414))
+  - `@ts-rest/core` fix: Content-type text/html returns blob body (fixes [#418](https://github.com/ts-rest/ts-rest/issues/418))
+- 8cc95c5: add changeset for latest changes
+
+## 3.30.4
+
+### Patch Changes
+
+- 10dff96: - (all packages) fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+  - ref PR: https://github.com/colinhacks/zod/pull/2824
+
+## 3.30.3
+
+### Patch Changes
+
+- da48e62: fix: apply `validateResponseOnClient` recursively to nested App Routers in `@ts-rest/core` client
+
+## 3.30.2
+
+### Patch Changes
+
+- bd0161b: fix: content-type application/json will not be automatically included in client request if the route is GET or body is undefined/null
+  > if you need to send this header for whatever reason in a GET request/undefined body request, you can pass in runtime headers https://ts-rest.com/docs/core/#headers
+
+## 3.30.1
+
+## 3.30.0
+
+### Minor Changes
+
+- c056132: feat: add support for client-side response validation against contract schemas for `@ts-rest/core` (see docs for usage)
+
+## 3.29.0
+
+### Patch Changes
+
+- 5f7b236: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+  - bump `@ts-rest/react-query` peer dependency `zod` to `^3.21.0`
+  - upgrades NX to 16.7 for project root
+
+## 3.28.0
+
+### Minor Changes
+
+- a7755ef: Adds support for fetch cache and support for Nextjs App Dir fetch (docs coming soon), see this PR for more info: https://github.com/ts-rest/ts-rest/pull/315
+- 16501dd: tsRestFetchApi should be more flexible when determining application/json content type header
+
+## 3.27.0
+
+### Patch Changes
+
+- 55411ad: Upgrade zod to 3.21.4
+  Upgrade @anatine/zod-openapi to 2.0.1
+
+## 3.26.4
+
 ## 3.26.3
 
 ## 3.26.2

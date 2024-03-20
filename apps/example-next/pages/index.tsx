@@ -31,7 +31,7 @@ export function Index() {
             : undefined,
         networkMode: 'offlineFirst',
         staleTime: 1000 * 5,
-      }
+      },
     );
 
   if (isLoading) {
@@ -43,7 +43,7 @@ export function Index() {
   }
 
   const posts = data.pages.flatMap((page) =>
-    page.status === 200 ? page.body.posts : []
+    page.status === 200 ? page.body.posts : [],
   );
 
   return (

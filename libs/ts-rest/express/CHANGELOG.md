@@ -1,5 +1,75 @@
 # @ts-rest/express
 
+## 3.35.1
+
+## 3.35.0
+
+## 3.34.0
+
+### Patch Changes
+
+- ea5c641: Export type `TsRestExpressOptions`
+
+## 3.33.1
+
+## 3.33.0
+
+### Minor Changes
+
+- 820658a: feat `@ts-rest/express`: Allow file downloads with Express
+
+## 3.32.0
+
+## 3.31.0
+
+## 3.30.5
+
+### Patch Changes
+
+- 9bd7402: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+  - `@ts-rest/open-api` fix: Pass through contentType to OpenApi schema ([#414](https://github.com/ts-rest/ts-rest/pull/414))
+  - `@ts-rest/core` fix: Content-type text/html returns blob body (fixes [#418](https://github.com/ts-rest/ts-rest/issues/418))
+- 8cc95c5: add changeset for latest changes
+
+## 3.30.4
+
+### Patch Changes
+
+- 10dff96: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+  - ref PR: https://github.com/colinhacks/zod/pull/2824
+
+## 3.30.3
+
+## 3.30.2
+
+## 3.30.1
+
+## 3.30.0
+
+### Minor Changes
+
+- 225921c: feat: added stronger typing for the `req` object in the route handler for '@ts-rest/express'
+
+## 3.29.0
+
+### Patch Changes
+
+- 5f7b236: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+  - bump `@ts-rest/react-query` peer dependency `zod` to `^3.21.0`
+  - upgrades NX to 16.7 for project root
+
+## 3.28.0
+
+## 3.27.0
+
+### Patch Changes
+
+- 637142f: Exposed `AppRouteOptions` and `AppRouteImplementation` types. They allow for greater developer flexibility and can be used to split router handlers.
+- 55411ad: Upgrade zod to 3.21.4
+  Upgrade @anatine/zod-openapi to 2.0.1
+
+## 3.26.4
+
 ## 3.26.3
 
 ## 3.26.2

@@ -61,6 +61,15 @@ const postsRouter = c.router({
       authorId: z.string(),
     }),
   },
+  createPostXForm: {
+    method: 'POST',
+    path: '/posts',
+    responses: {
+      200: c.response<Post>(),
+    },
+    body: z.string(),
+    contentType: 'application/x-www-form-urlencoded',
+  },
   mutationWithQuery: {
     method: 'POST',
     path: '/posts',
@@ -131,7 +140,7 @@ export const router = c.router(
       'x-test': z.string().optional(),
       'base-header': z.string().optional(),
     }),
-  }
+  },
 );
 
 const routerStrict = c.router(router, {
@@ -156,6 +165,7 @@ type ClientGetPostsType = Expect<
   Equal<
     Parameters<typeof client.posts.getPosts>[0],
     | {
+        cache?: RequestCache;
         query?: {
           take?: number;
           skip?: number;
@@ -182,6 +192,7 @@ type ClientGetPostType = Expect<
   Equal<
     Parameters<typeof client.posts.getPost>[0],
     {
+      cache?: RequestCache;
       params: {
         id: string;
       };
@@ -199,10 +210,10 @@ type ClientGetPostType = Expect<
   >
 >;
 type RouterHealthStrict = Expect<
-  Equal<typeof routerStrict.health['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.health)['strictStatusCodes'], true>
 >;
 type RouterGetPostStrict = Expect<
-  Equal<typeof routerStrict.posts.getPost['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.posts.getPost)['strictStatusCodes'], true>
 >;
 type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
 type ClientGetPostResponseType = Expect<
@@ -223,11 +234,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({});
@@ -243,11 +251,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({ query: {} });
@@ -263,11 +268,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts();
@@ -283,11 +285,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts?take=10',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
@@ -315,20 +314,17 @@ describe('client', () => {
           baseUrl: 'https://api.com',
           baseHeaders: {},
           jsonQuery: true,
-        }
+        },
       );
 
       const value = { key: 'value' };
       fetchMock.getOnce(
         {
           url: `https://api.com/posts?take=10&order=asc&published=true&filter=${encodeURIComponent(
-            '{"title":"test"}'
+            '{"title":"test"}',
           )}`,
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.getPosts({
@@ -351,11 +347,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts?take=10',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({
@@ -365,7 +358,6 @@ describe('client', () => {
       expect(result.body).toStrictEqual(value);
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Length')).toBe('15');
-      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ sub path', async () => {
@@ -373,11 +365,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPost({ params: { id: '1' } });
@@ -385,16 +374,12 @@ describe('client', () => {
       expect(result.body).toStrictEqual(value);
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Length')).toBe('15');
-      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('w/ a non json response (string)', async () => {
+    it('w/ a non json response (string, text/plain)', async () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
         {
           headers: {
@@ -402,7 +387,7 @@ describe('client', () => {
           },
           body: 'string',
           status: 200,
-        }
+        },
       );
 
       const result = await client.posts.getPosts({});
@@ -412,6 +397,28 @@ describe('client', () => {
       expect(result.headers.get('Content-Length')).toBe('6');
       expect(result.headers.get('Content-Type')).toBe('text/plain');
     });
+  });
+
+  it('w/ a non json response (string, text/html)', async () => {
+    fetchMock.getOnce(
+      {
+        url: 'https://api.com/posts',
+      },
+      {
+        headers: {
+          'Content-Type': 'text/html',
+        },
+        body: 'string',
+        status: 200,
+      },
+    );
+
+    const result = await client.posts.getPosts({});
+
+    expect(result.body).toStrictEqual('string');
+    expect(result.status).toBe(200);
+    expect(result.headers.get('Content-Length')).toBe('6');
+    expect(result.headers.get('Content-Type')).toBe('text/html');
   });
 
   describe('post', () => {
@@ -424,7 +431,7 @@ describe('client', () => {
             'Content-Type': 'application/json',
           },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.createPost({
@@ -437,6 +444,34 @@ describe('client', () => {
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
+    it('w/ body and content-type header', async () => {
+      const value = 'key=value';
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/posts',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+        {
+          body: value,
+          status: 200,
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+
+      const result = await client.posts.createPostXForm({
+        body: 'key=value',
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Type')).toBe(
+        'application/x-www-form-urlencoded',
+      );
+    });
+
     it('w/ query params', async () => {
       fetchMock.postOnce(
         {
@@ -446,7 +481,7 @@ describe('client', () => {
           },
           body: {},
         },
-        { body: {}, status: 200 }
+        { body: {}, status: 200 },
       );
 
       const result = await client.posts.mutationWithQuery({
@@ -476,7 +511,7 @@ describe('client', () => {
             authorId: 'authorId',
           },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.updatePost({
@@ -497,11 +532,8 @@ describe('client', () => {
       fetchMock.patchOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.patchPost({
@@ -521,11 +553,8 @@ describe('client', () => {
       fetchMock.deleteOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.deletePost({
@@ -546,7 +575,7 @@ describe('client', () => {
         {
           url: 'https://api.com/upload',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const file = new File([''], 'filename', { type: 'text/plain' });
@@ -574,7 +603,7 @@ describe('client', () => {
         {
           url: 'https://api.com/upload',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const formData = new FormData();
@@ -607,7 +636,7 @@ const customClient = initClient(router, {
     'Base-Header': 'foo',
   },
   api: async (
-    args: ApiFetcherArgs & { uploadProgress?: (progress: number) => void }
+    args: ApiFetcherArgs & { uploadProgress?: (progress: number) => void },
   ) => {
     args.uploadProgress?.(10);
 
@@ -629,6 +658,7 @@ type CustomClientGetPostsType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPosts>[0],
     {
+      cache?: RequestCache;
       query?: {
         take?: number;
         skip?: number;
@@ -655,6 +685,7 @@ type CustomClientGetPostType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPost>[0],
     {
+      cache?: RequestCache;
       params: {
         id: string;
       };
@@ -691,7 +722,7 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         uploadProgress,
-      })
+      }),
     );
   });
 
@@ -708,9 +739,8 @@ describe('custom api', () => {
         headers: {
           'base-header': 'foo',
           'x-test': 'test',
-          'content-type': 'application/json',
         },
-      })
+      }),
     );
   });
 
@@ -731,7 +761,7 @@ describe('custom api', () => {
           'base-header': 'bar',
           'content-type': 'application/html',
         },
-      })
+      }),
     );
   });
 
@@ -757,7 +787,7 @@ describe('custom api', () => {
           'x-test': 'test',
         },
         uploadProgress: expect.any(Function),
-      })
+      }),
     );
   });
 
@@ -801,7 +831,7 @@ describe('custom api', () => {
     fetchMock.getOnce({ url: 'https://isolated.com/posts' }, { status: 419 });
 
     await expect(client.posts.getPosts({})).rejects.toThrowError(
-      'Server returned unexpected response. Expected one of: 200 got: 419'
+      'Server returned unexpected response. Expected one of: 200 got: 419',
     );
   });
 });

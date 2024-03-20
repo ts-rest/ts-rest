@@ -27,7 +27,8 @@
         "format": ["esm", "cjs"],
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
-        "generateExportsField": true
+        "generateExportsField": true,
+        "updateBuildableProjectDepsInPackageJson": true
       }
     },
     "publish": {
@@ -42,7 +43,7 @@
       ]
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/core/**/*.ts"]
@@ -53,7 +54,6 @@
       "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/core"],
       "options": {
         "jestConfig": "libs/ts-rest/core/jest.config.ts",
-        "passWithNoTests": true,
         "coverageReporters": ["lcov", "text-summary"]
       }
     }

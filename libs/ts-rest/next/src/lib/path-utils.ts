@@ -8,7 +8,7 @@ import { AppRoute } from '@ts-rest/core';
  */
 export const getPathParamsFromArray = (
   urlChunks: string[],
-  appRoute: AppRoute
+  appRoute: AppRoute,
 ): Record<string, string> => {
   const pathAsArr = appRoute.path.split('/').slice(1);
 
@@ -19,12 +19,15 @@ export const getPathParamsFromArray = (
   });
 
   // remove pathParams where key doesn't start with :
-  return Object.entries(pathParams).reduce((acc, [key, value]) => {
-    if (key.startsWith(':')) {
-      const keyWithoutColon = key.slice(1);
-      acc[keyWithoutColon] = value;
-    }
+  return Object.entries(pathParams).reduce(
+    (acc, [key, value]) => {
+      if (key.startsWith(':')) {
+        const keyWithoutColon = key.slice(1);
+        acc[keyWithoutColon] = value;
+      }
 
-    return acc;
-  }, {} as Record<string, string>);
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 };

@@ -220,6 +220,42 @@ describe('ts-rest-fastify', () => {
     expect(response.body).toEqual({ id: 'foo' });
   });
 
+  it('should remove extra properties from request body', async () => {
+    const contract = c.router({
+      echo: {
+        method: 'POST',
+        path: '/echo',
+        body: z.object({
+          foo: z.string(),
+        }),
+        responses: {
+          200: z.any(),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      echo: async ({ body }) => {
+        return {
+          status: 200,
+          body: body,
+        };
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server).post('/echo').send({
+      foo: 'bar',
+      bar: 'foo',
+    });
+    expect(response.body).toEqual({ foo: 'bar' });
+  });
+
   it('options.responseValidation true should remove extra properties', async () => {
     const app = fastify({ logger: false });
 
@@ -261,18 +297,17 @@ describe('ts-rest-fastify', () => {
           responses: { 200: c.response<{ id: string }>() },
         },
       },
-      { pathPrefix: '/posts' }
+      { pathPrefix: '/posts' },
     );
     const postsContract = c.router(
       {
         posts: postsContractNested,
       },
-      { pathPrefix: '/v1' }
+      { pathPrefix: '/v1' },
     );
     const router = s.router(postsContract, {
       posts: {
         getPost: async ({ params }) => {
-          console.log(params);
           return { status: 200, body: { id: params.postId } };
         },
       },
@@ -376,7 +411,7 @@ describe('ts-rest-fastify', () => {
     expect(responseHtmlFail.status).toEqual(500);
     expect(responseHtmlFail.text).toEqual('Response validation failed');
     expect(responseHtmlFail.header['content-type']).toEqual(
-      'text/plain; charset=utf-8'
+      'text/plain; charset=utf-8',
     );
 
     const responseTextPlain = await supertest(app.server).get('/robots.txt');
@@ -388,5 +423,180 @@ describe('ts-rest-fastify', () => {
     expect(responseCss.status).toEqual(200);
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual('text/css');
+  });
+
+  it('should return errors from route handlers', async () => {
+    const erroringRouter = s.router(contract, {
+      test: async () => {
+        throw new Error('not implemented');
+      },
+      ping: async () => {
+        throw new Error('not implemented');
+      },
+      testPathParams: async () => {
+        throw new Error('not implemented');
+      },
+      returnsTheWrongData: async () => {
+        throw new Error('not implemented');
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, erroringRouter, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server)
+      .get('/test')
+      .timeout(1000)
+      .send({});
+    expect(response.statusCode).toEqual(500);
+  });
+
+  it('should be able to instantiate two routers and combine them together', async () => {
+    const contractA = c.router({
+      a: {
+        method: 'GET',
+        path: '/a',
+        responses: {
+          200: z.object({
+            a: z.string(),
+          }),
+        },
+      },
+    });
+
+    const contractB = c.router({
+      b: {
+        method: 'GET',
+        path: '/b',
+        responses: {
+          200: z.object({
+            b: z.string(),
+          }),
+        },
+      },
+    });
+
+    const combinedContract = c.router({
+      apiA: contractA,
+      apiB: contractB,
+    });
+
+    const routerA = s.router(contractA, {
+      a: async () => {
+        return {
+          status: 200,
+          body: {
+            a: 'return',
+          },
+        };
+      },
+    });
+
+    const routerB = s.router(contractB, {
+      b: async () => {
+        return {
+          status: 200,
+          body: {
+            b: 'return',
+          },
+        };
+      },
+    });
+
+    const combinedRouter = s.router(combinedContract, {
+      apiA: routerA,
+      apiB: routerB,
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(combinedRouter));
+
+    await app.ready();
+
+    const responseA = await supertest(app.server).get('/a');
+    expect(responseA.statusCode).toEqual(200);
+    expect(responseA.body).toEqual({
+      a: 'return',
+    });
+
+    const responseB = await supertest(app.server).get('/b');
+    expect(responseB.statusCode).toEqual(200);
+    expect(responseB.body).toEqual({
+      b: 'return',
+    });
+  });
+
+  it('should be able to mix and match combining routers with direct implementation', async () => {
+    const contract = c.router({
+      apiA: {
+        a: {
+          method: 'GET',
+          path: '/a',
+          responses: {
+            200: z.object({
+              a: z.string(),
+            }),
+          },
+        },
+      },
+      apiB: {
+        b: {
+          method: 'GET',
+          path: '/b',
+          responses: {
+            200: z.object({
+              b: z.string(),
+            }),
+          },
+        },
+      },
+    });
+
+    const routerForApiA = s.router(contract.apiA, {
+      a: async () => {
+        return {
+          status: 200,
+          body: {
+            a: 'return',
+          },
+        };
+      },
+    });
+
+    const router = s.router(contract, {
+      apiA: routerForApiA,
+      apiB: {
+        b: async () => {
+          return {
+            status: 200,
+            body: {
+              b: 'return',
+            },
+          };
+        },
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const responseA = await supertest(app.server).get('/a');
+    expect(responseA.statusCode).toEqual(200);
+    expect(responseA.body).toEqual({
+      a: 'return',
+    });
+
+    const responseB = await supertest(app.server).get('/b');
+    expect(responseB.statusCode).toEqual(200);
+    expect(responseB.body).toEqual({
+      b: 'return',
+    });
   });
 });
