@@ -30,7 +30,6 @@ type AppRouteCommon = {
   query?: ContractAnyType;
   headers?: ContractAnyType;
   summary?: string;
-  body?: ContractAnyType;
   description?: string;
   deprecated?: boolean;
   responses: Record<
