@@ -315,10 +315,10 @@ function handlerFactory(
             bodyResult.success ? null : bodyResult.error,
           );
         }
+
         if (!pathParamsResult.success) {
           return res.status(400).json(pathParamsResult.error);
         }
-
         if (!headersResult.success) {
           return res.status(400).send(headersResult.error);
         }
@@ -338,6 +338,7 @@ function handlerFactory(
         req,
         res,
       });
+
       const statusCode = Number(status);
 
       let validatedResponseBody = body;
