@@ -351,6 +351,7 @@ function handlerFactory(
             body: body,
           },
         });
+
         validatedResponseBody = response.body;
       }
 
