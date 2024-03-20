@@ -167,30 +167,20 @@ This can be somewhat mitigated if you share the error code schema between multip
 
 ## Configuration
 
-To configure certain ts-rest options you can use the `@TsRest` decorator on either your Controller or use the existing `@Api` decorator.
+To configure `ts-rest` options you can use the `@TsRest` decorator on either your controller or use the existing `@TsRestHandler` decorator on your method.
+Controller options will be applied to all routes in the controller and will override any global options, and method options will override the controller options for that specific route.
 
-### JSON Query Parameters
+Check out the [configuration](/docs/nest/configuration/) section for more details on the different configuration options, or on how to configure options globally.
 
-To handle JSON query parameters, pass the `jsonQuery` option to the `@TsRest` decorator on your entire controller.
+### Example
 
 ```typescript
-import { TsRest } from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 
 @Controller()
 @TsRest({ jsonQuery: true })
-export class MyController {}
-```
-
-You can also use the method decorator to override or configure options for a specific route.
-
-```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-
-@Controller()
 export class MyController {
-  constructor(private readonly service: Service) {}
-
-  @TsRestHandler(c.getPost, { jsonQuery: true })
+  @TsRestHandler(c.getPost, { jsonQuery: false })
   async getPost() {
     return tsRestHandler(c.getPost, async () => {
       // ...
@@ -198,104 +188,6 @@ export class MyController {
   }
 }
 ```
-
-### Request Validation
-By default, `ts-rest` validates all request components - body, headers and query parameters.
-In case of validation errors, the server responds with a `ZodError` object in the response body and a status code of 400.
-You can disable the validation of these components if you wish to perform the validation manually or handle the error differently.
-
-Using the `@TsRest()` decorator, you can configure request validation parameters for the entire controller:
-```typescript
-import { TsRest } from '@ts-rest/nest';
-
-@Controller()
-@TsRest({
-  validateRequestBody: false,
-  validateRequestQuery: false,
-  validateRequestHeaders: false
-})
-class MyController {}
-```
-
-You can also override controller decorator values for a specific route:
-
-```typescript
-import { TsRest } from '@ts-rest/nest';
-
-@Controller()
-@TsRest({
-  validateRequestBody: false,
-})
-class MyController {
-  @TsRest(contract.create, {
-    validateRequestBody: true
-  })
-  async create(@TsRestRequest() { body }) {
-    // body validated
-  }
-}
-```
-
-Or finally, using `@TsRestHandler()` for specific route:
-
-```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-
-@Controller()
-export class MyController {
-  constructor() {}
-
-  @TsRestHandler(c.getPost, {
-    validateRequestBody: false,
-    validateRequestQuery: false,
-    validateRequestHeaders: false
-  })
-  async getPost() {
-    return tsRestHandler(c.getPost, async ({ query, body }) => {
-      const isQueryValid = querySchema.safeParse(query);
-      console.log(isQueryValid) // => { success: false; error: ZodError }
-
-      const isBodyValid = bodySchema.safeParse(body);
-      console.log(isBodyValid) // => { success: true; data: {...} }
-    });
-  }
-}
-```
-
-### Response Validation
-
-You can enable response validation by passing the `validateResponses` option to the `@TsRest()` decorator.
-This will enable response parsing and validation for a returned status code, if there is a corresponding response Zod schema defined in the contract.
-This is useful for ensuring absolute safety that your controller is returning the correct response types as well as stripping any extra properties.
-
-```typescript
-import { TsRest } from '@ts-rest/nest';
-
-@Controller()
-@TsRest({ validateResponses: true })
-export class MyController {}
-```
-
-You can also use the method decorator to override or configure options for a specific route.
-
-```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-
-@Controller()
-export class MyController {
-  constructor(private readonly service: Service) {}
-
-  @TsRestHandler(c.getPost, { validateResponses: true })
-  async getPost() {
-    return tsRestHandler(c.getPost, async () => {
-      // ...
-    });
-  }
-}
-```
-
-If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
-You can catch this error and handle it as you wish by using a [NestJS exception filter](https://docs.nestjs.com/exception-filters).
 
 ## Gotchas
 
