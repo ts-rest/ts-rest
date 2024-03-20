@@ -44,9 +44,9 @@ export default createNextRouter(contract, router);
 
 ```typescript
 // pages/api/posts/index.tsx
-import { createSingleUrlNextRoute } from '@ts-rest/next';
+import { createSingleRouteHandler } from '@ts-rest/next';
 
-export default createSingleUrlNextRouter(api.posts.createPost, async (args) => {
+export default createSingleRouteHandler(api.posts.createPost, async (args) => {
   const newPost = await posts.createPost(args.body);
 
   return {
@@ -56,7 +56,7 @@ export default createSingleUrlNextRouter(api.posts.createPost, async (args) => {
 });
 ```
 
-`createSingleUrlNextRoute` is a function that takes a single contract route and a handler, and creates a `nextApiHandler`
+`createSingleRouteHandler` is a function that takes a single contract route and a handler, and creates a `nextApiHandler`
 
 ### JSON Query Parameters
 

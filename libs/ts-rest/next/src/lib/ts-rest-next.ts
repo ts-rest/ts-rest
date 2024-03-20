@@ -235,7 +235,7 @@ export const createNextRouter = <T extends AppRouter>(
  * @param options
  * @returns
  */
-export function createSingleUrlNextHandler<T extends AppRoute>(
+export function createSingleRouteHandler<T extends AppRoute>(
   appRoute: AppRoute,
   implementationHandler: AppRouteImplementation<T>,
   options?: CreateNextRouterOptions,
