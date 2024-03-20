@@ -6,6 +6,10 @@
 
 - 3e8701c: Add functionality to be able to set configuration options globally using `TsRestModule`
 
+### Breaking Change
+
+- The deprecated `@JsonQuery` decorator has been removed. Use the existing options argument on `@TsRest` instead.
+
 ## 3.35.1
 
 ### Patch Changes
