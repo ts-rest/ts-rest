@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import {
   createNextRoute,
   createNextRouter,
+  createSingleRouteHandler,
   RequestValidationError,
 } from './ts-rest-next';
 import { z } from 'zod';
@@ -41,6 +42,9 @@ const contract = c.router({
     responses: {
       200: c.response<{ id: string; test: string }>(),
     },
+    pathParams: z.object({
+      id: z.string(),
+    }),
   },
   getZodQuery: {
     method: 'GET',
@@ -437,6 +441,168 @@ describe('createNextRouter', () => {
   });
 });
 
+describe('createSingleUrlNextRouter', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should send back a 200', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test/123', {
+      method: 'GET',
+      query: { id: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '123',
+    });
+  });
+
+  it('should send back a 404', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/wrong-url', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(404);
+    expect(jsonMock).not.toHaveBeenCalled();
+  });
+
+  it('should send back a 404', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(404);
+    expect(jsonMock).not.toHaveBeenCalled();
+  });
+
+  it('should send body, params and query correctly', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.advanced,
+      nextEndpoint.advanced,
+    );
+
+    const req = mockSingleUrlReq('/advanced/123', {
+      method: 'POST',
+      body: {
+        test: 'test-body',
+      },
+      query: { id: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '123',
+      test: 'test-body',
+    });
+  });
+
+  it('should send json query correctly', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithQuery,
+      nextEndpoint.getWithQuery,
+      { jsonQuery: true },
+    );
+
+    const req = mockSingleUrlReq('/test-query', {
+      method: 'GET',
+      query: { test: '"test-query-string"', foo: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      test: 'test-query-string',
+      foo: 123,
+    });
+  });
+
+  it('should differentiate between /test and /test/id', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test/3', {
+      method: 'GET',
+      query: { id: '3' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '3',
+    });
+  });
+
+  describe('response validation', () => {
+    it('should include default value and removes extra field', async () => {
+      const resultingRouter = createSingleRouteHandler(
+        contract.getZodQuery,
+        nextEndpoint.getZodQuery,
+        { responseValidation: true },
+      );
+
+      const req = mockSingleUrlReq('/test/123/name', {
+        method: 'GET',
+        query: { field: 'foo', id: '123', name: 'name' },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith({
+        id: 123,
+        name: 'name',
+        defaultValue: 'hello world',
+      });
+    });
+
+    it('fails with invalid field', async () => {
+      const errorHandler = jest.fn();
+      const resultingRouter = createSingleRouteHandler(
+        contract.getZodQuery,
+        nextEndpoint.getZodQuery,
+        { responseValidation: true, errorHandler },
+      );
+
+      const req = mockSingleUrlReq('/test/2000/name', {
+        method: 'GET',
+        query: { id: '2000', name: 'name' },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(errorHandler).toHaveBeenCalled();
+    });
+  });
+});
+
 export const mockReq = (
   url: string,
   args: {
@@ -452,6 +618,20 @@ export const mockReq = (
       ...args.query,
       ['ts-rest']: paramArray,
     },
+    body: args.body,
+    method: args.method,
+  } as unknown as NextApiRequest;
+
+  return req;
+};
+
+const mockSingleUrlReq = (
+  url: string,
+  args: { query?: Record<string, unknown>; body?: unknown; method: string },
+): NextApiRequest => {
+  const req = {
+    url,
+    query: args.query,
     body: args.body,
     method: args.method,
   } as unknown as NextApiRequest;

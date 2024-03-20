@@ -54,6 +54,17 @@ type AppRouterWithImplementation = {
   [key: string]: AppRouterWithImplementation | AppRouteWithImplementation<any>;
 };
 
+type CreateNextRouterOptions = {
+  jsonQuery?: boolean;
+  responseValidation?: boolean;
+  throwRequestValidation?: boolean;
+  errorHandler?: (
+    err: unknown,
+    req: NextApiRequest,
+    res: NextApiResponse,
+  ) => void;
+};
+
 /**
  * Combine all AppRoutes with their implementations into a single object
  * which is easier to work with
@@ -186,41 +197,99 @@ export const createNextRoute = <T extends AppRouter>(
 export const createNextRouter = <T extends AppRouter>(
   routes: T,
   obj: RecursiveRouterObj<T>,
-  options?: {
-    jsonQuery?: boolean;
-    responseValidation?: boolean;
-    throwRequestValidation?: boolean;
-    errorHandler?: (
-      err: unknown,
-      req: NextApiRequest,
-      res: NextApiResponse,
-    ) => void;
-  },
+  options?: CreateNextRouterOptions,
 ) => {
-  const {
-    jsonQuery = false,
-    responseValidation = false,
-    throwRequestValidation = false,
-  } = options || {};
+  return handlerFactory((req) => {
+    const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
-  const combinedRouter = mergeRouterAndImplementation(routes, obj);
-
-  return async (req: NextApiRequest, res: NextApiResponse) => {
+    // eslint-disable-next-line prefer-const
     let { 'ts-rest': params, ...query } = req.query;
-    params = (params as string[]) || [];
 
+    params = (params as string[]) || [];
     const route = getRouteImplementation(
       combinedRouter,
       params,
       req.method as string,
     );
+    let pathParams;
+    if (route) {
+      pathParams = getPathParamsFromArray(params, route);
+    } else {
+      pathParams = {};
+    }
+    return { pathParams, query, route };
+  }, options);
+};
 
+/**
+ * Turn a contract route and a handler into a Next.js compatible handler
+ * Should be exported from your pages/api/path/to/handler.tsx file.
+ *
+ * e.g.
+ *
+ * ```typescript
+ * export default createNextRouter(contract, implementationHandler);
+ * ```
+ *
+ * @param appRoute
+ * @param options
+ * @returns
+ */
+export function createSingleRouteHandler<T extends AppRoute>(
+  appRoute: AppRoute,
+  implementationHandler: AppRouteImplementation<T>,
+  options?: CreateNextRouterOptions,
+) {
+  return handlerFactory((req) => {
+    const route = { ...appRoute, implementation: implementationHandler };
+    const urlChunks = req.url!.split('/').slice(1);
+    const pathParams = getPathParamsFromArray(urlChunks, route);
+    const query = req.query
+      ? Object.fromEntries(
+          Object.entries(req.query).filter(
+            ([key]) => pathParams[key] === undefined,
+          ),
+        )
+      : {};
+
+    const isValidRoute = isRouteCorrect(
+      appRoute,
+      urlChunks,
+      req.method as string,
+    );
+
+    return { pathParams, query, route: isValidRoute ? route : null };
+  }, options);
+}
+
+/**
+ * Create a next.js compatible handler for a given route
+ * @param getArgumentsFromRequest
+ * @param options
+ * @returns
+ */
+const handlerFactory = (
+  getArgumentsFromRequest: (req: NextApiRequest) => {
+    pathParams: Record<string, string>;
+    query: NextApiRequest['query'];
+    route: AppRouterWithImplementation[keyof AppRouterWithImplementation];
+  },
+  options?: CreateNextRouterOptions,
+) => {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
+    const {
+      jsonQuery = false,
+      responseValidation = false,
+      throwRequestValidation = false,
+    } = options || {};
+
+    const args = getArgumentsFromRequest(req);
+    const { pathParams, route } = args;
+    let { query } = args;
     if (!route) {
       res.status(404).end();
       return;
     }
-
-    const pathParams = getPathParamsFromArray(params, route);
 
     const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
       passThroughExtraKeys: true,
