@@ -93,6 +93,7 @@ const sidebars = {
       items: [
         { type: 'doc', id: 'nest/nest' },
         { type: 'doc', id: 'nest/legacy' },
+        { type: 'doc', id: 'nest/configuration' },
       ],
     },
     {

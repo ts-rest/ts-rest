@@ -12,10 +12,12 @@ import {
   Get,
   HttpException,
   HttpExceptionOptions,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NestInterceptor,
   NotFoundException,
+  Optional,
   Patch,
   Post,
   Put,
@@ -33,17 +35,17 @@ import {
   Promisable,
 } from '@ts-rest/core';
 import {
-  JsonQuerySymbol,
   TsRestAppRouteMetadataKey,
-  ValidateRequestBodySymbol,
-  ValidateRequestHeadersSymbol,
-  ValidateRequestQuerySymbol,
-  ValidateResponsesSymbol,
+  TsRestOptionsMetadataKey,
 } from './constants';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
 import { z } from 'zod';
-import { TsRestOptions } from './ts-rest.decorator';
-import { JsonQuery } from './json-query.decorator';
+import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
+import {
+  evaluateTsRestOptions,
+  MaybeTsRestOptions,
+  TsRestOptions,
+} from './ts-rest-options';
 
 export class RequestValidationError extends BadRequestException {
   constructor(
@@ -74,31 +76,13 @@ export class ResponseValidationError extends InternalServerErrorException {
 
 export const TsRestHandler = (
   appRouterOrRoute: AppRouter | AppRoute,
-  options: TsRestOptions = {},
+  options?: TsRestOptions,
 ): MethodDecorator => {
   const decorators = [];
 
-  if (options.jsonQuery !== undefined) {
-    decorators.push(JsonQuery(options.jsonQuery));
+  if (options) {
+    decorators.push(SetMetadata(TsRestOptionsMetadataKey, options));
   }
-
-  if (options.validateResponses !== undefined) {
-    decorators.push(
-      SetMetadata(ValidateResponsesSymbol, options.validateResponses),
-    );
-  }
-
-  decorators.push(
-    SetMetadata(
-      ValidateRequestHeadersSymbol,
-      options.validateRequestHeaders ?? true,
-    ),
-    SetMetadata(
-      ValidateRequestQuerySymbol,
-      options.validateRequestQuery ?? true,
-    ),
-    SetMetadata(ValidateRequestBodySymbol, options.validateRequestBody ?? true),
-  );
 
   const isMultiHandler = !isAppRoute(appRouterOrRoute);
 
@@ -224,7 +208,12 @@ export const doesUrlMatchContractPath = (
 
 @Injectable()
 export class TsRestHandlerInterceptor implements NestInterceptor {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    @Optional()
+    @Inject(TS_REST_MODULE_OPTIONS_TOKEN)
+    private globalOptions: MaybeTsRestOptions,
+  ) {}
 
   private getAppRouteFromContext(ctx: ExecutionContext) {
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
@@ -278,24 +267,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
-    const isJsonQuery = !!(
-      Reflect.getMetadata(JsonQuerySymbol, ctx.getHandler()) ??
-      Reflect.getMetadata(JsonQuerySymbol, ctx.getClass())
-    );
-
-    const getMetadataValue = (
-      key:
-        | typeof ValidateResponsesSymbol
-        | typeof ValidateRequestHeadersSymbol
-        | typeof ValidateRequestQuerySymbol
-        | typeof ValidateRequestBodySymbol,
-    ) =>
-      Boolean(
-        this.reflector.getAllAndOverride<boolean | undefined>(key, [
-          ctx.getHandler(),
-          ctx.getClass(),
-        ]),
-      );
+    const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
     const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
@@ -305,7 +277,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       passThroughExtraKeys: true,
     });
 
-    const query = isJsonQuery
+    const query = options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
 
@@ -316,16 +288,12 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       'body' in appRoute ? appRoute.body : null,
     );
 
-    const isValidationEnabled = getMetadataValue(ValidateResponsesSymbol);
-
     const isHeadersInvalid =
-      !headersResult.success && getMetadataValue(ValidateRequestHeadersSymbol);
+      !headersResult.success && options.validateRequestHeaders;
 
-    const isQueryInvalid =
-      !queryResult.success && getMetadataValue(ValidateRequestQuerySymbol);
+    const isQueryInvalid = !queryResult.success && options.validateRequestQuery;
 
-    const isBodyInvalid =
-      !bodyResult.success && getMetadataValue(ValidateRequestBodySymbol);
+    const isBodyInvalid = !bodyResult.success && options.validateRequestBody;
 
     if (
       !paramsResult.success ||
@@ -365,7 +333,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
           }
         }
 
-        const responseAfterValidation = isValidationEnabled
+        const responseAfterValidation = options.validateResponses
           ? validateResponse(appRoute, result)
           : result;
 
