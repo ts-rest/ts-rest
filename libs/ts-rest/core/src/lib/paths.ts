@@ -1,3 +1,5 @@
+type StripOptional<T> = T extends `${infer U}?` ? U : T;
+
 /**
  * @params T - The URL e.g. /posts/:id
  * @params TAcc - Accumulator object
@@ -6,17 +8,21 @@ type RecursivelyExtractPathParams<
   T extends string,
   TAcc extends null | Record<string, string>,
 > = T extends `/:${infer PathParam}/${infer Right}`
-  ? { [key in PathParam]: string } & RecursivelyExtractPathParams<Right, TAcc>
+  ? {
+      [key in StripOptional<PathParam>]: string;
+    } & RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/:${infer PathParam}`
-  ? { [key in PathParam]: string }
+  ? { [key in StripOptional<PathParam>]: string }
   : T extends `/${string}/${infer Right}`
   ? RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/${string}`
   ? TAcc
   : T extends `:${infer PathParam}/${infer Right}`
-  ? { [key in PathParam]: string } & RecursivelyExtractPathParams<Right, TAcc>
+  ? {
+      [key in StripOptional<PathParam>]: string;
+    } & RecursivelyExtractPathParams<Right, TAcc>
   : T extends `:${infer PathParam}`
-  ? TAcc & { [key in PathParam]: string }
+  ? TAcc & { [key in StripOptional<PathParam>]: string }
   : T extends `${string}/${infer Right}`
   ? RecursivelyExtractPathParams<Right, TAcc>
   : TAcc;
