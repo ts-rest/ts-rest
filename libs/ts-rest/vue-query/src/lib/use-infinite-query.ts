@@ -18,17 +18,17 @@ import { DataResponse, ErrorResponse, queryFn } from './common';
 // Used on X.useInfiniteQuery
 export type DataReturnInfiniteQuery<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 > = (
   queryKey: QueryKey,
   args: (
-    context: QueryFunctionContext<QueryKey>
+    context: QueryFunctionContext<QueryKey>,
   ) => PartialClientInferRequest<TAppRoute, TClientArgs>,
   options?: UseInfiniteQueryOptions<
     DataResponse<TAppRoute>,
     ErrorResponse<TAppRoute>,
     TAppRoute
-  >
+  >,
 ) => UseInfiniteQueryReturnType<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>
@@ -37,14 +37,14 @@ export type DataReturnInfiniteQuery<
 export const getRouteUseInfiniteQuery =
   <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
     route: TAppRoute,
-    clientArgs: TClientArgs
+    clientArgs: TClientArgs,
   ) =>
   (
     queryKey: QueryKey,
     argsMapper: (
-      context: QueryFunctionContext
+      context: QueryFunctionContext,
     ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-    options?: UseInfiniteQueryOptions<TAppRoute['responses']>
+    options?: UseInfiniteQueryOptions<TAppRoute['responses']>,
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (context) => {
       const resultingQueryArgs = argsMapper(context);

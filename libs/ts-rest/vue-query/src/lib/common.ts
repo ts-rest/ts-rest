@@ -32,15 +32,15 @@ export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
 
 export const queryFn = <
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 >(
   route: TAppRoute,
   clientArgs: TClientArgs,
   argsMapper?:
     | ClientInferRequest<AppRouteMutation, ClientArgs>
     | ((
-        context: QueryFunctionContext<QueryKey>
-      ) => ClientInferRequest<AppRouteMutation, ClientArgs>)
+        context: QueryFunctionContext<QueryKey>,
+      ) => ClientInferRequest<AppRouteMutation, ClientArgs>),
 ): QueryFunction<TAppRoute['responses']> => {
   return async (queryFnContext: QueryFunctionContext) => {
     const args =
@@ -56,7 +56,7 @@ export const queryFn = <
       clientArgs.baseUrl,
       params,
       route,
-      !!clientArgs.jsonQuery
+      !!clientArgs.jsonQuery,
     );
 
     const result = await fetchApi({

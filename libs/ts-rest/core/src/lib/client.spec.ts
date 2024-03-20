@@ -68,7 +68,7 @@ const postsRouter = c.router({
       200: c.response<Post>(),
     },
     body: z.string(),
-    contentType: 'application/x-www-form-urlencoded'
+    contentType: 'application/x-www-form-urlencoded',
   },
   mutationWithQuery: {
     method: 'POST',
@@ -140,7 +140,7 @@ export const router = c.router(
       'x-test': z.string().optional(),
       'base-header': z.string().optional(),
     }),
-  }
+  },
 );
 
 const routerStrict = c.router(router, {
@@ -210,10 +210,10 @@ type ClientGetPostType = Expect<
   >
 >;
 type RouterHealthStrict = Expect<
-  Equal<typeof routerStrict.health['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.health)['strictStatusCodes'], true>
 >;
 type RouterGetPostStrict = Expect<
-  Equal<typeof routerStrict.posts.getPost['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.posts.getPost)['strictStatusCodes'], true>
 >;
 type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
 type ClientGetPostResponseType = Expect<
@@ -235,7 +235,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({});
@@ -252,7 +252,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({ query: {} });
@@ -269,7 +269,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts();
@@ -286,7 +286,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts?take=10',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
@@ -314,17 +314,17 @@ describe('client', () => {
           baseUrl: 'https://api.com',
           baseHeaders: {},
           jsonQuery: true,
-        }
+        },
       );
 
       const value = { key: 'value' };
       fetchMock.getOnce(
         {
           url: `https://api.com/posts?take=10&order=asc&published=true&filter=${encodeURIComponent(
-            '{"title":"test"}'
+            '{"title":"test"}',
           )}`,
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.getPosts({
@@ -334,7 +334,6 @@ describe('client', () => {
           published: true,
           filter: { title: 'test' },
         },
-
       });
 
       expect(result.body).toStrictEqual(value);
@@ -349,7 +348,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts?take=10',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({
@@ -367,7 +366,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts/1',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPost({ params: { id: '1' } });
@@ -388,7 +387,7 @@ describe('client', () => {
           },
           body: 'string',
           status: 200,
-        }
+        },
       );
 
       const result = await client.posts.getPosts({});
@@ -411,7 +410,7 @@ describe('client', () => {
         },
         body: 'string',
         status: 200,
-      }
+      },
     );
 
     const result = await client.posts.getPosts({});
@@ -432,7 +431,7 @@ describe('client', () => {
             'Content-Type': 'application/json',
           },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.createPost({
@@ -446,29 +445,31 @@ describe('client', () => {
     });
 
     it('w/ body and content-type header', async () => {
-      const value = "key=value";
+      const value = 'key=value';
       fetchMock.postOnce(
         {
           url: 'https://api.com/posts',
           headers: {
-            "content-type": "application/x-www-form-urlencoded"
-          }
+            'content-type': 'application/x-www-form-urlencoded',
+          },
         },
         {
           body: value,
           status: 200,
           headers: {
-            "content-type": "application/x-www-form-urlencoded"
-          }
-        }
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
       );
 
       const result = await client.posts.createPostXForm({
-        body: "key=value",
+        body: 'key=value',
       });
 
       expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Type')).toBe('application/x-www-form-urlencoded');
+      expect(result.headers.get('Content-Type')).toBe(
+        'application/x-www-form-urlencoded',
+      );
     });
 
     it('w/ query params', async () => {
@@ -480,7 +481,7 @@ describe('client', () => {
           },
           body: {},
         },
-        { body: {}, status: 200 }
+        { body: {}, status: 200 },
       );
 
       const result = await client.posts.mutationWithQuery({
@@ -510,7 +511,7 @@ describe('client', () => {
             authorId: 'authorId',
           },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.updatePost({
@@ -532,7 +533,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts/1',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.patchPost({
@@ -553,7 +554,7 @@ describe('client', () => {
         {
           url: 'https://api.com/posts/1',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.deletePost({
@@ -574,7 +575,7 @@ describe('client', () => {
         {
           url: 'https://api.com/upload',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const file = new File([''], 'filename', { type: 'text/plain' });
@@ -602,7 +603,7 @@ describe('client', () => {
         {
           url: 'https://api.com/upload',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const formData = new FormData();
@@ -635,7 +636,7 @@ const customClient = initClient(router, {
     'Base-Header': 'foo',
   },
   api: async (
-    args: ApiFetcherArgs & { uploadProgress?: (progress: number) => void }
+    args: ApiFetcherArgs & { uploadProgress?: (progress: number) => void },
   ) => {
     args.uploadProgress?.(10);
 
@@ -721,7 +722,7 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         uploadProgress,
-      })
+      }),
     );
   });
 
@@ -739,7 +740,7 @@ describe('custom api', () => {
           'base-header': 'foo',
           'x-test': 'test',
         },
-      })
+      }),
     );
   });
 
@@ -760,7 +761,7 @@ describe('custom api', () => {
           'base-header': 'bar',
           'content-type': 'application/html',
         },
-      })
+      }),
     );
   });
 
@@ -786,7 +787,7 @@ describe('custom api', () => {
           'x-test': 'test',
         },
         uploadProgress: expect.any(Function),
-      })
+      }),
     );
   });
 
@@ -830,7 +831,7 @@ describe('custom api', () => {
     fetchMock.getOnce({ url: 'https://isolated.com/posts' }, { status: 419 });
 
     await expect(client.posts.getPosts({})).rejects.toThrowError(
-      'Server returned unexpected response. Expected one of: 200 got: 419'
+      'Server returned unexpected response. Expected one of: 200 got: 419',
     );
   });
 });

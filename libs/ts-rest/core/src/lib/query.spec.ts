@@ -97,8 +97,8 @@ describe('encodeQueryParams', () => {
 
     expect(result).toBe(
       encodeURI(
-        'nested[array][0]=1&nested[array][1]=2&nested[array][2]=3&nested[id]=1&nested[nestedNested][id]=2'
-      )
+        'nested[array][0]=1&nested[array][1]=2&nested[array][2]=3&nested[id]=1&nested[nestedNested][id]=2',
+      ),
     );
 
     expect(qsParse(result)).toEqual({
@@ -273,10 +273,10 @@ describe('encodeQueryParamsJson', () => {
 
     expect(result).toBe(
       `id=123&string=ABC&trueString=%22true%22&falseString=%22false%22&nullString=%22null%22&numberString=%22123%22&boolean=true&null=null&sorting=${encodeURIComponent(
-        '{"by":"date","order":"asc"}'
+        '{"by":"date","order":"asc"}',
       )}&filter=${encodeURIComponent(
-        '{"date":{"gt":"2020-01-01T00:00:00.000Z"}}'
-      )}`
+        '{"date":{"gt":"2020-01-01T00:00:00.000Z"}}',
+      )}`,
     );
   });
 });

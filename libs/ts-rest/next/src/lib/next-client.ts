@@ -1,4 +1,15 @@
-import { AppRoute, AppRouter, AreAllPropertiesOptional, ClientArgs, ClientInferResponses, getRouteQuery, isAppRoute, NextClientArgs, PartialClientInferRequest, Prettify } from "@ts-rest/core";
+import {
+  AppRoute,
+  AppRouter,
+  AreAllPropertiesOptional,
+  ClientArgs,
+  ClientInferResponses,
+  getRouteQuery,
+  isAppRoute,
+  NextClientArgs,
+  PartialClientInferRequest,
+  Prettify,
+} from '@ts-rest/core';
 
 /**
  * Returned from a mutation or query call
@@ -6,24 +17,22 @@ import { AppRoute, AppRouter, AreAllPropertiesOptional, ClientArgs, ClientInferR
 type AppRouteFunction<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = PartialClientInferRequest<TRoute, TClientArgs, 'nextjs'>
+  TArgs = PartialClientInferRequest<TRoute, TClientArgs, 'nextjs'>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
   : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
 
-
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
-  ? AppRouteFunction<T[TKey], TClientArgs>
-  : T[TKey] extends AppRouter
-  ? RecursiveProxyObj<T[TKey], TClientArgs>
-  : never;
+    ? AppRouteFunction<T[TKey], TClientArgs>
+    : T[TKey] extends AppRouter
+    ? RecursiveProxyObj<T[TKey], TClientArgs>
+    : never;
 };
-
 
 export type InitClientReturn<
   T extends AppRouter,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 > = RecursiveProxyObj<T, TClientArgs>;
 
 export type InitClientArgs = ClientArgs & {
@@ -36,18 +45,21 @@ export type InitClientArgs = ClientArgs & {
 
 export const initNextClient = <
   T extends AppRouter,
-  TClientArgs extends InitClientArgs
+  TClientArgs extends InitClientArgs,
 >(
   router: T,
-  args: TClientArgs
+  args: TClientArgs,
 ): InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {
-        return [key, getRouteQuery<typeof subRouter, 'nextjs'>(subRouter, args)];
+        return [
+          key,
+          getRouteQuery<typeof subRouter, 'nextjs'>(subRouter, args),
+        ];
       } else {
         return [key, initNextClient(subRouter, args)];
       }
-    })
+    }),
   );
 };

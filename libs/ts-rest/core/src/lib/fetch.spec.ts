@@ -100,7 +100,7 @@ describe('fetchApi', () => {
         },
         rawQuery: {},
         signal: undefined,
-      })
+      }),
     );
   });
 });

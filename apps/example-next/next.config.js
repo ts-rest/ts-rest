@@ -10,9 +10,10 @@ const nextConfig = {
     // See: https://github.com/gregberge/svgr
     svgr: false,
   },
-  expiremental: {
-    serverActions: true
-  }
+  experimental: {
+    appDir: true,
+    serverActions: true,
+  },
 };
 
 module.exports = withNx(nextConfig);

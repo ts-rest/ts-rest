@@ -37,7 +37,7 @@ describe('strict mode', () => {
   it('does not allow unknown statuses when in strict mode', () => {
     const cStrict = c.router(
       { posts: postsRouter },
-      { strictStatusCodes: true }
+      { strictStatusCodes: true },
     );
     const s = initServer();
 
@@ -132,7 +132,7 @@ describe('ts-rest-express', () => {
         err: any,
         req: express.Request,
         res: express.Response,
-        next: express.NextFunction
+        next: express.NextFunction,
       ) => {
         if (err instanceof ResponseValidationError) {
           res.status(500).send('Response validation failed');
@@ -140,7 +140,7 @@ describe('ts-rest-express', () => {
         }
 
         next(err);
-      }
+      },
     );
 
     const responseHtml = await supertest(app)
@@ -149,7 +149,7 @@ describe('ts-rest-express', () => {
     expect(responseHtml.status).toEqual(200);
     expect(responseHtml.text).toEqual('<h1>hello world</h1>');
     expect(responseHtml.header['content-type']).toEqual(
-      'text/html; charset=utf-8'
+      'text/html; charset=utf-8',
     );
 
     const responseHtmlFail = await supertest(app)
@@ -158,21 +158,21 @@ describe('ts-rest-express', () => {
     expect(responseHtmlFail.status).toEqual(500);
     expect(responseHtmlFail.text).toEqual('Response validation failed');
     expect(responseHtmlFail.header['content-type']).toEqual(
-      'text/html; charset=utf-8'
+      'text/html; charset=utf-8',
     );
 
     const responseTextPlain = await supertest(app).get('/robots.txt');
     expect(responseTextPlain.status).toEqual(200);
     expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
     expect(responseTextPlain.header['content-type']).toEqual(
-      'text/plain; charset=utf-8'
+      'text/plain; charset=utf-8',
     );
 
     const responseCss = await supertest(app).get('/style.css');
     expect(responseCss.status).toEqual(200);
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual(
-      'text/css; charset=utf-8'
+      'text/css; charset=utf-8',
     );
   });
 });
@@ -237,9 +237,9 @@ describe('download', () => {
 
     const responseImage = await supertest(app).get('/image');
     expect(responseImage.status).toEqual(200);
-    expect(responseImage.body.toString()).toEqual(fs.readFileSync(originalFilePath, {encoding: 'utf-8'}));
-    expect(responseImage.headers['content-type']).toEqual(
-      'image/png',
+    expect(responseImage.body.toString()).toEqual(
+      fs.readFileSync(originalFilePath, { encoding: 'utf-8' }),
     );
+    expect(responseImage.headers['content-type']).toEqual('image/png');
   });
 });

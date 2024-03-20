@@ -7,10 +7,13 @@ import {
   isZodType,
 } from '@ts-rest/core';
 import {
+  ExamplesObject,
   InfoObject,
+  MediaTypeObject,
   OpenAPIObject,
   OperationObject,
   PathsObject,
+  SchemaObject,
 } from 'openapi3-ts';
 import { generateSchema } from '@anatine/zod-openapi';
 import { z } from 'zod';
@@ -24,7 +27,7 @@ type RouterPath = {
 
 const getPathsFromRouter = (
   router: AppRouter,
-  pathHistory?: string[]
+  pathHistory?: string[],
 ): RouterPath[] => {
   const paths: RouterPath[] = [];
 
@@ -86,7 +89,7 @@ const getPathParameters = (path: string, zodObject?: unknown) => {
         required: true,
         schema,
         ...(description && { description }),
-      }
+      };
     });
 
     params.push(...paramsFromZod);
@@ -112,9 +115,9 @@ const getHeaderParameters = (zodObject?: unknown) => {
       name: key,
       in: 'header' as const,
       ...(isRequired && { required: true }),
-      ...({
+      ...{
         schema: schema,
-      }),
+      },
     };
   });
 };
@@ -129,8 +132,18 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   const zodShape = extractZodObjectShape(zodObject);
 
   return Object.entries(zodShape).map(([key, value]) => {
-    const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
-    const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
+    const {
+      description,
+      mediaExamples: examples,
+      ...schema
+    } = getOpenApiSchemaFromZod(value)!;
+    const isObject = (obj: z.ZodTypeAny) => {
+      while (obj._def.innerType) {
+        obj = obj._def.innerType;
+      }
+
+      return obj._def.typeName === 'ZodObject';
+    };
     const isRequired = !(value as z.ZodTypeAny).isOptional();
 
     return {
@@ -143,15 +156,35 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
             content: {
               'application/json': {
                 schema: schema,
+                ...(examples && { examples }),
               },
             },
           }
         : {
-            ...(isObject && { style: 'deepObject' as const }),
+            ...(isObject(value as z.ZodTypeAny) && {
+              style: 'deepObject' as const,
+            }),
             schema: schema,
           }),
     };
   });
+};
+
+declare module 'openapi3-ts' {
+  interface SchemaObject {
+    mediaExamples?: ExamplesObject;
+  }
+}
+
+const convertSchemaObjectToMediaTypeObject = (
+  input: SchemaObject,
+): MediaTypeObject => {
+  const { mediaExamples: examples, ...schema } = input;
+
+  return {
+    schema,
+    ...(examples && { examples }),
+  };
 };
 
 /**
@@ -162,7 +195,7 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
 export const generateOpenApi = (
   router: AppRouter,
   apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
-  options: { setOperationId?: boolean; jsonQuery?: boolean } = {}
+  options: { setOperationId?: boolean; jsonQuery?: boolean } = {},
 ): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
@@ -181,7 +214,7 @@ export const generateOpenApi = (
       const existingOp = operationIds.get(path.id);
       if (existingOp) {
         throw new Error(
-          `Route '${path.id}' already defined under ${existingOp.join('.')}`
+          `Route '${path.id}' already defined under ${existingOp.join('.')}`,
         );
       }
       operationIds.set(path.id, path.paths);
@@ -192,7 +225,7 @@ export const generateOpenApi = (
 
     const querySchema = getQueryParametersFromZod(
       path.route.query,
-      !!options.jsonQuery
+      !!options.jsonQuery,
     );
 
     const bodySchema =
@@ -205,7 +238,7 @@ export const generateOpenApi = (
 
       const responseSchema = getOpenApiSchemaFromZod(
         path.route.responses[keyAsNumber],
-        true
+        true,
       );
 
       return {
@@ -216,7 +249,7 @@ export const generateOpenApi = (
             ? {
                 content: {
                   'application/json': {
-                    schema: responseSchema,
+                    ...convertSchemaObjectToMediaTypeObject(responseSchema),
                   },
                 },
               }
@@ -225,7 +258,10 @@ export const generateOpenApi = (
       };
     }, {});
 
-    const contentType = path.route?.method !== 'GET' ? path.route?.contentType ?? 'application/json' : 'application/json';
+    const contentType =
+      path.route?.method !== 'GET'
+        ? path.route?.contentType ?? 'application/json'
+        : 'application/json';
 
     const newPath: OperationObject = {
       description: path.route.description,
@@ -240,7 +276,7 @@ export const generateOpenApi = (
               description: 'Body',
               content: {
                 [contentType]: {
-                  schema: bodySchema,
+                  ...convertSchemaObjectToMediaTypeObject(bodySchema),
                 },
               },
             },

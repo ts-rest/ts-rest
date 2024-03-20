@@ -106,7 +106,7 @@ export type AreAllPropertiesOptional<T> = T extends Record<string, unknown>
 
 export type OptionalIfAllOptional<
   T,
-  Select extends keyof T = keyof T
+  Select extends keyof T = keyof T,
 > = PartialBy<
   T,
   Select &
@@ -121,7 +121,7 @@ export type Prettify<T> = {
 
 export type DefinedOrEmpty<
   T,
-  K extends keyof NonNullable<T>
+  K extends keyof NonNullable<T>,
 > = undefined extends T ? {} : NonNullable<T>[K];
 
 declare const tag: unique symbol;
@@ -176,3 +176,5 @@ export type Not<B extends boolean> = {
   false: true;
   true: false;
 }[`${B}`];
+
+export type Promisable<T> = Promise<T> | T;

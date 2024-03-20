@@ -1,5 +1,17 @@
 # @ts-rest/react-query
 
+## 3.35.1
+
+## 3.35.0
+
+## 3.34.0
+
+## 3.33.1
+
+### Patch Changes
+
+- 6d2c369: Remove TanStack Query v5 from peer dependencies
+
 ## 3.33.0
 
 ## 3.32.0

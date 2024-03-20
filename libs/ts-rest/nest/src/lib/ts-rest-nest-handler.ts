@@ -1,5 +1,5 @@
 import { Reflector } from '@nestjs/core';
-import { map, Observable } from 'rxjs';
+import { mergeMap, Observable } from 'rxjs';
 import type { Request, Response } from 'express-serve-static-core';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
@@ -30,6 +30,7 @@ import {
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferResponses,
+  Promisable,
 } from '@ts-rest/core';
 import {
   JsonQuerySymbol,
@@ -145,12 +146,12 @@ export const TsRestHandler = (
 
 type NestHandlerImplementation<T extends AppRouter | AppRoute> =
   T extends AppRoute
-    ? (args: TsRestRequestShape<T>) => Promise<ServerInferResponses<T>>
+    ? (args: TsRestRequestShape<T>) => Promisable<ServerInferResponses<T>>
     : {
         [K in keyof T]: T[K] extends AppRoute
           ? (
               args: TsRestRequestShape<T[K]>,
-            ) => Promise<ServerInferResponses<T[K]>>
+            ) => Promisable<ServerInferResponses<T[K]>>
           : never;
       };
 
@@ -169,7 +170,11 @@ export const tsRestHandler = <T extends AppRouter | AppRoute>(
  * Error you can throw to return a response from a handler
  */
 export class TsRestException<T extends AppRoute> extends HttpException {
-  constructor(route: T, response: ServerInferResponses<T>, options?: HttpExceptionOptions) {
+  constructor(
+    route: T,
+    response: ServerInferResponses<T>,
+    options?: HttpExceptionOptions,
+  ) {
     super(response.body as Record<string, any>, response.status, options);
   }
 }
@@ -337,7 +342,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     }
 
     return next.handle().pipe(
-      map(async (impl) => {
+      mergeMap(async (impl) => {
         let result = null;
         try {
           const res = {
