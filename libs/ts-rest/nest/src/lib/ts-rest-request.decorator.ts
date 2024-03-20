@@ -2,6 +2,10 @@ import {
   BadRequestException,
   createParamDecorator,
   ExecutionContext,
+  Inject,
+  Injectable,
+  Optional,
+  PipeTransform,
 } from '@nestjs/common';
 import {
   AppRoute,
@@ -15,17 +19,22 @@ import type { Request } from 'express-serve-static-core';
 import type { FastifyRequest } from 'fastify';
 import { TsRestAppRouteMetadataKey } from './constants';
 import { evaluateTsRestOptions, MaybeTsRestOptions } from './ts-rest-options';
+import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
 
 export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
   TRoute,
   Request['headers']
 >;
 
-/**
- * Parameter decorator used to parse, validate and return the typed request object
- */
-export const TsRestRequest = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext): TsRestRequestShape<AppRouteMutation> => {
+@Injectable()
+class TsRestValidatorPipe implements PipeTransform {
+  constructor(
+    @Optional()
+    @Inject(TS_REST_MODULE_OPTIONS_TOKEN)
+    private globalOptions: MaybeTsRestOptions,
+  ) {}
+
+  transform(ctx: ExecutionContext): TsRestRequestShape<AppRouteMutation> {
     const appRoute: AppRouteMutation | undefined = Reflect.getMetadata(
       TsRestAppRouteMetadataKey,
       ctx.getHandler(),
@@ -37,9 +46,7 @@ export const TsRestRequest = createParamDecorator(
     }
 
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
-    const rawRequest: any = 'raw' in req ? req.raw : req;
-    const globalOptions = rawRequest.tsRestGlobalOptions as MaybeTsRestOptions;
-    const options = evaluateTsRestOptions(globalOptions, ctx);
+    const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
     const pathParamsResult = checkZodSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
@@ -83,8 +90,16 @@ export const TsRestRequest = createParamDecorator(
         ? (headersResult.data as TsRestRequestShape<typeof appRoute>['headers'])
         : req.headers,
     };
-  },
-);
+  }
+}
+
+/**
+ * Parameter decorator used to parse, validate and return the typed request object
+ */
+export const TsRestRequest = () =>
+  createParamDecorator((_: unknown, ctx: ExecutionContext) => {
+    return ctx;
+  })(TsRestValidatorPipe);
 
 /**
  * @deprecated Use `TsRestRequest` instead
