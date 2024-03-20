@@ -19,7 +19,6 @@ import {
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 import { z } from 'zod';
-import { pathToRegexp } from 'path-to-regexp';
 
 export class RequestValidationError extends Error {
   constructor(
@@ -200,7 +199,7 @@ export const createNextRouter = <T extends AppRouter>(
   obj: RecursiveRouterObj<T>,
   options?: CreateNextRouterOptions,
 ) => {
-  return handlerFactory((req) => {
+  return handlerFactory(function (req) {
     const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
     // eslint-disable-next-line prefer-const
@@ -236,7 +235,7 @@ export const createNextRouter = <T extends AppRouter>(
  * @param options
  * @returns
  */
-export const createSingleUrlNextRouter = <T extends AppRoute>(
+export const createSingleUrlNextHandler = <T extends AppRoute>(
   appRoute: AppRoute,
   implementationHandler: AppRouteImplementation<T>,
   options?: CreateNextRouterOptions,
@@ -246,7 +245,11 @@ export const createSingleUrlNextRouter = <T extends AppRoute>(
     const pathParams = req.query as Record<string, string>;
     const query = req.query;
 
-    const isValidRoute = pathToRegexp(route.path).test(req.url as string);
+    const isValidRoute = isRouteCorrect(
+      appRoute,
+      req.url!.split('/').slice(1),
+      req.method as string,
+    );
 
     return { pathParams, query, route: isValidRoute ? route : null };
   }, options);
@@ -257,16 +260,15 @@ export const createSingleUrlNextRouter = <T extends AppRoute>(
  * @param options
  * @returns
  */
-const handlerFactory =
-  (
-    getArgumentsFromRequest: (req: NextApiRequest) => {
-      pathParams: Record<string, string>;
-      query: NextApiRequest['query'];
-      route: AppRouterWithImplementation[keyof AppRouterWithImplementation];
-    },
-    options?: CreateNextRouterOptions,
-  ) =>
-  async (req: NextApiRequest, res: NextApiResponse) => {
+const handlerFactory = (
+  getArgumentsFromRequest: (req: NextApiRequest) => {
+    pathParams: Record<string, string>;
+    query: NextApiRequest['query'];
+    route: AppRouterWithImplementation[keyof AppRouterWithImplementation];
+  },
+  options?: CreateNextRouterOptions,
+) =>
+  async function (req: NextApiRequest, res: NextApiResponse) {
     const {
       jsonQuery = false,
       responseValidation = false,

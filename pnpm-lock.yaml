@@ -533,9 +533,6 @@ importers:
       next:
         specifier: ^12.0.0 || ^13.0.0 || ^14.0.0
         version: 13.3.0(@babel/core@7.19.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.55.0)
-      path-to-regexp:
-        specifier: ^6.2.1
-        version: 6.2.1
       zod:
         specifier: ^3.22.3
         version: 3.22.3

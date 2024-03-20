@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import {
   createNextRoute,
   createNextRouter,
-  createSingleUrlNextRouter,
+  createSingleUrlNextHandler,
   RequestValidationError,
 } from './ts-rest-next';
 import { z } from 'zod';
@@ -447,7 +447,7 @@ describe('createSingleUrlNextRouter', () => {
   });
 
   it('should send back a 200', async () => {
-    const resultingRouter = createSingleUrlNextRouter(
+    const resultingRouter = createSingleUrlNextHandler(
       contract.getWithParams,
       nextEndpoint.getWithParams,
     );
@@ -466,7 +466,7 @@ describe('createSingleUrlNextRouter', () => {
   });
 
   it('should send back a 404', async () => {
-    const resultingRouter = createSingleUrlNextRouter(
+    const resultingRouter = createSingleUrlNextHandler(
       contract.getWithParams,
       nextEndpoint.getWithParams,
     );
@@ -482,7 +482,7 @@ describe('createSingleUrlNextRouter', () => {
   });
 
   it('should send back a 404', async () => {
-    const resultingRouter = createSingleUrlNextRouter(
+    const resultingRouter = createSingleUrlNextHandler(
       contract.getWithParams,
       nextEndpoint.getWithParams,
     );
@@ -498,7 +498,7 @@ describe('createSingleUrlNextRouter', () => {
   });
 
   it('should send body, params and query correctly', async () => {
-    const resultingRouter = createSingleUrlNextRouter(
+    const resultingRouter = createSingleUrlNextHandler(
       contract.advanced,
       nextEndpoint.advanced,
     );
@@ -521,7 +521,7 @@ describe('createSingleUrlNextRouter', () => {
   });
 
   it('should send json query correctly', async () => {
-    const resultingRouter = createSingleUrlNextRouter(
+    const resultingRouter = createSingleUrlNextHandler(
       contract.getWithQuery,
       nextEndpoint.getWithQuery,
       { jsonQuery: true },
@@ -542,7 +542,7 @@ describe('createSingleUrlNextRouter', () => {
   });
 
   it('should differentiate between /test and /test/id', async () => {
-    const resultingRouter = createSingleUrlNextRouter(
+    const resultingRouter = createSingleUrlNextHandler(
       contract.getWithParams,
       nextEndpoint.getWithParams,
     );
@@ -562,7 +562,7 @@ describe('createSingleUrlNextRouter', () => {
 
   describe('response validation', () => {
     it('should include default value and removes extra field', async () => {
-      const resultingRouter = createSingleUrlNextRouter(
+      const resultingRouter = createSingleUrlNextHandler(
         contract.getZodQuery,
         nextEndpoint.getZodQuery,
         { responseValidation: true },
@@ -585,7 +585,7 @@ describe('createSingleUrlNextRouter', () => {
 
     it('fails with invalid field', async () => {
       const errorHandler = jest.fn();
-      const resultingRouter = createSingleUrlNextRouter(
+      const resultingRouter = createSingleUrlNextHandler(
         contract.getZodQuery,
         nextEndpoint.getZodQuery,
         { responseValidation: true, errorHandler },
