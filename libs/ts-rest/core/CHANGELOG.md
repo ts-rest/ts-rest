@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.36.0
+
+### Patch Changes
+
+- c7e05d8: Fix optional path parameters showing in types with a question mark if path params are not used
+
 ## 3.35.1
 
 ## 3.35.0

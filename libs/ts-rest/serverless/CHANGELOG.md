@@ -1,5 +1,12 @@
 # @ts-rest/serverless
 
+## 3.36.0
+
+### Patch Changes
+
+- Updated dependencies [c7e05d8]
+  - @ts-rest/core@3.36.0
+
 ## 3.35.1
 
 ## 3.35.0
