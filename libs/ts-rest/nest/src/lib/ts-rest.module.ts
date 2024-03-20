@@ -6,12 +6,22 @@ import {
   Optional,
   RequestMethod,
 } from '@nestjs/common';
-import { TsRestOptions } from './ts-rest.decorator';
+import { MaybeTsRestOptions, TsRestOptions } from './ts-rest-options';
 
 const {
   ConfigurableModuleClass,
   MODULE_OPTIONS_TOKEN: TS_REST_MODULE_OPTIONS_TOKEN,
-} = new ConfigurableModuleBuilder<TsRestOptions>().build();
+} = new ConfigurableModuleBuilder<TsRestOptions>()
+  .setExtras(
+    {
+      isGlobal: false,
+    },
+    (definition, extras) => ({
+      ...definition,
+      global: extras.isGlobal,
+    }),
+  )
+  .build();
 
 export { TS_REST_MODULE_OPTIONS_TOKEN };
 
@@ -22,7 +32,7 @@ export class TsRestModule extends ConfigurableModuleClass {
   constructor(
     @Optional()
     @Inject(TS_REST_MODULE_OPTIONS_TOKEN)
-    private options: TsRestOptions | null
+    private globalOptions: MaybeTsRestOptions,
   ) {
     super();
   }
@@ -30,7 +40,7 @@ export class TsRestModule extends ConfigurableModuleClass {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply((req: any, res: any, next: any) => {
-        req.tsRestOptions = this.options;
+        req.tsRestGlobalOptions = this.globalOptions;
         next();
       })
       .forRoutes({

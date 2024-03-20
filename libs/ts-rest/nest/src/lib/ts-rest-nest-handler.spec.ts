@@ -1569,7 +1569,7 @@ describe('ts-rest-nest-handler', () => {
         ],
       }).compile();
 
-      app = moduleRef.createNestApplication();
+      const app = moduleRef.createNestApplication();
       await app.init();
 
       const server = app.getHttpServer();
@@ -1587,8 +1587,8 @@ describe('ts-rest-nest-handler', () => {
         ],
       }).compile();
 
-      app = moduleRef.createNestApplication<NestFastifyApplication>(
-        new FastifyAdapter()
+      const app = moduleRef.createNestApplication<NestFastifyApplication>(
+        new FastifyAdapter(),
       );
       await app.init();
       await app.getHttpAdapter().getInstance().ready();
@@ -1598,6 +1598,135 @@ describe('ts-rest-nest-handler', () => {
       const response = await supertest(server).get('/?foo=true');
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({ foo: true });
+    });
+
+    describe('should handle overrides', () => {
+      it('method override', async () => {
+        @Controller()
+        class TestController {
+          @TsRestHandler(contract, { jsonQuery: false })
+          async handler() {
+            return tsRestHandler(contract, {
+              getIndex: async ({ query }) => ({
+                status: 200,
+                body: query,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [TestController],
+          imports: [
+            TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+          ],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const server = app.getHttpServer();
+
+        const response = await supertest(server).get('/?foo=true');
+        expect(response.status).toEqual(400);
+        expect(response.body).toEqual({
+          bodyResult: null,
+          headersResult: null,
+          paramsResult: null,
+          queryResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'boolean',
+                message: 'Expected boolean, received string',
+                path: ['foo'],
+                received: 'string',
+              },
+            ],
+            name: 'ZodError',
+          },
+        });
+      });
+
+      it('class override', async () => {
+        @Controller()
+        @TsRest({ jsonQuery: false })
+        class TestController {
+          @TsRestHandler(contract)
+          async handler() {
+            return tsRestHandler(contract, {
+              getIndex: async ({ query }) => ({
+                status: 200,
+                body: query,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [TestController],
+          imports: [
+            TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+          ],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const server = app.getHttpServer();
+
+        const response = await supertest(server).get('/?foo=true');
+        expect(response.status).toEqual(400);
+        expect(response.body).toEqual({
+          bodyResult: null,
+          headersResult: null,
+          paramsResult: null,
+          queryResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'boolean',
+                message: 'Expected boolean, received string',
+                path: ['foo'],
+                received: 'string',
+              },
+            ],
+            name: 'ZodError',
+          },
+        });
+      });
+
+      it('method overriding class', async () => {
+        @Controller()
+        @TsRest({ jsonQuery: false })
+        class TestController {
+          @TsRestHandler(contract, { jsonQuery: true })
+          async handler() {
+            return tsRestHandler(contract, {
+              getIndex: async ({ query }) => ({
+                status: 200,
+                body: query,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [TestController],
+          imports: [
+            TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+          ],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const server = app.getHttpServer();
+
+        const response = await supertest(server).get('/?foo=true');
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({ foo: true });
+      });
     });
   });
 });

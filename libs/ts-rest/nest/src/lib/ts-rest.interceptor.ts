@@ -1,8 +1,10 @@
 import {
   CallHandler,
   ExecutionContext,
+  Inject,
   Injectable,
   NestInterceptor,
+  Optional,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 import {
@@ -12,15 +14,19 @@ import {
   validateResponse,
 } from '@ts-rest/core';
 import { Reflector } from '@nestjs/core';
-import {
-  TsRestAppRouteMetadataKey,
-  ValidateResponsesSymbol,
-} from './constants';
+import { TsRestAppRouteMetadataKey } from './constants';
 import type { Response } from 'express-serve-static-core';
+import { evaluateTsRestOptions, MaybeTsRestOptions } from './ts-rest-options';
+import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
 
 @Injectable()
 export class TsRestInterceptor implements NestInterceptor {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    @Optional()
+    @Inject(TS_REST_MODULE_OPTIONS_TOKEN)
+    private globalOptions: MaybeTsRestOptions,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const res: Response = context.switchToHttp().getResponse();
@@ -35,19 +41,14 @@ export class TsRestInterceptor implements NestInterceptor {
       throw new Error('Make sure your route is decorated with @TsRest()');
     }
 
-    const isValidationEnabled = Boolean(
-      this.reflector.getAllAndOverride<boolean | undefined>(
-        ValidateResponsesSymbol,
-        [context.getHandler(), context.getClass()],
-      ),
-    );
+    const options = evaluateTsRestOptions(this.globalOptions, context);
 
     return next.handle().pipe(
       map((value) => {
         if (isAppRouteResponse(value)) {
           const statusCode = value.status;
 
-          const response = isValidationEnabled
+          const response = options.validateResponses
             ? validateResponse({
                 appRoute,
                 response: value,
