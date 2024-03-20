@@ -240,7 +240,7 @@ export const createSingleUrlNextHandler = <T extends AppRoute>(
   implementationHandler: AppRouteImplementation<T>,
   options?: CreateNextRouterOptions,
 ) =>
-  handlerFactory((req) => {
+  handlerFactory(function (req) {
     const route = { ...appRoute, implementation: implementationHandler };
     const pathParams = req.query as Record<string, string>;
     const query = req.query;
