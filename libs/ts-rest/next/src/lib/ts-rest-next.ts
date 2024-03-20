@@ -242,12 +242,19 @@ export function createSingleRouteHandler<T extends AppRoute>(
 ) {
   return handlerFactory((req) => {
     const route = { ...appRoute, implementation: implementationHandler };
-    const pathParams = req.query as Record<string, string>;
-    const query = req.query;
+    const urlChunks = req.url!.split('/').slice(1);
+    const pathParams = getPathParamsFromArray(urlChunks, route);
+    const query = req.query
+      ? Object.fromEntries(
+          Object.entries(req.query).filter(
+            ([key]) => pathParams[key] === undefined,
+          ),
+        )
+      : {};
 
     const isValidRoute = isRouteCorrect(
       appRoute,
-      req.url!.split('/').slice(1),
+      urlChunks,
       req.method as string,
     );
 
