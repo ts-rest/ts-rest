@@ -9,27 +9,21 @@ import {
 import {
   AppRoute,
   ClientArgs,
-  ClientInferRequest,
-  ClientInferResponses,
-  ErrorHttpStatusCode,
+  DataResponse as CoreDataResponse,
+  ErrorResponse as CoreErrorResponse,
   PartialClientInferRequest,
-  SuccessfulHttpStatusCode,
 } from '@ts-rest/core';
 import { InitClientReturn } from './react-query';
 
 // Data response if it's a 2XX
-export type DataResponse<TAppRoute extends AppRoute> = ClientInferResponses<
-  TAppRoute,
-  SuccessfulHttpStatusCode,
-  'force'
->;
+/** @deprecated use directly the `DataResponse` from @ts-rest/core */
+export type DataResponse<TAppRoute extends AppRoute> =
+  CoreDataResponse<TAppRoute>;
 
 // Error response if it's not a 2XX
-export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
-  TAppRoute,
-  ErrorHttpStatusCode,
-  'ignore'
->;
+/** @deprecated use directly the `ErrorResponse` from @ts-rest/core */
+export type ErrorResponse<TAppRoute extends AppRoute> =
+  CoreErrorResponse<TAppRoute>;
 
 export type UseQueryOptions<TAppRoute extends AppRoute> =
   TanStackUseQueryOptions<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;

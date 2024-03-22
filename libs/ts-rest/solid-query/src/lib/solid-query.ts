@@ -20,16 +20,15 @@ import {
   AppRouter,
   ClientArgs,
   ClientInferRequest,
-  ClientInferResponses,
-  ErrorHttpStatusCode,
   fetchApi,
   getCompleteUrl,
   getRouteQuery,
   isAppRoute,
   PartialClientInferRequest,
-  SuccessfulHttpStatusCode,
   Without,
   ZodInferOrType,
+  DataResponse,
+  ErrorResponse,
 } from '@ts-rest/core';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
@@ -60,20 +59,6 @@ type UseQueryArgs<
     ? AppRouteFunction<TAppRoute, TClientArgs>
     : never;
 };
-
-// Data response if it's a 2XX
-type DataResponse<TAppRoute extends AppRoute> = ClientInferResponses<
-  TAppRoute,
-  SuccessfulHttpStatusCode,
-  'force'
->;
-
-// Error response if it's not a 2XX
-type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
-  TAppRoute,
-  ErrorHttpStatusCode,
-  'ignore'
->;
 
 // Used on X.createQuery
 type DataReturnQuery<

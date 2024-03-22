@@ -6,7 +6,11 @@ import {
   ContractAnyType,
   ContractOtherResponse,
 } from './dsl';
-import { HTTPStatusCode } from './status-codes';
+import {
+  ErrorHttpStatusCode,
+  HTTPStatusCode,
+  SuccessfulHttpStatusCode,
+} from './status-codes';
 import {
   And,
   Extends,
@@ -132,6 +136,18 @@ export type ClientInferResponses<
       >;
     }
   : never;
+
+// Data response if it's a 2XX
+export type DataResponse<
+  TAppRoute extends AppRoute,
+  TSuccessStatus extends SuccessfulHttpStatusCode = SuccessfulHttpStatusCode,
+> = ClientInferResponses<TAppRoute, TSuccessStatus, 'force'>;
+
+// Error response if it's not a 2XX
+export type ErrorResponse<
+  TAppRoute extends AppRoute,
+  TErrorStatus extends ErrorHttpStatusCode = ErrorHttpStatusCode,
+> = ClientInferResponses<TAppRoute, TErrorStatus, 'ignore'>;
 
 export type ServerInferResponseBody<
   T extends AppRoute,

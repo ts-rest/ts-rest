@@ -9,7 +9,10 @@ import {
   PartialClientInferRequest,
   NextClientArgs,
   Frameworks,
+  ErrorResponse,
+  DataResponse,
 } from './infer-types';
+import { ErrorStatusResponseError } from './error-status-error';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -39,8 +42,24 @@ export type AppRouteFunction<
   TClientArgs extends ClientArgs,
   TArgs = PartialClientInferRequest<TRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
-  ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
-  : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
+  ? (
+      args?: Prettify<TArgs>,
+    ) => Promise<
+      Prettify<
+        TClientArgs['throwOnErrorStatus'] extends true
+          ? DataResponse<TRoute>
+          : ClientInferResponses<TRoute>
+      >
+    >
+  : (
+      args: Prettify<TArgs>,
+    ) => Promise<
+      Prettify<
+        TClientArgs['throwOnErrorStatus'] extends true
+          ? DataResponse<TRoute>
+          : ClientInferResponses<TRoute>
+      >
+    >;
 
 export interface ClientArgs {
   baseUrl: string;
@@ -48,6 +67,7 @@ export interface ClientArgs {
   api?: ApiFetcher;
   credentials?: RequestCredentials;
   jsonQuery?: boolean;
+  throwOnErrorStatus?: boolean;
 }
 
 export type ApiFetcherArgs = {
@@ -334,15 +354,25 @@ export const getRouteQuery = <
       },
     });
 
-    if (!clientArgs.throwOnUnknownStatus) {
-      return response;
+    const knownStatus = knownResponseStatuses.includes(
+      response.status.toString(),
+    );
+    if (clientArgs.throwOnUnknownStatus && !knownStatus) {
+      throw new UnknownStatusError(response, knownResponseStatuses);
     }
 
-    if (knownResponseStatuses.includes(response.status.toString())) {
-      return response;
+    if (
+      (clientArgs.throwOnErrorStatus && response.status < 200) ||
+      response.status >= 300
+    ) {
+      throw new ErrorStatusResponseError(
+        route,
+        response as ErrorResponse<typeof route>,
+        inputArgs,
+      );
     }
 
-    throw new UnknownStatusError(response, knownResponseStatuses);
+    return response;
   };
 };
 

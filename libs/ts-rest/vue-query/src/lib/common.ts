@@ -8,27 +8,21 @@ import {
   AppRouteMutation,
   ClientArgs,
   ClientInferRequest,
-  ClientInferResponses,
-  ErrorHttpStatusCode,
-  PartialClientInferRequest,
-  SuccessfulHttpStatusCode,
   fetchApi,
   getCompleteUrl,
+  DataResponse as CoreDataResponse,
+  ErrorResponse as CoreErrorResponse,
 } from '@ts-rest/core';
 
 // Data response if it's a 2XX
-export type DataResponse<TAppRoute extends AppRoute> = ClientInferResponses<
-  TAppRoute,
-  SuccessfulHttpStatusCode,
-  'force'
->;
+/** @deprecated use directly the `DataResponse` from @ts-rest/core */
+export type DataResponse<TAppRoute extends AppRoute> =
+  CoreDataResponse<TAppRoute>;
 
 // Error response if it's not a 2XX
-export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
-  TAppRoute,
-  ErrorHttpStatusCode,
-  'ignore'
->;
+/** @deprecated use directly the `ErrorResponse` from @ts-rest/core */
+export type ErrorResponse<TAppRoute extends AppRoute> =
+  CoreErrorResponse<TAppRoute>;
 
 export const queryFn = <
   TAppRoute extends AppRoute,
