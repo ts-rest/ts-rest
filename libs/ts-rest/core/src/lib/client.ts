@@ -354,10 +354,10 @@ export const getRouteQuery = <
       },
     });
 
-    const knownStatus = knownResponseStatuses.includes(
-      response.status.toString(),
-    );
-    if (clientArgs.throwOnUnknownStatus && !knownStatus) {
+    if (
+      clientArgs.throwOnUnknownStatus &&
+      !knownResponseStatuses.includes(response.status.toString())
+    ) {
       throw new UnknownStatusError(response, knownResponseStatuses);
     }
 
