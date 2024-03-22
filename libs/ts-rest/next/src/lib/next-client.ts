@@ -6,7 +6,6 @@ import {
   ClientInferResponses,
   getRouteQuery,
   isAppRoute,
-  NextClientArgs,
   PartialClientInferRequest,
   Prettify,
 } from '@ts-rest/core';
@@ -17,7 +16,7 @@ import {
 type AppRouteFunction<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = PartialClientInferRequest<TRoute, TClientArgs, 'nextjs'>,
+  TArgs = PartialClientInferRequest<TRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
   : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
@@ -53,10 +52,7 @@ export const initNextClient = <
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {
-        return [
-          key,
-          getRouteQuery<typeof subRouter, 'nextjs'>(subRouter, args),
-        ];
+        return [key, getRouteQuery(subRouter, args)];
       } else {
         return [key, initNextClient(subRouter, args)];
       }

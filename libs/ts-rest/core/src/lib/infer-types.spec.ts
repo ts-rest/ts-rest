@@ -14,6 +14,7 @@ import {
   HTTPStatusCode,
   SuccessfulHttpStatusCode,
 } from './status-codes';
+import { FetchOptions, OverrideableClientArgs } from './client';
 
 const c = initContract();
 
@@ -497,7 +498,6 @@ it('type inference helpers', () => {
       ClientInferRequest<typeof contract>,
       {
         getPost: {
-          cache?: RequestCache;
           query: { includeComments?: boolean | undefined };
           params: { id: string };
           headers: { authorization: string; age?: number };
@@ -505,18 +505,20 @@ it('type inference helpers', () => {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
         };
         createPost: {
-          cache?: RequestCache;
           body: { title: string; content: string };
           headers: { authorization: string; age?: number };
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
         };
         uploadImage: {
-          cache?: RequestCache;
           body:
             | {
                 image: File;
@@ -527,10 +529,11 @@ it('type inference helpers', () => {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
         };
         nested: {
           getComments: {
-            cache?: RequestCache;
             params: { id: string };
             headers: {
               authorization: string;
@@ -542,6 +545,8 @@ it('type inference helpers', () => {
               'pagination-page'?: undefined;
               age?: undefined;
             } & Record<string, string | undefined>;
+            fetchOptions?: FetchOptions;
+            overrideClientOptions?: Partial<OverrideableClientArgs>;
           };
         };
       }
