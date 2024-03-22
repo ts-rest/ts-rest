@@ -10,7 +10,7 @@ describe('getPathParamsFromArray', () => {
       path: `/posts/:id`,
       query: null,
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     });
 
@@ -25,7 +25,7 @@ describe('getPathParamsFromArray', () => {
       path: `/posts/:id/comments/:commentId`,
       query: null,
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     });
 
@@ -42,7 +42,7 @@ describe('getPathParamsFromArray', () => {
       path: `/posts/:id`,
       query: null,
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     });
 
