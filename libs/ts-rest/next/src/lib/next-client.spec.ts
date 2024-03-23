@@ -1,4 +1,8 @@
-import { initContract } from '@ts-rest/core';
+import {
+  FetchOptions,
+  initContract,
+  OverrideableClientArgs,
+} from '@ts-rest/core';
 import { z } from 'zod';
 import { initNextClient } from './next-client';
 import type { Equal, Expect } from './test-helpers';
@@ -32,17 +36,15 @@ describe('next-client', () => {
       params: {
         id: string;
       };
-      next?:
-        | {
-            revalidate?: number | false | undefined;
-            tags?: string[] | undefined;
-          }
-        | undefined;
       extraHeaders?: Test['extraHeaders'];
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
       cache?: RequestCache;
+      next?: FetchOptions['next'];
     };
     type NextClientTypeTest = Expect<Equal<Test, ExpectedClientArgs>>;
   });
+
   it('Should include "next" property in the fetch request', async () => {
     const usersClient = initNextClient(contract, {
       baseHeaders: {},
@@ -63,7 +65,12 @@ describe('next-client', () => {
     );
     await usersClient.getUser({
       params: { id: '1' },
-      next: { revalidate: 1, tags: ['user1'] },
+      fetchOptions: {
+        next: {
+          revalidate: 1,
+          tags: ['user1'],
+        },
+      },
     });
     expect(global.fetch).toHaveBeenCalledWith('http://localhost:5002/users/1', {
       cache: undefined,
@@ -72,7 +79,10 @@ describe('next-client', () => {
       credentials: undefined,
       method: 'GET',
       signal: undefined,
-      next: { revalidate: 1, tags: ['user1'] },
+      next: {
+        revalidate: 1,
+        tags: ['user1'],
+      },
     });
     (global.fetch as jest.Mock).mockClear();
   });

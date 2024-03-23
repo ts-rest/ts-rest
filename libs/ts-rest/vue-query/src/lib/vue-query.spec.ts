@@ -183,7 +183,7 @@ function renderHook<Props, TResult>(
   };
 }
 
-describe('react-query', () => {
+describe('vue-query', () => {
   beforeEach(() => {
     api.mockReset();
   });
@@ -208,6 +208,9 @@ describe('react-query', () => {
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -248,6 +251,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -286,6 +292,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -320,6 +329,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -346,6 +358,9 @@ describe('react-query', () => {
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     return waitFor(() => {
@@ -379,6 +394,9 @@ describe('react-query', () => {
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -436,6 +454,7 @@ describe('react-query', () => {
       contentType: 'application/json',
       route: router.posts.createPost,
       signal: undefined,
+      fetchOptions: {},
     });
 
     await waitFor(() => {

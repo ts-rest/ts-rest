@@ -21,14 +21,13 @@ import {
   ZodInferOrType,
   ZodInputOrType,
 } from './type-utils';
-import { ApiFetcher, ClientArgs } from './client';
+import {
+  ApiFetcher,
+  ClientArgs,
+  OverrideableClientArgs,
+  FetchOptions,
+} from './client';
 import { ParamsFromUrl } from './paths';
-
-export type Frameworks = 'nextjs' | 'none';
-
-export type NextClientArgs = {
-  next?: { revalidate?: number | false; tags?: string[] } | undefined;
-};
 
 type ExtractExtraParametersFromClientArgs<
   TClientArgs extends Pick<ClientArgs, 'api'>,
@@ -182,7 +181,6 @@ export type ServerInferRequest<
   : never;
 
 type ClientInferRequestBase<
-  Framework extends Frameworks,
   T extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
@@ -195,6 +193,7 @@ type ClientInferRequestBase<
         >
       >
     : never,
+  TFetchOptions extends FetchOptions = FetchOptions,
 > = Prettify<
   Without<
     {
@@ -208,6 +207,8 @@ type ClientInferRequestBase<
           ? never
           : T['contentType'] extends 'multipart/form-data'
           ? FormData | ZodInputOrType<T['body']>
+          : T['contentType'] extends 'application/x-www-form-urlencoded'
+          ? string | ZodInputOrType<T['body']>
           : ZodInputOrType<T['body']>
         : never;
       query: 'query' extends keyof T
@@ -219,8 +220,18 @@ type ClientInferRequestBase<
       extraHeaders?: {
         [K in NonNullable<keyof THeaders>]?: never;
       } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+
+      /**
+       * @deprecated Use `fetchOptions.cache` instead
+       */
       cache?: RequestCache;
-      next?: Framework extends 'nextjs' ? NextClientArgs['next'] : never;
+
+      /**
+       * @deprecated Use `fetchOptions.next` instead
+       */
+      next?: 'next' extends keyof TFetchOptions ? TFetchOptions['next'] : never;
     } & ExtractExtraParametersFromClientArgs<TClientArgs>,
     never
   >
@@ -231,9 +242,8 @@ export type ClientInferRequest<
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
   },
-  Framework extends Frameworks = 'none',
 > = T extends AppRoute
-  ? ClientInferRequestBase<Framework, T, TClientArgs>
+  ? ClientInferRequestBase<T, TClientArgs>
   : T extends AppRouter
   ? { [TKey in keyof T]: ClientInferRequest<T[TKey]> }
   : never;
@@ -243,5 +253,4 @@ export type PartialClientInferRequest<
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
     baseHeaders: {};
   },
-  Framework extends Frameworks = 'none',
-> = OptionalIfAllOptional<ClientInferRequest<TRoute, TClientArgs, Framework>>;
+> = OptionalIfAllOptional<ClientInferRequest<TRoute, TClientArgs>>;

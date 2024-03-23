@@ -35,10 +35,8 @@ describe('fetchApi', () => {
     expect(tsRestApiStub).toHaveBeenCalledWith({
       body: undefined,
       contentType: undefined,
-      credentials: undefined,
       headers: {},
       method: 'POST',
-      next: undefined,
       path: '/rick-astley',
       rawBody: undefined,
       rawQuery: {},
@@ -50,7 +48,7 @@ describe('fetchApi', () => {
           '200': expect.anything(),
         },
       },
-      signal: undefined,
+      fetchOptions: {},
     });
   });
 
@@ -87,19 +85,17 @@ describe('fetchApi', () => {
       expect.objectContaining({
         body: '{"message":"never gonna say goodbye, never gonna tell a lie and hurt you"}',
         contentType: 'application/json',
-        credentials: undefined,
         headers: {
           'content-type': 'application/json',
         },
         method: 'POST',
-        next: undefined,
         path: '/rick-astley',
         rawBody: {
           message:
             'never gonna say goodbye, never gonna tell a lie and hurt you',
         },
         rawQuery: {},
-        signal: undefined,
+        fetchOptions: {},
       }),
     );
   });
