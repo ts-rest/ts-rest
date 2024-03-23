@@ -674,6 +674,56 @@ describe('client', () => {
       expect(result.body).toBe('foo=foo&bar=bar');
     });
   });
+
+  describe('next', () => {
+    it('should include "next" property in the fetch request', async () => {
+      const client = initClient(router, {
+        baseHeaders: {},
+        baseUrl: 'http://localhost:5002',
+      });
+
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              id: '1',
+              name: 'John',
+              email: 'some@email',
+            }),
+          headers: new Headers({
+            'content-type': 'application/json',
+          }),
+        } as Response),
+      );
+
+      await client.posts.getPost({
+        params: { id: '1' },
+        fetchOptions: {
+          next: {
+            revalidate: 1,
+            tags: ['user1'],
+          },
+        } as RequestInit,
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:5002/posts/1',
+        {
+          cache: undefined,
+          headers: {},
+          body: undefined,
+          credentials: undefined,
+          method: 'GET',
+          signal: undefined,
+          next: {
+            revalidate: 1,
+            tags: ['user1'],
+          },
+        },
+      );
+      (global.fetch as jest.Mock).mockClear();
+    });
+  });
 });
 
 const argsCalledMock = jest.fn();

@@ -42,6 +42,9 @@ export type InitClientArgs = ClientArgs & {
   throwOnUnknownStatus?: boolean;
 };
 
+/**
+ * @deprecated use `initClient` from `@ts-rest/core` instead
+ */
 export const initNextClient = <
   T extends AppRouter,
   TClientArgs extends InitClientArgs,

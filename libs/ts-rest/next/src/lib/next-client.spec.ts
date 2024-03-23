@@ -42,6 +42,7 @@ describe('next-client', () => {
     };
     type NextClientTypeTest = Expect<Equal<Test, ExpectedClientArgs>>;
   });
+
   it('Should include "next" property in the fetch request', async () => {
     const usersClient = initNextClient(contract, {
       baseHeaders: {},
