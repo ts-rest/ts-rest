@@ -507,6 +507,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
         createPost: {
           body: { title: string; content: string };
@@ -517,6 +518,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
         uploadImage: {
           body:
@@ -531,6 +533,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
         nested: {
           getComments: {
@@ -547,6 +550,7 @@ it('type inference helpers', () => {
             } & Record<string, string | undefined>;
             fetchOptions?: FetchOptions;
             overrideClientOptions?: Partial<OverrideableClientArgs>;
+            cache?: RequestCache;
           };
         };
       }

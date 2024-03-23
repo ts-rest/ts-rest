@@ -38,6 +38,11 @@ type AppRouteCommon = {
   >;
   strictStatusCodes?: boolean;
   metadata?: unknown;
+
+  /**
+   * @deprecated Use `validateResponse` on the client options
+   */
+  validateResponseOnClient?: boolean;
 };
 
 /**
@@ -155,6 +160,11 @@ export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
   pathPrefix?: TPrefix;
+
+  /**
+   * @deprecated Use `validateResponse` on the client options
+   */
+  validateResponseOnClient?: boolean;
 };
 
 /**
@@ -239,6 +249,9 @@ const recursivelyApplyOptions = <T extends AppRouter>(
             headers: zodMerge(options?.baseHeaders, value.headers),
             strictStatusCodes:
               value.strictStatusCodes ?? options?.strictStatusCodes,
+            validateResponseOnClient:
+              value.validateResponseOnClient ??
+              options?.validateResponseOnClient,
           },
         ];
       } else {

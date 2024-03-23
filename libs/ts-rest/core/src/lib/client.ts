@@ -108,7 +108,10 @@ export const tsRestFetchApi: ApiFetcher = async ({
     };
 
     const responseSchema = route.responses[response.status];
-    if (validateResponse && isZodType(responseSchema)) {
+    if (
+      (validateResponse ?? route.validateResponseOnClient) &&
+      isZodType(responseSchema)
+    ) {
       return {
         ...response,
         body: responseSchema.parse(response.body),
@@ -256,9 +259,18 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
     overrideClientOptions,
     fetchOptions,
 
+    // TODO: remove in 4.0
+    cache,
+
+    // TODO: remove in 4.0
+    next,
+
     // extra input args
     ...extraInputArgs
-  } = (inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs>) || {};
+  } =
+    (inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs> & {
+      next?: any;
+    }) || {};
 
   // assert that we removed all non-extra args
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -284,7 +296,11 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
     body,
     query,
     extraInputArgs,
-    fetchOptions,
+    fetchOptions: {
+      cache,
+      next,
+      ...fetchOptions,
+    },
     headers: {
       ...extraHeaders,
       ...headers,

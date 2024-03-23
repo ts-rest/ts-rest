@@ -193,6 +193,7 @@ type ClientInferRequestBase<
         >
       >
     : never,
+  TFetchOptions extends FetchOptions = FetchOptions,
 > = Prettify<
   Without<
     {
@@ -221,6 +222,16 @@ type ClientInferRequestBase<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
+
+      /**
+       * @deprecated Use `fetchOptions.cache` instead
+       */
+      cache?: RequestCache;
+
+      /**
+       * @deprecated Use `fetchOptions.next` instead
+       */
+      next?: 'next' extends keyof TFetchOptions ? TFetchOptions['next'] : never;
     } & ExtractExtraParametersFromClientArgs<TClientArgs>,
     never
   >

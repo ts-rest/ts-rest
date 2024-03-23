@@ -195,6 +195,7 @@ type ClientGetPostsType = Expect<
         } & Record<string, string | undefined>;
         fetchOptions?: FetchOptions;
         overrideClientOptions?: Partial<OverrideableClientArgs>;
+        cache?: RequestCache;
       }
     | undefined
   >
@@ -219,6 +220,7 @@ type ClientGetPostType = Expect<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
     }
   >
 >;
@@ -775,6 +777,7 @@ type CustomClientGetPostsType = Expect<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -799,6 +802,7 @@ type CustomClientGetPostType = Expect<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
       uploadProgress?: (progress: number) => void;
     }
   >
