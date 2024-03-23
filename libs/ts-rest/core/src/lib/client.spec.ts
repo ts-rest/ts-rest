@@ -61,14 +61,20 @@ const postsRouter = c.router({
       authorId: z.string(),
     }),
   },
-  createPostXForm: {
+  echoPostXForm: {
     method: 'POST',
-    path: '/posts',
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.string(),
+    path: '/echo',
     contentType: 'application/x-www-form-urlencoded',
+    body: z.object({
+      foo: z.string(),
+      bar: z.string(),
+    }),
+    responses: {
+      200: c.otherResponse({
+        contentType: 'text/plain',
+        body: z.string(),
+      }),
+    },
   },
   mutationWithQuery: {
     method: 'POST',
@@ -444,32 +450,65 @@ describe('client', () => {
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('w/ body and content-type header', async () => {
-      const value = 'key=value';
+    it('w/ urlencoded body - passing object', async () => {
       fetchMock.postOnce(
         {
-          url: 'https://api.com/posts',
+          url: 'https://api.com/echo',
           headers: {
             'content-type': 'application/x-www-form-urlencoded',
           },
         },
-        {
-          body: value,
-          status: 200,
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
+        (_, req) => {
+          expect(req.body).toBeInstanceOf(URLSearchParams);
+
+          return {
+            body: req.body!.toString(),
+            status: 200,
+          };
         },
       );
 
-      const result = await client.posts.createPostXForm({
-        body: 'key=value',
+      const result = await client.posts.echoPostXForm({
+        body: {
+          foo: 'foo',
+          bar: 'bar',
+        },
       });
 
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Type')).toBe(
-        'application/x-www-form-urlencoded',
+        'text/plain;charset=UTF-8',
       );
+      expect(result.body).toBe('foo=foo&bar=bar');
+    });
+
+    it('w/ urlencoded body - passing string', async () => {
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/echo',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+        (_, req) => {
+          expect(typeof req.body).toBe('string');
+
+          return {
+            body: req.body,
+            status: 200,
+          };
+        },
+      );
+
+      const result = await client.posts.echoPostXForm({
+        body: 'foo=foo&bar=bar',
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Type')).toBe(
+        'text/plain;charset=UTF-8',
+      );
+      expect(result.body).toBe('foo=foo&bar=bar');
     });
 
     it('w/ query params', async () => {
