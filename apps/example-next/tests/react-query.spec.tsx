@@ -3,8 +3,7 @@ import {
   QueryClientProvider,
   useQueryClient,
 } from '@tanstack/react-query';
-import { waitFor } from '@testing-library/react';
-import { renderHook } from '@testing-library/react-hooks';
+import { waitFor, renderHook } from '@testing-library/react';
 import { ApiFetcher, initContract } from '@ts-rest/core';
 import { initQueryClient, useTsRestQueryClient } from '@ts-rest/react-query';
 import React from 'react';
@@ -188,6 +187,9 @@ describe('react-query', () => {
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -228,6 +230,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -266,6 +271,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -300,6 +308,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -326,6 +337,9 @@ describe('react-query', () => {
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     return waitFor(() => {
@@ -358,6 +372,9 @@ describe('react-query', () => {
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -415,6 +432,7 @@ describe('react-query', () => {
       contentType: 'application/json',
       route: router.posts.createPost,
       signal: undefined,
+      fetchOptions: {},
     });
 
     await waitFor(() => {
@@ -467,6 +485,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -478,6 +499,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -538,6 +562,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -549,6 +576,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -613,6 +643,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -624,6 +657,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -666,6 +702,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -695,6 +734,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -730,6 +772,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -759,13 +804,16 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
   it('getQueryData should return already fetched data', async () => {
     api.mockResolvedValue(SUCCESS_RESPONSE);
 
-    const { waitForNextUpdate } = renderHook(
+    renderHook(
       () => {
         const { data } = client.posts.getPost.useQuery(['post', '1'], {
           params: {
@@ -780,7 +828,7 @@ describe('react-query', () => {
       },
     );
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(1));
 
     const { result } = renderHook(
       () => {
@@ -805,6 +853,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -826,7 +877,7 @@ describe('react-query', () => {
       } as Post,
     } as const;
 
-    const { waitForNextUpdate } = renderHook(
+    renderHook(
       () =>
         client.posts.getPost.useQuery(
           ['post', '1'],
@@ -844,7 +895,7 @@ describe('react-query', () => {
       },
     );
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(1));
 
     renderHook(
       () => {

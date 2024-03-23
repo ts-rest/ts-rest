@@ -38,6 +38,10 @@ type AppRouteCommon = {
   >;
   strictStatusCodes?: boolean;
   metadata?: unknown;
+
+  /**
+   * @deprecated Use `validateResponse` on the client options
+   */
   validateResponseOnClient?: boolean;
 };
 
@@ -156,6 +160,10 @@ export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
   pathPrefix?: TPrefix;
+
+  /**
+   * @deprecated Use `validateResponse` on the client options
+   */
   validateResponseOnClient?: boolean;
 };
 

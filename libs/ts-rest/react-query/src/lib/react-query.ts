@@ -20,8 +20,8 @@ import {
   AppRouter,
   ClientArgs,
   ClientInferRequest,
+  evaluateFetchApiArgs,
   fetchApi,
-  getCompleteUrl,
   getRouteQuery,
   isAppRoute,
   Without,
@@ -40,29 +40,13 @@ const queryFn = <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
   args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
 ): QueryFunction<TAppRoute['responses']> => {
   return async (queryFnContext?: QueryFunctionContext) => {
-    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
-      args || {};
-
-    const path = getCompleteUrl(
-      query,
-      clientArgs.baseUrl,
-      params,
-      route,
-      !!clientArgs.jsonQuery,
-    );
-
+    const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, args);
     const result = await fetchApi({
-      signal: queryFnContext?.signal,
-      path,
-      clientArgs,
-      route,
-      body,
-      query,
-      headers: {
-        ...extraHeaders,
-        ...headers,
+      ...fetchApiArgs,
+      fetchOptions: {
+        ...(queryFnContext?.signal && { signal: queryFnContext.signal }),
+        ...fetchApiArgs.fetchOptions,
       },
-      extraInputArgs,
     });
 
     // If the response is not a 2XX, throw an error to be handled by react-query
