@@ -67,6 +67,23 @@ export type ApiFetcherArgs = {
   contentType: AppRouteMutation['contentType'];
   fetchOptions?: FetchOptions;
   validateResponse?: boolean;
+
+  /**
+   * @deprecated Use `fetchOptions.credentials` instead
+   */
+  credentials?: RequestCredentials;
+  /**
+   * @deprecated Use `fetchOptions.signal` instead
+   */
+  signal?: AbortSignal;
+  /**
+   * @deprecated Use `fetchOptions.cache` instead
+   */
+  cache?: RequestCache;
+  /**
+   * @deprecated Use `fetchOptions.next` instead
+   */
+  next?: { revalidate?: number | false; tags?: string[] } | undefined;
 };
 
 export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
@@ -202,6 +219,11 @@ export const fetchApi = ({
       ...(clientArgs.credentials && { credentials: clientArgs.credentials }),
       ...fetchOptions,
     },
+    ...(fetchOptions?.signal && { signal: fetchOptions.signal }),
+    ...(fetchOptions?.cache && { cache: fetchOptions.cache }),
+    ...(fetchOptions &&
+      'next' in fetchOptions &&
+      !!fetchOptions?.next && { next: fetchOptions.next }),
   };
 
   if (route.method !== 'GET') {
@@ -297,8 +319,8 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
     query,
     extraInputArgs,
     fetchOptions: {
-      cache,
-      next,
+      ...(cache && { cache }),
+      ...(next && { next }),
       ...fetchOptions,
     },
     headers: {

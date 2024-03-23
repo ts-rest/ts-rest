@@ -35,6 +35,8 @@ Breaking down the arguments:
 - `headers` - Request headers defined in the contract (merged and overridden with `baseHeaders` in the client)
 - `extraHeaders` - If you want to pass headers not defined in the contract
 - `params` - The path parameters of the request.
+- `fetchOptions` - Additional fetch options to pass to the fetch function.
+- `overrideClientOptions` - Override the client options for this request.
 
 :::tip Customise the API 🎨
 
