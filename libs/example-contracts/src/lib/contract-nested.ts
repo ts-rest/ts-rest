@@ -8,7 +8,7 @@ const apiHealth = c.router({
     method: 'GET',
     path: '/health',
     responses: {
-      200: c.response<{ message: string }>(),
+      200: c.type<{ message: string }>(),
     },
     query: null,
     summary: 'Check health',

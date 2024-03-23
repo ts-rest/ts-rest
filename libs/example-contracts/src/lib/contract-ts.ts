@@ -17,7 +17,7 @@ export const contractTs = c.router({
     method: 'POST',
     path: '/ts/posts',
     responses: {
-      201: c.response<PostTs>(),
+      201: c.type<PostTs>(),
     },
     body: c.body<{
       title: string;
@@ -30,8 +30,8 @@ export const contractTs = c.router({
     method: 'GET',
     path: `/ts/posts/:id`,
     responses: {
-      200: c.response<PostTs>(),
-      404: c.response<null>(),
+      200: c.type<PostTs>(),
+      404: c.type<null>(),
     },
     query: null,
     summary: 'Get a post by id',
@@ -40,7 +40,7 @@ export const contractTs = c.router({
     method: 'GET',
     path: `/ts/posts`,
     responses: {
-      200: c.response<{
+      200: c.type<{
         posts: PostTs[];
         count: number;
         skip: number;

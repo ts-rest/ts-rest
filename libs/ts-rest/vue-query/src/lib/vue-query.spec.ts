@@ -31,14 +31,14 @@ const postsRouter = c.router(
       method: 'GET',
       path: `/posts/:id`,
       responses: {
-        200: c.response<Post | null>(),
+        200: c.type<Post | null>(),
       },
     },
     getPosts: {
       method: 'GET',
       path: '/posts',
       responses: {
-        200: c.response<Post[]>(),
+        200: c.type<Post[]>(),
       },
       query: z.object({
         take: z.number().optional(),
@@ -49,7 +49,7 @@ const postsRouter = c.router(
       method: 'POST',
       path: '/posts',
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: z.object({
         title: z.string(),
@@ -63,7 +63,7 @@ const postsRouter = c.router(
       method: 'POST',
       path: '/posts',
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: z.object({}),
       query: z.object({
@@ -74,7 +74,7 @@ const postsRouter = c.router(
       method: 'PUT',
       path: `/posts/:id`,
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: z.object({
         title: z.string(),
@@ -88,7 +88,7 @@ const postsRouter = c.router(
       method: 'PATCH',
       path: `/posts/:id`,
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: null,
     },
@@ -96,7 +96,7 @@ const postsRouter = c.router(
       method: 'DELETE',
       path: `/posts/:id`,
       responses: {
-        200: c.response<boolean>(),
+        200: c.type<boolean>(),
       },
       body: null,
     },
@@ -104,7 +104,7 @@ const postsRouter = c.router(
       method: 'POST',
       path: `/posts/:id/image`,
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       contentType: 'multipart/form-data',
       body: c.body<{ image: File }>(),
@@ -124,7 +124,7 @@ export const router = c.router({
     method: 'GET',
     path: '/health',
     responses: {
-      200: c.response<{ message: string }>(),
+      200: c.type<{ message: string }>(),
     },
   },
 });

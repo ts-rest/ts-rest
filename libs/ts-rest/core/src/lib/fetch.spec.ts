@@ -26,7 +26,7 @@ describe('fetchApi', () => {
         body: null,
         path: '/rick-astley',
         responses: {
-          200: c.response<{ message: string }>(),
+          200: c.type<{ message: string }>(),
         },
       },
       query: {},
@@ -75,7 +75,7 @@ describe('fetchApi', () => {
         body: null,
         path: '/rick-astley',
         responses: {
-          200: c.response<{ message: string }>(),
+          200: c.type<{ message: string }>(),
         },
       },
       query: {},
