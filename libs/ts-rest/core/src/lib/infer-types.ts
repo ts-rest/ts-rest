@@ -208,6 +208,8 @@ type ClientInferRequestBase<
           ? never
           : T['contentType'] extends 'multipart/form-data'
           ? FormData | ZodInputOrType<T['body']>
+          : T['contentType'] extends 'application/x-www-form-urlencoded'
+          ? string | ZodInputOrType<T['body']>
           : ZodInputOrType<T['body']>
         : never;
       query: 'query' extends keyof T

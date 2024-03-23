@@ -55,7 +55,7 @@ export type ApiFetcherArgs = {
   path: string;
   method: string;
   headers: Record<string, string>;
-  body: FormData | string | null | undefined;
+  body: FormData | URLSearchParams | string | null | undefined;
   rawBody: unknown;
   rawQuery: unknown;
   contentType: AppRouteMutation['contentType'];
@@ -229,13 +229,19 @@ export const fetchApi = ({
       ...combinedHeaders,
       'content-type': 'application/x-www-form-urlencoded',
     };
+
     return apiFetcher({
       route,
       path,
       method: route.method,
       credentials: clientArgs.credentials,
       headers,
-      body: body instanceof FormData ? body : createFormData(body),
+      body:
+        typeof body === 'string'
+          ? body
+          : new URLSearchParams(
+              body as Record<string, string> | URLSearchParams,
+            ),
       rawBody: body,
       rawQuery: query,
       contentType: 'application/x-www-form-urlencoded',
