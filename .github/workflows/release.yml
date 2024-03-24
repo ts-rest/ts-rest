@@ -49,14 +49,26 @@ jobs:
         with:
           path: libs/ts-rest/core
 
+      - name: Evaluate Next Release Version
+        run: pnpm version-packages
+
+      - name: Get Release Version
+        id: next-release-version
+        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
+        with:
+          path: libs/ts-rest/core
+
+      - name: Reset Changes
+        run: git checkout .
+
       - name: Create Release Pull Request or Publish to npm
         uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e
         with:
-          title: "release: v${{ steps.release-version.outputs.current-version }}"
-          commit: "release: v${{ steps.release-version.outputs.current-version }}"
+          title: "release: v${{ steps.next-release-version.outputs.current-version }}"
+          commit: "release: v${{ steps.next-release-version.outputs.current-version }}"
           # this expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: pnpm release
-          version: pnpm version-packages
+          version: pnpm version-packages && pnpm install --no-frozen-lockfile
           createGithubReleases: aggregate
           githubReleaseName: v${{ steps.release-version.outputs.current-version }}
           githubTagName: v${{ steps.release-version.outputs.current-version }}
