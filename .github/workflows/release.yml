@@ -40,22 +40,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Get Release Version
+      - name: Get release version
         id: release-version
         uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
         with:
           path: libs/ts-rest/core
 
-      - name: Evaluate Next Release Version
+      - name: Evaluate next release version
         run: pnpm version-packages
 
-      - name: Get Release Version
+      - name: Get next release version
         id: next-release-version
         uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
         with:
           path: libs/ts-rest/core
 
-      - name: Reset Changes
+      - name: Reset changes
         run: git checkout .
 
       - name: Modify "workspaces" value in package.json
@@ -68,7 +68,7 @@ jobs:
           commit: "release: v${{ steps.next-release-version.outputs.current-version }}"
           # this expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: pnpm release
-          version: pnpm version-packages && pnpm install --no-frozen-lockfile
+          version: pnpm version-packages-update-lockfile
           createGithubReleases: aggregate
           githubReleaseName: v${{ steps.release-version.outputs.current-version }}
           githubTagName: v${{ steps.release-version.outputs.current-version }}
