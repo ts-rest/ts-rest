@@ -40,9 +40,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Modify "workspaces" value in package.json
-        run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
-
       - name: Get Release Version
         id: release-version
         uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
@@ -60,6 +57,9 @@ jobs:
 
       - name: Reset Changes
         run: git checkout .
+
+      - name: Modify "workspaces" value in package.json
+        run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
 
       - name: Create Release Pull Request or Publish to npm
         uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e
