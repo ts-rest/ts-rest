@@ -491,7 +491,7 @@ describe('contract', () => {
           getPost: {
             path: '/:id',
             method: 'GET',
-            responses: { 200: c.response<{ id: string }>() },
+            responses: { 200: c.type<{ id: string }>() },
           },
         },
         { pathPrefix: '/posts' },
@@ -541,7 +541,7 @@ describe('contract', () => {
         getPost: {
           path: '/:id',
           method: 'GET',
-          responses: { 200: c.response<{ id: string }>() },
+          responses: { 200: c.type<{ id: string }>() },
         },
       });
       const postsContract = c.router(
@@ -566,7 +566,7 @@ describe('contract', () => {
           getPost: {
             path: '/:id',
             method: 'GET',
-            responses: { 200: c.response<{ id: string }>() },
+            responses: { 200: c.type<{ id: string }>() },
           },
         },
         { validateResponseOnClient: false },
@@ -593,12 +593,12 @@ describe('contract', () => {
           getPost: {
             path: '/:id',
             method: 'GET',
-            responses: { 200: c.response<{ id: string }>() },
+            responses: { 200: c.type<{ id: string }>() },
           },
           getPostDangerously: {
             path: '/:id/dangerous',
             method: 'GET',
-            responses: { 200: c.response<{ id: string }>() },
+            responses: { 200: c.type<{ id: string }>() },
             validateResponseOnClient: false,
           },
         },
@@ -624,7 +624,7 @@ describe('contract', () => {
         responses: {
           200: c.otherResponse({
             contentType: 'text/css',
-            body: c.response<string>(),
+            body: c.type<string>(),
           }),
         },
       },

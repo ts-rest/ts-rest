@@ -20,8 +20,8 @@ import {
   AppRouter,
   ClientArgs,
   ClientInferRequest,
+  evaluateFetchApiArgs,
   fetchApi,
-  getCompleteUrl,
   getRouteQuery,
   isAppRoute,
   PartialClientInferRequest,
@@ -124,29 +124,13 @@ const getRouteUseQuery = <
     const dataFn: QueryFunction<TAppRoute['responses']> = async ({
       signal,
     }) => {
-      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
-        args || {};
-
-      const path = getCompleteUrl(
-        args.query,
-        clientArgs.baseUrl,
-        args.params,
-        route,
-        !!clientArgs.jsonQuery,
-      );
-
+      const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, args);
       const result = await fetchApi({
-        path,
-        clientArgs,
-        route,
-        body: args.body,
-        query,
-        headers: {
-          ...extraHeaders,
-          ...headers,
+        ...fetchApiArgs,
+        fetchOptions: {
+          ...(signal && { signal }),
+          ...fetchApiArgs.fetchOptions,
         },
-        signal,
-        extraInputArgs,
       });
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
@@ -180,29 +164,19 @@ const getRouteUseInfiniteQuery = <
     ) => {
       const resultingQueryArgs = args(infiniteQueryParams);
 
-      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
-        resultingQueryArgs || {};
-
-      const path = getCompleteUrl(
-        resultingQueryArgs.query,
-        clientArgs.baseUrl,
-        resultingQueryArgs.params,
+      const fetchApiArgs = evaluateFetchApiArgs(
         route,
-        !!clientArgs.jsonQuery,
-      );
-
-      const result = await fetchApi({
-        signal: infiniteQueryParams.signal,
-        path,
         clientArgs,
-        route,
-        body: resultingQueryArgs.body,
-        query,
-        headers: {
-          ...extraHeaders,
-          ...headers,
+        resultingQueryArgs,
+      );
+      const result = await fetchApi({
+        ...fetchApiArgs,
+        fetchOptions: {
+          ...(infiniteQueryParams.signal && {
+            signal: infiniteQueryParams.signal,
+          }),
+          ...fetchApiArgs.fetchOptions,
         },
-        extraInputArgs,
       });
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
@@ -228,29 +202,8 @@ const getRouteUseMutation = <
     const mutationFunction = async (
       args: ClientInferRequest<AppRouteMutation, ClientArgs>,
     ) => {
-      const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
-        args || {};
-
-      const path = getCompleteUrl(
-        args.query,
-        clientArgs.baseUrl,
-        args.params,
-        route,
-        !!clientArgs.jsonQuery,
-      );
-
-      const result = await fetchApi({
-        path,
-        clientArgs,
-        route,
-        body: args.body,
-        query,
-        headers: {
-          ...extraHeaders,
-          ...headers,
-        },
-        extraInputArgs,
-      });
+      const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, args);
+      const result = await fetchApi(fetchApiArgs);
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
       if (!String(result.status).startsWith('2')) {

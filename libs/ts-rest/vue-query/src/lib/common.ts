@@ -8,10 +8,10 @@ import {
   AppRouteMutation,
   ClientArgs,
   ClientInferRequest,
-  fetchApi,
-  getCompleteUrl,
   DataResponse as CoreDataResponse,
   ErrorResponse as CoreErrorResponse,
+  fetchApi,
+  evaluateFetchApiArgs,
 } from '@ts-rest/core';
 
 // Data response if it's a 2XX
@@ -42,29 +42,13 @@ export const queryFn = <
         ? argsMapper(queryFnContext)
         : argsMapper;
 
-    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
-      args || {};
-
-    const path = getCompleteUrl(
-      query,
-      clientArgs.baseUrl,
-      params,
-      route,
-      !!clientArgs.jsonQuery,
-    );
-
+    const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, args);
     const result = await fetchApi({
-      signal: queryFnContext?.signal,
-      path,
-      clientArgs,
-      route,
-      body,
-      query,
-      headers: {
-        ...extraHeaders,
-        ...headers,
+      ...fetchApiArgs,
+      fetchOptions: {
+        ...(queryFnContext?.signal && { signal: queryFnContext.signal }),
+        ...fetchApiArgs.fetchOptions,
       },
-      extraInputArgs,
     });
 
     // If the response is not a 2XX, throw an error to be handled by react-query

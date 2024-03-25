@@ -1,9 +1,11 @@
 import * as fetchMock from 'fetch-mock-jest';
 import {
   ErrorStatusResponseError,
+  isErrorStatusResponse,
+  FetchOptions,
   HTTPStatusCode,
   initContract,
-  isErrorStatusResponse,
+  OverrideableClientArgs,
 } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
@@ -34,7 +36,7 @@ const postsRouter = c.router({
       'x-api-key': z.string().optional(),
     }),
     responses: {
-      200: c.response<Post | null>(),
+      200: c.type<Post | null>(),
     },
   },
   getPosts: {
@@ -44,7 +46,7 @@ const postsRouter = c.router({
       'x-pagination': z.coerce.number().optional(),
     }),
     responses: {
-      200: c.response<Post[]>(),
+      200: c.type<Post[]>(),
     },
     query: z.object({
       take: z.number().optional(),
@@ -56,7 +58,7 @@ const postsRouter = c.router({
     method: 'POST',
     path: '/posts',
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: z.object({
       title: z.string(),
@@ -66,20 +68,26 @@ const postsRouter = c.router({
       authorId: z.string(),
     }),
   },
-  createPostXForm: {
+  echoPostXForm: {
     method: 'POST',
-    path: '/posts',
-    responses: {
-      200: c.response<Post>(),
-    },
-    body: z.string(),
+    path: '/echo',
     contentType: 'application/x-www-form-urlencoded',
+    body: z.object({
+      foo: z.string(),
+      bar: z.string(),
+    }),
+    responses: {
+      200: c.otherResponse({
+        contentType: 'text/plain',
+        body: z.string(),
+      }),
+    },
   },
   mutationWithQuery: {
     method: 'POST',
     path: '/posts',
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: z.object({}),
     query: z.object({
@@ -90,7 +98,7 @@ const postsRouter = c.router({
     method: 'PUT',
     path: `/posts/:id`,
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: z.object({
       title: z.string(),
@@ -104,7 +112,7 @@ const postsRouter = c.router({
     method: 'PATCH',
     path: `/posts/:id`,
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: null,
   },
@@ -112,7 +120,7 @@ const postsRouter = c.router({
     method: 'DELETE',
     path: `/posts/:id`,
     responses: {
-      200: c.response<boolean>(),
+      200: c.type<boolean>(),
     },
     body: null,
   },
@@ -126,7 +134,7 @@ export const router = c.router(
       method: 'GET',
       path: '/health',
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     },
     error: {
@@ -142,7 +150,7 @@ export const router = c.router(
       path: '/upload',
       body: c.body<{ file: File }>(),
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
       contentType: 'multipart/form-data',
     },
@@ -186,7 +194,6 @@ type ClientGetPostsType = Expect<
   Equal<
     Parameters<typeof client.posts.getPosts>[0],
     | {
-        cache?: RequestCache;
         query?: {
           take?: number;
           skip?: number;
@@ -204,6 +211,9 @@ type ClientGetPostsType = Expect<
           'base-header'?: never;
           'x-api-key'?: never;
         } & Record<string, string | undefined>;
+        fetchOptions?: FetchOptions;
+        overrideClientOptions?: Partial<OverrideableClientArgs>;
+        cache?: RequestCache;
       }
     | undefined
   >
@@ -213,7 +223,6 @@ type ClientGetPostType = Expect<
   Equal<
     Parameters<typeof client.posts.getPost>[0],
     {
-      cache?: RequestCache;
       params: {
         id: string;
       };
@@ -227,6 +236,9 @@ type ClientGetPostType = Expect<
         'base-header'?: never;
         'x-api-key'?: never;
       } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
     }
   >
 >;
@@ -465,34 +477,6 @@ describe('client', () => {
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('w/ body and content-type header', async () => {
-      const value = 'key=value';
-      fetchMock.postOnce(
-        {
-          url: 'https://api.com/posts',
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        },
-        {
-          body: value,
-          status: 200,
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        },
-      );
-
-      const result = await client.posts.createPostXForm({
-        body: 'key=value',
-      });
-
-      expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Type')).toBe(
-        'application/x-www-form-urlencoded',
-      );
-    });
-
     it('w/ query params', async () => {
       fetchMock.postOnce(
         {
@@ -647,6 +631,119 @@ describe('client', () => {
       });
     });
   });
+
+  describe('application/x-www-form-urlencoded', () => {
+    it('w/object', async () => {
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/echo',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+        (_, req) => {
+          expect(req.body).toBeInstanceOf(URLSearchParams);
+
+          return {
+            body: req.body!.toString(),
+            status: 200,
+          };
+        },
+      );
+
+      const result = await client.posts.echoPostXForm({
+        body: {
+          foo: 'foo',
+          bar: 'bar',
+        },
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Type')).toBe(
+        'text/plain;charset=UTF-8',
+      );
+      expect(result.body).toBe('foo=foo&bar=bar');
+    });
+
+    it('w/string', async () => {
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/echo',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+        (_, req) => {
+          expect(typeof req.body).toBe('string');
+
+          return {
+            body: req.body,
+            status: 200,
+          };
+        },
+      );
+
+      const result = await client.posts.echoPostXForm({
+        body: 'foo=foo&bar=bar',
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Type')).toBe(
+        'text/plain;charset=UTF-8',
+      );
+      expect(result.body).toBe('foo=foo&bar=bar');
+    });
+  });
+
+  describe('next', () => {
+    it('should include "next" property in the fetch request', async () => {
+      const client = initClient(router, {
+        baseHeaders: {},
+        baseUrl: 'http://localhost:5002',
+      });
+
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              id: '1',
+              name: 'John',
+              email: 'some@email',
+            }),
+          headers: new Headers({
+            'content-type': 'application/json',
+          }),
+        } as Response),
+      );
+
+      await client.posts.getPost({
+        params: { id: '1' },
+        fetchOptions: {
+          next: {
+            revalidate: 1,
+            tags: ['user1'],
+          },
+        } as RequestInit,
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:5002/posts/1',
+        {
+          cache: undefined,
+          headers: {},
+          body: undefined,
+          credentials: undefined,
+          method: 'GET',
+          signal: undefined,
+          next: {
+            revalidate: 1,
+            tags: ['user1'],
+          },
+        },
+      );
+      (global.fetch as jest.Mock).mockClear();
+    });
+  });
 });
 
 describe('clientThrowOnError', () => {
@@ -708,7 +805,6 @@ type CustomClientGetPostsType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPosts>[0],
     {
-      cache?: RequestCache;
       query?: {
         take?: number;
         skip?: number;
@@ -726,6 +822,9 @@ type CustomClientGetPostsType = Expect<
         'base-header'?: never;
         'x-api-key'?: never;
       } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -735,7 +834,6 @@ type CustomClientGetPostType = Expect<
   Equal<
     Parameters<typeof customClient.posts.getPost>[0],
     {
-      cache?: RequestCache;
       params: {
         id: string;
       };
@@ -749,6 +847,9 @@ type CustomClientGetPostType = Expect<
         'base-header'?: never;
         'x-api-key'?: never;
       } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
       uploadProgress?: (progress: number) => void;
     }
   >

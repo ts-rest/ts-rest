@@ -16,7 +16,7 @@ const contract = c.router({
     path: '/test',
     query: c.body<{ test: string }>(),
     responses: {
-      200: c.response<{ message: string }>(),
+      200: c.type<{ message: string }>(),
     },
   },
   getWithParams: {
@@ -24,7 +24,7 @@ const contract = c.router({
     path: `/test/:id`,
     query: null,
     responses: {
-      200: c.response<{ id: string }>(),
+      200: c.type<{ id: string }>(),
     },
   },
   getWithQuery: {
@@ -32,7 +32,7 @@ const contract = c.router({
     path: `/test-query`,
     query: c.body<{ test: string; foo: number }>(),
     responses: {
-      200: c.response<{ test: string; foo: number }>(),
+      200: c.type<{ test: string; foo: number }>(),
     },
   },
   advanced: {
@@ -40,7 +40,7 @@ const contract = c.router({
     path: `/advanced/:id`,
     body: c.body<{ test: string }>(),
     responses: {
-      200: c.response<{ id: string; test: string }>(),
+      200: c.type<{ id: string; test: string }>(),
     },
     pathParams: z.object({
       id: z.string(),

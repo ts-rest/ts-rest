@@ -294,7 +294,7 @@ describe('ts-rest-fastify', () => {
         getPost: {
           path: '/:postId',
           method: 'GET',
-          responses: { 200: c.response<{ id: string }>() },
+          responses: { 200: c.type<{ id: string }>() },
         },
       },
       { pathPrefix: '/posts' },
