@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.37.0
+
+### Patch Changes
+
+- 6a5280c: Deprecate initNextClient. Use `initClient` from @ts-rest/core and use the `fetchOptions.next` parameter.
+
 ## 3.36.0
 
 ### Minor Changes

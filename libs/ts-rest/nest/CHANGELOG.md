@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.37.0
+
+### Patch Changes
+
+- 85b262b: Fix return types for Nest handlers
+
 ## 3.36.0
 
 ### Minor Changes

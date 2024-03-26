@@ -1,5 +1,15 @@
 # @ts-rest/core
 
+## 3.37.0
+
+### Minor Changes
+
+- 6a5280c: Allow fetch options to be set and client options to be overridden per request
+
+### Patch Changes
+
+- 77db06b: Fix client not correctly encoding application/x-www-form-urlencoded body
+
 ## 3.36.0
 
 ### Patch Changes
