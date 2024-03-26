@@ -32,7 +32,6 @@ import {
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferResponses,
-  Promisable,
 } from '@ts-rest/core';
 import {
   TsRestAppRouteMetadataKey,
@@ -130,12 +129,12 @@ export const TsRestHandler = (
 
 type NestHandlerImplementation<T extends AppRouter | AppRoute> =
   T extends AppRoute
-    ? (args: TsRestRequestShape<T>) => Promisable<ServerInferResponses<T>>
+    ? (args: TsRestRequestShape<T>) => Promise<ServerInferResponses<T>>
     : {
         [K in keyof T]: T[K] extends AppRoute
           ? (
               args: TsRestRequestShape<T[K]>,
-            ) => Promisable<ServerInferResponses<T[K]>>
+            ) => Promise<ServerInferResponses<T[K]>>
           : never;
       };
 

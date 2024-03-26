@@ -3,13 +3,12 @@ import {
   AppRouter,
   Without,
   ServerInferResponses,
-  Promisable,
 } from '@ts-rest/core';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
 
 type AppRouterMethodShape<T extends AppRoute> = (
   ...args: any[]
-) => Promisable<ServerInferResponses<T>>;
+) => Promise<ServerInferResponses<T>>;
 
 type AppRouterControllerShape<T extends AppRouter> = Without<
   {
