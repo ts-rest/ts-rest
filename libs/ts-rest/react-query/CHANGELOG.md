@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.37.0
+
+### Minor Changes
+
+- 6a5280c: Allow fetch options to be set and client options to be overridden per request
+
 ## 3.36.0
 
 ## 3.35.1
