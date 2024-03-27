@@ -9,3 +9,4 @@ export * from './lib/server';
 export * from './lib/response-validation-error';
 export * from './lib/unknown-status-error';
 export * from './lib/infer-types';
+export * from './lib/helpers';

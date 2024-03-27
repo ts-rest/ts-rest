@@ -69,6 +69,7 @@ const sidebars = {
       collapsed: false,
       items: [
         { type: 'doc', id: 'core/core' },
+        { type: 'doc', id: 'core/helpers' },
         { type: 'doc', id: 'core/fetch' },
         { type: 'doc', id: 'core/custom' },
         { type: 'doc', id: 'core/infer-types' },
@@ -117,6 +118,7 @@ const sidebars = {
       items: [
         { type: 'doc', id: 'express/express' },
         { type: 'doc', id: 'express/middleware' },
+        { type: 'doc', id: 'express/helpers' },
       ],
     },
     {
