@@ -347,7 +347,7 @@ describe('contract', () => {
         method: 'GET',
         path: '/posts/:id',
         responses: {
-          200: c.body<{ id: number }>(),
+          200: c.type<{ id: number }>(),
         },
       },
     });
@@ -370,6 +370,37 @@ describe('contract', () => {
     >;
   });
 
+  it('should be typed correctly with separate responses', () => {
+    const responses = c.responses({
+      200: c.type<{ id: number }>(),
+    });
+
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts/:id',
+        responses,
+      },
+    });
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          getPost: {
+            method: 'GET';
+            path: '/posts/:id';
+            responses: {
+              readonly 200: ContractPlainType<{
+                id: number;
+              }>;
+            };
+          };
+        }
+      >
+    >;
+  });
+
   it('should add strictStatusCodes=true option to routes', () => {
     const contract = c.router(
       {
@@ -377,7 +408,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
         },
       },
@@ -405,7 +436,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
         },
       },
@@ -433,7 +464,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
           strictStatusCodes: true,
         },
@@ -462,7 +493,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
           strictStatusCodes: false,
         },

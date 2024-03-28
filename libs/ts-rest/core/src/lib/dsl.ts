@@ -196,12 +196,20 @@ type ContractInstance = {
    * A single query route, should exist within
    * a {@link AppRouter}
    */
-  query: <T extends AppRouteQuery>(query: T) => T;
+  query: <const T extends AppRouteQuery>(query: T) => T;
   /**
    * A single mutation route, should exist within
    * a {@link AppRouter}
    */
-  mutation: <T extends AppRouteMutation>(mutation: T) => T;
+  mutation: <const T extends AppRouteMutation>(mutation: T) => T;
+  responses: <
+    const TResponses extends Record<
+      number,
+      ContractAnyType | ContractOtherResponse<ContractAnyType>
+    >,
+  >(
+    responses: TResponses,
+  ) => TResponses;
   /**
    * @deprecated Please use type() instead.
    */
@@ -276,6 +284,7 @@ export const initContract = (): ContractInstance => {
     router: (endpoints, options) => recursivelyApplyOptions(endpoints, options),
     query: (args) => args,
     mutation: (args) => args,
+    responses: (args) => args,
     response: () => ContractPlainTypeRuntimeSymbol,
     body: () => ContractPlainTypeRuntimeSymbol,
     type: () => ContractPlainTypeRuntimeSymbol,
