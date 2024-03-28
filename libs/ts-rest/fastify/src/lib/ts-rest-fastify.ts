@@ -113,6 +113,10 @@ export const initServer = () => ({
     contract,
     routes,
   }),
+  route: <TAppRoute extends AppRoute>(
+    route: TAppRoute,
+    implementation: AppRouteImplementation<TAppRoute>,
+  ) => implementation,
   registerRouter: <
     T extends InitialisedRouter<TContract>,
     TContract extends AppRouter,

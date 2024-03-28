@@ -1,10 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-/**
- * Lib is designed to follow the same structure as
- * traditional Next.js apps, with a pages folder.
- */
-
 import {
   AppRoute,
   AppRouteQuery,
@@ -173,9 +167,13 @@ const getRouteImplementation = (
  * @param implementation - Implementation of the AppRouter, e.g. your API controllers
  * @returns
  */
-export const createNextRoute = <T extends AppRouter>(
+export const createNextRoute = <T extends AppRouter | AppRoute>(
   appRouter: T,
-  implementation: RecursiveRouterObj<T>,
+  implementation: T extends AppRouter
+    ? RecursiveRouterObj<T>
+    : T extends AppRoute
+    ? AppRouteImplementation<T>
+    : never,
 ) => implementation;
 
 /**

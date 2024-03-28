@@ -97,13 +97,18 @@ describe('ts-rest-express', () => {
 
     const server = initServer();
 
-    const router = server.router(contract, {
-      postIndex: async ({ body: { echoHtml } }) => {
+    const postIndex = server.route(
+      contract.postIndex,
+      async ({ body: { echoHtml } }) => {
         return {
           status: 200,
           body: echoHtml,
         };
       },
+    );
+
+    const router = server.router(contract, {
+      postIndex,
       getRobots: async () => {
         return {
           status: 200,

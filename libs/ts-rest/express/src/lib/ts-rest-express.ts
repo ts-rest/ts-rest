@@ -30,6 +30,10 @@ export const initServer = () => {
   return {
     router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
       args,
+    route: <T extends AppRoute>(
+      route: T,
+      args: AppRouteImplementationOrOptions<T>,
+    ) => args,
   };
 };
 

@@ -66,14 +66,14 @@ const contract = c.router({
 });
 
 const nextEndpoint = createNextRoute(contract, {
-  get: async ({ query: { test } }) => {
+  get: createNextRoute(contract.get, async ({ query: { test } }) => {
     return {
       status: 200,
       body: {
         message: test,
       },
     };
-  },
+  }),
   getWithParams: async ({ params: { id } }) => {
     return {
       status: 200,
