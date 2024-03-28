@@ -1,5 +1,7 @@
 import * as fetchMock from 'fetch-mock-jest';
 import {
+  ErrorStatusResponseError,
+  isErrorStatusResponse,
   FetchOptions,
   HTTPStatusCode,
   initContract,
@@ -138,6 +140,14 @@ export const router = c.router(
         200: c.type<{ message: string }>(),
       },
     },
+    error: {
+      method: 'POST',
+      path: '/error',
+      body: c.type<{ message: string }>(),
+      responses: {
+        500: c.type<{ message: string }>(),
+      },
+    },
     upload: {
       method: 'POST',
       path: '/upload',
@@ -166,6 +176,14 @@ const client = initClient(router, {
   baseHeaders: {
     'X-Api-Key': 'foo',
   },
+});
+
+const clientThrowOnError = initClient(router, {
+  baseUrl: 'https://api.com',
+  baseHeaders: {
+    'X-Api-Key': 'foo',
+  },
+  throwOnErrorStatus: true,
 });
 
 const clientStrict = initClient(routerStrict, {
@@ -741,6 +759,35 @@ describe('client', () => {
       );
       (global.fetch as jest.Mock).mockClear();
     });
+  });
+});
+
+describe('clientThrowOnError', () => {
+  beforeEach(() => {
+    fetchMock.mockReset();
+  });
+
+  it('throws error on error status code', async () => {
+    const message = 'my error message';
+    fetchMock.postOnce({ url: 'https://api.com/error' }, (_, req) => {
+      return {
+        status: 500,
+        body: JSON.parse(req.body as string),
+      };
+    });
+
+    try {
+      await clientThrowOnError.error({ body: { message } });
+      fail('calling /error should throw an error');
+    } catch (e) {
+      expect(e).toBeInstanceOf(ErrorStatusResponseError);
+
+      if (!isErrorStatusResponse(e, router.error, 500)) {
+        return fail('isErrorStatusResponse should return true for /error');
+      }
+      expect(e.response.body).toStrictEqual({ message });
+      expect(e.response.status).toBe(500);
+    }
   });
 });
 

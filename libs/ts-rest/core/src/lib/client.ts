@@ -7,7 +7,10 @@ import {
   ClientInferRequest,
   ClientInferResponses,
   PartialClientInferRequest,
+  ErrorResponse,
+  DataResponse,
 } from './infer-types';
+import { ErrorStatusResponseError } from './error-status-error';
 import { isZodType } from './zod-utils';
 import { Equal, Expect } from './test-helpers';
 
@@ -39,8 +42,24 @@ export type AppRouteFunction<
   TClientArgs extends ClientArgs,
   TArgs = PartialClientInferRequest<TRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
-  ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
-  : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
+  ? (
+      args?: Prettify<TArgs>,
+    ) => Promise<
+      Prettify<
+        TClientArgs['throwOnErrorStatus'] extends true
+          ? DataResponse<TRoute>
+          : ClientInferResponses<TRoute>
+      >
+    >
+  : (
+      args: Prettify<TArgs>,
+    ) => Promise<
+      Prettify<
+        TClientArgs['throwOnErrorStatus'] extends true
+          ? DataResponse<TRoute>
+          : ClientInferResponses<TRoute>
+      >
+    >;
 
 export type FetchOptions = Omit<RequestInit, 'method' | 'headers' | 'body'>;
 
@@ -48,6 +67,7 @@ export interface OverrideableClientArgs {
   baseUrl: string;
   credentials?: RequestCredentials;
   jsonQuery?: boolean;
+  throwOnErrorStatus?: boolean;
   validateResponse?: boolean;
 }
 
@@ -359,15 +379,25 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
     const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, inputArgs);
     const response = await fetchApi(fetchApiArgs);
 
-    if (!clientArgs.throwOnUnknownStatus) {
-      return response;
+    if (
+      clientArgs.throwOnUnknownStatus &&
+      !knownResponseStatuses.includes(response.status.toString())
+    ) {
+      throw new UnknownStatusError(response, knownResponseStatuses);
     }
 
-    if (knownResponseStatuses.includes(response.status.toString())) {
-      return response;
+    if (
+      (clientArgs.throwOnErrorStatus && response.status < 200) ||
+      response.status >= 300
+    ) {
+      throw new ErrorStatusResponseError(
+        route,
+        response as ErrorResponse<typeof route>,
+        inputArgs,
+      );
     }
 
-    throw new UnknownStatusError(response, knownResponseStatuses);
+    return response;
   };
 };
 
