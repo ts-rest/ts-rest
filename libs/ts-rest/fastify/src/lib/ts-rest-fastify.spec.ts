@@ -65,14 +65,14 @@ describe('ts-rest-fastify', () => {
         },
       };
     },
-    ping: async ({ body }) => {
+    ping: s.route(contract.ping, async ({ body }) => {
       return {
         status: 200,
         body: {
           pong: body.ping,
         },
       };
-    },
+    }),
     testPathParams: async ({ params }) => {
       return {
         status: 200,

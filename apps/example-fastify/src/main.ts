@@ -1,6 +1,7 @@
 import * as fastify from 'fastify';
 import { initServer } from '@ts-rest/fastify';
 import { apiBlog, Post } from '@ts-rest/example-contracts';
+import { getPost } from './get-post';
 
 export const mockPostFixtureFactory = (partial: Partial<Post>): Post => ({
   id: 'mock-id',
@@ -21,21 +22,7 @@ app.get('/', async (request, reply) => {
 const s = initServer();
 
 const router = s.router(apiBlog, {
-  getPost: async ({ params: { id } }) => {
-    const post = mockPostFixtureFactory({ id });
-
-    if (!post) {
-      return {
-        status: 404,
-        body: null,
-      };
-    }
-
-    return {
-      status: 200,
-      body: post,
-    };
-  },
+  getPost,
   getPosts: async ({ query }) => {
     const posts = [
       mockPostFixtureFactory({ id: '1' }),
