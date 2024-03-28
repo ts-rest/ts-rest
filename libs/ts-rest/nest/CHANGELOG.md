@@ -1,5 +1,7 @@
 # @ts-rest/nest
 
+## 3.38.0
+
 ## 3.37.0
 
 ### Patch Changes

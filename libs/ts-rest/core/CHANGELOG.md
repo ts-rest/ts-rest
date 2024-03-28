@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.38.0
+
+### Patch Changes
+
+- 0b9f249: Fix ts-rest overwriting a supplied content-type header
+- 15d4926: Fix invalid `extraHeaders` type when no headers are defined in the contract
+
 ## 3.37.0
 
 ### Minor Changes

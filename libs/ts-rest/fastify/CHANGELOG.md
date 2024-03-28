@@ -1,5 +1,11 @@
 # @ts-rest/fastify
 
+## 3.38.0
+
+### Minor Changes
+
+- 33d6a57: Add single route implementation helper
+
 ## 3.37.0
 
 ## 3.36.0
