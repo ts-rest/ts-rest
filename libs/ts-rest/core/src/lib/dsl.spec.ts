@@ -370,6 +370,72 @@ describe('contract', () => {
     >;
   });
 
+  it('should be typed correctly with separate query route', () => {
+    const getPost = c.query({
+      method: 'GET',
+      path: '/posts/:id',
+      responses: {
+        200: c.type<{ id: number }>(),
+      },
+    });
+
+    const contract = c.router({
+      getPost,
+    });
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          getPost: {
+            readonly method: 'GET';
+            path: '/posts/:id';
+            readonly responses: {
+              readonly 200: ContractPlainType<{
+                id: number;
+              }>;
+            };
+          };
+        }
+      >
+    >;
+  });
+
+  it('should be typed correctly with separate mutation route', () => {
+    const createPost = c.mutation({
+      method: 'POST',
+      path: '/posts',
+      responses: {
+        200: c.type<{ id: number }>(),
+      },
+      body: c.type<{ title: string }>(),
+    });
+
+    const contract = c.router({
+      createPost,
+    });
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          createPost: {
+            readonly method: 'POST';
+            path: '/posts';
+            readonly responses: {
+              readonly 200: ContractPlainType<{
+                id: number;
+              }>;
+            };
+            readonly body: ContractPlainType<{
+              title: string;
+            }>;
+          };
+        }
+      >
+    >;
+  });
+
   it('should be typed correctly with separate responses', () => {
     const responses = c.responses({
       200: c.type<{ id: number }>(),
