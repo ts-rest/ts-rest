@@ -217,9 +217,11 @@ type ClientInferRequestBase<
           : ZodInputOrType<T['query']>
         : never;
       headers: THeaders;
-      extraHeaders?: {
-        [K in NonNullable<keyof THeaders>]?: never;
-      } & Record<string, string | undefined>;
+      extraHeaders?: [THeaders] extends [never]
+        ? Record<string, string | undefined>
+        : {
+            [K in NonNullable<keyof THeaders>]?: never;
+          } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
 

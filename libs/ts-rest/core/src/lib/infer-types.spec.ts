@@ -107,6 +107,29 @@ const contractStrict = c.router(contract, {
   strictStatusCodes: true,
 });
 
+const headerlessContract = c.router({
+  getPost: {
+    method: 'GET',
+    path: '/posts/:id',
+    pathParams: z.object({
+      id: z.string().transform((id) => Number(id)),
+    }),
+    query: z.object({
+      includeComments: z.boolean().default(false),
+    }),
+    responses: {
+      200: z.object({
+        id: z.number(),
+        title: z.string().default('Untitled'),
+        content: z.string(),
+      }),
+      404: z.object({
+        message: z.string(),
+      }),
+    },
+  },
+});
+
 it('type inference helpers', () => {
   type ServerInferResponsesTest = Expect<
     Equal<
@@ -552,6 +575,22 @@ it('type inference helpers', () => {
             overrideClientOptions?: Partial<OverrideableClientArgs>;
             cache?: RequestCache;
           };
+        };
+      }
+    >
+  >;
+
+  type ClientInferRequestHeaderlessTest = Expect<
+    Equal<
+      ClientInferRequest<typeof headerlessContract>,
+      {
+        getPost: {
+          query: { includeComments?: boolean | undefined };
+          params: { id: string };
+          extraHeaders?: Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
       }
     >
