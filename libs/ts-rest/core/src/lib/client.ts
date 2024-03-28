@@ -157,7 +157,7 @@ const createFormData = (body: unknown) => {
   const formData = new FormData();
 
   Object.entries(body as Record<string, unknown>).forEach(([key, value]) => {
-    if (value instanceof File) {
+    if (value instanceof Blob) {
       formData.append(key, value);
     } else {
       formData.append(key, JSON.stringify(value));
