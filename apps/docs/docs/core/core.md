@@ -346,3 +346,32 @@ const parentContract = c.router(
   }
 );
 ```
+
+### Validate Response
+
+The `validateResponse` option allows you to validate the response body against the response schema. This is useful for ensuring that the server is returning the correct response type or performing transformations that are part of the response schema. For this to work, the responses schema must be defined using Zod (`c.type<>` will not check types at runtime).
+
+```typescript
+const c = initContract();
+export const contract = c.router(
+  {
+    method: 'GET',
+    path: '/post/:id',
+    responses: {
+      200: z.object({
+        id: z.string(),
+        createdAt: z.coerce.date(),
+      }),
+    },
+  }
+)
+
+const client = initClient(contract, { validateResponse: true });
+client.getPost({ id: '1' }).then((response) => {
+  // response will be validated against the response schema
+  if (response.status === 200) {
+    // response.data will be of type { id: string, createdAt: Date }
+    // because `createdAt` has transformation of `z.coerce.date()`, it will parse any string date into a Date object
+  }
+});
+```

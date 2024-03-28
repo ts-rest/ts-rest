@@ -7,18 +7,19 @@ import {
 } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 
 const c = initContract();
 
-export type Post = {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  published: boolean;
-  authorId: string;
-};
+const postSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  content: z.string().nullable(),
+  published: z.boolean(),
+  authorId: z.string(),
+});
+export type Post = z.infer<typeof postSchema>;
 
 export type User = {
   id: string;
@@ -34,7 +35,7 @@ const postsRouter = c.router({
       'x-api-key': z.string().optional(),
     }),
     responses: {
-      200: c.type<Post | null>(),
+      200: postSchema.nullable(),
     },
   },
   getPosts: {
@@ -138,7 +139,7 @@ export const router = c.router(
     upload: {
       method: 'POST',
       path: '/upload',
-      body: c.body<{ file: File }>(),
+      body: c.type<{ file: File }>(),
       responses: {
         200: c.type<{ message: string }>(),
       },
@@ -937,5 +938,23 @@ describe('custom api', () => {
     await expect(client.posts.getPosts({})).rejects.toThrowError(
       'Server returned unexpected response. Expected one of: 200 got: 419',
     );
+  });
+
+  it('throw an error when validateResponse is configured and response is invalid', async () => {
+    const client = initClient(router, {
+      baseUrl: 'https://isolated.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      validateResponse: true,
+    });
+    fetchMock.getOnce(
+      { url: 'https://isolated.com/posts/1' },
+      { status: 200, body: { key: 'invalid value' } },
+    );
+
+    await expect(
+      client.posts.getPost({ params: { id: '1' } }),
+    ).rejects.toThrowError(ZodError);
   });
 });
