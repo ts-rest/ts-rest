@@ -112,7 +112,10 @@ const postsRouter = c.router({
     responses: {
       200: c.type<Post>(),
     },
-    body: null,
+    headers: z.object({
+      'content-type': z.literal('application/merge-patch+json'),
+    }),
+    body: z.object({}).passthrough(),
   },
   deletePost: {
     method: 'DELETE',
@@ -516,20 +519,33 @@ describe('client', () => {
   describe('patch', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
+
       fetchMock.patchOnce(
         {
           url: 'https://api.com/posts/1',
         },
-        { body: value, status: 200 },
+        (_, req) => ({
+          body: {
+            contentType: (req.headers as any)['content-type'],
+            reqBody: JSON.parse(req.body as string),
+          },
+          status: 200,
+        }),
       );
 
       const result = await client.posts.patchPost({
         params: { id: '1' },
+        headers: {
+          'content-type': 'application/merge-patch+json',
+        },
+        body: value,
       });
 
-      expect(result.body).toStrictEqual(value);
+      expect(result.body).toEqual({
+        contentType: 'application/merge-patch+json',
+        reqBody: value,
+      });
       expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Length')).toBe('15');
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });

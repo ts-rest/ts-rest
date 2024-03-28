@@ -238,8 +238,8 @@ export const fetchApi = ({
         ...fetcherArgs,
         contentType: 'application/x-www-form-urlencoded',
         headers: {
-          ...fetcherArgs.headers,
           'content-type': 'application/x-www-form-urlencoded',
+          ...fetcherArgs.headers,
         },
         body:
           typeof body === 'string'
@@ -253,8 +253,8 @@ export const fetchApi = ({
         ...fetcherArgs,
         contentType: 'application/json',
         headers: {
-          ...fetcherArgs.headers,
           'content-type': 'application/json',
+          ...fetcherArgs.headers,
         },
         body: JSON.stringify(body),
       };
