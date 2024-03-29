@@ -52,12 +52,14 @@ describe('next-client', () => {
     });
     global.fetch = jest.fn(() =>
       Promise.resolve({
-        json: () =>
-          Promise.resolve({
-            id: '1',
-            name: 'John',
-            email: 'some@email',
-          }),
+        text: () =>
+          Promise.resolve(
+            JSON.stringify({
+              id: '1',
+              name: 'John',
+              email: 'some@email',
+            }),
+          ),
         headers: new Headers({
           'content-type': 'application/json',
         }),
@@ -68,7 +70,6 @@ describe('next-client', () => {
       fetchOptions: {
         next: {
           revalidate: 1,
-          tags: ['user1'],
         },
       },
     });
@@ -81,7 +82,6 @@ describe('next-client', () => {
       signal: undefined,
       next: {
         revalidate: 1,
-        tags: ['user1'],
       },
     });
     (global.fetch as jest.Mock).mockClear();

@@ -135,6 +135,13 @@ export const router = c.router(
         200: c.type<{ message: string }>(),
       },
     },
+    emptyResponse: {
+      method: 'GET',
+      path: '/empty',
+      responses: {
+        200: c.type<void>(),
+      },
+    },
     upload: {
       method: 'POST',
       path: '/upload',
@@ -686,12 +693,14 @@ describe('client', () => {
 
       global.fetch = jest.fn(() =>
         Promise.resolve({
-          json: () =>
-            Promise.resolve({
-              id: '1',
-              name: 'John',
-              email: 'some@email',
-            }),
+          text: () =>
+            Promise.resolve(
+              JSON.stringify({
+                id: '1',
+                name: 'John',
+                email: 'some@email',
+              }),
+            ),
           headers: new Headers({
             'content-type': 'application/json',
           }),

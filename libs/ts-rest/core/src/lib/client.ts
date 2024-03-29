@@ -116,11 +116,20 @@ export const tsRestFetchApi: ApiFetcher = async ({
   });
 
   const contentType = result.headers.get('content-type');
+  const contentLength = result.headers.has('content-length')
+    ? Number(result.headers.get('content-length'))
+    : undefined;
 
   if (contentType?.includes('application/') && contentType?.includes('json')) {
     const response = {
       status: result.status,
-      body: await result.json(),
+      body:
+        contentLength === 0
+          ? undefined
+          : await result.text().then((text) => {
+              if (text?.trim()) return JSON.parse(text);
+              return undefined;
+            }),
       headers: result.headers,
     };
 
@@ -131,7 +140,8 @@ export const tsRestFetchApi: ApiFetcher = async ({
     ) {
       return {
         ...response,
-        body: responseSchema.parse(response.body),
+        body:
+          contentLength === 0 ? undefined : responseSchema.parse(response.body),
       };
     }
 
@@ -141,7 +151,7 @@ export const tsRestFetchApi: ApiFetcher = async ({
   if (contentType?.includes('text/')) {
     return {
       status: result.status,
-      body: await result.text(),
+      body: contentLength === 0 ? undefined : await result.text(),
       headers: result.headers,
     };
   }
