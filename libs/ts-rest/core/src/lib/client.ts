@@ -215,6 +215,7 @@ export const fetchApi = ({
     rawBody: body,
     rawQuery: query,
     contentType: undefined,
+    validateResponse: clientArgs.validateResponse,
     fetchOptions: {
       ...(clientArgs.credentials && { credentials: clientArgs.credentials }),
       ...fetchOptions,

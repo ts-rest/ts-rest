@@ -145,6 +145,51 @@ This will ensure that you could pass Date objects in your client queries. They w
 
 :::
 
+## Validate Response
+
+The `validateResponse` option allows you to validate the response body against the response schema. This is useful for ensuring that the server is returning the correct response type or performing transformations that are part of the response schema. For this to work, the responses schema must be defined using Zod (`c.type<>` will not check types at runtime).
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  method: 'GET',
+  path: '/post/:id',
+  responses: {
+    200: z.object({
+      id: z.string(),
+      createdAt: z.coerce.date(),
+    }),
+  },
+});
+
+const client = initClient(contract, { validateResponse: true });
+const response = await client.getPost({ id: '1' });
+// response will be validated against the response schema
+if (response.status === 200) {
+  // response.data will be of type { id: string, createdAt: Date }
+  // because `createdAt` has transformation of `z.coerce.date()`, it will parse any string date into a Date object
+}
+```
+
+:::caution
+
+If you are doing any non-idempotent Zod transforms that run on the server, response validation may fail on the client or produce an unintended double transformation is certain cases. Make sure your transformations are idempotent.
+
+```typescript
+// ❌❌
+z.date().transform((d) => d.toISOString());
+z.number().transform((n) => n + 1000);
+z.string().transform((s) => `Hello, ${s}`);
+
+// ✅✅
+z.coerce.date();
+z.string().transform((s) => s.toUpperCase());
+z.union([z.string().datetime(), z.date()])
+  .transform((date) => (typeof date === 'string' ? new Date(date) : date));
+```
+
+:::
+
 ## Notes About Basic Fetch Client
 
 We use the [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) API under the hood.
