@@ -25,7 +25,7 @@ const createCorsHeaders = (
   req: TsRestRequest,
   {
     origins = '*',
-    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'],
     allowedHeaders,
     exposedHeaders,
     credentials,

@@ -10,6 +10,7 @@ import {
   Delete,
   ExecutionContext,
   Get,
+  Head,
   HttpException,
   HttpExceptionOptions,
   Inject,
@@ -106,6 +107,8 @@ export const TsRestHandler = (
       switch (appRouterOrRoute.method) {
         case 'GET':
           return Get(appRouterOrRoute.path);
+        case 'HEAD':
+          return Head(appRouterOrRoute.path);
         case 'POST':
           return Post(appRouterOrRoute.path);
         case 'PUT':

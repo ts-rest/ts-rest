@@ -214,6 +214,9 @@ const initializeExpressRoute = ({
     case 'GET':
       app.get(schema.path, ...(handlers as RequestHandler[]));
       break;
+    case 'HEAD':
+      app.head(schema.path, ...(handlers as RequestHandler[]));
+      break;
     case 'DELETE':
       app.delete(schema.path, ...(handlers as RequestHandler[]));
       break;

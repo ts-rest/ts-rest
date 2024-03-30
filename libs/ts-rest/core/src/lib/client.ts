@@ -1,4 +1,10 @@
-import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
+import {
+  AppRoute,
+  AppRouteMutation,
+  AppRouteQuery,
+  AppRouter,
+  isAppRoute,
+} from './dsl';
 import { insertParamsIntoPath } from './paths';
 import { convertQueryParamsToUrlString } from './query';
 import { AreAllPropertiesOptional, Prettify } from './type-utils';
@@ -117,6 +123,14 @@ export const tsRestFetchApi: ApiFetcher = async ({
 
   const contentType = result.headers.get('content-type');
 
+  if (method === 'HEAD') {
+    return {
+      status: result.status,
+      body: null,
+      headers: result.headers,
+    };
+  }
+
   if (contentType?.includes('application/') && contentType?.includes('json')) {
     const response = {
       status: result.status,
@@ -173,6 +187,9 @@ const normalizeHeaders = (headers: Record<string, string | undefined>) => {
   );
 };
 
+export const isQueryRoute = (route: AppRoute): route is AppRouteQuery =>
+  route.method === 'GET' || route.method === 'HEAD';
+
 export const fetchApi = ({
   path,
   clientArgs,
@@ -226,7 +243,7 @@ export const fetchApi = ({
       !!fetchOptions?.next && { next: fetchOptions.next }),
   };
 
-  if (route.method !== 'GET') {
+  if (!isQueryRoute(route)) {
     if (route.contentType === 'multipart/form-data') {
       fetcherArgs = {
         ...fetcherArgs,

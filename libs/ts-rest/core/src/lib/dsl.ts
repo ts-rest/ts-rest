@@ -49,7 +49,7 @@ type AppRouteCommon = {
  * A query endpoint. In REST terms, one using GET.
  */
 export type AppRouteQuery = AppRouteCommon & {
-  method: 'GET';
+  method: 'GET' | 'HEAD';
 };
 
 /**

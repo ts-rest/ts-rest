@@ -15,7 +15,7 @@ To customise the fetching behaviour, add an `api` function, please see [Custom A
 
 Your contract uses regular HTTP methods to define the type of request you want to make. We use this type to infer whether you are doing a `query` or a `mutate` request.
 
-Any requests that use the `GET` method will be treated as a `query` request, and any requests that use the `POST`, `PUT`, `PATCH` or `DELETE` methods will be treated as a `mutate` request.
+Any requests that use the `GET` or the `HEAD` method will be treated as a `query` request, and any requests that use the `POST`, `PUT`, `PATCH` or `DELETE` methods will be treated as a `mutate` request.
 
 ```typescript
 const { data } = await client.posts.get();
@@ -136,9 +136,7 @@ Objects implementing `.toJSON()` will irreversibly be converted to JSON, so you 
 For example, Date objects will be converted ISO strings by default, so you could handle this case like so:
 
 ```typescript
-const dateSchema = z
-  .union([z.string().datetime(), z.date()])
-  .transform((date) => (typeof date === 'string' ? new Date(date) : date));
+const dateSchema = z.union([z.string().datetime(), z.date()]).transform((date) => (typeof date === 'string' ? new Date(date) : date));
 ```
 
 This will ensure that you could pass Date objects in your client queries. They will be converted to ISO strings in the JSON-encoded URL query string, and then converted back to Date objects on the server by zod's parser.

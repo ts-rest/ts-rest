@@ -342,7 +342,7 @@ describe('tsRestLambda', () => {
       statusCode: 200,
       headers: {
         'access-control-allow-credentials': 'true',
-        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
+        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,HEAD',
         'access-control-allow-origin': 'http://localhost',
         vary: 'Access-Control-Request-Headers, Origin',
       },
@@ -369,7 +369,7 @@ describe('tsRestLambda', () => {
       statusCode: 200,
       headers: {
         'access-control-allow-credentials': 'true',
-        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
+        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,HEAD',
         vary: 'Access-Control-Request-Headers, Origin',
       },
       body: '',

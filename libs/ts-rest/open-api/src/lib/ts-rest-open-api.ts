@@ -3,6 +3,7 @@ import {
   AppRouter,
   extractZodObjectShape,
   isAppRoute,
+  isQueryRoute,
   isZodObject,
   isZodType,
 } from '@ts-rest/core';
@@ -201,6 +202,7 @@ export const generateOpenApi = (
 
   const mapMethod = {
     GET: 'get',
+    HEAD: 'head',
     POST: 'post',
     PUT: 'put',
     DELETE: 'delete',
@@ -228,10 +230,9 @@ export const generateOpenApi = (
       !!options.jsonQuery,
     );
 
-    const bodySchema =
-      path.route?.method !== 'GET'
-        ? getOpenApiSchemaFromZod(path.route.body)
-        : null;
+    const bodySchema = !isQueryRoute(path.route)
+      ? getOpenApiSchemaFromZod(path.route.body)
+      : null;
 
     const responses = Object.keys(path.route.responses).reduce((acc, key) => {
       const keyAsNumber = Number(key);
@@ -258,10 +259,9 @@ export const generateOpenApi = (
       };
     }, {});
 
-    const contentType =
-      path.route?.method !== 'GET'
-        ? path.route?.contentType ?? 'application/json'
-        : 'application/json';
+    const contentType = !isQueryRoute(path.route)
+      ? path.route?.contentType ?? 'application/json'
+      : 'application/json';
 
     const newPath: OperationObject = {
       description: path.route.description,

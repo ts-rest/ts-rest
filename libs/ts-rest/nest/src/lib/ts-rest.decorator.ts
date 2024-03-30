@@ -2,6 +2,7 @@ import {
   applyDecorators,
   Delete,
   Get,
+  Head,
   Patch,
   Post,
   Put,
@@ -58,6 +59,8 @@ const getMethodDecorator = (appRoute: AppRoute) => {
       return Delete(appRoute.path);
     case 'GET':
       return Get(appRoute.path);
+    case 'HEAD':
+      return Head(appRoute.path);
     case 'POST':
       return Post(appRoute.path);
     case 'PATCH':
