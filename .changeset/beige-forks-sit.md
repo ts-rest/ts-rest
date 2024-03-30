@@ -1,5 +1,5 @@
 ---
-'@ts-rest/core': minor
+'@ts-rest/core': patch
 ---
 
-fix client not validating response
+Fix client not validating response
