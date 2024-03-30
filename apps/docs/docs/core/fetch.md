@@ -108,6 +108,33 @@ const client = initClient(contract, {
 });
 ```
 
+## Validate Response
+
+The `validateResponse` option allows you to validate the response body against the response schema. This is useful for ensuring that the server is returning the correct response type or performing transformations that are part of the response schema. For this to work, the responses schema must be defined using Zod (`c.type<>` will not check types at runtime).
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  method: 'GET',
+  path: '/post/:id',
+  responses: {
+    200: z.object({
+      id: z.string(),
+      createdAt: z.coerce.date(),
+    }),
+  },
+});
+
+const client = initClient(contract, { validateResponse: true });
+client.getPost({ id: '1' }).then((response) => {
+  // response will be validated against the response schema
+  if (response.status === 200) {
+    // response.data will be of type { id: string, createdAt: Date }
+    // because `createdAt` has transformation of `z.coerce.date()`, it will parse any string date into a Date object
+  }
+});
+```
+
 ## Typed Query Parameters
 
 By default, all query parameters are encoded as strings, however, you can use the `jsonQuery` option to encode query parameters as typed JSON values.
@@ -136,9 +163,7 @@ Objects implementing `.toJSON()` will irreversibly be converted to JSON, so you 
 For example, Date objects will be converted ISO strings by default, so you could handle this case like so:
 
 ```typescript
-const dateSchema = z
-  .union([z.string().datetime(), z.date()])
-  .transform((date) => (typeof date === 'string' ? new Date(date) : date));
+const dateSchema = z.union([z.string().datetime(), z.date()]).transform((date) => (typeof date === 'string' ? new Date(date) : date));
 ```
 
 This will ensure that you could pass Date objects in your client queries. They will be converted to ISO strings in the JSON-encoded URL query string, and then converted back to Date objects on the server by zod's parser.
