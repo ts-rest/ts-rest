@@ -196,14 +196,14 @@ type ContractInstance = {
    * A single query route, should exist within
    * a {@link AppRouter}
    */
-  query: <const T extends AppRouteQuery>(query: T) => T;
+  query: <T extends AppRouteQuery>(query: T) => T;
   /**
    * A single mutation route, should exist within
    * a {@link AppRouter}
    */
-  mutation: <const T extends AppRouteMutation>(mutation: T) => T;
+  mutation: <T extends AppRouteMutation>(mutation: T) => T;
   responses: <
-    const TResponses extends Record<
+    TResponses extends Record<
       number,
       ContractAnyType | ContractOtherResponse<ContractAnyType>
     >,

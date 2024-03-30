@@ -377,7 +377,7 @@ describe('contract', () => {
       responses: {
         200: c.type<{ id: number }>(),
       },
-    });
+    } as const);
 
     const contract = c.router({
       getPost,
@@ -409,7 +409,7 @@ describe('contract', () => {
         200: c.type<{ id: number }>(),
       },
       body: c.type<{ title: string }>(),
-    });
+    } as const);
 
     const contract = c.router({
       createPost,
@@ -439,7 +439,7 @@ describe('contract', () => {
   it('should be typed correctly with separate responses', () => {
     const responses = c.responses({
       200: c.type<{ id: number }>(),
-    });
+    } as const);
 
     const contract = c.router({
       getPost: {
