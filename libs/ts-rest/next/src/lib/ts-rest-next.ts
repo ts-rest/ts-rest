@@ -5,6 +5,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
@@ -361,6 +362,11 @@ const handlerFactory = (
       }
 
       const responseType = route.responses[statusCode];
+
+      if (isAppRouteNoBody(responseType)) {
+        return res.status(statusCode).end();
+      }
+
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
         return res.status(statusCode).send(validatedResponseBody);

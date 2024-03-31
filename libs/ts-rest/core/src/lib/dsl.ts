@@ -11,9 +11,11 @@ type MixedZodError<A, B> = Opaque<{ a: A; b: B }, 'MixedZodError'>;
 type Path = string;
 
 declare const NullSymbol: unique symbol;
+export const ContractNoBody = Symbol('ContractNoBody');
 
 export type ContractPlainType<T> = Opaque<T, 'ContractPlainType'>;
 export type ContractNullType = Opaque<typeof NullSymbol, 'ContractNullType'>;
+export type ContractNoBodyType = typeof ContractNoBody;
 export type ContractAnyType =
   | z.ZodSchema
   | ContractPlainType<unknown>
@@ -34,7 +36,9 @@ type AppRouteCommon = {
   deprecated?: boolean;
   responses: Record<
     number,
-    ContractAnyType | ContractOtherResponse<ContractAnyType>
+    | ContractAnyType
+    | ContractNoBodyType
+    | ContractOtherResponse<ContractAnyType>
   >;
   strictStatusCodes?: boolean;
   metadata?: unknown;
@@ -62,7 +66,7 @@ export type AppRouteMutation = AppRouteCommon & {
     | 'application/json'
     | 'multipart/form-data'
     | 'application/x-www-form-urlencoded';
-  body: ContractAnyType;
+  body: ContractAnyType | ContractNoBodyType;
 };
 
 type ValidatedHeaders<
@@ -236,6 +240,8 @@ type ContractInstance = {
     contentType: string;
     body: T;
   }) => ContractOtherResponse<T>;
+  /** Use to indicate that a route takes no body or responds with no body */
+  noBody: () => ContractNoBodyType;
 };
 
 /**
@@ -303,5 +309,6 @@ export const initContract = (): ContractInstance => {
         contentType,
         body,
       }) as ContractOtherResponse<T>,
+    noBody: () => ContractNoBody,
   };
 };

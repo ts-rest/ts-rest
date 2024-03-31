@@ -5,6 +5,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   validateResponse,
@@ -179,6 +180,11 @@ const initializeExpressRoute = ({
       }
 
       const responseType = schema.responses[statusCode];
+
+      if (isAppRouteNoBody(responseType)) {
+        return res.status(statusCode).end();
+      }
+
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
         return res.status(statusCode).send(validatedResponseBody);

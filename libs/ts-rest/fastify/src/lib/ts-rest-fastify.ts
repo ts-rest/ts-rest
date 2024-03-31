@@ -4,6 +4,7 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
@@ -242,6 +243,11 @@ const registerRoute = <TAppRoute extends AppRoute>(
       }
 
       const responseType = appRoute.responses[statusCode];
+
+      if (isAppRouteNoBody(responseType)) {
+        return reply.status(statusCode).send();
+      }
+
       if (isAppRouteOtherResponse(responseType)) {
         reply.header('content-type', responseType.contentType);
       }

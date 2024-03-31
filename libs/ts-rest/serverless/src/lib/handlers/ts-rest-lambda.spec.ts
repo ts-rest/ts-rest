@@ -47,6 +47,14 @@ const contract = c.router({
       }),
     },
   },
+  noContent: {
+    method: 'POST',
+    path: '/no-content',
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+    },
+  },
   returnsTheWrongData: {
     method: 'GET',
     path: '/wrong',
@@ -145,6 +153,12 @@ describe('tsRestLambda', () => {
             id: params.id,
             pong: body.ping,
           },
+        };
+      },
+      noContent: async () => {
+        return {
+          status: 204,
+          body: undefined,
         };
       },
       returnsTheWrongData: async () => {
@@ -323,6 +337,55 @@ describe('tsRestLambda', () => {
         vary: 'Origin',
       },
       body: '{"id":"123","pong":"foo"}',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('v1 should handle no content', async () => {
+    const event = createV1LambdaRequest({
+      httpMethod: 'POST',
+      path: '/no-content',
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 204,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        vary: 'Origin',
+      },
+      multiValueHeaders: {
+        'access-control-allow-credentials': ['true'],
+        'access-control-allow-origin': ['http://localhost'],
+        vary: ['Origin'],
+      },
+      body: '',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('v2 should handle no content', async () => {
+    const event = createV2LambdaRequest({
+      requestContext: {
+        http: {
+          method: 'POST',
+        },
+      },
+      rawPath: '/no-content',
+      body: '',
+      isBase64Encoded: true,
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 204,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        vary: 'Origin',
+      },
+      body: '',
       isBase64Encoded: false,
     });
   });
