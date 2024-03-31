@@ -182,7 +182,7 @@ const requestValidationErrorHandler = (
         return handler(err, request, reply);
       }
     } else {
-      throw err;
+      return reply.send(err);
     }
   };
 };
