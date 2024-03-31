@@ -1,5 +1,11 @@
 # @ts-rest/fastify
 
+## 3.39.1
+
+### Patch Changes
+
+- 4e166b3: Fix fastify crashing on malformed request JSON
+
 ## 3.39.0
 
 ### Minor Changes
