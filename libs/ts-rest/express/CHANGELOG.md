@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.39.0
+
+### Minor Changes
+
+- 860e402: Add contract definition for an absent body and handle accordingly on the server
+
 ## 3.38.0
 
 ### Minor Changes

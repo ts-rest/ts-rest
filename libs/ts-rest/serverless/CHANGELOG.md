@@ -1,5 +1,18 @@
 # @ts-rest/serverless
 
+## 3.39.0
+
+### Minor Changes
+
+- 860e402: Add contract definition for an absent body and handle accordingly on the server
+
+### Patch Changes
+
+- Updated dependencies [8f4cfe6]
+- Updated dependencies [860e402]
+- Updated dependencies [487b2b6]
+  - @ts-rest/core@3.39.0
+
 ## 3.38.0
 
 ### Patch Changes
