@@ -2,4 +2,4 @@
 '@ts-rest/core': minor
 ---
 
-add `c.responses` utility
+Add `c.responses` utility
