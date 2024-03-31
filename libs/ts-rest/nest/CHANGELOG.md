@@ -1,5 +1,7 @@
 # @ts-rest/nest
 
+## 3.39.1
+
 ## 3.39.0
 
 ### Minor Changes
