@@ -121,10 +121,10 @@ const postsRouter = c.router({
   deletePost: {
     method: 'DELETE',
     path: `/posts/:id`,
+    body: c.noBody(),
     responses: {
-      200: c.type<boolean>(),
+      204: c.noBody(),
     },
-    body: null,
   },
 });
 
@@ -552,23 +552,22 @@ describe('client', () => {
   });
 
   describe('delete', () => {
-    it('w/ body', async () => {
-      const value = { key: 'value' };
+    it('w/ no body', async () => {
       fetchMock.deleteOnce(
         {
           url: 'https://api.com/posts/1',
         },
-        { body: value, status: 200 },
+        { status: 204 },
       );
 
       const result = await client.posts.deletePost({
         params: { id: '1' },
       });
 
-      expect(result.body).toStrictEqual(value);
-      expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Length')).toBe('15');
-      expect(result.headers.get('Content-Type')).toBe('application/json');
+      expect((result.body as Blob).size).toStrictEqual(0);
+      expect(result.status).toBe(204);
+      expect(result.headers.has('Content-Length')).toBe(false);
+      expect(result.headers.has('Content-Type')).toBe(false);
     });
   });
 

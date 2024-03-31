@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ContractNullType, ContractPlainType } from './dsl';
+import { ContractNoBodyType, ContractNullType, ContractPlainType } from './dsl';
 
 type GetIndexedField<T, K> = K extends keyof T
   ? T[K]
@@ -53,6 +53,8 @@ export type With<T, V> = Pick<T, ExcludeKeysWithoutTypeOf<T, V>>;
 
 export type ZodInferOrType<T> = T extends ContractNullType
   ? null
+  : T extends ContractNoBodyType
+  ? undefined
   : T extends ContractPlainType<infer U>
   ? U
   : T extends z.ZodTypeAny
@@ -61,6 +63,8 @@ export type ZodInferOrType<T> = T extends ContractNullType
 
 export type ZodInputOrType<T> = T extends ContractNullType
   ? null
+  : T extends ContractNoBodyType
+  ? undefined
   : T extends ContractPlainType<infer U>
   ? U
   : T extends z.ZodTypeAny

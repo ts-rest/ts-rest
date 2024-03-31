@@ -28,6 +28,14 @@ const contract = c.router({
       }),
     },
   },
+  noContent: {
+    method: 'POST',
+    path: '/no-content',
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+    },
+  },
   testPathParams: {
     method: 'GET',
     path: '/test/:id',
@@ -73,6 +81,12 @@ describe('ts-rest-fastify', () => {
         },
       };
     }),
+    noContent: async () => {
+      return {
+        status: 204,
+        body: undefined,
+      };
+    },
     testPathParams: async ({ params }) => {
       return {
         status: 200,
@@ -181,6 +195,23 @@ describe('ts-rest-fastify', () => {
       pathParameterErrors: null,
       queryParameterErrors: null,
     });
+  });
+
+  it('should handle no content response', async () => {
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app, {
+      logInitialization: false,
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).post('/no-content');
+
+    expect(response.statusCode).toEqual(204);
+    expect(response.text).toEqual('');
+    expect(response.header['content-type']).toBeUndefined();
+    expect(response.header['content-length']).toBeUndefined();
   });
 
   it("should allow for custom error handler if body doesn't match", async () => {
@@ -431,6 +462,9 @@ describe('ts-rest-fastify', () => {
         throw new Error('not implemented');
       },
       ping: async () => {
+        throw new Error('not implemented');
+      },
+      noContent: async () => {
         throw new Error('not implemented');
       },
       testPathParams: async () => {

@@ -5,6 +5,7 @@ import {
   ContractOtherResponse,
   ContractPlainType,
   ContractPlainTypeRuntimeSymbol,
+  ContractNoBodyType,
 } from './dsl';
 import type { Equal, Expect } from './test-helpers';
 
@@ -737,6 +738,22 @@ describe('contract', () => {
         (typeof contract.getCss.responses)['200'],
         ContractOtherResponse<ContractPlainType<string>>
       >
+    >;
+  });
+
+  it('should set type correctly for no body', () => {
+    const contract = c.router({
+      get: {
+        method: 'GET',
+        path: '/',
+        responses: {
+          204: c.noBody(),
+        },
+      },
+    });
+
+    type ResponseType = Expect<
+      Equal<(typeof contract.get.responses)['204'], ContractNoBodyType>
     >;
   });
 });

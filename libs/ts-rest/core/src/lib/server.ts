@@ -1,7 +1,13 @@
 import { HTTPStatusCode } from './status-codes';
 import { checkZodSchema } from './zod-utils';
 import { ResponseValidationError } from './response-validation-error';
-import { AppRoute, ContractAnyType, ContractOtherResponse } from './dsl';
+import {
+  AppRoute,
+  ContractAnyType,
+  ContractNoBody,
+  ContractNoBodyType,
+  ContractOtherResponse,
+} from './dsl';
 
 export const isAppRouteResponse = (
   value: unknown,
@@ -15,13 +21,25 @@ export const isAppRouteResponse = (
 };
 
 export const isAppRouteOtherResponse = (
-  response: ContractAnyType | ContractOtherResponse<ContractAnyType>,
+  response:
+    | ContractAnyType
+    | ContractNoBodyType
+    | ContractOtherResponse<ContractAnyType>,
 ): response is ContractOtherResponse<ContractAnyType> => {
   return (
     response != null &&
     typeof response === 'object' &&
     'contentType' in response
   );
+};
+
+export const isAppRouteNoBody = (
+  response:
+    | ContractAnyType
+    | ContractNoBodyType
+    | ContractOtherResponse<ContractAnyType>,
+): response is ContractNoBodyType => {
+  return response === ContractNoBody;
 };
 
 export const validateResponse = ({

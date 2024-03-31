@@ -5,6 +5,7 @@ import {
   AppRouter,
   checkZodSchema,
   isAppRoute,
+  isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ResponseValidationError as ResponseValidationErrorCore,
@@ -211,6 +212,14 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
         }
 
         const responseType = appRoute.responses[statusCode];
+
+        if (isAppRouteNoBody(responseType)) {
+          return new TsRestResponse(null, {
+            status: statusCode,
+            headers: responseHeaders,
+          });
+        }
+
         if (isAppRouteOtherResponse(responseType)) {
           if (validatedResponseBody instanceof Blob) {
             responseHeaders.set(

@@ -4,6 +4,7 @@ import {
   AppRouter,
   AppRouteStrictStatusCodes,
   ContractAnyType,
+  ContractNoBodyType,
   ContractOtherResponse,
 } from './dsl';
 import { HTTPStatusCode } from './status-codes';
@@ -60,7 +61,10 @@ type PathParamsWithCustomValidators<
     >;
 
 export type ResolveResponseType<
-  T extends ContractAnyType | ContractOtherResponse<ContractAnyType>,
+  T extends
+    | ContractAnyType
+    | ContractNoBodyType
+    | ContractOtherResponse<ContractAnyType>,
 > = T extends ContractOtherResponse<infer U> ? U : T;
 
 type AppRouteResponses<

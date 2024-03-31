@@ -346,7 +346,9 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
               cause: result.error,
             },
           );
-        } else if (!result.error && isAppRouteOtherResponse(responseType)) {
+        }
+
+        if (isAppRouteOtherResponse(responseType)) {
           if ('setHeader' in res) {
             res.setHeader('content-type', responseType.contentType);
           } else {

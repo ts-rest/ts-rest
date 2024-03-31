@@ -1729,4 +1729,68 @@ describe('ts-rest-nest-handler', () => {
       });
     });
   });
+
+  describe('should handle no body', () => {
+    const c = initContract();
+    const contract = c.router({
+      getIndex: {
+        method: 'POST',
+        path: '/',
+        body: c.noBody(),
+        responses: {
+          204: c.noBody(),
+        },
+      },
+    });
+
+    @Controller()
+    class TestController {
+      @TsRestHandler(contract)
+      async handler() {
+        return tsRestHandler(contract, {
+          getIndex: async () => ({
+            status: 204,
+            body: undefined,
+          }),
+        });
+      }
+    }
+
+    it('express', async () => {
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).post('/');
+      expect(response.status).toEqual(204);
+      expect(response.text).toEqual('');
+      expect(response.headers['content-length']).toBeUndefined();
+      expect(response.headers['content-type']).toBeUndefined();
+    });
+
+    it('fastify', async () => {
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication<NestFastifyApplication>(
+        new FastifyAdapter(),
+      );
+      await app.init();
+      await app.getHttpAdapter().getInstance().ready();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).post('/');
+      expect(response.status).toEqual(204);
+      expect(response.text).toEqual('');
+      expect(response.headers['content-length']).toBeUndefined();
+      expect(response.headers['content-type']).toBeUndefined();
+    });
+  });
 });

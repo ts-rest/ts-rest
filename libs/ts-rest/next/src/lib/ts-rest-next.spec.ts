@@ -14,7 +14,7 @@ const contract = c.router({
   get: {
     method: 'GET',
     path: '/test',
-    query: c.body<{ test: string }>(),
+    query: c.type<{ test: string }>(),
     responses: {
       200: c.type<{ message: string }>(),
     },
@@ -30,15 +30,23 @@ const contract = c.router({
   getWithQuery: {
     method: 'GET',
     path: `/test-query`,
-    query: c.body<{ test: string; foo: number }>(),
+    query: c.type<{ test: string; foo: number }>(),
     responses: {
       200: c.type<{ test: string; foo: number }>(),
+    },
+  },
+  noContent: {
+    method: 'POST',
+    path: '/no-content',
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
     },
   },
   advanced: {
     method: 'POST',
     path: `/advanced/:id`,
-    body: c.body<{ test: string }>(),
+    body: c.type<{ test: string }>(),
     responses: {
       200: c.type<{ id: string; test: string }>(),
     },
@@ -88,6 +96,12 @@ const nextEndpoint = createNextRoute(contract, {
       body: {
         ...query,
       },
+    };
+  },
+  noContent: async () => {
+    return {
+      status: 204,
+      body: undefined,
     };
   },
   advanced: async ({ body: { test }, params: { id } }) => {
@@ -254,6 +268,21 @@ describe('createNextRouter', () => {
     expect(jsonMock).toHaveBeenCalledWith({
       id: '3',
     });
+  });
+
+  it('should handle no content', async () => {
+    const resultingRouter = createNextRouter(contract, nextEndpoint);
+
+    const req = mockReq('/no-content', {
+      method: 'POST',
+      body: undefined,
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(204);
+    expect(jsonMock).toHaveBeenCalledTimes(0);
+    expect(sendMock).toHaveBeenCalledTimes(0);
   });
 
   describe('response validation', () => {

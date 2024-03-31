@@ -34,6 +34,14 @@ const contract = c.router({
       }),
     },
   },
+  noContent: {
+    method: 'POST',
+    path: '/no-content',
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+    },
+  },
   upload: {
     method: 'POST',
     path: '/upload',
@@ -67,6 +75,12 @@ const testFetchRequestHandler = (request: Request) => {
             id: params.id,
             pong: body.ping,
           },
+        };
+      },
+      noContent: async () => {
+        return {
+          status: 204,
+          body: undefined,
         };
       },
       upload: async (_, { request }) => {
@@ -140,6 +154,27 @@ describe('fetchRequestHandler', () => {
     expect(response.status).toEqual(expectedResponse.status);
     expect(response.headers).toEqual(expectedResponse.headers);
     expect(await response.json()).toEqual(await expectedResponse.json());
+  });
+
+  it('should handle no content response', async () => {
+    const request = new Request('http://localhost/no-content', {
+      method: 'POST',
+      headers: { origin: 'http://localhost' },
+    });
+
+    const response = await testFetchRequestHandler(request);
+    const expectedResponse = new Response(null, {
+      status: 204,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        vary: 'Origin',
+      },
+    });
+
+    expect(response.status).toEqual(expectedResponse.status);
+    expect(response.headers).toEqual(expectedResponse.headers);
+    expect(await response.text()).toEqual('');
   });
 
   it('should handle file upload', async () => {

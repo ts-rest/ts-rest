@@ -180,6 +180,60 @@ describe('ts-rest-express', () => {
       'text/css; charset=utf-8',
     );
   });
+
+  it('should handle no content body', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      noContent: {
+        method: 'POST',
+        path: '/:status',
+        pathParams: z.object({
+          status: z.coerce
+            .number()
+            .pipe(z.union([z.literal(200), z.literal(204)])),
+        }),
+        body: c.noBody(),
+        responses: {
+          200: c.noBody(),
+          204: c.noBody(),
+        },
+      },
+    });
+
+    const server = initServer();
+    const router = server.router(contract, {
+      noContent: async ({ params }) => {
+        return {
+          status: params.status,
+          body: undefined,
+        };
+      },
+    });
+
+    const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    createExpressEndpoints(contract, router, app);
+
+    await supertest(app)
+      .post('/200')
+      .expect((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.text).toEqual('');
+        expect(res.header['content-type']).toBeUndefined();
+        expect(res.header['content-length']).toStrictEqual('0');
+      });
+
+    await supertest(app)
+      .post('/204')
+      .expect((res) => {
+        expect(res.status).toEqual(204);
+        expect(res.text).toEqual('');
+        expect(res.header['content-type']).toBeUndefined();
+        expect(res.header['content-length']).toBeUndefined();
+      });
+  });
 });
 
 describe('download', () => {
