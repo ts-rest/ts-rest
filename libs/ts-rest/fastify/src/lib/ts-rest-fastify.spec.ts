@@ -485,7 +485,55 @@ describe('ts-rest-fastify', () => {
       .get('/test')
       .timeout(1000)
       .send({});
+
     expect(response.statusCode).toEqual(500);
+    expect(response.body).toEqual({
+      error: 'Internal Server Error',
+      message: 'not implemented',
+      statusCode: 500,
+    });
+  });
+
+  it('should handle JSON parsing error', async () => {
+    const erroringContract = c.router({
+      ping: {
+        method: 'POST',
+        path: '/ping',
+        body: z.object({
+          ping: z.string(),
+        }),
+        responses: {
+          200: z.object({
+            pong: z.string(),
+          }),
+        },
+      },
+    });
+
+    const erroringRouter = s.router(erroringContract, {
+      ping: async () => {
+        throw new Error('not implemented');
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(erroringContract, erroringRouter, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server)
+      .post('/ping')
+      .timeout(1000)
+      .set('Content-Type', 'application/json')
+      .send('{');
+
+    expect(response.statusCode).toEqual(400);
+    expect(response.body).toEqual({
+      error: 'Bad Request',
+      message: 'Unexpected end of JSON input',
+      statusCode: 400,
+    });
   });
 
   it('should be able to instantiate two routers and combine them together', async () => {
