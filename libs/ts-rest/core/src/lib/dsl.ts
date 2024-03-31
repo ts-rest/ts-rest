@@ -177,6 +177,10 @@ export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
   return 'method' in obj && 'path' in obj;
 };
 
+type NarrowObject<T> = {
+  [K in keyof T]: T[K];
+};
+
 /**
  * The instantiated ts-rest client
  */
@@ -196,19 +200,19 @@ type ContractInstance = {
    * A single query route, should exist within
    * a {@link AppRouter}
    */
-  query: <T extends AppRouteQuery>(query: T) => T;
+  query: <T extends AppRouteQuery>(query: NarrowObject<T>) => T;
   /**
    * A single mutation route, should exist within
    * a {@link AppRouter}
    */
-  mutation: <T extends AppRouteMutation>(mutation: T) => T;
+  mutation: <T extends AppRouteMutation>(mutation: NarrowObject<T>) => T;
   responses: <
     TResponses extends Record<
       number,
       ContractAnyType | ContractOtherResponse<ContractAnyType>
     >,
   >(
-    responses: TResponses,
+    responses: NarrowObject<TResponses>,
   ) => TResponses;
   /**
    * @deprecated Please use type() instead.
