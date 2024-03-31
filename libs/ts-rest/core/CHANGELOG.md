@@ -1,5 +1,16 @@
 # @ts-rest/core
 
+## 3.39.0
+
+### Minor Changes
+
+- 860e402: Add contract definition for an absent body and handle accordingly on the server
+- 487b2b6: Add `c.responses` utility
+
+### Patch Changes
+
+- 8f4cfe6: Fix client not validating response
+
 ## 3.38.0
 
 ### Patch Changes
