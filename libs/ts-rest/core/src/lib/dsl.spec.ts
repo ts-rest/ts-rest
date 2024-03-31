@@ -377,7 +377,7 @@ describe('contract', () => {
       responses: {
         200: c.type<{ id: number }>(),
       },
-    } as const);
+    });
 
     const contract = c.router({
       getPost,
@@ -388,10 +388,10 @@ describe('contract', () => {
         typeof contract,
         {
           getPost: {
-            readonly method: 'GET';
+            method: 'GET';
             path: '/posts/:id';
-            readonly responses: {
-              readonly 200: ContractPlainType<{
+            responses: {
+              200: ContractPlainType<{
                 id: number;
               }>;
             };
@@ -409,7 +409,7 @@ describe('contract', () => {
         200: c.type<{ id: number }>(),
       },
       body: c.type<{ title: string }>(),
-    } as const);
+    });
 
     const contract = c.router({
       createPost,
@@ -420,14 +420,14 @@ describe('contract', () => {
         typeof contract,
         {
           createPost: {
-            readonly method: 'POST';
+            method: 'POST';
             path: '/posts';
-            readonly responses: {
-              readonly 200: ContractPlainType<{
+            responses: {
+              200: ContractPlainType<{
                 id: number;
               }>;
             };
-            readonly body: ContractPlainType<{
+            body: ContractPlainType<{
               title: string;
             }>;
           };
@@ -439,7 +439,7 @@ describe('contract', () => {
   it('should be typed correctly with separate responses', () => {
     const responses = c.responses({
       200: c.type<{ id: number }>(),
-    } as const);
+    });
 
     const contract = c.router({
       getPost: {
@@ -457,7 +457,7 @@ describe('contract', () => {
             method: 'GET';
             path: '/posts/:id';
             responses: {
-              readonly 200: ContractPlainType<{
+              200: ContractPlainType<{
                 id: number;
               }>;
             };
