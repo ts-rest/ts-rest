@@ -347,8 +347,105 @@ describe('contract', () => {
         method: 'GET',
         path: '/posts/:id',
         responses: {
-          200: c.body<{ id: number }>(),
+          200: c.type<{ id: number }>(),
         },
+      },
+    });
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          getPost: {
+            method: 'GET';
+            path: '/posts/:id';
+            responses: {
+              200: ContractPlainType<{
+                id: number;
+              }>;
+            };
+          };
+        }
+      >
+    >;
+  });
+
+  it('should be typed correctly with separate query route', () => {
+    const getPost = c.query({
+      method: 'GET',
+      path: '/posts/:id',
+      responses: {
+        200: c.type<{ id: number }>(),
+      },
+    });
+
+    const contract = c.router({
+      getPost,
+    });
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          getPost: {
+            method: 'GET';
+            path: '/posts/:id';
+            responses: {
+              200: ContractPlainType<{
+                id: number;
+              }>;
+            };
+          };
+        }
+      >
+    >;
+  });
+
+  it('should be typed correctly with separate mutation route', () => {
+    const createPost = c.mutation({
+      method: 'POST',
+      path: '/posts',
+      responses: {
+        200: c.type<{ id: number }>(),
+      },
+      body: c.type<{ title: string }>(),
+    });
+
+    const contract = c.router({
+      createPost,
+    });
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          createPost: {
+            method: 'POST';
+            path: '/posts';
+            responses: {
+              200: ContractPlainType<{
+                id: number;
+              }>;
+            };
+            body: ContractPlainType<{
+              title: string;
+            }>;
+          };
+        }
+      >
+    >;
+  });
+
+  it('should be typed correctly with separate responses', () => {
+    const responses = c.responses({
+      200: c.type<{ id: number }>(),
+    });
+
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts/:id',
+        responses,
       },
     });
 
@@ -377,7 +474,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
         },
       },
@@ -405,7 +502,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
         },
       },
@@ -433,7 +530,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
           strictStatusCodes: true,
         },
@@ -462,7 +559,7 @@ describe('contract', () => {
           method: 'GET',
           path: '/posts/:id',
           responses: {
-            200: c.body<{ id: number }>(),
+            200: c.type<{ id: number }>(),
           },
           strictStatusCodes: false,
         },
