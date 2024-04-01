@@ -51,14 +51,14 @@ type PathParamsFromUrl<T extends AppRoute> = ParamsFromUrl<
 type PathParamsWithCustomValidators<
   T extends AppRoute,
   TClientOrServer extends 'client' | 'server' = 'server',
-> = T['pathParams'] extends undefined
-  ? PathParamsFromUrl<T>
-  : Merge<
+> = 'pathParams' extends keyof T
+  ? Merge<
       PathParamsFromUrl<T>,
       TClientOrServer extends 'server'
         ? ZodInferOrType<T['pathParams']>
         : ZodInputOrType<T['pathParams']>
-    >;
+    >
+  : PathParamsFromUrl<T>;
 
 export type ResolveResponseType<
   T extends
