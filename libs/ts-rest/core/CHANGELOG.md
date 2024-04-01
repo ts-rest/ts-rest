@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.39.2
+
+### Patch Changes
+
+- dc554da: Fix `params` resolving as `any` when `pathParams` is missing and zod is not installed
+
 ## 3.39.1
 
 ## 3.39.0

@@ -1,5 +1,7 @@
 # @ts-rest/fastify
 
+## 3.39.2
+
 ## 3.39.1
 
 ### Patch Changes
