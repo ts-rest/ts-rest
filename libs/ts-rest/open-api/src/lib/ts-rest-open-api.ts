@@ -233,30 +233,32 @@ export const generateOpenApi = (
         ? getOpenApiSchemaFromZod(path.route.body)
         : null;
 
-    const responses = Object.keys(path.route.responses).reduce((acc, key) => {
-      const keyAsNumber = Number(key);
+    const responses = Object.entries(path.route.responses).reduce(
+      (acc, [statusCode, response]) => {
+        const responseSchema = getOpenApiSchemaFromZod(response, true);
+        const description =
+          isZodType(response) && response.description
+            ? response.description
+            : statusCode;
 
-      const responseSchema = getOpenApiSchemaFromZod(
-        path.route.responses[keyAsNumber],
-        true,
-      );
-
-      return {
-        ...acc,
-        [keyAsNumber]: {
-          description: `${keyAsNumber}`,
-          ...(responseSchema
-            ? {
-                content: {
-                  'application/json': {
-                    ...convertSchemaObjectToMediaTypeObject(responseSchema),
+        return {
+          ...acc,
+          [statusCode]: {
+            description,
+            ...(responseSchema
+              ? {
+                  content: {
+                    'application/json': {
+                      ...convertSchemaObjectToMediaTypeObject(responseSchema),
+                    },
                   },
-                },
-              }
-            : {}),
-        },
-      };
-    }, {});
+                }
+              : {}),
+          },
+        };
+      },
+      {},
+    );
 
     const contentType =
       path.route?.method !== 'GET'
