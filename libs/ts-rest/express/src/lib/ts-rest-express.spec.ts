@@ -234,6 +234,56 @@ describe('ts-rest-express', () => {
         expect(res.header['content-length']).toBeUndefined();
       });
   });
+
+  it('should handle optional url params', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      getPosts: {
+        method: 'GET',
+        path: '/posts/:id?',
+        pathParams: z.object({
+          id: z.string().optional(),
+        }),
+        responses: {
+          200: z.object({
+            id: z.string().optional(),
+          }),
+        },
+      },
+    });
+
+    const server = initServer();
+    const router = server.router(contract, {
+      getPosts: async ({ params }) => {
+        return {
+          status: 200,
+          body: {
+            id: params.id,
+          },
+        };
+      },
+    });
+
+    const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    createExpressEndpoints(contract, router, app);
+
+    await supertest(app)
+      .get('/posts')
+      .expect((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toEqual({});
+      });
+
+    await supertest(app)
+      .get('/posts/10')
+      .expect((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toEqual({ id: '10' });
+      });
+  });
 });
 
 describe('download', () => {

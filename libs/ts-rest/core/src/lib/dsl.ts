@@ -216,7 +216,7 @@ type ContractInstance = {
       ContractAnyType | ContractOtherResponse<ContractAnyType>
     >,
   >(
-    responses: NarrowObject<TResponses>,
+    responses: TResponses,
   ) => TResponses;
   /**
    * @deprecated Please use type() instead.
