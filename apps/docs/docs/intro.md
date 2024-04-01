@@ -17,7 +17,7 @@ ts-rest offers a simple way to define a contract for your API, which can be both
 Easily define your API contract somewhere shared
 
 ```typescript
-const contract = c.contract({
+const contract = c.router({
   getPosts: {
     method: 'GET',
     path: '/posts',
