@@ -434,6 +434,27 @@ it('type inference helpers', () => {
     >
   >;
 
+  const commonErrors = c.responses({
+    400: c.type<{ message: string }>(),
+  });
+
+  const contractWithCommonErrors = c.router({
+    get: {
+      method: 'GET',
+      path: '/',
+      responses: {
+        ...commonErrors,
+      },
+    },
+  });
+
+  type ClientInferResponseBodyCommonResponsesTest = Expect<
+    Equal<
+      ClientInferResponseBody<typeof contractWithCommonErrors.get, 400>,
+      { message: string }
+    >
+  >;
+
   type ServerInferRequestTest = Expect<
     Equal<
       ServerInferRequest<typeof contract>,
