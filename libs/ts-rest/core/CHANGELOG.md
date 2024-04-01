@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.40.1
+
+### Patch Changes
+
+- afa5066: Fix incorrect type for URL `params` when using optional params without defining `pathParams`
+- afa5066: Fix broken types for `c.responses()`
+
 ## 3.40.0
 
 ## 3.39.2
