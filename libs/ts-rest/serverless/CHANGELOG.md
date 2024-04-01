@@ -1,5 +1,12 @@
 # @ts-rest/serverless
 
+## 3.39.2
+
+### Patch Changes
+
+- Updated dependencies [dc554da]
+  - @ts-rest/core@3.39.2
+
 ## 3.39.1
 
 ### Patch Changes
