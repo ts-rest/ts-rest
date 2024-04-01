@@ -1,5 +1,15 @@
 # @ts-rest/serverless
 
+## 3.40.0
+
+### Minor Changes
+
+- fa7219d: Support Next.js App Router route handlers
+
+### Patch Changes
+
+- @ts-rest/core@3.40.0
+
 ## 3.39.2
 
 ### Patch Changes
