@@ -31,7 +31,7 @@
         "additionalEntryPoints": [
           "libs/ts-rest/serverless/src/fetch.ts",
           "libs/ts-rest/serverless/src/aws.ts",
-          "libs/ts-rest/serverless/src/next-edge.ts"
+          "libs/ts-rest/serverless/src/next.ts"
         ]
       }
     },

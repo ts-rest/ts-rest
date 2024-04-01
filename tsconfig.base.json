@@ -42,7 +42,7 @@
       "@ts-rest/serverless": ["libs/ts-rest/serverless/src/index.ts"],
       "@ts-rest/serverless/fetch": ["libs/ts-rest/serverless/src/fetch.ts"],
       "@ts-rest/serverless/aws": ["libs/ts-rest/serverless/src/aws.ts"],
-      "@ts-rest/serverless/next-edge": ["libs/ts-rest/serverless/src/next-edge.ts"],
+      "@ts-rest/serverless/next": ["libs/ts-rest/serverless/src/next.ts"],
     }
   },
   "exclude": ["node_modules", "tmp"]
