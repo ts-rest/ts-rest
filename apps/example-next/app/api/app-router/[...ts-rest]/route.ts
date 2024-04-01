@@ -1,11 +1,7 @@
 import { createNextHandler } from '@ts-rest/serverless/next';
-import { testContract } from '../../../contracts/test-contract';
+import { testContract } from '../../../../contracts/test-contract';
 
-export const config = {
-  runtime: 'edge',
-};
-
-export default createNextHandler(
+const handler = createNextHandler(
   testContract,
   {
     test: async ({ params, query }) => {
@@ -20,9 +16,17 @@ export default createNextHandler(
     },
   },
   {
-    basePath: '/api/edge',
+    basePath: '/api/app-router',
     jsonQuery: true,
     responseValidation: true,
-    handlerType: 'pages-router-edge',
+    handlerType: 'app-router',
   },
 );
+
+export {
+  handler as GET,
+  handler as POST,
+  handler as PUT,
+  handler as PATCH,
+  handler as DELETE,
+};

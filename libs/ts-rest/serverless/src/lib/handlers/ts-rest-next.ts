@@ -15,10 +15,14 @@ export const tsr = {
   ) => router,
 };
 
+export type NextHandlerOptions = ServerlessHandlerOptions & {
+  handlerType: 'app-router' | 'pages-router-edge';
+};
+
 export const createNextHandler = <T extends AppRouter>(
   contract: T,
   router: RecursiveRouterObj<T, {}>,
-  options: ServerlessHandlerOptions = {},
+  options: NextHandlerOptions,
 ) => {
   const serverlessRouter = createServerlessRouter<T, NextPlatformArgs>(
     contract,
@@ -27,13 +31,15 @@ export const createNextHandler = <T extends AppRouter>(
   );
 
   return async (nextRequest: NextRequest): Promise<NextResponse> => {
-    if (!nextRequest.nextUrl.searchParams.has('ts-rest')) {
-      throw new Error(
-        'Please make sure your catch-all route file is named [...ts-rest]',
-      );
-    }
+    if (options.handlerType === 'pages-router-edge') {
+      if (!nextRequest.nextUrl.searchParams.has('ts-rest')) {
+        throw new Error(
+          'Please make sure your catch-all route file is named [...ts-rest]',
+        );
+      }
 
-    nextRequest.nextUrl.searchParams.delete('ts-rest');
+      nextRequest.nextUrl.searchParams.delete('ts-rest');
+    }
 
     const request = new TsRestRequest(
       nextRequest.nextUrl.toString(),
