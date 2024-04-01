@@ -24,14 +24,26 @@ expectType<{ id: string; commentId: string; commentId2: string }>(
 
 const urlOptional = '/post/:id?';
 expectType<{
-  id: string;
+  id?: string;
 }>(type<ParamsFromUrl<typeof urlOptional>>());
 
 const urlManyOptional = '/post/:id?/comments/:commentId?';
 expectType<{
-  id: string;
-  commentId: string;
+  id?: string;
+  commentId?: string;
 }>(type<ParamsFromUrl<typeof urlManyOptional>>());
+
+const urlMixedOptional = '/post/:id/comments/:commentId?';
+expectType<{
+  id: string;
+  commentId?: string;
+}>(type<ParamsFromUrl<typeof urlMixedOptional>>());
+
+const urlMixedOptional2 = '/post/:id?/comments/:commentId';
+expectType<{
+  id?: string;
+  commentId: string;
+}>(type<ParamsFromUrl<typeof urlMixedOptional2>>());
 
 describe('insertParamsIntoPath', () => {
   it('should insert params into path', () => {
