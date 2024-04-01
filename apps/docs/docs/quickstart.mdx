@@ -132,7 +132,7 @@ Let's add `@ts-rest/nest` to a basic Nest controller:
 ```typescript
 // post.controller.ts
 
-const c = nestControllerContract(apiBlog);
+const c = nestControllerContract(contract);
 type RequestShapes = NestRequestShapes<typeof c>;
 
 @Controller()

@@ -41,7 +41,7 @@ import {
   TsRestRequest,
 } from '@ts-rest/nest';
 
-const c = nestControllerContract(apiBlog);
+const c = nestControllerContract(contract);
 type RequestShapes = NestRequestShapes<typeof c>;
 
 @Controller()
@@ -106,7 +106,7 @@ import {
   TsRestRequest,
 } from '@ts-rest/nest';
 
-const c = nestControllerContract(apiBlog);
+const c = nestControllerContract(contract);
 type RequestShapes = NestRequestShapes<typeof c>;
 type ResponseShapes = NestResponseShapes<typeof c>;
 
