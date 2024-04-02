@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.41.0
+
+### Minor Changes
+
+- fc0adc6: Add contract option to define common responses
+
 ## 3.40.1
 
 ### Patch Changes
