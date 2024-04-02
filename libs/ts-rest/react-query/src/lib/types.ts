@@ -31,25 +31,33 @@ export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
   'ignore'
 >;
 
-export type UseQueryOptions<TAppRoute extends AppRoute> =
-  TanStackUseQueryOptions<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
-
-export type UseQueryResult<TAppRoute extends AppRoute> = TanStackUseQueryResult<
+export type UseQueryOptions<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = TanStackUseQueryOptions<
   DataResponse<TAppRoute>,
-  ErrorResponse<TAppRoute>
+  ErrorResponse<TAppRoute>,
+  TData
 >;
 
-export type UseInfiniteQueryOptions<TAppRoute extends AppRoute> =
-  TanStackUseInfiniteQueryOptions<
-    DataResponse<TAppRoute>,
-    ErrorResponse<TAppRoute>
-  >;
+export type UseQueryResult<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = TanStackUseQueryResult<TData, ErrorResponse<TAppRoute>>;
 
-export type UseInfiniteQueryResult<TAppRoute extends AppRoute> =
-  TanStackUseInfiniteQueryResult<
-    DataResponse<TAppRoute>,
-    ErrorResponse<TAppRoute>
-  >;
+export type UseInfiniteQueryOptions<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = TanStackUseInfiniteQueryOptions<
+  DataResponse<TAppRoute>,
+  ErrorResponse<TAppRoute>,
+  TData
+>;
+
+export type UseInfiniteQueryResult<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = TanStackUseInfiniteQueryResult<TData, ErrorResponse<TAppRoute>>;
 
 type InferClientArgs<TClient extends InitClientReturn<any, any>> =
   TClient extends InitClientReturn<any, infer TClientArgs>

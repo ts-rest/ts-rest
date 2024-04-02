@@ -79,32 +79,31 @@ type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
 type DataReturnQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-> = (
+> = <TData = DataResponse<TAppRoute>>(
   queryKey: () => QueryKey,
   args: PartialClientInferRequest<TAppRoute, TClientArgs>,
   options?: CreateQueryOptions<
     DataResponse<TAppRoute>,
-    ErrorResponse<TAppRoute>
+    ErrorResponse<TAppRoute>,
+    TData
   >,
-) => CreateQueryResult<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
+) => CreateQueryResult<TData, ErrorResponse<TAppRoute>>;
 
 // Used on X.useInfiniteQuery
 type DataReturnInfiniteQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-> = (
+> = <TData = DataResponse<TAppRoute>>(
   queryKey: () => QueryKey,
   args: (
     context: QueryFunctionContext<QueryKey>,
   ) => PartialClientInferRequest<TAppRoute, TClientArgs>,
   options?: CreateInfiniteQueryOptions<
     DataResponse<TAppRoute>,
-    ErrorResponse<TAppRoute>
+    ErrorResponse<TAppRoute>,
+    TData
   >,
-) => CreateInfiniteQueryResult<
-  DataResponse<TAppRoute>,
-  ErrorResponse<TAppRoute>
->;
+) => CreateInfiniteQueryResult<TData, ErrorResponse<TAppRoute>>;
 
 // Used pn X.createMutation
 type DataReturnMutation<

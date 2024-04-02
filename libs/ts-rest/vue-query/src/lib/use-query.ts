@@ -1,7 +1,7 @@
 import {
   useQuery,
-  type QueryKey,
-  type UseQueryReturnType,
+  QueryKey,
+  UseQueryReturnType,
   UseQueryOptions,
   QueryFunctionContext,
 } from '@tanstack/vue-query';
@@ -21,16 +21,24 @@ export type DataReturnQuery<
   TClientArgs extends ClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
-  ? (
+  ? <TData = DataResponse<TAppRoute>>(
       queryKey: QueryKey,
       args?: (context: QueryFunctionContext<QueryKey>) => TArgs,
-      options?: UseQueryOptions<TAppRoute>,
-    ) => UseQueryReturnType<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>
-  : (
+      options?: UseQueryOptions<
+        DataResponse<TAppRoute>,
+        ErrorResponse<TAppRoute>,
+        TData
+      >,
+    ) => UseQueryReturnType<TData, ErrorResponse<TAppRoute>>
+  : <TData = DataResponse<TAppRoute>>(
       queryKey: QueryKey,
       args: (context: QueryFunctionContext<QueryKey>) => TArgs,
-      options?: UseQueryOptions<TAppRoute>,
-    ) => UseQueryReturnType<DataResponse<TAppRoute>, ErrorResponse<TAppRoute>>;
+      options?: UseQueryOptions<
+        DataResponse<TAppRoute>,
+        ErrorResponse<TAppRoute>,
+        TData
+      >,
+    ) => UseQueryReturnType<TData, ErrorResponse<TAppRoute>>;
 
 export const getRouteUseQuery = <
   TAppRoute extends AppRoute,
@@ -44,7 +52,7 @@ export const getRouteUseQuery = <
     args?: (
       context: QueryFunctionContext<QueryKey>,
     ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-    options?: UseQueryOptions<TAppRoute['responses']>,
+    options?: UseQueryOptions<DataResponse<TAppRoute>>,
   ) => {
     const dataFn = queryFn(route, clientArgs, args);
 

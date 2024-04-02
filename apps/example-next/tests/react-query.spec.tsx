@@ -199,6 +199,48 @@ describe('react-query', () => {
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
   });
 
+  it('useQuery with select should handle success', async () => {
+    api.mockResolvedValue({ status: 200, body: { message: 'hello world' } });
+
+    const { result } = renderHook(
+      () =>
+        client.health.useQuery(
+          ['health'],
+          {},
+          {
+            select: (data) => data.body.message,
+          },
+        ),
+      {
+        wrapper,
+      },
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/health',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: router.health,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toStrictEqual(false);
+    });
+
+    expect(result.current.data).toStrictEqual('hello world');
+  });
+
   it('useQuery should accept extra headers', async () => {
     api.mockResolvedValue(SUCCESS_RESPONSE);
 

@@ -109,16 +109,16 @@ export type DataReturnQuery<
   TClientArgs extends ClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
-  ? (
+  ? <TData = DataResponse<TAppRoute>>(
       queryKey: QueryKey,
       args?: TArgs,
-      options?: UseQueryOptions<TAppRoute>,
-    ) => UseQueryResult<TAppRoute>
-  : (
+      options?: UseQueryOptions<TAppRoute, TData>,
+    ) => UseQueryResult<TAppRoute, TData>
+  : <TData = DataResponse<TAppRoute>>(
       queryKey: QueryKey,
       args: TArgs,
-      options?: UseQueryOptions<TAppRoute>,
-    ) => UseQueryResult<TAppRoute>;
+      options?: UseQueryOptions<TAppRoute, TData>,
+    ) => UseQueryResult<TAppRoute, TData>;
 
 export type DataReturnQueriesOptions<
   TAppRoute extends AppRoute,
@@ -141,13 +141,13 @@ export type DataReturnQueries<
 export type DataReturnInfiniteQuery<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-> = (
+> = <TData = DataResponse<TAppRoute>>(
   queryKey: QueryKey,
   args: (
     context: QueryFunctionContext<QueryKey>,
   ) => PartialClientInferRequest<TAppRoute, TClientArgs>,
-  options?: UseInfiniteQueryOptions<TAppRoute>,
-) => UseInfiniteQueryResult<TAppRoute>;
+  options?: UseInfiniteQueryOptions<TAppRoute, TData>,
+) => UseInfiniteQueryResult<TAppRoute, TData>;
 
 // Used pn X.useMutation
 export type DataReturnMutation<
