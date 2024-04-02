@@ -55,13 +55,15 @@ const postsRouter = c.router({
       method: 'GET',
       path: '/posts/:id/comments',
       responses: {
-        200: z.object({
-          booleanString: z.boolean().transform((v) => v.toString()),
-          comments: z.union([
-            z.array(commentSchema),
-            z.array(commentSchema.extend({ author: z.string() })),
-          ]),
-        }),
+        200: z
+          .object({
+            booleanString: z.boolean().transform((v) => v.toString()),
+            comments: z.union([
+              z.array(commentSchema),
+              z.array(commentSchema.extend({ author: z.string() })),
+            ]),
+          })
+          .describe('Post comments'),
       },
     },
   }),
@@ -343,6 +345,7 @@ const expectedApiDoc = {
             content: {
               'application/json': {
                 schema: {
+                  description: 'Post comments',
                   properties: {
                     comments: {
                       oneOf: [
@@ -390,7 +393,7 @@ const expectedApiDoc = {
                 },
               },
             },
-            description: '200',
+            description: 'Post comments',
           },
         },
         summary: undefined,
