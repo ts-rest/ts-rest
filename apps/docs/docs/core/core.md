@@ -165,6 +165,28 @@ export const contract = c.router({
 });
 ```
 
+### Common Responses
+
+APIs often have shared common response schemas, specifically for error responses. You can define these common responses in the contract options.
+
+```typescript
+const c = initContract();
+export const contract = c.router(
+  {
+    // ...endpoints
+  },
+  {
+    commonResponses: {
+      404: c.type<{ message: 'Not Found'; reason: string }>(),
+      500: c.otherResponse({
+        contentType: 'text/plain',
+        body: z.literal('Server Error'),
+      }),
+    },
+  }
+);
+```
+
 ### Strict Response Status Codes
 
 To help with incremental adoption, ts-rest, by default, will allow any response status code to be returned from the server

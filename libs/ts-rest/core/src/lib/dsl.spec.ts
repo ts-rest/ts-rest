@@ -789,4 +789,157 @@ describe('contract', () => {
       Equal<(typeof contract.get.responses)['204'], ContractNoBodyType>
     >;
   });
+
+  it('should be typed correctly with merged common responses', () => {
+    const contract = c.router(
+      {
+        posts: {
+          getPost: {
+            method: 'GET',
+            path: '/posts/:id',
+            responses: {
+              200: z.object({
+                id: z.number(),
+              }),
+            },
+          },
+        },
+      },
+      {
+        commonResponses: {
+          404: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    );
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          posts: {
+            getPost: {
+              method: 'GET';
+              path: '/posts/:id';
+              responses: {
+                200: z.ZodObject<
+                  {
+                    id: z.ZodNumber;
+                  },
+                  'strip',
+                  z.ZodTypeAny,
+                  {
+                    id: number;
+                  },
+                  {
+                    id: number;
+                  }
+                >;
+                404: z.ZodObject<
+                  {
+                    message: z.ZodString;
+                  },
+                  'strip',
+                  z.ZodTypeAny,
+                  {
+                    message: string;
+                  },
+                  {
+                    message: string;
+                  }
+                >;
+              };
+            };
+          };
+        }
+      >
+    >;
+  });
+
+  it('should be typed correctly with merged common responses and overriding common response', () => {
+    const contract = c.router(
+      {
+        posts: {
+          getPost: {
+            method: 'GET',
+            path: '/posts/:id',
+            responses: {
+              200: z.object({
+                id: z.number(),
+              }),
+              400: z.object({
+                overrideReason: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      {
+        commonResponses: {
+          400: z.object({
+            reason: z.string(),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    );
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          posts: {
+            getPost: {
+              method: 'GET';
+              path: '/posts/:id';
+              responses: {
+                200: z.ZodObject<
+                  {
+                    id: z.ZodNumber;
+                  },
+                  'strip',
+                  z.ZodTypeAny,
+                  {
+                    id: number;
+                  },
+                  {
+                    id: number;
+                  }
+                >;
+                400: z.ZodObject<
+                  {
+                    overrideReason: z.ZodString;
+                  },
+                  'strip',
+                  z.ZodTypeAny,
+                  {
+                    overrideReason: string;
+                  },
+                  {
+                    overrideReason: string;
+                  }
+                >;
+                404: z.ZodObject<
+                  {
+                    message: z.ZodString;
+                  },
+                  'strip',
+                  z.ZodTypeAny,
+                  {
+                    message: string;
+                  },
+                  {
+                    message: string;
+                  }
+                >;
+              };
+            };
+          };
+        }
+      >
+    >;
+  });
 });

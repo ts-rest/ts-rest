@@ -40,9 +40,7 @@ export default createNextRouter(contract, router);
 
 `createNextRouter` is a function that takes a contract and a complete router, and creates endpoints, with the correct methods, paths and callbacks.
 
-## Single Route Handler
-
-It's also possible to create a handler for a single contract route
+It's also possible to create a handler for a single contract route.
 
 ```typescript
 // pages/api/posts/index.tsx
@@ -130,9 +128,3 @@ export class RequestValidationError extends Error {
   }
 }
 ```
-
-## Future Work
-
-As this pattern doesn't support a lambda per endpoint, it is planned to provide a helper utility to allow individual endpoints to be created.
-
-The downside of this is that it will not be possible to give a Typescript warning if the path is incorrect.
