@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.41.0
+
+### Patch Changes
+
+- a0ee91d: Fix setting of response description
+
 ## 3.40.1
 
 ## 3.40.0
