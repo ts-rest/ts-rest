@@ -26,6 +26,11 @@ export type ContractOtherResponse<T extends ContractAnyType> = Opaque<
   'ContractOtherResponse'
 >;
 
+export type AppRouteResponse =
+  | ContractAnyType
+  | ContractNoBodyType
+  | ContractOtherResponse<ContractAnyType>;
+
 type AppRouteCommon = {
   path: Path;
   pathParams?: ContractAnyType;
@@ -34,12 +39,7 @@ type AppRouteCommon = {
   summary?: string;
   description?: string;
   deprecated?: boolean;
-  responses: Record<
-    number,
-    | ContractAnyType
-    | ContractNoBodyType
-    | ContractOtherResponse<ContractAnyType>
-  >;
+  responses: Record<number, AppRouteResponse>;
   strictStatusCodes?: boolean;
   metadata?: unknown;
 
@@ -131,7 +131,7 @@ type UniversalMerge<A, B> = A extends z.AnyZodObject
 type ApplyOptions<
   TRoute extends AppRoute,
   TOptions extends RouterOptions,
-> = Omit<TRoute, 'headers' | 'path'> &
+> = Omit<TRoute, 'headers' | 'path' | 'responses'> &
   WithoutUnknown<{
     path: TOptions['pathPrefix'] extends string
       ? `${TOptions['pathPrefix']}${TRoute['path']}`
@@ -142,6 +142,9 @@ type ApplyOptions<
       : TOptions['strictStatusCodes'] extends boolean
       ? TOptions['strictStatusCodes']
       : unknown;
+    responses: 'commonResponses' extends keyof TOptions
+      ? Prettify<Merge<TOptions['commonResponses'], TRoute['responses']>>
+      : TRoute['responses'];
   }>;
 
 /**
@@ -164,6 +167,7 @@ export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
   pathPrefix?: TPrefix;
+  commonResponses?: Record<number, AppRouteResponse>;
 
   /**
    * @deprecated Use `validateResponse` on the client options
@@ -210,12 +214,7 @@ type ContractInstance = {
    * a {@link AppRouter}
    */
   mutation: <T extends AppRouteMutation>(mutation: NarrowObject<T>) => T;
-  responses: <
-    TResponses extends Record<
-      number,
-      ContractAnyType | ContractOtherResponse<ContractAnyType>
-    >,
-  >(
+  responses: <TResponses extends Record<number, AppRouteResponse>>(
     responses: TResponses,
   ) => TResponses;
   /**
@@ -270,6 +269,10 @@ const recursivelyApplyOptions = <T extends AppRouter>(
             validateResponseOnClient:
               value.validateResponseOnClient ??
               options?.validateResponseOnClient,
+            responses: {
+              ...options?.commonResponses,
+              ...value.responses,
+            },
           },
         ];
       } else {
