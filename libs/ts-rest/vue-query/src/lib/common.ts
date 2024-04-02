@@ -40,7 +40,7 @@ export const queryFn = <
     | ((
         context: QueryFunctionContext<QueryKey>,
       ) => ClientInferRequest<AppRouteMutation, ClientArgs>),
-): QueryFunction<TAppRoute['responses']> => {
+): QueryFunction<DataResponse<TAppRoute>> => {
   return async (queryFnContext: QueryFunctionContext) => {
     const args =
       typeof argsMapper === 'function'
@@ -61,6 +61,6 @@ export const queryFn = <
       throw result;
     }
 
-    return result;
+    return result as DataResponse<TAppRoute>;
   };
 };
