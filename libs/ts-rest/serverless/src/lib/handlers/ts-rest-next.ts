@@ -21,7 +21,7 @@ export type NextHandlerOptions = ServerlessHandlerOptions & {
 
 export const createNextHandler = <T extends AppRouter>(
   contract: T,
-  router: RecursiveRouterObj<T, {}>,
+  router: RecursiveRouterObj<T, NextPlatformArgs>,
   options: NextHandlerOptions,
 ) => {
   const serverlessRouter = createServerlessRouter<T, NextPlatformArgs>(
