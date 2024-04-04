@@ -298,6 +298,7 @@ export default createNextRouter(contract, router);
 
 ```typescript
 // client.ts
+import { initClient } from "@ts-rest/core";
 
 // `contract` is the AppRouter returned by `c.router`
 const client = initClient(contract, {
@@ -326,13 +327,17 @@ if (status === 201) {
   <InstallTabs packageName="@ts-rest/react-query" />
 
 ```tsx
+// client.ts
+import { initQueryClient } from "@ts-rest/react-query";
+
+// `contract` is the AppRouter returned by `c.router`
 export const client = initQueryClient(contract, {
   baseUrl: 'http://localhost:3333',
   baseHeaders: {},
 });
 
 export const Index = () => {
-  const { data, isLoading, error } = client.getPost.useQuery({
+  const { data, isLoading, error } = client.getPost.useQuery(["posts/1"], {
     params: { id: '1' },
   });
 
