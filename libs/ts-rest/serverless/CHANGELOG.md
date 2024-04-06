@@ -1,5 +1,12 @@
 # @ts-rest/serverless
 
+## 3.41.1
+
+### Patch Changes
+
+- d107181: Fix broken type for `@ts-rest/serverless/next` handler
+  - @ts-rest/core@3.41.1
+
 ## 3.41.0
 
 ### Patch Changes
