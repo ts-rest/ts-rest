@@ -1,5 +1,7 @@
 # @ts-rest/vue-query
 
+## 3.41.1
+
 ## 3.41.0
 
 ### Patch Changes
