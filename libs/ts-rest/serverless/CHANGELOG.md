@@ -1,5 +1,12 @@
 # @ts-rest/serverless
 
+## 3.41.2
+
+### Patch Changes
+
+- b6bd2ed: Fix module resolution when not using node16 or nodenext
+  - @ts-rest/core@3.41.2
+
 ## 3.41.1
 
 ### Patch Changes
