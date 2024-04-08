@@ -1,6 +1,6 @@
 import { AppRouter } from '@ts-rest/core';
 import type { NextRequest, NextResponse } from 'next/server';
-import { createServerlessRouter, serverlessErrorHandler } from '../router';
+import { createServerlessRouter } from '../router';
 import { RecursiveRouterObj, ServerlessHandlerOptions } from '../types';
 import { TsRestRequest } from '../request';
 
@@ -9,26 +9,29 @@ type NextPlatformArgs = {
 };
 
 export const tsr = {
-  router: <T extends AppRouter>(
+  router: <T extends AppRouter, TRequestExtension>(
     contract: T,
-    router: RecursiveRouterObj<T, NextPlatformArgs>,
+    router: RecursiveRouterObj<T, NextPlatformArgs, TRequestExtension>,
   ) => router,
 };
 
-export type NextHandlerOptions = ServerlessHandlerOptions & {
+export type NextHandlerOptions<TRequestExtension> = ServerlessHandlerOptions<
+  NextPlatformArgs,
+  TRequestExtension
+> & {
   handlerType: 'app-router' | 'pages-router-edge';
 };
 
-export const createNextHandler = <T extends AppRouter>(
+export const createNextHandler = <T extends AppRouter, TRequestExtension>(
   contract: T,
-  router: RecursiveRouterObj<T, NextPlatformArgs>,
-  options: NextHandlerOptions,
+  router: RecursiveRouterObj<T, NextPlatformArgs, TRequestExtension>,
+  options: NextHandlerOptions<TRequestExtension>,
 ) => {
-  const serverlessRouter = createServerlessRouter<T, NextPlatformArgs>(
-    contract,
-    router,
-    options,
-  );
+  const serverlessRouter = createServerlessRouter<
+    T,
+    NextPlatformArgs,
+    TRequestExtension
+  >(contract, router, options as ServerlessHandlerOptions);
 
   return async (nextRequest: NextRequest): Promise<NextResponse> => {
     if (options.handlerType === 'pages-router-edge') {
@@ -46,12 +49,8 @@ export const createNextHandler = <T extends AppRouter>(
       nextRequest,
     );
 
-    return serverlessRouter
-      .handle(request, {
-        nextRequest,
-      })
-      .catch(async (err) => {
-        return serverlessErrorHandler(err, request, options);
-      });
+    return serverlessRouter.fetch(request, {
+      nextRequest,
+    });
   };
 };

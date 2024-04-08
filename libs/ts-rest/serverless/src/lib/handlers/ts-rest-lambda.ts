@@ -6,7 +6,7 @@ import {
   requestFromEvent,
   responseToResult,
 } from '../mappers/aws/api-gateway';
-import { createServerlessRouter, serverlessErrorHandler } from '../router';
+import { createServerlessRouter } from '../router';
 import { RecursiveRouterObj, ServerlessHandlerOptions } from '../types';
 
 type LambdaPlatformArgs = {
@@ -15,22 +15,25 @@ type LambdaPlatformArgs = {
 };
 
 export const tsr = {
-  router: <T extends AppRouter>(
+  router: <T extends AppRouter, TRequestExtension>(
     contract: T,
-    router: RecursiveRouterObj<T, LambdaPlatformArgs>,
+    router: RecursiveRouterObj<T, LambdaPlatformArgs, TRequestExtension>,
   ) => router,
 };
 
-export const createLambdaHandler = <T extends AppRouter>(
+export type LambdaHandlerOptions<TRequestExtension = {}> =
+  ServerlessHandlerOptions<LambdaPlatformArgs, TRequestExtension>;
+
+export const createLambdaHandler = <T extends AppRouter, TRequestExtension>(
   routes: T,
-  obj: RecursiveRouterObj<T, LambdaPlatformArgs>,
-  options: ServerlessHandlerOptions = {},
+  obj: RecursiveRouterObj<T, LambdaPlatformArgs, TRequestExtension>,
+  options: LambdaHandlerOptions<TRequestExtension> = {},
 ) => {
-  const router = createServerlessRouter<T, LambdaPlatformArgs>(
-    routes,
-    obj,
-    options,
-  );
+  const router = createServerlessRouter<
+    T,
+    LambdaPlatformArgs,
+    TRequestExtension
+  >(routes, obj, options as ServerlessHandlerOptions);
 
   return async (
     event: ApiGatewayEvent,
@@ -39,15 +42,11 @@ export const createLambdaHandler = <T extends AppRouter>(
     const request = requestFromEvent(event);
 
     return router
-      .handle(request, {
+      .fetch(request, {
         rawEvent: event,
         lambdaContext: context,
       })
       .then(async (response) => {
-        return responseToResult(event, response);
-      })
-      .catch(async (err) => {
-        const response = await serverlessErrorHandler(err, request, options);
         return responseToResult(event, response);
       });
   };
