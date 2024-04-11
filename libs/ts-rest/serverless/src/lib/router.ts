@@ -11,17 +11,18 @@ import {
   ResponseValidationError as ResponseValidationErrorCore,
   validateResponse,
 } from '@ts-rest/core';
-import { Router, withParams } from 'itty-router';
+import { Router, withParams, cors } from 'itty-router';
 import { TsRestRequest } from './request';
 import { TsRestResponse } from './response';
 import {
-  AppRouteImplementation,
+  AppRouteImplementationOrOptions,
+  isAppRouteImplementation,
+  isRecursiveRouterObj,
   RecursiveRouterObj,
   RequestValidationError,
   ResponseValidationError,
   ServerlessHandlerOptions,
 } from './types';
-import { createCors } from './cors';
 import { TsRestHttpError } from './http-error';
 import { blobToArrayBuffer } from './utils';
 
@@ -31,13 +32,19 @@ const recursivelyProcessContract = ({
   processRoute,
 }: {
   schema: AppRouter | AppRoute;
-  router: RecursiveRouterObj<any, any> | AppRouteImplementation<any, any>;
+  router:
+    | RecursiveRouterObj<any, any, any>
+    | AppRouteImplementationOrOptions<any, any, any>;
   processRoute: (
-    implementation: AppRouteImplementation<AppRoute, any>,
+    implementationOrOptions: AppRouteImplementationOrOptions<
+      AppRoute,
+      any,
+      any
+    >,
     schema: AppRoute,
   ) => void;
 }): void => {
-  if (typeof router === 'object') {
+  if (isRecursiveRouterObj(router)) {
     for (const key in router) {
       if (isAppRoute(schema)) {
         throw new Error(`[ts-rest] Expected AppRouter but received AppRoute`);
@@ -49,19 +56,19 @@ const recursivelyProcessContract = ({
         processRoute,
       });
     }
-  } else if (typeof router === 'function') {
+  } else {
     if (!isAppRoute(schema)) {
       throw new Error(`[ts-rest] Expected AppRoute but received AppRouter`);
     }
 
-    processRoute(router as AppRouteImplementation<AppRoute, any>, schema);
+    processRoute(router, schema);
   }
 };
 
-const validateRequest = (
+const validateRequest = <TPlatformArgs>(
   req: TsRestRequest,
   schema: AppRouteQuery | AppRouteMutation,
-  options: ServerlessHandlerOptions,
+  options: ServerlessHandlerOptions<TPlatformArgs>,
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -110,58 +117,118 @@ const validateRequest = (
   };
 };
 
-export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
-  routes: T,
-  obj: RecursiveRouterObj<T, TPlatformArgs>,
-  options: ServerlessHandlerOptions = {},
+const tsRestMiddleware = <TPlatformArgs>(
+  options: ServerlessHandlerOptions<TPlatformArgs>,
 ) => {
-  const router = Router<TsRestRequest, [TPlatformArgs]>();
-
-  const { preflightHandler, corsifyResponseHeaders } = createCors(options.cors);
-
-  // make sure basePath is configured correctly
-  const basePath = options.basePath ?? '';
-  if (basePath !== '') {
-    router.all('*', (request) => {
-      const pathname = new URL(request.url).pathname;
-
-      if (!pathname.startsWith(basePath)) {
-        throw new Error(
-          `Expected path to start with the basePath of ${basePath}, but got a path of ${pathname}`,
-        );
-      }
-    });
-  }
-
-  router.options('*', preflightHandler);
-  router.all(
-    '*',
-    withParams,
-    async (req) => {
-      if (
-        req.method !== 'GET' &&
-        req.method !== 'HEAD' &&
-        req.headers.get('content-type')?.includes('json')
-      ) {
-        req.content = await req.json();
-      }
-    },
-    async (req) => {
-      if (
-        !req.content &&
-        req.method !== 'GET' &&
-        req.method !== 'HEAD' &&
-        req.headers.get('content-type')?.startsWith('text/')
-      ) {
-        req.content = await req.text();
-      }
-    },
+  const { preflight: ittyPreflight, corsify: ittyCorsify } = cors(
+    options.cors || {},
   );
+
+  const basePath = options.basePath ?? '';
+  const basePathChecker = (request: TsRestRequest) => {
+    const pathname = new URL(request.url).pathname;
+
+    if (!pathname.startsWith(basePath)) {
+      throw new Error(
+        `Expected path to start with the basePath of ${basePath}, but got a path of ${pathname}`,
+      );
+    }
+  };
+
+  const preflight = (
+    request: TsRestRequest & { preflightCorsHeadersSet: boolean },
+  ): TsRestResponse | void => {
+    const preflightResult = ittyPreflight(request);
+    if (preflightResult) {
+      request.preflightCorsHeadersSet = true;
+      return new TsRestResponse(null, preflightResult);
+    }
+  };
+
+  const corsify = (
+    response: TsRestResponse,
+    request: TsRestRequest & { preflightCorsHeadersSet: boolean },
+  ) => {
+    if (!request.preflightCorsHeadersSet) {
+      return ittyCorsify(response, request);
+    }
+    return response;
+  };
+
+  const varyHeader = (response: TsRestResponse, request: TsRestRequest) => {
+    if (options.cors) {
+      // if no specific allowHeaders are, we need to set Vary: Access-Control-Request-Headers because
+      // access-control-allow-headers is set to whatever the request access-control-request-headers is set to
+      if (request.method === 'OPTIONS' && !options.cors.allowHeaders) {
+        response.headers.append('vary', 'Access-Control-Request-Headers');
+      }
+
+      // if cors options origin is not a static string, we need to set Vary: Origin
+      // because the response header of Access-Control-Allow-Origin will be dynamic based on the request origin
+      if (
+        options.cors.origin === true ||
+        options.cors.origin instanceof RegExp ||
+        Array.isArray(options.cors.origin) ||
+        options.cors.origin instanceof Function ||
+        // if credentials is true, the origin is not set as '*' but the request origin itself
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials
+        (options.cors.origin === '*' && options.cors.credentials)
+      ) {
+        response.headers.append('vary', 'Origin');
+      }
+    }
+  };
+
+  const evaluateContent = async (request: TsRestRequest) => {
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      if (request.headers.get('content-type')?.includes('json')) {
+        request['content'] = await request.json();
+      } else if (request.headers.get('content-type')?.startsWith('text/')) {
+        request['content'] = await request.text();
+      }
+    }
+  };
+
+  return {
+    basePathChecker,
+    varyHeader,
+    evaluateContent,
+    preflight,
+    corsify,
+  };
+};
+
+export const createServerlessRouter = <
+  T extends AppRouter,
+  TPlatformArgs,
+  TRequestExtension,
+>(
+  routes: T,
+  obj: RecursiveRouterObj<T, TPlatformArgs, TRequestExtension>,
+  options: ServerlessHandlerOptions<TPlatformArgs> = {},
+) => {
+  const { basePathChecker, varyHeader, evaluateContent, preflight, corsify } =
+    tsRestMiddleware(options);
+
+  const router = Router<TsRestRequest, [TPlatformArgs]>({
+    before: [
+      ...(options.basePath ? [basePathChecker] : []),
+      ...(options.cors ? [preflight] : []),
+      withParams,
+      evaluateContent,
+      ...(options.requestMiddleware ?? []),
+    ],
+    catch: errorHandler(options),
+    finally: [
+      ...(options.cors ? [corsify, varyHeader] : []),
+      ...(options.responseHandlers ?? []),
+    ],
+  });
 
   recursivelyProcessContract({
     schema: routes,
     router: obj,
-    processRoute: (implementation, appRoute) => {
+    processRoute: (implementationOrOptions, appRoute) => {
       const routeHandler = async (
         request: TsRestRequest,
         platformArgs: TPlatformArgs,
@@ -169,6 +236,9 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
         const validationResults = validateRequest(request, appRoute, options);
 
         const responseHeaders = new Headers();
+        const implementation = isAppRouteImplementation(implementationOrOptions)
+          ? implementationOrOptions
+          : implementationOrOptions.handler;
 
         const result = await implementation(
           {
@@ -185,10 +255,7 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
           },
         );
 
-        corsifyResponseHeaders(request, responseHeaders);
-
         const statusCode = Number(result.status);
-
         let validatedResponseBody = result.body;
 
         if (options.responseValidation) {
@@ -247,7 +314,19 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
       };
 
       const routerMethod = appRoute.method.toLowerCase();
-      router[routerMethod](`${basePath}${appRoute.path}`, routeHandler);
+
+      const handlers =
+        !isAppRouteImplementation(implementationOrOptions) &&
+        implementationOrOptions.middleware
+          ? implementationOrOptions.middleware
+          : [];
+
+      handlers.push(routeHandler);
+
+      router[routerMethod].apply(router, [
+        `${options.basePath ?? ''}${appRoute.path}`,
+        ...handlers,
+      ]);
     },
   });
 
@@ -258,45 +337,36 @@ export const createServerlessRouter = <T extends AppRouter, TPlatformArgs>(
   return router;
 };
 
-export const serverlessErrorHandler = async (
-  err: any,
-  request: TsRestRequest,
-  options: ServerlessHandlerOptions = {},
-): Promise<TsRestResponse> => {
-  const { corsifyResponseHeaders } = createCors(options.cors);
+const errorHandler =
+  <TPlatformArgs>(options: ServerlessHandlerOptions<TPlatformArgs>) =>
+  async (error: unknown, request: TsRestRequest) => {
+    if (options?.errorHandler) {
+      const maybeResponse = await options.errorHandler(error, request);
 
-  if (options?.errorHandler) {
-    const maybeResponse = await options.errorHandler(err, request);
-
-    if (maybeResponse) {
-      corsifyResponseHeaders(request, maybeResponse.headers);
-      return maybeResponse;
+      if (maybeResponse) {
+        return maybeResponse;
+      }
+    } else if (!(error instanceof TsRestHttpError)) {
+      console.error(
+        '[ts-rest] Unexpected error...',
+        error instanceof Error && error.stack ? error.stack : error,
+      );
     }
-  } else if (!(err instanceof TsRestHttpError)) {
-    console.error(
-      '[ts-rest] Unexpected error...',
-      err instanceof Error && err.stack ? err.stack : err,
+
+    const httpError =
+      error instanceof TsRestHttpError
+        ? error
+        : new TsRestHttpError(500, { message: 'Server Error' });
+
+    const isJson = httpError.contentType.includes('json');
+
+    return new TsRestResponse(
+      isJson ? JSON.stringify(httpError.body) : httpError.body,
+      {
+        status: httpError.statusCode,
+        headers: new Headers({
+          'content-type': httpError.contentType,
+        }),
+      },
     );
-  }
-
-  const httpError =
-    err instanceof TsRestHttpError
-      ? err
-      : new TsRestHttpError(500, { message: 'Server Error' });
-
-  const isJson = httpError.contentType.startsWith('application/json');
-  const headers = corsifyResponseHeaders(
-    request,
-    new Headers({
-      'content-type': httpError.contentType,
-    }),
-  );
-
-  return new TsRestResponse(
-    isJson ? JSON.stringify(httpError.body) : httpError.body,
-    {
-      status: httpError.statusCode,
-      headers,
-    },
-  );
-};
+  };

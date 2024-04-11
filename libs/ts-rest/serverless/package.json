@@ -3,7 +3,7 @@
   "version": "3.41.2",
   "dependencies": {
     "@ts-rest/core": "3.41.2",
-    "itty-router": "^4.2.2"
+    "itty-router": "^5.0.9"
   },
   "peerDependencies": {
     "@types/aws-lambda": "^8.10.115",

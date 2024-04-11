@@ -1,33 +1,34 @@
 import { AppRouter } from '@ts-rest/core';
-import { createServerlessRouter, serverlessErrorHandler } from '../router';
+import { createServerlessRouter } from '../router';
 import { RecursiveRouterObj, ServerlessHandlerOptions } from '../types';
 import { TsRestRequest } from '../request';
 
 export const tsr = {
-  router: <T extends AppRouter>(
+  router: <T extends AppRouter, TRequestExtension>(
     contract: T,
-    router: RecursiveRouterObj<T, {}>,
+    router: RecursiveRouterObj<T, {}, TRequestExtension>,
   ) => router,
 };
 
-export const fetchRequestHandler = <T extends AppRouter>({
+export type FetchHandlerOptions<TRequestExtension = {}> =
+  ServerlessHandlerOptions<{}, TRequestExtension>;
+
+export const fetchRequestHandler = <T extends AppRouter, TRequestExtension>({
   contract,
   router,
   options = {},
   request,
 }: {
   contract: T;
-  router: RecursiveRouterObj<T, {}>;
-  options: ServerlessHandlerOptions;
+  router: RecursiveRouterObj<T, {}, TRequestExtension>;
+  options: FetchHandlerOptions<TRequestExtension>;
   request: Request;
 }) => {
-  const serverlessRouter = createServerlessRouter<T, {}>(
+  const serverlessRouter = createServerlessRouter<T, {}, TRequestExtension>(
     contract,
     router,
-    options,
+    options as ServerlessHandlerOptions,
   );
   const tsRestRequest = new TsRestRequest(request);
-  return serverlessRouter.handle(tsRestRequest, {}).catch(async (err) => {
-    return serverlessErrorHandler(err, tsRestRequest, options);
-  });
+  return serverlessRouter.fetch(tsRestRequest, {});
 };

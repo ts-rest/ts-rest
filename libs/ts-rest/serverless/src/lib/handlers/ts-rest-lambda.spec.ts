@@ -206,7 +206,7 @@ describe('tsRestLambda', () => {
       jsonQuery: true,
       responseValidation: true,
       cors: {
-        origins: ['http://localhost'],
+        origin: ['http://localhost'],
         credentials: true,
       },
       errorHandler: (error) => {
@@ -402,10 +402,10 @@ describe('tsRestLambda', () => {
 
     const response = await lambdaHandler(event as any, {} as any);
     expect(response).toEqual({
-      statusCode: 200,
+      statusCode: 204,
       headers: {
         'access-control-allow-credentials': 'true',
-        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
+        'access-control-allow-methods': '*',
         'access-control-allow-origin': 'http://localhost',
         vary: 'Access-Control-Request-Headers, Origin',
       },
@@ -429,10 +429,10 @@ describe('tsRestLambda', () => {
 
     const response = await lambdaHandler(event as any, {} as any);
     expect(response).toEqual({
-      statusCode: 200,
+      statusCode: 204,
       headers: {
         'access-control-allow-credentials': 'true',
-        'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE',
+        'access-control-allow-methods': '*',
         vary: 'Access-Control-Request-Headers, Origin',
       },
       body: '',

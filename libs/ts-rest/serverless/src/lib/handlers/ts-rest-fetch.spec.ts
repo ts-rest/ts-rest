@@ -1,7 +1,9 @@
 import { initContract } from '@ts-rest/core';
 import { parse as parseMultipart, getBoundary } from 'parse-multipart-data';
 import { z } from 'zod';
+import { vi } from 'vitest';
 import { fetchRequestHandler } from './ts-rest-fetch';
+import { TsRestRequest } from '../request';
 
 const c = initContract();
 
@@ -54,7 +56,16 @@ const contract = c.router({
       }),
     },
   },
+  throw: {
+    method: 'GET',
+    path: '/throw',
+    responses: {
+      500: c.noBody(),
+    },
+  },
 });
+
+const mockFn = vi.fn();
 
 const testFetchRequestHandler = (request: Request) => {
   return fetchRequestHandler({
@@ -77,11 +88,14 @@ const testFetchRequestHandler = (request: Request) => {
           },
         };
       },
-      noContent: async () => {
-        return {
-          status: 204,
-          body: undefined,
-        };
+      noContent: {
+        middleware: [(req) => mockFn(req.foo)],
+        handler: async () => {
+          return {
+            status: 204,
+            body: undefined,
+          } as const;
+        },
       },
       upload: async (_, { request }) => {
         const boundary = getBoundary(
@@ -97,20 +111,37 @@ const testFetchRequestHandler = (request: Request) => {
           body: blob,
         };
       },
+      throw: async () => {
+        throw new Error('Test error');
+      },
     },
     options: {
       jsonQuery: true,
       responseValidation: true,
       cors: {
-        origins: ['http://localhost'],
+        origin: ['http://localhost'],
         credentials: true,
       },
+      requestMiddleware: [
+        (req: TsRestRequest & { foo: string }) => {
+          req.foo = 'bar';
+        },
+      ],
+      responseHandlers: [
+        (res, req) => {
+          res.headers.set('x-foo', req.foo);
+        },
+      ],
     },
     request,
   });
 };
 
 describe('fetchRequestHandler', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should handle GET request', async () => {
     const request = new Request('http://localhost/test?foo=bar', {
       headers: { origin: 'http://localhost' },
@@ -123,6 +154,7 @@ describe('fetchRequestHandler', () => {
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
         vary: 'Origin',
+        'x-foo': 'bar',
       },
     });
 
@@ -148,6 +180,7 @@ describe('fetchRequestHandler', () => {
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'application/json',
         vary: 'Origin',
+        'x-foo': 'bar',
       },
     });
 
@@ -169,12 +202,14 @@ describe('fetchRequestHandler', () => {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
         vary: 'Origin',
+        'x-foo': 'bar',
       },
     });
 
     expect(response.status).toEqual(expectedResponse.status);
     expect(response.headers).toEqual(expectedResponse.headers);
     expect(await response.text()).toEqual('');
+    expect(mockFn).toHaveBeenCalledWith('bar');
   });
 
   it('should handle file upload', async () => {
@@ -203,6 +238,7 @@ describe('fetchRequestHandler', () => {
           'access-control-allow-origin': 'http://localhost',
           'content-type': 'text/html',
           vary: 'Origin',
+          'x-foo': 'bar',
         },
       },
     );
@@ -210,5 +246,53 @@ describe('fetchRequestHandler', () => {
     expect(response.status).toEqual(expectedResponse.status);
     expect(response.headers).toEqual(expectedResponse.headers);
     expect(await response.text()).toEqual(await expectedResponse.text());
+  });
+
+  it('should handle validation error', async () => {
+    const request = new Request('http://localhost/test', {
+      headers: { origin: 'http://localhost' },
+    });
+
+    const response = await testFetchRequestHandler(request);
+    const expectedResponse = new Response(
+      '{"message":"Request validation failed","pathParameterErrors":null,"headerErrors":null,"queryParameterErrors":{"issues":[{"code":"invalid_type","expected":"string","received":"undefined","path":["foo"],"message":"Required"}],"name":"ZodError"},"bodyErrors":null}',
+      {
+        status: 400,
+        headers: {
+          'access-control-allow-credentials': 'true',
+          'access-control-allow-origin': 'http://localhost',
+          'content-type': 'application/json',
+          vary: 'Origin',
+          'x-foo': 'bar',
+        },
+      },
+    );
+
+    expect(response.status).toEqual(expectedResponse.status);
+    expect(response.headers).toEqual(expectedResponse.headers);
+    expect(await response.json()).toEqual(await expectedResponse.json());
+  });
+
+  it('should handle 500 response', async () => {
+    const request = new Request('http://localhost/throw', {
+      method: 'GET',
+      headers: { origin: 'http://localhost' },
+    });
+
+    const response = await testFetchRequestHandler(request);
+    const expectedResponse = new Response(null, {
+      status: 500,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        vary: 'Origin',
+        'x-foo': 'bar',
+      },
+    });
+
+    expect(response.status).toEqual(expectedResponse.status);
+    expect(response.headers).toEqual(expectedResponse.headers);
+    expect(await response.json()).toEqual({ message: 'Server Error' });
   });
 });

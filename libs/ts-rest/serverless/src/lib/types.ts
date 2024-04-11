@@ -6,9 +6,9 @@ import {
   ServerInferResponses,
 } from '@ts-rest/core';
 import { TsRestRequest } from './request';
-import { CorsConfig } from './cors';
 import { TsRestHttpError } from './http-error';
 import { TsRestResponse } from './response';
+import { CorsOptions, RequestHandler } from 'itty-router';
 
 export class RequestValidationError extends TsRestHttpError {
   constructor(
@@ -40,30 +40,98 @@ export class ResponseValidationError extends TsRestHttpError {
   }
 }
 
-export type AppRouteImplementation<T extends AppRoute, TPlatformArgs> = (
+export type AppRouteImplementation<
+  T extends AppRoute,
+  TPlatformArgs,
+  TRequestExtension,
+> = (
   args: ServerInferRequest<T>,
   context: TPlatformArgs & {
     appRoute: T;
-    request: TsRestRequest;
+    request: TsRestRequest & TRequestExtension;
     responseHeaders: Headers;
   },
 ) => Promise<ServerInferResponses<T>>;
 
-export type RecursiveRouterObj<T extends AppRouter, TPlatformArgs> = {
+export interface AppRouteOptions<
+  TRoute extends AppRoute,
+  TPlatformArgs,
+  TRequestExtension,
+> {
+  middleware?: RequestHandler<
+    TsRestRequest & TRequestExtension,
+    [TPlatformArgs]
+  >[];
+  handler: AppRouteImplementation<TRoute, TPlatformArgs, TRequestExtension>;
+}
+
+export type AppRouteImplementationOrOptions<
+  TRoute extends AppRoute,
+  TPlatformArgs,
+  TRequestExtension,
+> =
+  | AppRouteOptions<TRoute, TPlatformArgs, TRequestExtension>
+  | AppRouteImplementation<TRoute, TPlatformArgs, TRequestExtension>;
+
+export const isAppRouteImplementation = <
+  TRoute extends AppRoute,
+  TPlatformArgs,
+  TRequestExtension,
+>(
+  obj: AppRouteImplementationOrOptions<
+    TRoute,
+    TPlatformArgs,
+    TRequestExtension
+  >,
+): obj is AppRouteImplementation<TRoute, TPlatformArgs, TRequestExtension> => {
+  return typeof obj === 'function';
+};
+
+export const isRecursiveRouterObj = <
+  T extends AppRouter,
+  TPlatformArgs,
+  TRequestExtension,
+>(
+  obj:
+    | RecursiveRouterObj<T, TPlatformArgs, TRequestExtension>
+    | AppRouteImplementationOrOptions<any, TPlatformArgs, TRequestExtension>,
+): obj is RecursiveRouterObj<T, TPlatformArgs, TRequestExtension> => {
+  return typeof obj === 'object' && typeof obj?.handler !== 'function';
+};
+
+export type RecursiveRouterObj<
+  T extends AppRouter,
+  TPlatformArgs,
+  TRequestExtension,
+> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey], TPlatformArgs>
+    ? RecursiveRouterObj<T[TKey], TPlatformArgs, TRequestExtension>
     : T[TKey] extends AppRoute
-    ? AppRouteImplementation<T[TKey], TPlatformArgs>
+    ? AppRouteImplementationOrOptions<T[TKey], TPlatformArgs, TRequestExtension>
     : never;
 };
 
-export type ServerlessHandlerOptions = {
+export type ServerlessHandlerOptions<
+  TPlatformArgs = {},
+  TRequestExtension = {},
+> = {
   jsonQuery?: boolean;
   responseValidation?: boolean;
   errorHandler?: (
     err: unknown,
     req: TsRestRequest,
   ) => TsRestResponse | Promise<TsRestResponse> | void | Promise<void>;
-  cors?: CorsConfig;
+  cors?: CorsOptions | false;
   basePath?: string;
+  requestMiddleware?: RequestHandler<
+    TsRestRequest & TRequestExtension,
+    [TPlatformArgs]
+  >[];
+  responseHandlers?: Array<
+    (
+      response: TsRestResponse,
+      request: TsRestRequest & TRequestExtension,
+      args: TPlatformArgs,
+    ) => TsRestResponse | void
+  >;
 };
