@@ -1,15 +1,15 @@
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
-import { insertParamsIntoPath } from './paths';
-import { convertQueryParamsToUrlString } from './query';
-import { AreAllPropertiesOptional, Prettify } from './type-utils';
-import { UnknownStatusError } from './unknown-status-error';
 import {
   ClientInferRequest,
   ClientInferResponses,
   PartialClientInferRequest,
 } from './infer-types';
-import { isZodType } from './zod-utils';
+import { insertParamsIntoPath } from './paths';
+import { convertQueryParamsToUrlString } from './query';
 import { Equal, Expect } from './test-helpers';
+import { AreAllPropertiesOptional, Prettify } from './type-utils';
+import { UnknownStatusError } from './unknown-status-error';
+import { isZodType } from './zod-utils';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -157,14 +157,24 @@ const createFormData = (body: unknown) => {
   const formData = new FormData();
 
   Object.entries(body as Record<string, unknown>).forEach(([key, value]) => {
-    if (value instanceof File) {
-      formData.append(key, value);
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        appendToFormData(formData, key, item);
+      }
     } else {
-      formData.append(key, JSON.stringify(value));
+      appendToFormData(formData, key, value);
     }
   });
 
   return formData;
+};
+
+const appendToFormData = (formData: FormData, key: string, value: unknown) => {
+  if (value instanceof File) {
+    formData.append(key, value);
+  } else {
+    formData.append(key, JSON.stringify(value));
+  }
 };
 
 const normalizeHeaders = (headers: Record<string, string | undefined>) => {
