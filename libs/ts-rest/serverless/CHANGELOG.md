@@ -1,5 +1,16 @@
 # @ts-rest/serverless
 
+## 3.42.0
+
+### Minor Changes
+
+- 7108c19: Add middleware support
+
+### Patch Changes
+
+- Updated dependencies [7372bee]
+  - @ts-rest/core@3.42.0
+
 ## 3.41.2
 
 ### Patch Changes
