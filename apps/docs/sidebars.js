@@ -55,6 +55,85 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Contract',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'core/core' },
+        { type: 'doc', id: 'core/infer-types' },
+        { type: 'doc', id: 'core/errors' },
+        { type: 'doc', id: 'core/form-data' },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Client Packages',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'core/fetch' },
+        { type: 'doc', id: 'core/custom' },
+        { type: 'doc', id: 'react-query' },
+        { type: 'doc', id: 'vue-query' },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Server Packages',
+      collapsed: false,
+      items: [
+        {
+          type: 'category',
+          label: 'NestJS',
+          collapsed: true,
+          items: [
+            { type: 'doc', id: 'nest/nest' },
+            { type: 'doc', id: 'nest/legacy' },
+            { type: 'doc', id: 'nest/configuration' },
+          ],
+        },
+        {
+          type: 'doc',
+          label: 'Next.js (Pages Router)',
+          id: 'next',
+        },
+        {
+          type: 'category',
+          label: 'Express.js',
+          collapsed: true,
+          items: [
+            { type: 'doc', id: 'express/express' },
+            { type: 'doc', id: 'express/middleware' },
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Fastify',
+          collapsed: true,
+          items: [
+            { type: 'doc', id: 'fastify/fastify' },
+            { type: 'doc', id: 'fastify/openapi' },
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Serverless',
+          collapsed: true,
+          items: [
+            { type: 'doc', id: 'serverless/options' },
+            { type: 'doc', id: 'serverless/routers' },
+            { type: 'doc', id: 'serverless/fetch-runtimes' },
+            { type: 'doc', id: 'serverless/aws' },
+            { type: 'doc', id: 'serverless/next-serverless' },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'doc',
+      label: 'OpenAPI',
+      id: 'open-api',
+    },
+    {
+      type: 'category',
       label: 'API Reference',
       items: [
         {
@@ -62,67 +141,6 @@ const sidebars = {
           dirName: 'api/modules',
         },
       ],
-    },
-    {
-      type: 'category',
-      label: '@ts-rest/core',
-      collapsed: false,
-      items: [
-        { type: 'doc', id: 'core/core' },
-        { type: 'doc', id: 'core/fetch' },
-        { type: 'doc', id: 'core/custom' },
-        { type: 'doc', id: 'core/infer-types' },
-        { type: 'doc', id: 'core/errors' },
-        { type: 'doc', id: 'core/form-data' },
-      ],
-    },
-    {
-      type: 'doc',
-      label: '@ts-rest/react-query',
-      id: 'react-query',
-    },
-    {
-      type: 'doc',
-      label: '@ts-rest/vue-query',
-      id: 'vue-query',
-    },
-    {
-      type: 'category',
-      label: '@ts-rest/nest',
-      collapsed: false,
-      items: [
-        { type: 'doc', id: 'nest/nest' },
-        { type: 'doc', id: 'nest/legacy' },
-        { type: 'doc', id: 'nest/configuration' },
-      ],
-    },
-    {
-      type: 'doc',
-      label: '@ts-rest/next',
-      id: 'next',
-    },
-    {
-      type: 'category',
-      label: '@ts-rest/fastify',
-      collapsed: false,
-      items: [
-        { type: 'doc', id: 'fastify/fastify' },
-        { type: 'doc', id: 'fastify/openapi' },
-      ]
-    },
-    {
-      type: 'category',
-      label: '@ts-rest/express',
-      collapsed: false,
-      items: [
-        { type: 'doc', id: 'express/express' },
-        { type: 'doc', id: 'express/middleware' },
-      ],
-    },
-    {
-      type: 'doc',
-      label: '@ts-rest/open-api',
-      id: 'open-api',
     },
     {
       type: 'category',

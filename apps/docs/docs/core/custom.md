@@ -3,7 +3,10 @@
 By default, not specifying an `api` will use the default `tsRestFetchApi` which uses fetch under the hood.
 
 ```typescript
-const client = initQueryClient(postsApi, {
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
+
+const client = initClient(contract, {
   baseUrl: 'http://localhost:5003',
   baseHeaders: {},
   // Uses `tsRestFetchApi` by default
@@ -15,7 +18,10 @@ const client = initQueryClient(postsApi, {
 If you want a custom api, you can reuse the internal `tsRestFetchApi` to add logging/custom logic to your requests!
 
 ```typescript
-const client = initQueryClient(postsApi, {
+import { initClient, tsRestFetchApi } from '@ts-rest/core';
+import { contract } from './contract';
+
+const client = initClient(contract, {
   baseUrl: 'http://localhost:5003',
   baseHeaders: {},
   api: async (args) => {
@@ -31,7 +37,7 @@ const client = initQueryClient(postsApi, {
 By default when you make a ts-rest request you can pass in `params`, `query`, `body`, `headers` etc. However, sometimes you may want to pass in extra arguments to your custom api. You can do this by extending the type of the `args` parameter in your custom api.
 
 ```typescript
-const client = initQueryClient(postsApi, {
+const client = initClient(contract, {
   baseUrl: 'http://localhost:5003',
   baseHeaders: {},
   api: async (args: ApiFetcherArgs & { myCustomArg?: string }) => {
@@ -65,7 +71,7 @@ You can use this to accomplish loads of patterns, such as adding a `cache` argum
 Ts-Rest automatically stringifies your `body` input for mutations. You can access the raw body object and content-type like so:
 
 ```typescript
-const client = initQueryClient(postsApi, {
+const client = initClient(contract, {
   baseUrl: 'http://localhost:5003',
   baseHeaders: {},
   api: async ({ path, method, headers, body, rawBody, contentType }) => {
@@ -91,8 +97,9 @@ The `credentials` option has no effect when using a custom client. Make sure you
 **Here's a basic example: **
 
 ```typescript
-import { contract } from './some-contract';
 import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios';
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
 
 const client = initClient(contract, {
   baseUrl: 'http://localhost:3333/api',
@@ -126,8 +133,9 @@ Sometimes you need dynamic headers, IE passing in a Bearer token. There are two 
 ### Instantiate the `client` with the header passed in:
 
 ```typescript
-import { contract } from './some-contract';
 import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios';
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
 
 export class SampleAPI {
   token: string;
@@ -170,8 +178,10 @@ export class SampleAPI {
 Here's an example using the `firebase/auth` library. Because `api` is async, you can `await` various calls when using the method.
 
 ```typescript
-import { contract } from './some-contract';
 import axios, { Method, AxiosError, AxiosResponse, isAxiosError } from 'axios';
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
+
 export class SampleAPI {
   authInstance: Auth;
   constructor(params: { authInstance: Auth }) {

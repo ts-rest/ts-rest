@@ -225,6 +225,9 @@ importers:
       '@babel/preset-react':
         specifier: ^7.14.5
         version: 7.18.6(@babel/core@7.19.1)
+      '@cloudflare/workers-types':
+        specifier: ^4.20240405.0
+        version: 4.20240405.0
       '@docusaurus/module-type-aliases':
         specifier: 2.4.1
         version: 2.4.1(@swc/core@1.3.96)(esbuild@0.17.19)(react-dom@18.2.0)(react@18.2.0)
@@ -482,7 +485,7 @@ importers:
         version: 5.8.0
       wrangler:
         specifier: ^3.1.0
-        version: 3.34.2
+        version: 3.34.2(@cloudflare/workers-types@4.20240405.0)
 
   apps/docs: {}
 
@@ -3700,6 +3703,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@cloudflare/workers-types@4.20240405.0:
+    resolution: {integrity: sha512-sEVOhyOgXUwfLkgHqbLZa/sfkSYrh7/zLmI6EZNibPaVPvAnAcItbNNl3SAlLyLKuwf8m4wAIAgu9meKWCvXjg==}
+    dev: true
 
   /@colors/colors@1.5.0:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -22690,7 +22697,7 @@ packages:
       '@cloudflare/workerd-windows-64': 1.20240304.0
     dev: true
 
-  /wrangler@3.34.2:
+  /wrangler@3.34.2(@cloudflare/workers-types@4.20240405.0):
     resolution: {integrity: sha512-j580WXlOe0GtYdcREym7FLcaaZq9+RZEBuzOtKXx74KKUlEC8cglgf5WWa2C2OpEtJCcrAieEHsNXe7mhy9knA==}
     engines: {node: '>=16.17.0'}
     hasBin: true
@@ -22701,6 +22708,7 @@ packages:
         optional: true
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.1
+      '@cloudflare/workers-types': 4.20240405.0
       '@esbuild-plugins/node-globals-polyfill': 0.2.3(esbuild@0.17.19)
       '@esbuild-plugins/node-modules-polyfill': 0.2.2(esbuild@0.17.19)
       blake3-wasm: 2.1.5

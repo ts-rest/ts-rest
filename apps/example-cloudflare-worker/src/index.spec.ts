@@ -42,6 +42,7 @@ describe('example-cloudflare-worker', () => {
     expect(body.posts).toHaveLength(2);
     expect(body.skip).toStrictEqual(0);
     expect(body.take).toStrictEqual(10);
+    expect(response.headers.get('x-geo-country')).toStrictEqual('US');
   });
 
   it('should error on invalid pagination header', async () => {
