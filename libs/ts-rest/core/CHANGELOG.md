@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.42.0
+
+### Minor Changes
+
+- 7372bee: Allow arrays of files to be uploaded
+
 ## 3.41.2
 
 ## 3.41.1
