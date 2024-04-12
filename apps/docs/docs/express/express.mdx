@@ -9,7 +9,9 @@ import { InstallTabs } from '@site/src/components/InstallTabs';
 ## Usage
 
 ```typescript
-import { initServer } from '@ts-rest/express';
+import { createExpressEndpoints, initServer } from '@ts-rest/express';
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
 import { contract } from './contract';
 
 const app = express();

@@ -10,9 +10,13 @@ ts-rest supports multipart/form-data requests, this is useful for uploading file
 The contract implementation is the same as any other mutation, however, `contentType` must be set to `multipart/form-data` and the `body` must be a `FormData-compatible` object (one level deep, no weird nested structures!).
 
 ```ts
+// contract.ts
+
+import { initContract } from '@ts-rest/core';
+
 const c = initContract();
 
-export const postsApi = c.router({
+export const postsContract = c.router({
   updatePostThumbnail: {
     method: 'POST',
     path: '/posts/:id/thumbnail',
@@ -80,27 +84,33 @@ ts-rest offers some nice types to help with this, however, we're leaving this up
 - `body` has had any `File` types removed (so other types are still there)
 
 ```ts
+import { createExpressEndpoints, initServer } from '@ts-rest/express';
+import * as express from 'express';
+import * as multer from 'multer';
+import { postsContract } from './postsContract';
+
+const upload = multer();
 const s = initServer();
 
-const postsRouter = s.router(postsApi, {
-  updatePostThumbnail: async ({ file, files, body }) => {
-    const thumbnail = file as Express.Multer.File;
+const postsRouter = s.router(postsContract, {
+  updatePostThumbnail: {
+    middleware: [upload.single('thumbnail')],
+    handler: async ({ file }) => {
+      const thumbnail = file as Express.Multer.File;
 
-    return {
-      status: 200,
-      body: {
-        message: `File ${thumbnail.originalname} successfully!`,
-      },
-    };
+      return {
+        status: 200,
+        body: {
+          message: `File ${thumbnail.originalname} successfully!`,
+        },
+      };
+    },
   },
 });
 
 const app = express();
 
-app.use(cors());
-
-// File upload
-app.post(postsApi.updatePostThumbnail.path, upload.single('thumbnail'));
+createExpressEndpoints(postsContract, postsRouter, app);
 ```
 
 ## Server - Nest

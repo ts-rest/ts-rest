@@ -1,10 +1,13 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { initContract, ResponseValidationError } from '@ts-rest/core';
-import { createExpressEndpoints, initServer } from './ts-rest-express';
 import * as supertest from 'supertest';
 import * as express from 'express';
 import { z } from 'zod';
-import * as fs from 'node:fs';
-import path = require('path');
+import { createExpressEndpoints, initServer } from './ts-rest-express';
+import * as multer from 'multer';
+
+const upload = multer();
 
 const c = initContract();
 const postsRouter = c.router({
@@ -284,9 +287,80 @@ describe('ts-rest-express', () => {
         expect(res.body).toEqual({ id: '10' });
       });
   });
-});
 
-describe('download', () => {
+  it('should handle multipart/form-data', async () => {
+    const c = initContract();
+
+    const contract = c.router({
+      uploadFiles: {
+        method: 'POST',
+        path: '/upload',
+        body: c.type<{
+          files: File[];
+          file: File;
+          foo: string;
+        }>(),
+        responses: {
+          200: c.type<{
+            fileFields: string[];
+            body: {
+              foo: string;
+            };
+          }>(),
+        },
+        contentType: 'multipart/form-data',
+      },
+    });
+
+    const server = initServer();
+    const router = server.router(contract, {
+      uploadFiles: {
+        middleware: [upload.any()],
+        handler: async ({ files, body }) => {
+          const filesArray = files as Express.Multer.File[];
+
+          return {
+            status: 200,
+            body: {
+              fileFields: filesArray.map((file) => file.fieldname),
+              body,
+            },
+          };
+        },
+      },
+    });
+
+    const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    createExpressEndpoints(contract, router, app);
+
+    await supertest(app)
+      .post('/upload')
+      .attach('files', Buffer.from(''), {
+        filename: 'filename-1',
+        contentType: 'text/plain',
+      })
+      .attach('files', Buffer.from(''), {
+        filename: 'filename-2',
+        contentType: 'text/plain',
+      })
+      .attach('file', Buffer.from(''), {
+        filename: 'filename-3',
+        contentType: 'text/plain',
+      })
+      .field('foo', 'bar')
+      .expect((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toEqual({
+          fileFields: ['files', 'files', 'file'],
+          body: {
+            foo: 'bar',
+          },
+        });
+      });
+  });
+
   it('allows download image', async () => {
     const c = initContract();
 
