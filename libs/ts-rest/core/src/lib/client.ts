@@ -156,11 +156,21 @@ export const tsRestFetchApi: ApiFetcher = async ({
 const createFormData = (body: unknown) => {
   const formData = new FormData();
 
-  Object.entries(body as Record<string, unknown>).forEach(([key, value]) => {
+  const appendToFormData = (key: string, value: unknown) => {
     if (value instanceof File) {
       formData.append(key, value);
     } else {
       formData.append(key, JSON.stringify(value));
+    }
+  };
+
+  Object.entries(body as Record<string, unknown>).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        appendToFormData(key, item);
+      }
+    } else {
+      appendToFormData(key, value);
     }
   });
 

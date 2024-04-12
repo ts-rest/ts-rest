@@ -148,6 +148,15 @@ export const router = c.router(
       },
       contentType: 'multipart/form-data',
     },
+    uploadArray: {
+      method: 'POST',
+      path: '/upload-array',
+      body: c.type<{ files: File[] }>(),
+      responses: {
+        200: c.type<{ message: string }>(),
+      },
+      contentType: 'multipart/form-data',
+    },
   },
   {
     baseHeaders: z.object({
@@ -625,6 +634,38 @@ describe('client', () => {
         matcher: (_, options) => {
           const formData = options.body as FormData;
           return formData.get('test') === 'test';
+        },
+      });
+    });
+
+    it('w/ File Array', async () => {
+      const value = { key: 'value' };
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/upload-array',
+        },
+        { body: value, status: 200 },
+      );
+
+      const files = [
+        new File([''], 'filename-1', { type: 'text/plain' }),
+        new File([''], 'filename-2', { type: 'text/plain' }),
+      ];
+
+      const result = await client.uploadArray({
+        body: { files },
+      });
+
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
+
+      expect(fetchMock).toHaveLastFetched(true, {
+        matcher: (_, options) => {
+          const formData = options.body as FormData;
+          const formDataFiles = formData.getAll('files');
+          return formDataFiles[0] === files[0] && formDataFiles[1] === files[1];
         },
       });
     });

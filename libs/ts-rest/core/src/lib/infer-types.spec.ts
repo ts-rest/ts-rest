@@ -59,7 +59,7 @@ const contract = c.router(
       method: 'POST',
       path: '/images',
       contentType: 'multipart/form-data',
-      body: c.body<{ image: File }>(),
+      body: c.type<{ image: File; images: File[] }>(),
       responses: {
         201: c.otherResponse({
           contentType: 'text/plain',
@@ -568,6 +568,7 @@ it('type inference helpers', () => {
           body:
             | {
                 image: File;
+                images: File[];
               }
             | FormData;
           headers: { authorization: string; age?: number };

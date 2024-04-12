@@ -148,7 +148,7 @@ export type ClientInferResponseBody<
 
 type BodyWithoutFileIfMultiPart<T extends AppRouteMutation> =
   T['contentType'] extends 'multipart/form-data'
-    ? Without<ZodInferOrType<T['body']>, File>
+    ? Without<ZodInferOrType<T['body']>, File | File[]>
     : ZodInferOrType<T['body']>;
 
 export type ServerInferRequest<
