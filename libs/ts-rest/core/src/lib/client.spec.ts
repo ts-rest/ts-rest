@@ -1,5 +1,4 @@
 import * as fetchMock from 'fetch-mock-jest';
-import { z, ZodError } from 'zod';
 import {
   FetchOptions,
   HTTPStatusCode,
@@ -8,6 +7,7 @@ import {
 } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
+import { z, ZodError } from 'zod';
 
 const c = initContract();
 
