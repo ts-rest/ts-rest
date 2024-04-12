@@ -2,7 +2,7 @@ import { initContract } from '@ts-rest/core';
 import { parse as parseMultipart, getBoundary } from 'parse-multipart-data';
 import { z } from 'zod';
 import { vi } from 'vitest';
-import { fetchRequestHandler } from './ts-rest-fetch';
+import { fetchRequestHandler, tsr } from './ts-rest-fetch';
 import { TsRestRequest } from '../request';
 
 const c = initContract();
@@ -294,5 +294,63 @@ describe('fetchRequestHandler', () => {
     expect(response.status).toEqual(expectedResponse.status);
     expect(response.headers).toEqual(expectedResponse.headers);
     expect(await response.json()).toEqual({ message: 'Server Error' });
+  });
+
+  it('should handle custom context', async () => {
+    type PlatformContext = {
+      foo: string;
+    };
+
+    const fetchRequestHandlerWithContext = (
+      request: Request,
+      platformContext: PlatformContext,
+    ) => {
+      const contract = c.router({
+        test: {
+          method: 'GET',
+          path: '/test',
+          responses: {
+            200: z.object({}).passthrough(),
+          },
+        },
+      });
+
+      const router = tsr.platformContext<PlatformContext>().router(contract, {
+        test: async (_, { foo }) => {
+          return {
+            status: 200,
+            body: {
+              foo,
+            },
+          };
+        },
+      });
+
+      return fetchRequestHandler({
+        contract,
+        router,
+        options: {},
+        request,
+        platformContext,
+      });
+    };
+
+    const request = new Request('http://localhost/test', {
+      method: 'GET',
+      headers: { origin: 'http://localhost' },
+    });
+
+    const response = await fetchRequestHandlerWithContext(request, {
+      foo: 'context-bar',
+    });
+    const expectedResponse = new Response('{"foo":"context-bar"}', {
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+
+    expect(response.status).toEqual(expectedResponse.status);
+    expect(response.headers).toEqual(expectedResponse.headers);
+    expect(await response.json()).toEqual(await expectedResponse.json());
   });
 });
