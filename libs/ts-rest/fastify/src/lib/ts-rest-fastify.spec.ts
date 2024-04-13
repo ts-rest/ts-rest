@@ -1,4 +1,4 @@
-import { initContract } from '@ts-rest/core';
+import { initContract, TsRestResponseError } from '@ts-rest/core';
 import { initServer } from './ts-rest-fastify';
 import { z } from 'zod';
 import fastify from 'fastify';
@@ -680,5 +680,61 @@ describe('ts-rest-fastify', () => {
     expect(responseB.body).toEqual({
       b: 'return',
     });
+  });
+
+  it('should handle thrown TsRestResponseError', async () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts/:id',
+        responses: {
+          200: z.object({
+            id: z.string().optional(),
+          }),
+          404: z.object({
+            message: z.literal('Not found'),
+          }),
+          500: c.noBody(),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      getPost: async ({ params: { id } }) => {
+        if (id === '500') {
+          throw new TsRestResponseError(contract.getPost, {
+            status: 500,
+            body: undefined,
+          });
+        }
+
+        throw new TsRestResponseError(contract.getPost, {
+          status: 404,
+          body: {
+            message: 'Not found',
+          },
+        });
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    await supertest(app.server)
+      .get('/posts/500')
+      .expect((res) => {
+        expect(res.status).toEqual(500);
+        expect(res.text).toEqual('');
+      });
+
+    await supertest(app.server)
+      .get('/posts/10')
+      .expect((res) => {
+        expect(res.status).toEqual(404);
+        expect(res.body).toEqual({ message: 'Not found' });
+      });
   });
 });

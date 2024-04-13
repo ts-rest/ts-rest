@@ -1,8 +1,4 @@
-import {
-  AppRoute,
-  isAppRouteOtherResponse,
-  ServerInferResponses,
-} from '@ts-rest/core';
+import { TsRestResponseError } from '@ts-rest/core';
 
 export class TsRestHttpError extends Error {
   constructor(
@@ -29,13 +25,4 @@ export class TsRestHttpError extends Error {
   }
 }
 
-export class TsRestRouteError<T extends AppRoute> extends TsRestHttpError {
-  constructor(route: T, response: ServerInferResponses<T>) {
-    const responseType = route.responses[response.status];
-    const contentType = isAppRouteOtherResponse(responseType)
-      ? responseType.contentType
-      : 'application/json';
-
-    super(response.status, response.body, contentType);
-  }
-}
+export { TsRestResponseError };

@@ -10,6 +10,8 @@ import {
   parseJsonQueryObject,
   ResponseValidationError as ResponseValidationErrorCore,
   validateResponse,
+  HTTPStatusCode,
+  TsRestResponseError,
 } from '@ts-rest/core';
 import { Router, withParams, cors } from 'itty-router';
 import { TsRestRequest } from './request';
@@ -23,8 +25,8 @@ import {
   ResponseValidationError,
   ServerlessHandlerOptions,
 } from './types';
-import { TsRestHttpError } from './http-error';
 import { blobToArrayBuffer } from './utils';
+import { TsRestHttpError } from './http-error';
 
 const recursivelyProcessContract = ({
   schema,
@@ -240,20 +242,32 @@ export const createServerlessRouter = <
           ? implementationOrOptions
           : implementationOrOptions.handler;
 
-        const result = await implementation(
-          {
-            params: validationResults.paramsResult.data as any,
-            body: validationResults.bodyResult.data as any,
-            query: validationResults.queryResult.data as any,
-            headers: validationResults.headersResult.data as any,
-          },
-          {
-            appRoute,
-            request,
-            responseHeaders,
-            ...platformArgs,
-          },
-        );
+        let result: { status: HTTPStatusCode; body: any };
+        try {
+          result = await implementation(
+            {
+              params: validationResults.paramsResult.data as any,
+              body: validationResults.bodyResult.data as any,
+              query: validationResults.queryResult.data as any,
+              headers: validationResults.headersResult.data as any,
+            },
+            {
+              appRoute,
+              request,
+              responseHeaders,
+              ...platformArgs,
+            },
+          );
+        } catch (e) {
+          if (e instanceof TsRestResponseError) {
+            result = {
+              status: e.statusCode,
+              body: e.body,
+            };
+          } else {
+            throw e;
+          }
+        }
 
         const statusCode = Number(result.status);
         let validatedResponseBody = result.body;
@@ -358,15 +372,17 @@ const errorHandler =
         ? error
         : new TsRestHttpError(500, { message: 'Server Error' });
 
-    const isJson = httpError.contentType.includes('json');
+    const isJson = httpError.contentType?.includes('json');
 
     return new TsRestResponse(
       isJson ? JSON.stringify(httpError.body) : httpError.body,
       {
         status: httpError.statusCode,
-        headers: new Headers({
-          'content-type': httpError.contentType,
-        }),
+        headers: httpError.contentType
+          ? new Headers({
+              'content-type': httpError.contentType,
+            })
+          : undefined,
       },
     );
   };

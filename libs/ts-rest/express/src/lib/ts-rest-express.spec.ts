@@ -1,6 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { initContract, ResponseValidationError } from '@ts-rest/core';
+import {
+  initContract,
+  ResponseValidationError,
+  TsRestResponseError,
+} from '@ts-rest/core';
 import * as supertest from 'supertest';
 import * as express from 'express';
 import { z } from 'zod';
@@ -10,6 +14,8 @@ import * as multer from 'multer';
 const upload = multer();
 
 const c = initContract();
+const s = initServer();
+
 const postsRouter = c.router({
   getPost: {
     method: 'GET',
@@ -23,7 +29,6 @@ const postsRouter = c.router({
 describe('strict mode', () => {
   it('allows unknown responses when not in strict mode', () => {
     const cLoose = c.router({ posts: postsRouter });
-    const s = initServer();
 
     s.router(cLoose, {
       posts: {
@@ -42,7 +47,6 @@ describe('strict mode', () => {
       { posts: postsRouter },
       { strictStatusCodes: true },
     );
-    const s = initServer();
 
     s.router(cStrict, {
       posts: {
@@ -60,8 +64,6 @@ describe('strict mode', () => {
 
 describe('ts-rest-express', () => {
   it('should handle non-json response types from contract', async () => {
-    const c = initContract();
-
     const contract = c.router({
       postIndex: {
         method: 'POST',
@@ -98,9 +100,7 @@ describe('ts-rest-express', () => {
       },
     });
 
-    const server = initServer();
-
-    const postIndex = server.route(
+    const postIndex = s.route(
       contract.postIndex,
       async ({ body: { echoHtml } }) => {
         return {
@@ -110,7 +110,7 @@ describe('ts-rest-express', () => {
       },
     );
 
-    const router = server.router(contract, {
+    const router = s.router(contract, {
       postIndex,
       getRobots: async () => {
         return {
@@ -185,8 +185,6 @@ describe('ts-rest-express', () => {
   });
 
   it('should handle no content body', async () => {
-    const c = initContract();
-
     const contract = c.router({
       noContent: {
         method: 'POST',
@@ -204,8 +202,7 @@ describe('ts-rest-express', () => {
       },
     });
 
-    const server = initServer();
-    const router = server.router(contract, {
+    const router = s.router(contract, {
       noContent: async ({ params }) => {
         return {
           status: params.status,
@@ -239,8 +236,6 @@ describe('ts-rest-express', () => {
   });
 
   it('should handle optional url params', async () => {
-    const c = initContract();
-
     const contract = c.router({
       getPosts: {
         method: 'GET',
@@ -256,8 +251,7 @@ describe('ts-rest-express', () => {
       },
     });
 
-    const server = initServer();
-    const router = server.router(contract, {
+    const router = s.router(contract, {
       getPosts: async ({ params }) => {
         return {
           status: 200,
@@ -289,8 +283,6 @@ describe('ts-rest-express', () => {
   });
 
   it('should handle multipart/form-data', async () => {
-    const c = initContract();
-
     const contract = c.router({
       uploadFiles: {
         method: 'POST',
@@ -312,8 +304,7 @@ describe('ts-rest-express', () => {
       },
     });
 
-    const server = initServer();
-    const router = server.router(contract, {
+    const router = s.router(contract, {
       uploadFiles: {
         middleware: [upload.any()],
         handler: async ({ files, body }) => {
@@ -362,8 +353,6 @@ describe('ts-rest-express', () => {
   });
 
   it('allows download image', async () => {
-    const c = initContract();
-
     const contract = c.router({
       getFile: {
         method: 'GET',
@@ -379,7 +368,6 @@ describe('ts-rest-express', () => {
       },
     });
 
-    const s = initServer();
     const originalFilePath = path.join(__dirname, 'assets/logo.png');
 
     const router = s.router(contract, {
@@ -424,5 +412,60 @@ describe('ts-rest-express', () => {
       fs.readFileSync(originalFilePath, { encoding: 'utf-8' }),
     );
     expect(responseImage.headers['content-type']).toEqual('image/png');
+  });
+
+  it('should handle thrown TsRestResponseError', async () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts/:id',
+        responses: {
+          200: z.object({
+            id: z.string(),
+          }),
+          404: z.object({
+            message: z.literal('Not found'),
+          }),
+          500: c.noBody(),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      getPost: async ({ params: { id } }) => {
+        if (id === '500') {
+          throw new TsRestResponseError(contract.getPost, {
+            status: 500,
+            body: undefined,
+          });
+        }
+
+        throw new TsRestResponseError(contract.getPost, {
+          status: 404,
+          body: {
+            message: 'Not found',
+          },
+        });
+      },
+    });
+
+    const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    createExpressEndpoints(contract, router, app);
+
+    await supertest(app)
+      .get('/posts/500')
+      .expect((res) => {
+        expect(res.status).toEqual(500);
+        expect(res.text).toEqual('');
+      });
+
+    await supertest(app)
+      .get('/posts/10')
+      .expect((res) => {
+        expect(res.status).toEqual(404);
+        expect(res.body).toEqual({ message: 'Not found' });
+      });
   });
 });

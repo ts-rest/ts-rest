@@ -1,4 +1,8 @@
-import { initContract, ResponseValidationError } from '@ts-rest/core';
+import {
+  initContract,
+  ResponseValidationError,
+  TsRestResponseError,
+} from '@ts-rest/core';
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
   createNextRoute,
@@ -25,6 +29,10 @@ const contract = c.router({
     query: null,
     responses: {
       200: c.type<{ id: string }>(),
+      404: z.object({
+        message: z.literal('Not Found'),
+      }),
+      500: c.noBody(),
     },
   },
   getWithQuery: {
@@ -83,6 +91,22 @@ const nextEndpoint = createNextRoute(contract, {
     };
   }),
   getWithParams: async ({ params: { id } }) => {
+    if (id === '500') {
+      throw new TsRestResponseError(contract.getWithParams, {
+        status: 500,
+        body: undefined,
+      });
+    }
+
+    if (id === '404') {
+      throw new TsRestResponseError(contract.getWithParams, {
+        status: 404,
+        body: {
+          message: 'Not Found',
+        },
+      });
+    }
+
     return {
       status: 200,
       body: {
@@ -126,10 +150,11 @@ const nextEndpoint = createNextRoute(contract, {
 
 const jsonMock = jest.fn();
 const sendMock = jest.fn();
+const endMock = jest.fn();
 
 const mockRes = {
   status: jest.fn(() => ({
-    end: jest.fn(),
+    end: endMock,
     json: jsonMock,
     send: sendMock,
   })),
@@ -283,6 +308,37 @@ describe('createNextRouter', () => {
     expect(mockRes.status).toHaveBeenCalledWith(204);
     expect(jsonMock).toHaveBeenCalledTimes(0);
     expect(sendMock).toHaveBeenCalledTimes(0);
+    expect(endMock).toHaveBeenCalled();
+  });
+
+  it('should handle thrown TsRestResponseError', async () => {
+    const resultingRouter = createNextRouter(contract, nextEndpoint);
+
+    const req = mockReq('/test/404', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(404);
+    expect(jsonMock).toHaveBeenCalledWith({
+      message: 'Not Found',
+    });
+  });
+
+  it('should handle thrown TsRestResponseError empty body', async () => {
+    const resultingRouter = createNextRouter(contract, nextEndpoint);
+
+    const req = mockReq('/test/500', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(jsonMock).toHaveBeenCalledTimes(0);
+    expect(sendMock).toHaveBeenCalledTimes(0);
+    expect(endMock).toHaveBeenCalled();
   });
 
   describe('response validation', () => {

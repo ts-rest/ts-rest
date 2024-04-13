@@ -1,4 +1,4 @@
-import { initContract } from '@ts-rest/core';
+import { initContract, TsRestResponseError } from '@ts-rest/core';
 import {
   nestControllerContract,
   NestControllerInterface,
@@ -7,7 +7,12 @@ import {
 } from './ts-rest-nest';
 import { TsRest } from './ts-rest.decorator';
 import { TsRestRequest } from './ts-rest-request.decorator';
-import { Controller, INestApplication, Type } from '@nestjs/common';
+import {
+  Controller,
+  INestApplication,
+  ModuleMetadata,
+  Type,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { z } from 'zod';
@@ -404,18 +409,29 @@ describe('ts-rest-nest', () => {
     await app.close();
   });
 
-  const initializeApp = async (controller: Type) => {
-    const moduleRef = await Test.createTestingModule({
-      controllers: [controller],
-    }).compile();
+  const initializeApp = async (
+    moduleMetadata: ModuleMetadata = {},
+    adapter: 'express' | 'fastify' = 'express',
+  ) => {
+    const moduleRef = await Test.createTestingModule(moduleMetadata).compile();
 
-    app = moduleRef.createNestApplication();
+    app =
+      adapter === 'express'
+        ? moduleRef.createNestApplication()
+        : moduleRef.createNestApplication<NestFastifyApplication>(
+            new FastifyAdapter(),
+          );
+
     await app.init();
+
+    if (adapter === 'fastify') {
+      await app.getHttpAdapter().getInstance().ready();
+    }
 
     return app.getHttpServer();
   };
 
-  it('should handle non-json response types from contract', async () => {
+  describe('should handle non-json response types from contract', () => {
     const c = initContract();
     const nonJsonContract = c.router({
       postIndex: {
@@ -488,42 +504,86 @@ describe('ts-rest-nest', () => {
       }
     }
 
-    const server = await initializeApp(NonJsonController);
+    it('express', async () => {
+      const server = await initializeApp({ controllers: [NonJsonController] });
 
-    const responseHtml = await supertest(server)
-      .post('/index.html')
-      .send({ echoHtml: '<h1>hello world</h1>' });
-    expect(responseHtml.status).toEqual(200);
-    expect(responseHtml.text).toEqual('<h1>hello world</h1>');
-    expect(responseHtml.header['content-type']).toEqual(
-      'text/html; charset=utf-8',
-    );
+      const responseHtml = await supertest(server)
+        .post('/index.html')
+        .send({ echoHtml: '<h1>hello world</h1>' });
+      expect(responseHtml.status).toEqual(200);
+      expect(responseHtml.text).toEqual('<h1>hello world</h1>');
+      expect(responseHtml.header['content-type']).toEqual(
+        'text/html; charset=utf-8',
+      );
 
-    const responseHtmlFail = await supertest(server).post('/index.html').send({
-      echoHtml: 'hello world',
+      const responseHtmlFail = await supertest(server)
+        .post('/index.html')
+        .send({
+          echoHtml: 'hello world',
+        });
+      expect(responseHtmlFail.status).toEqual(500);
+      expect(responseHtmlFail.body).toEqual({
+        message: 'Internal server error',
+        statusCode: 500,
+      });
+      expect(responseHtmlFail.header['content-type']).toEqual(
+        'application/json; charset=utf-8',
+      );
+
+      const responseTextPlain = await supertest(server).get('/robots.txt');
+      expect(responseTextPlain.status).toEqual(200);
+      expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
+      expect(responseTextPlain.header['content-type']).toEqual(
+        'text/plain; charset=utf-8',
+      );
+
+      const responseCss = await supertest(server).get('/style.css');
+      expect(responseCss.status).toEqual(200);
+      expect(responseCss.text).toEqual('body { color: red; }');
+      expect(responseCss.header['content-type']).toEqual(
+        'text/css; charset=utf-8',
+      );
     });
-    expect(responseHtmlFail.status).toEqual(500);
-    expect(responseHtmlFail.body).toEqual({
-      message: 'Internal server error',
-      statusCode: 500,
+
+    it('fastify', async () => {
+      const server = await initializeApp(
+        {
+          controllers: [NonJsonController],
+        },
+        'fastify',
+      );
+
+      const responseHtml = await supertest(server)
+        .post('/index.html')
+        .send({ echoHtml: '<h1>hello world</h1>' });
+      expect(responseHtml.status).toEqual(200);
+      expect(responseHtml.text).toEqual('<h1>hello world</h1>');
+      expect(responseHtml.header['content-type']).toEqual('text/html');
+
+      const responseHtmlFail = await supertest(server)
+        .post('/index.html')
+        .send({
+          echoHtml: 'hello world',
+        });
+      expect(responseHtmlFail.status).toEqual(500);
+      expect(responseHtmlFail.body).toEqual({
+        message: 'Internal server error',
+        statusCode: 500,
+      });
+      expect(responseHtmlFail.header['content-type']).toEqual(
+        'application/json; charset=utf-8',
+      );
+
+      const responseTextPlain = await supertest(server).get('/robots.txt');
+      expect(responseTextPlain.status).toEqual(200);
+      expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
+      expect(responseTextPlain.header['content-type']).toEqual('text/plain');
+
+      const responseCss = await supertest(server).get('/style.css');
+      expect(responseCss.status).toEqual(200);
+      expect(responseCss.text).toEqual('body { color: red; }');
+      expect(responseCss.header['content-type']).toEqual('text/css');
     });
-    expect(responseHtmlFail.header['content-type']).toEqual(
-      'application/json; charset=utf-8',
-    );
-
-    const responseTextPlain = await supertest(server).get('/robots.txt');
-    expect(responseTextPlain.status).toEqual(200);
-    expect(responseTextPlain.text).toEqual('User-agent: * Disallow: /');
-    expect(responseTextPlain.header['content-type']).toEqual(
-      'text/plain; charset=utf-8',
-    );
-
-    const responseCss = await supertest(server).get('/style.css');
-    expect(responseCss.status).toEqual(200);
-    expect(responseCss.text).toEqual('body { color: red; }');
-    expect(responseCss.header['content-type']).toEqual(
-      'text/css; charset=utf-8',
-    );
   });
 
   describe('should handle global configuration', () => {
@@ -558,17 +618,12 @@ describe('ts-rest-nest', () => {
     }
 
     it('express', async () => {
-      const moduleRef = await Test.createTestingModule({
+      const server = await initializeApp({
         controllers: [TestController],
         imports: [
           TsRestModule.register({ validateResponses: true, jsonQuery: true }),
         ],
-      }).compile();
-
-      app = moduleRef.createNestApplication();
-      await app.init();
-
-      const server = app.getHttpServer();
+      });
 
       const response = await supertest(server).get('/?foo=true');
       expect(response.status).toEqual(200);
@@ -576,20 +631,15 @@ describe('ts-rest-nest', () => {
     });
 
     it('fastify', async () => {
-      const moduleRef = await Test.createTestingModule({
-        controllers: [TestController],
-        imports: [
-          TsRestModule.register({ validateResponses: true, jsonQuery: true }),
-        ],
-      }).compile();
-
-      app = moduleRef.createNestApplication<NestFastifyApplication>(
-        new FastifyAdapter(),
+      const server = await initializeApp(
+        {
+          controllers: [TestController],
+          imports: [
+            TsRestModule.register({ validateResponses: true, jsonQuery: true }),
+          ],
+        },
+        'fastify',
       );
-      await app.init();
-      await app.getHttpAdapter().getInstance().ready();
-
-      const server = app.getHttpServer();
 
       const response = await supertest(server).get('/?foo=true');
       expect(response.status).toEqual(200);
@@ -611,17 +661,12 @@ describe('ts-rest-nest', () => {
           }
         }
 
-        const moduleRef = await Test.createTestingModule({
+        const server = await initializeApp({
           controllers: [TestController],
           imports: [
             TsRestModule.register({ validateResponses: true, jsonQuery: true }),
           ],
-        }).compile();
-
-        app = moduleRef.createNestApplication();
-        await app.init();
-
-        const server = app.getHttpServer();
+        });
 
         const response = await supertest(server).get('/?foo=true');
         expect(response.status).toEqual(400);
@@ -659,17 +704,12 @@ describe('ts-rest-nest', () => {
           }
         }
 
-        const moduleRef = await Test.createTestingModule({
+        const server = await initializeApp({
           controllers: [TestController],
           imports: [
             TsRestModule.register({ validateResponses: true, jsonQuery: true }),
           ],
-        }).compile();
-
-        app = moduleRef.createNestApplication();
-        await app.init();
-
-        const server = app.getHttpServer();
+        });
 
         const response = await supertest(server).get('/?foo=true');
         expect(response.status).toEqual(400);
@@ -707,17 +747,12 @@ describe('ts-rest-nest', () => {
           }
         }
 
-        const moduleRef = await Test.createTestingModule({
+        const server = await initializeApp({
           controllers: [TestController],
           imports: [
             TsRestModule.register({ validateResponses: true, jsonQuery: true }),
           ],
-        }).compile();
-
-        app = moduleRef.createNestApplication();
-        await app.init();
-
-        const server = app.getHttpServer();
+        });
 
         const response = await supertest(server).get('/?foo=true');
         expect(response.status).toEqual(200);
@@ -754,14 +789,9 @@ describe('ts-rest-nest', () => {
     }
 
     it('express', async () => {
-      const moduleRef = await Test.createTestingModule({
+      const server = await initializeApp({
         controllers: [TestController],
-      }).compile();
-
-      app = moduleRef.createNestApplication();
-      await app.init();
-
-      const server = app.getHttpServer();
+      });
 
       const response = await supertest(server).post('/');
       expect(response.status).toEqual(204);
@@ -771,23 +801,114 @@ describe('ts-rest-nest', () => {
     });
 
     it('fastify', async () => {
-      const moduleRef = await Test.createTestingModule({
-        controllers: [TestController],
-      }).compile();
-
-      app = moduleRef.createNestApplication<NestFastifyApplication>(
-        new FastifyAdapter(),
+      const server = await initializeApp(
+        {
+          controllers: [TestController],
+        },
+        'fastify',
       );
-      await app.init();
-      await app.getHttpAdapter().getInstance().ready();
-
-      const server = app.getHttpServer();
 
       const response = await supertest(server).post('/');
       expect(response.status).toEqual(204);
       expect(response.text).toEqual('');
       expect(response.headers['content-length']).toBeUndefined();
       expect(response.headers['content-type']).toBeUndefined();
+    });
+  });
+
+  describe('should handle thrown TsRestResponseError', () => {
+    const c = initContract();
+    const contract = c.router({
+      getIndex: {
+        method: 'GET',
+        path: '/:id',
+        responses: {
+          200: z.object({
+            id: z.string(),
+          }),
+          404: z.object({
+            message: z.literal('Not Found'),
+          }),
+          500: c.noBody(),
+        },
+      },
+    });
+
+    @Controller()
+    class TestController implements NestControllerInterface<typeof contract> {
+      @TsRest(contract.getIndex)
+      async getIndex(
+        @TsRestRequest()
+        { params: { id } }: NestRequestShapes<typeof contract>['getIndex'],
+      ) {
+        if (id === '500') {
+          throw new TsRestResponseError(contract.getIndex, {
+            status: 500,
+            body: undefined,
+          });
+        }
+
+        if (id === '404') {
+          throw new TsRestResponseError(contract.getIndex, {
+            status: 404,
+            body: {
+              message: 'Not Found',
+            },
+          });
+        }
+
+        return {
+          status: 204,
+          body: undefined,
+        } as const;
+      }
+    }
+
+    it('express', async () => {
+      const server = await initializeApp({
+        controllers: [TestController],
+      });
+
+      await supertest(server)
+        .get('/404')
+        .expect((response) => {
+          expect(response.status).toEqual(404);
+          expect(response.body).toEqual({ message: 'Not Found' });
+        });
+
+      await supertest(server)
+        .get('/500')
+        .expect((response) => {
+          expect(response.status).toEqual(500);
+          expect(response.text).toEqual('');
+          expect(response.headers['content-length']).toEqual('0');
+          expect(response.headers['content-type']).toBeUndefined();
+        });
+    });
+
+    it('fastify', async () => {
+      const server = await initializeApp(
+        {
+          controllers: [TestController],
+        },
+        'fastify',
+      );
+
+      await supertest(server)
+        .get('/404')
+        .expect((response) => {
+          expect(response.status).toEqual(404);
+          expect(response.body).toEqual({ message: 'Not Found' });
+        });
+
+      await supertest(server)
+        .get('/500')
+        .expect((response) => {
+          expect(response.status).toEqual(500);
+          expect(response.text).toEqual('');
+          expect(response.headers['content-length']).toEqual('0');
+          expect(response.headers['content-type']).toBeUndefined();
+        });
     });
   });
 });

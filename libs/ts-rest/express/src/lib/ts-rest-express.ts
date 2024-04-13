@@ -4,10 +4,12 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  HTTPStatusCode,
   isAppRoute,
   isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
+  TsRestResponseError,
   validateResponse,
 } from '@ts-rest/core';
 import type {
@@ -144,20 +146,32 @@ const initializeExpressRoute = ({
     try {
       const validationResults = validateRequest(req, res, schema, options);
 
-      const result = await handler({
-        params: validationResults.paramsResult.data as any,
-        body: validationResults.bodyResult.data as any,
-        query: validationResults.queryResult.data,
-        headers: validationResults.headersResult.data as any,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        files: req.files,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        file: req.file,
-        req: req as any,
-        res: res,
-      });
+      let result: { status: HTTPStatusCode; body: any };
+      try {
+        result = await handler({
+          params: validationResults.paramsResult.data as any,
+          body: validationResults.bodyResult.data as any,
+          query: validationResults.queryResult.data,
+          headers: validationResults.headersResult.data as any,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          files: req.files,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          file: req.file,
+          req: req as any,
+          res: res,
+        });
+      } catch (e) {
+        if (e instanceof TsRestResponseError) {
+          result = {
+            status: e.statusCode,
+            body: e.body,
+          };
+        } else {
+          throw e;
+        }
+      }
 
       const statusCode = Number(result.status);
 
