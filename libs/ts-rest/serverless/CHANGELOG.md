@@ -1,5 +1,17 @@
 # @ts-rest/serverless
 
+## 3.43.0
+
+### Minor Changes
+
+- 308b966: `TsRestResponseError` can be thrown from any server package
+- 05e8a92: Add ability to include custom platform context for serverless fetch handler
+
+### Patch Changes
+
+- Updated dependencies [308b966]
+  - @ts-rest/core@3.43.0
+
 ## 3.42.0
 
 ### Minor Changes

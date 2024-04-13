@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.43.0
+
+### Minor Changes
+
+- 77f23a8: Add `operationMapper` option to extend OpenAPI operations
+
 ## 3.42.0
 
 ## 3.41.2
