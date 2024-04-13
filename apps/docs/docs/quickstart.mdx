@@ -159,7 +159,7 @@ export class PostController implements NestControllerInterface<typeof c> {
 ```
 
 You can see that we're using the _runtime_ object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route.
-We're also using the `RequestShapes` _Typescript Types_ (which comes from the runtime object `c`) to ensure type safety of your contract _on_ the Nest controller.
+We're also using the `RequestShapes` _TypeScript Types_ (which comes from the runtime object `c`) to ensure type safety of your contract _on_ the Nest controller.
 
 If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an _object_ in the contract above, not boolean!
 

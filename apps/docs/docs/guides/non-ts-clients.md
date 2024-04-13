@@ -1,8 +1,8 @@
 # Without TS Clients
 
-In a brownfield code base, it's common that you may not have the luxury of having Typescript end-to-end. For instance, you might have an Android/iOS/Flutter app written in Java/Kotlin/Swift and want to add Typescript to your backend.
+In a brownfield code base, it's common that you may not have the luxury of having TypeScript end-to-end. For instance, you might have an Android/iOS/Flutter app written in Java/Kotlin/Swift and want to add TypeScript to your backend.
 
-One solution to this is the `@ts-rest/open-api` package, which allows you to generate a OpenAPI spec from your Typescript code, and then use a tool like [Swagger Codegen](https://swagger.io/tools/swagger-codegen/) to generate a client library for your target language.
+One solution to this is the `@ts-rest/open-api` package, which allows you to generate a OpenAPI spec from your TypeScript code, and then use a tool like [Swagger Codegen](https://swagger.io/tools/swagger-codegen/) to generate a client library for your target language.
 
 ```typescript
 import { myContract } from './my-api';
