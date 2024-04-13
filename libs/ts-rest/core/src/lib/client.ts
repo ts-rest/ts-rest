@@ -52,7 +52,7 @@ export interface OverrideableClientArgs {
 }
 
 export interface ClientArgs extends OverrideableClientArgs {
-  baseHeaders: Record<string, string>;
+  baseHeaders?: Record<string, string>;
   api?: ApiFetcher;
 }
 
@@ -205,7 +205,7 @@ export const fetchApi = ({
   const apiFetcher = clientArgs.api || tsRestFetchApi;
 
   const combinedHeaders = {
-    ...normalizeHeaders(clientArgs.baseHeaders),
+    ...(clientArgs.baseHeaders && normalizeHeaders(clientArgs.baseHeaders)),
     ...normalizeHeaders(headers),
   } as Record<string, string>;
 

@@ -186,9 +186,7 @@ export type ServerInferRequest<
 
 type ClientInferRequestBase<
   T extends AppRoute,
-  TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
-    baseHeaders: {};
-  },
+  TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {},
   THeaders = 'headers' extends keyof T
     ? Prettify<
         PartialByLooseKeys<
@@ -245,9 +243,7 @@ type ClientInferRequestBase<
 
 export type ClientInferRequest<
   T extends AppRoute | AppRouter,
-  TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
-    baseHeaders: {};
-  },
+  TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {},
 > = T extends AppRoute
   ? ClientInferRequestBase<T, TClientArgs>
   : T extends AppRouter
@@ -256,7 +252,5 @@ export type ClientInferRequest<
 
 export type PartialClientInferRequest<
   TRoute extends AppRoute,
-  TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {
-    baseHeaders: {};
-  },
+  TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {},
 > = OptionalIfAllOptional<ClientInferRequest<TRoute, TClientArgs>>;

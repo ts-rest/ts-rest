@@ -178,6 +178,10 @@ const client = initClient(router, {
   },
 });
 
+const clientWithoutBaseHeaders = initClient(router, {
+  baseUrl: 'https://api.com',
+});
+
 const clientStrict = initClient(routerStrict, {
   baseUrl: 'https://api.com',
   baseHeaders: {
@@ -211,6 +215,34 @@ type ClientGetPostsType = Expect<
         cache?: RequestCache;
       }
     | undefined
+  >
+>;
+
+type ClientWithoutBaseHeadersGetPostsType = Expect<
+  Equal<
+    Parameters<typeof clientWithoutBaseHeaders.posts.getPosts>[0],
+    {
+      query?: {
+        take?: number;
+        skip?: number;
+        order?: string;
+      };
+      headers: {
+        'x-pagination'?: number;
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key': string;
+      };
+      extraHeaders?: {
+        'x-pagination'?: never;
+        'x-test'?: never;
+        'base-header'?: never;
+        'x-api-key'?: never;
+      } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
+    }
   >
 >;
 
