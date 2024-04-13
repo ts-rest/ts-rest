@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.43.0
+
+### Minor Changes
+
+- 308b966: `TsRestResponseError` can be thrown from any server package
+
 ## 3.42.0
 
 ## 3.41.2
