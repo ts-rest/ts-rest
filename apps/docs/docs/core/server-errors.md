@@ -1,6 +1,6 @@
-# Server Errors
+# Throwing Response Errors
 
-To return errors that are defined in your contract from your server, you can throw a `TsRestResponseError` from anywhere within your code,
+To respond with errors that are defined in your contract from your server, you can throw a `TsRestResponseError` from anywhere within your code,
 and it will be caught by ts-rest and served as a response. It will still go through any response validations that are enabled.
 
 ```typescript

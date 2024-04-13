@@ -66,7 +66,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Client Packages',
+      label: 'Client',
       collapsed: false,
       items: [
         { type: 'doc', id: 'core/fetch' },
@@ -77,7 +77,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Server Packages',
+      label: 'Server',
       collapsed: false,
       items: [
         {
@@ -124,6 +124,10 @@ const sidebars = {
             { type: 'doc', id: 'serverless/aws' },
             { type: 'doc', id: 'serverless/next-serverless' },
           ],
+        },
+        {
+          type: 'doc',
+          id: 'core/server-errors',
         },
       ],
     },
