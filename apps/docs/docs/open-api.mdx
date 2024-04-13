@@ -93,6 +93,65 @@ This will only work for the schemas of the body, responses and individual query 
 
 You can see an example of its usage in the code snippet above.
 
+## Extending Operations with Additional OpenAPI Fields
+
+We do not provide first-party support to set all possible OpenAPI fields on the operations such as the `security` field. In addition, you may have some specific needs to modify the fields already set by `ts-rest` such as the `tags` field.
+
+Therefore, we have provided an `operationMapper` option to allow you to modify the OpenAPI fields of the operations. This is a callback function, that will receive the operation object and the contract endpoint, and must return a valid OpenAPI operation object.
+A common way to provide data to this function is to utilize the `metadata` field of the contract endpoint. However, feel free to come up with a different solution to doing this if you would not like to include this data in your contracts.
+
+```typescript
+const hasCustomTags = (
+  metadata: unknown,
+): metadata is { openApiTags: string[] } => {
+  return (
+    !!metadata &&
+    typeof metadata === 'object' &&
+    'openApiTags' in metadata
+  );
+};
+
+const hasSecurity = (
+  metadata: unknown,
+): metadata is { openApiSecurity: SecurityRequirementObject[] } => {
+  return (
+    !!metadata &&
+    typeof metadata === 'object' &&
+    'openApiSecurity' in metadata
+  );
+};
+
+const apiDoc = generateOpenApi(
+  router,
+  {
+    info: { title: 'Blog API', version: '0.1' },
+    components: {
+      securitySchemes: {
+        BasicAuth: {
+          type: 'http',
+          scheme: 'basic',
+        },
+      },
+    },
+  },
+  {
+    operationMapper: (operation, appRoute) => ({
+      ...operation,
+      ...(hasCustomTags(appRoute.metadata)
+        ? {
+            tags: appRoute.metadata.openApiTags,
+          }
+        : {}),
+      ...(hasSecurity(appRoute.metadata)
+        ? {
+            security: appRoute.metadata.openApiSecurity,
+          }
+        : {}),
+    }),
+  },
+);
+```
+
 ## Serving a Swagger UI
 
 In Express use `swagger-ui-express`:
@@ -141,9 +200,14 @@ bootstrap();
 
 Don't worry if you don't use express or Nest, whatever library you want to use is OK our OpenAPI returns a plain JSON object which is fully compliant with the OpenAPI spec.
 
-## Enabling `operationId`'s (Recommended!)
+## Enabling `operationId`s (Recommended!)
 
-If your contract has unique names for all of your endpoints, you can enable `operationId`'s by setting `setOperationId` to `true` in the options:
+You can set `setOperationId` to either `true` or `concatenated-path` to set `operationId`s on your endpoints.
+
+In the case of setting it to `true`, it will use only the endpoint name from your contract. You have to ensure that the endpoint names are unique across the entire contract.
+
+In the case of setting it to `concatenated-path`, it will use the endpoint name concatenated with the path through the nested contract.
+This is useful when you have multiple endpoints with the same name but different paths. This will result in longer but more descriptive `operationId`s.
 
 ```typescript
 const openApiSchema = generateOpenApi(
@@ -156,6 +220,7 @@ const openApiSchema = generateOpenApi(
   },
   {
     setOperationId: true,
+    // setOperationId: 'concatenated-path',
   },
 );
 ```
@@ -180,6 +245,8 @@ Below is an example of what the OpenAPI document would look like with `operation
           }
         ],
         "operationId": "getPosts", // <--- This is the operationId
+        // or
+        "operationId": "posts.getPosts", // <--- If using concatenated-path
         "responses": {
 ```
 

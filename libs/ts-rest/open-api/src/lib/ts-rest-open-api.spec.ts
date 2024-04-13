@@ -2,6 +2,7 @@ import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 import { generateOpenApi } from './ts-rest-open-api';
 import { extendApi } from '@anatine/zod-openapi';
+import { SecurityRequirementObject } from 'openapi3-ts';
 
 const c = initContract();
 
@@ -102,6 +103,14 @@ const router = c.router({
     description: `Check the application's health status`,
     responses: {
       200: c.type<{ message: string }>(),
+    },
+    metadata: {
+      openApiTags: ['Custom Health Tag'],
+      openApiSecurity: [
+        {
+          BasicAuth: [],
+        },
+      ],
     },
   },
   mediaExamples: {
@@ -557,6 +566,68 @@ describe('ts-rest-open-api', () => {
       });
     });
 
+    it('should generate doc with concatenated path operation ids', async () => {
+      const apiDoc = generateOpenApi(
+        router,
+        {
+          info: { title: 'Blog API', version: '0.1' },
+        },
+        { setOperationId: 'concatenated-path' },
+      );
+
+      expect(apiDoc).toEqual({
+        ...expectedApiDoc,
+        paths: {
+          '/health': {
+            get: {
+              ...expectedApiDoc.paths['/health'].get,
+              operationId: 'health',
+            },
+          },
+          '/media-examples': {
+            post: {
+              ...expectedApiDoc.paths['/media-examples'].post,
+              operationId: 'mediaExamples',
+            },
+          },
+          '/posts': {
+            get: {
+              ...expectedApiDoc.paths['/posts'].get,
+              operationId: 'posts.findPosts',
+            },
+            post: {
+              ...expectedApiDoc.paths['/posts'].post,
+              operationId: 'posts.createPost',
+            },
+          },
+          '/posts/{id}': {
+            get: {
+              ...expectedApiDoc.paths['/posts/{id}'].get,
+              operationId: 'posts.getPost',
+            },
+          },
+          '/posts/{id}/comments': {
+            get: {
+              ...expectedApiDoc.paths['/posts/{id}/comments'].get,
+              operationId: 'posts.comments.getPostComments',
+            },
+          },
+          '/posts/{id}/comments/{commentId}': {
+            get: {
+              ...expectedApiDoc.paths['/posts/{id}/comments/{commentId}'].get,
+              operationId: 'posts.getPostComment',
+            },
+          },
+          '/auth': {
+            post: {
+              ...expectedApiDoc.paths['/auth'].post,
+              operationId: 'posts.auth',
+            },
+          },
+        },
+      });
+    });
+
     it('should generate doc with json query', async () => {
       const apiDoc = generateOpenApi(
         router,
@@ -687,6 +758,103 @@ describe('ts-rest-open-api', () => {
           { setOperationId: true },
         ),
       ).toThrowError(/getPost/);
+    });
+
+    it('should not throw when duplicate operationIds with concatenated paths', async () => {
+      const router = c.router({
+        posts: postsRouter,
+        getPost: {
+          method: 'GET',
+          path: `/posts/:id`,
+          responses: {
+            200: c.type<Post | null>(),
+          },
+        },
+      });
+
+      expect(() =>
+        generateOpenApi(
+          router,
+          {
+            info: { title: 'Blog API', version: '0.1' },
+          },
+          { setOperationId: 'concatenated-path' },
+        ),
+      ).not.toThrowError(/getPost/);
+    });
+
+    it('should add custom fields with operationMapper', async () => {
+      const hasCustomTags = (
+        metadata: unknown,
+      ): metadata is { openApiTags: string[] } => {
+        return (
+          !!metadata &&
+          typeof metadata === 'object' &&
+          'openApiTags' in metadata
+        );
+      };
+
+      const hasSecurity = (
+        metadata: unknown,
+      ): metadata is { openApiSecurity: SecurityRequirementObject[] } => {
+        return (
+          !!metadata &&
+          typeof metadata === 'object' &&
+          'openApiSecurity' in metadata
+        );
+      };
+
+      const apiDoc = generateOpenApi(
+        router,
+        {
+          info: { title: 'Blog API', version: '0.1' },
+          components: {
+            securitySchemes: {
+              BasicAuth: {
+                type: 'http',
+                scheme: 'basic',
+              },
+            },
+          },
+        },
+        {
+          operationMapper: (operation, appRoute) => ({
+            ...operation,
+            ...(hasCustomTags(appRoute.metadata)
+              ? {
+                  tags: appRoute.metadata.openApiTags,
+                }
+              : {}),
+            ...(hasSecurity(appRoute.metadata)
+              ? {
+                  security: appRoute.metadata.openApiSecurity,
+                }
+              : {}),
+          }),
+        },
+      );
+      expect(apiDoc).toEqual({
+        ...expectedApiDoc,
+        paths: {
+          ...expectedApiDoc.paths,
+          '/health': {
+            ...expectedApiDoc.paths['/health'],
+            get: {
+              ...expectedApiDoc.paths['/health'].get,
+              tags: router.health.metadata.openApiTags,
+              security: router.health.metadata.openApiSecurity,
+            },
+          },
+        },
+        components: {
+          securitySchemes: {
+            BasicAuth: {
+              type: 'http',
+              scheme: 'basic',
+            },
+          },
+        },
+      });
     });
 
     it('works with zod refine', () => {
