@@ -101,6 +101,7 @@
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.14.5",
+    "@cloudflare/workers-types": "^4.20240405.0",
     "@docusaurus/module-type-aliases": "2.4.1",
     "@nestjs/schematics": "10.0.1",
     "@nestjs/testing": "10.1.2",

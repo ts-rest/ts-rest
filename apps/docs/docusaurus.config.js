@@ -117,12 +117,6 @@ const config = {
             label: 'Quickstart',
           },
           {
-            type: 'doc',
-            docId: 'api/modules',
-            position: 'left',
-            label: 'API Reference',
-          },
-          {
             href: 'https://github.com/ts-rest/ts-rest',
             className: 'header-social-link header-github-link',
             'aria-label': 'GitHub Repository',

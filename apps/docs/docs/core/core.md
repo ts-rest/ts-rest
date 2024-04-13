@@ -1,4 +1,4 @@
-# Contract
+# Define Contract
 
 Use the `@ts-rest/core` package to define a contract. Nesting routers can help organize your resources. For example, `/users/:id/posts` could have a nested router `contract.users.posts`. This is the path that you'd use on the client to query the API.
 
@@ -7,8 +7,9 @@ Breaking down the contract to sub-routers also allows you to split up the backen
 You can define your contract fields such as `body`, `query`, `pathParams`, and `headers` using a plain Typescript through the `c.type` helper, or you can use Zod objects.
 
 ```typescript
-const c = initContract();
+import { initContract } from '@ts-rest/core';
 
+const c = initContract();
 export const contract = c.router({
   createPost: {
     method: 'POST',
@@ -305,7 +306,7 @@ export const contract = c.router({
 
 These configuration options allow you to modify how your contract functions.
 
-### Base Header
+### Base Headers
 
 You can assign `baseHeaders` which will be merged with the contract `headers`. Here's how to set it:
 

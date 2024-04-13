@@ -1,9 +1,12 @@
-# Client
+# Fetch Client
 
 All of the client libraries (`@ts-rest/core`, `@ts-rest/react-query`, and `@ts-rest/solid-query`) all use the `initClient` or `initQueryClient` functions to create a client. These functions take a `baseUrl` and `baseHeaders` as the first two arguments, and then an optional `api` argument as the third argument.
 
 ```typescript
-export const client = initClient(router, {
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
+
+export const client = initClient(contract, {
   baseUrl: 'http://localhost:3334',
   baseHeaders: {},
 });
@@ -43,7 +46,7 @@ Breaking down the arguments:
 You can add your own custom arguments to the request, and they will be passed through to the `api` function - Read more here! [Custom API](/core/custom.md)
 
 ```typescript
-const client = initQueryClient(postsApi, {
+const client = initClient(contract, {
   // ...
   api: async (args: ApiFetcherArgs & { custom?: string }) => {
     return tsRestFetchApi(args);
@@ -114,7 +117,7 @@ By default, all query parameters are encoded as strings, however, you can use th
 Make sure to enable JSON query handling on the server as well.
 
 ```typescript
-const client = initClient(router, {
+const client = initClient(contract, {
   baseUrl: 'http://localhost:3334',
   baseHeaders: {},
   jsonQuery: true,
@@ -194,4 +197,6 @@ z.union([z.string().datetime(), z.date()])
 
 We use the [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) API under the hood.
 
-We support basic fetch calls for application/json and text/plain content types and do not support content-type missing in resource response (per [security standards](https://knowledge-base.secureflag.com/vulnerabilities/security_misconfiguration/lack_of_content_type_headers_vulnerability.html)). If you need to implement custom API logic (like content-type header is missing for some reason, or need to handle different content types), you can implement your own Client: https://ts-rest.com/docs/core/custom
+Our built-in fetch client handles the majority of use cases such as automatically parsing response bodies to JSON or text based on the `Content-Type` header.
+However, if you need to handle some different behavior, or add extra functionality such as injecting API tokens into requests, you can implement your own
+[custom fetcher or wrap the built-in fetcher](custom.md).

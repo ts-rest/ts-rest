@@ -1,6 +1,3 @@
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # File Uploading
 
 ts-rest supports multipart/form-data requests, this is useful for uploading files or working with FormData from a form.
