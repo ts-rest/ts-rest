@@ -8,7 +8,7 @@ import { z } from 'zod';
 import * as apiGatewayEventV1 from '../mappers/aws/test-data/api-gateway-event-v1.json';
 import * as apiGatewayEventV2 from '../mappers/aws/test-data/api-gateway-event-v2.json';
 import { TsRestResponse } from '../response';
-import { TsRestRouteError } from '../http-error';
+import { TsRestResponseError } from '../http-error';
 
 const c = initContract();
 
@@ -121,7 +121,7 @@ describe('tsRestLambda', () => {
         }
 
         if (query.throwDefinedError) {
-          throw new TsRestRouteError(appRoute, {
+          throw new TsRestResponseError(appRoute, {
             status: 402,
             body: 'Unauthorized',
           });

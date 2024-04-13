@@ -20,33 +20,6 @@ For example, for a Vercel Function that lives inside `api/posts.ts`, you would s
 The `cors` option allows you to configure CORS for your handler. The `cors` option can be a boolean (setting it to `false` disables CORS) or an options object.
 We use `itty-router` under the hood for routing and CORS handling, so the options are the same as the `itty-router` CORS options. You can find the full list of options [here](https://itty.dev/itty-router/cors#corsoptions).
 
-## Error Handling
-
-To throw HTTP errors from anywhere within your code. You can use the `TsRestHttpError` class. This class takes a status code, a body and optionally a content-type header.
-
-```typescript
-import { TsRestHttpError } from '@ts-rest/serverless';
-
-// anywhere in your code
-throw new TsRestHttpError(404, { message: 'Not Found' });
-
-// or with a content-type header
-throw new TsRestHttpError(404, 'Not Found', 'text/plain');
-```
-
-You can also use the `TsRestRouteError` to return a response that is defined in your contract.
-
-```typescript
-import { TsRestRouteError } from '@ts-rest/serverless';
-import { contract } from './contract';
-
-// anywhere in your code
-throw new TsRestRouteError(contract.getPost, {
-  status: 404,
-  body: { message: 'Not Found' },
-});
-```
-
 ### Custom Error Handler
 
 The `errorHandler` option allows you to define a custom error handler to handle any uncaught exceptions. The error handler is a function that takes an error and request and optionally returns a response object.

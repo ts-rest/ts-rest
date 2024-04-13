@@ -4,11 +4,13 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  HTTPStatusCode,
   isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
+  TsRestResponseError,
   validateResponse,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
@@ -214,17 +216,29 @@ const registerRoute = <TAppRoute extends AppRoute>(
         options,
       );
 
-      const result = await routeImpl({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        params: validationResults.paramsResult.data as any,
-        query: validationResults.queryResult.data,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        headers: validationResults.headersResult.data as any,
-        request,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        body: validationResults.bodyResult.data as any,
-        reply,
-      });
+      let result: { status: HTTPStatusCode; body: unknown };
+      try {
+        result = await routeImpl({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          params: validationResults.paramsResult.data as any,
+          query: validationResults.queryResult.data,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          headers: validationResults.headersResult.data as any,
+          request,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: validationResults.bodyResult.data as any,
+          reply,
+        });
+      } catch (e) {
+        if (e instanceof TsRestResponseError) {
+          result = {
+            status: e.statusCode,
+            body: e.body,
+          };
+        } else {
+          throw e;
+        }
+      }
 
       const statusCode = result.status;
 

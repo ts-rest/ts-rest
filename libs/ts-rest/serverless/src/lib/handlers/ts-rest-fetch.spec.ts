@@ -1,4 +1,4 @@
-import { initContract } from '@ts-rest/core';
+import { initContract, TsRestResponseError } from '@ts-rest/core';
 import { parse as parseMultipart, getBoundary } from 'parse-multipart-data';
 import { z } from 'zod';
 import { vi } from 'vitest';
@@ -34,6 +34,10 @@ const contract = c.router({
         id: z.number(),
         pong: z.string(),
       }),
+      404: z.object({
+        message: z.literal('Not Found'),
+      }),
+      500: c.noBody(),
     },
   },
   noContent: {
@@ -80,6 +84,22 @@ const testFetchRequestHandler = (request: Request) => {
         };
       },
       ping: async ({ body, params }) => {
+        if (params.id === 500) {
+          throw new TsRestResponseError(contract.ping, {
+            status: 500,
+            body: undefined,
+          });
+        }
+
+        if (params.id === 404) {
+          throw new TsRestResponseError(contract.ping, {
+            status: 404,
+            body: {
+              message: 'Not Found',
+            },
+          });
+        }
+
         return {
           status: 200,
           body: {
@@ -210,6 +230,59 @@ describe('fetchRequestHandler', () => {
     expect(response.headers).toEqual(expectedResponse.headers);
     expect(await response.text()).toEqual('');
     expect(mockFn).toHaveBeenCalledWith('bar');
+  });
+
+  it('should handle thrown TsRestResponseError', async () => {
+    const request = new Request('http://localhost/ping/404', {
+      method: 'POST',
+      headers: {
+        origin: 'http://localhost',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ ping: 'foo' }),
+    });
+
+    const response = await testFetchRequestHandler(request);
+    const expectedResponse = new Response('{"message":"Not Found"}', {
+      status: 404,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        vary: 'Origin',
+        'x-foo': 'bar',
+      },
+    });
+
+    expect(response.status).toEqual(expectedResponse.status);
+    expect(response.headers).toEqual(expectedResponse.headers);
+    expect(await response.json()).toEqual(await expectedResponse.json());
+  });
+
+  it('should handle thrown TsRestResponseError no body', async () => {
+    const request = new Request('http://localhost/ping/500', {
+      method: 'POST',
+      headers: {
+        origin: 'http://localhost',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ ping: 'foo' }),
+    });
+
+    const response = await testFetchRequestHandler(request);
+    const expectedResponse = new Response(null, {
+      status: 500,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        vary: 'Origin',
+        'x-foo': 'bar',
+      },
+    });
+
+    expect(response.status).toEqual(expectedResponse.status);
+    expect(response.headers).toEqual(expectedResponse.headers);
+    expect(await response.text()).toEqual('');
   });
 
   it('should handle file upload', async () => {

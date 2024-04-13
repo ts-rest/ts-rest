@@ -32,6 +32,7 @@ import {
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferResponses,
+  TsRestResponseError,
 } from '@ts-rest/core';
 import {
   TsRestAppRouteMetadataKey,
@@ -326,6 +327,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
               status: e.getStatus(),
               body: e.getResponse(),
               error: e,
+            };
+          } else if (e instanceof TsRestResponseError) {
+            result = {
+              status: e.statusCode,
+              body: e.body,
             };
           } else {
             throw e;

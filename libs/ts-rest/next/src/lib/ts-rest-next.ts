@@ -4,12 +4,14 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  HTTPStatusCode,
   isAppRoute,
   isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
+  TsRestResponseError,
   validateResponse,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
@@ -336,25 +338,37 @@ const handlerFactory = (
         }
       }
 
-      const { body, status } = await route.implementation({
-        body: bodyResult.data,
-        query: queryResult.data,
-        params: pathParamsResult.data,
-        headers: headersResult.data,
-        req,
-        res,
-      });
+      let result: { status: HTTPStatusCode; body: any };
+      try {
+        result = await route.implementation({
+          body: bodyResult.data,
+          query: queryResult.data,
+          params: pathParamsResult.data,
+          headers: headersResult.data,
+          req,
+          res,
+        });
+      } catch (e) {
+        if (e instanceof TsRestResponseError) {
+          result = {
+            status: e.statusCode,
+            body: e.body,
+          };
+        } else {
+          throw e;
+        }
+      }
 
-      const statusCode = Number(status);
+      const statusCode = Number(result.status);
 
-      let validatedResponseBody = body;
+      let validatedResponseBody = result.body;
 
       if (responseValidation) {
         const response = validateResponse({
           appRoute: route,
           response: {
             status: statusCode,
-            body: body,
+            body: result.body,
           },
         });
 
