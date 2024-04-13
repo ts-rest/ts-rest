@@ -195,7 +195,14 @@ const convertSchemaObjectToMediaTypeObject = (
 export const generateOpenApi = (
   router: AppRouter,
   apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
-  options: { setOperationId?: boolean; jsonQuery?: boolean } = {},
+  options: {
+    setOperationId?: boolean | 'concatenated-path';
+    jsonQuery?: boolean;
+    operationMapper?: (
+      operation: OperationObject,
+      appRoute: AppRoute,
+    ) => OperationObject;
+  } = {},
 ): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
@@ -210,7 +217,7 @@ export const generateOpenApi = (
   const operationIds = new Map<string, string[]>();
 
   const pathObject = paths.reduce((acc, path) => {
-    if (options.setOperationId) {
+    if (options.setOperationId === true) {
       const existingOp = operationIds.get(path.id);
       if (existingOp) {
         throw new Error(
@@ -265,13 +272,20 @@ export const generateOpenApi = (
         ? path.route?.contentType ?? 'application/json'
         : 'application/json';
 
-    const newPath: OperationObject = {
+    const pathOperation: OperationObject = {
       description: path.route.description,
       summary: path.route.summary,
       deprecated: path.route.deprecated,
       tags: path.paths,
       parameters: [...pathParams, ...headerParams, ...querySchema],
-      ...(options.setOperationId ? { operationId: path.id } : {}),
+      ...(options.setOperationId
+        ? {
+            operationId:
+              options.setOperationId === 'concatenated-path'
+                ? [...path.paths, path.id].join('.')
+                : path.id,
+          }
+        : {}),
       ...(bodySchema
         ? {
             requestBody: {
@@ -289,7 +303,9 @@ export const generateOpenApi = (
 
     acc[path.path] = {
       ...acc[path.path],
-      [mapMethod[path.route.method]]: newPath,
+      [mapMethod[path.route.method]]: options.operationMapper
+        ? options.operationMapper(pathOperation, path.route)
+        : pathOperation,
     };
 
     return acc;
