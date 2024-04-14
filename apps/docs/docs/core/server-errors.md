@@ -14,6 +14,15 @@ throw new TsRestResponseError(contract.getPost, {
 });
 ```
 
+You can also pass an entire contract to the `TsRestResponseError` constructor, and it will allow you to pass responses that are common to all endpoints.
+
+```typescript
+throw new TsRestResponseError(contract, {
+  status: 404,
+  body: { message: 'Not Found' },
+});
+```
+
 :::caution
 
 Any thrown `TsRestResponseError` will NOT be caught by any error handlers, and will be served as a response straight away.

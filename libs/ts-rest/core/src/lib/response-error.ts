@@ -1,15 +1,21 @@
-import { AppRoute } from './dsl';
-import { ServerInferResponses } from './infer-types';
+import { AppRoute, AppRouter, AppRouteResponse } from './dsl';
+import { ResolveResponseType, ServerInferResponses } from './infer-types';
 import { HTTPStatusCode } from './status-codes';
+import { CommonAndEqual, ZodInputOrType } from './type-utils';
 
-export class TsRestResponseError<T extends AppRoute> extends Error {
+export class TsRestResponseError<T extends AppRoute | AppRouter> extends Error {
   public statusCode: HTTPStatusCode;
   public body: any;
 
-  constructor(route: T, response: ServerInferResponses<T>) {
+  constructor(
+    route: T,
+    response: T extends AppRouter
+      ? ServerCommonResponses<T>
+      : ServerInferResponses<T>,
+  ) {
     super();
 
-    this.statusCode = response.status;
+    this.statusCode = response.status as HTTPStatusCode;
     this.body = response.body;
     this.name = this.constructor.name;
 
@@ -27,3 +33,29 @@ export class TsRestResponseError<T extends AppRoute> extends Error {
     }
   }
 }
+
+type FlattenAppRouter<T extends AppRouter | AppRoute> = T extends AppRoute
+  ? T
+  : {
+      [TKey in keyof T]: T[TKey] extends AppRoute
+        ? T[TKey]
+        : T[TKey] extends AppRouter
+        ? FlattenAppRouter<T[TKey]>
+        : never;
+    }[keyof T];
+
+type AppRouterCommonResponses<T extends AppRouter> = CommonAndEqual<
+  FlattenAppRouter<T>['responses']
+>;
+
+type ServerCommonResponses<
+  T extends AppRouter,
+  TResponses = AppRouterCommonResponses<T>,
+> = {
+  [K in keyof TResponses]: {
+    status: K;
+    body: TResponses[K] extends AppRouteResponse
+      ? ZodInputOrType<ResolveResponseType<TResponses[K]>>
+      : never;
+  };
+}[keyof TResponses];

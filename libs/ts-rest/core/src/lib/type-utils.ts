@@ -180,3 +180,23 @@ export type Not<B extends boolean> = {
   false: true;
   true: false;
 }[`${B}`];
+
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
+  ? I
+  : never;
+
+type CommonKeys<T, R = {}> = R extends T
+  ? keyof T & CommonKeys<Exclude<T, R>>
+  : keyof T;
+
+type Common<T> = Pick<T, CommonKeys<T>>;
+
+type RemoveUnionProperties<T> = {
+  [TKey in keyof T as [T[TKey]] extends [UnionToIntersection<T[TKey]>]
+    ? TKey
+    : never]: T[TKey];
+};
+
+export type CommonAndEqual<T> = RemoveUnionProperties<Common<T>>;
