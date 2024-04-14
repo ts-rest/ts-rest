@@ -145,7 +145,9 @@ type ApplyOptions<
     responses: 'commonResponses' extends keyof TOptions
       ? Prettify<Merge<TOptions['commonResponses'], TRoute['responses']>>
       : TRoute['responses'];
-    metadata: TOptions['metadata'];
+    metadata: 'metadata' extends keyof TOptions
+      ? Prettify<Merge<TOptions['metadata'], TRoute['metadata']>>
+      : TRoute['metadata'];
   }>;
 
 /**
@@ -169,12 +171,12 @@ export type RouterOptions<TPrefix extends string = string> = {
   strictStatusCodes?: boolean;
   pathPrefix?: TPrefix;
   commonResponses?: Record<number, AppRouteResponse>;
+  metadata?: unknown;
 
   /**
    * @deprecated Use `validateResponse` on the client options
    */
   validateResponseOnClient?: boolean;
-  metadata?: unknown;
 };
 
 /**

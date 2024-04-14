@@ -8,6 +8,7 @@ import {
   ContractNoBodyType,
 } from './dsl';
 import type { Equal, Expect } from './test-helpers';
+import { Prettify } from './type-utils';
 
 const c = initContract();
 
@@ -631,7 +632,7 @@ describe('contract', () => {
           body: c.type<undefined>(),
           metadata: {
             requireAuth: false,
-            headerName: 'x-authorization'
+            headerName: 'x-authorization',
           },
           responses: {
             200: c.type<{ id: number }>(),
@@ -640,19 +641,38 @@ describe('contract', () => {
       },
       {
         metadata: {
-          requireAuth: true
-        }
-      }
+          requireAuth: true,
+        },
+      },
     );
 
     expect(contract.getPost.metadata).toStrictEqual({
-      requireAuth: true
+      requireAuth: true,
     });
 
     expect(contract.deletePost.metadata).toStrictEqual({
       requireAuth: false,
-      headerName: 'x-authorization'
+      headerName: 'x-authorization',
     });
+
+    type MetadataShape = Expect<
+      Equal<
+        typeof contract.getPost.metadata,
+        {
+          requireAuth: boolean;
+        }
+      >
+    >;
+
+    type MetadataShape2 = Expect<
+      Equal<
+        Prettify<typeof contract.deletePost.metadata>,
+        {
+          requireAuth: boolean;
+          headerName: string;
+        }
+      >
+    >;
   });
 
   describe('pathPrefix', () => {
