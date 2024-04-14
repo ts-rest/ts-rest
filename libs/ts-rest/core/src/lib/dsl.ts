@@ -145,6 +145,7 @@ type ApplyOptions<
     responses: 'commonResponses' extends keyof TOptions
       ? Prettify<Merge<TOptions['commonResponses'], TRoute['responses']>>
       : TRoute['responses'];
+    metadata: TOptions['metadata'];
   }>;
 
 /**
@@ -173,6 +174,7 @@ export type RouterOptions<TPrefix extends string = string> = {
    * @deprecated Use `validateResponse` on the client options
    */
   validateResponseOnClient?: boolean;
+  metadata?: unknown;
 };
 
 /**
@@ -273,6 +275,12 @@ const recursivelyApplyOptions = <T extends AppRouter>(
               ...options?.commonResponses,
               ...value.responses,
             },
+            metadata: options?.metadata
+              ? {
+                  ...options?.metadata,
+                  ...(value.metadata ?? {}),
+                }
+              : value.metadata,
           },
         ];
       } else {

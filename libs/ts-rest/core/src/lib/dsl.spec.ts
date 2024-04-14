@@ -615,6 +615,46 @@ describe('contract', () => {
     >;
   });
 
+  it('should merge metadata options from router to its routes', () => {
+    const contract = c.router(
+      {
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+        deletePost: {
+          method: 'DELETE',
+          path: '/posts/:id',
+          body: c.type<undefined>(),
+          metadata: {
+            requireAuth: false,
+            headerName: 'x-authorization'
+          },
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+      },
+      {
+        metadata: {
+          requireAuth: true
+        }
+      }
+    );
+
+    expect(contract.getPost.metadata).toStrictEqual({
+      requireAuth: true
+    });
+
+    expect(contract.deletePost.metadata).toStrictEqual({
+      requireAuth: false,
+      headerName: 'x-authorization'
+    });
+  });
+
   describe('pathPrefix', () => {
     it('Should recursively apply pathPrefix to path', () => {
       const postsContractNested = c.router(
