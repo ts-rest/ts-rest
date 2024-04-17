@@ -10,6 +10,9 @@ The contract implementation is the same as any other mutation, however, `content
 // contract.ts
 
 import { initContract } from '@ts-rest/core';
+import { extendZodWithOpenApi } from '@anatine/zod-openapi';
+
+extendZodWithOpenApi(z);
 
 const c = initContract();
 
@@ -18,7 +21,12 @@ export const postsContract = c.router({
     method: 'POST',
     path: '/posts/:id/thumbnail',
     contentType: 'multipart/form-data', // <- Only difference
+    // if you want to have the body typed
     body: c.type<{ thumbnail: File }>(), // <- Use File type in here
+    // if you care about openapi schema
+    body: z.object({
+      thumbnail: z.any().openapi({ type: 'string', format: 'binary'}),
+    }),
     responses: {
       200: z.object({
         uploadedFile: z.object({
