@@ -8,7 +8,7 @@ on:
 jobs:
   main:
     name: Nx Cloud - Main Job
-    uses: nrwl/ci/.github/workflows/nx-cloud-main.yml@v0.13.0
+    uses: nrwl/ci/.github/workflows/nx-cloud-main.yml@v0.14.0
     with:
       main-branch-name: main
       number-of-agents: 3
@@ -21,7 +21,7 @@ jobs:
 
   agents:
     name: Nx Cloud - Agents
-    uses: nrwl/ci/.github/workflows/nx-cloud-agents.yml@v0.13.0
+    uses: nrwl/ci/.github/workflows/nx-cloud-agents.yml@v0.14.0
     with:
       number-of-agents: 3
 
@@ -34,14 +34,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v3
         name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 8.8
 
       - name: 'Install dependencies'
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: 'Build ts-rest libs'
         run: 'pnpm exec nx run-many --target=build --projects="ts-rest*"'
@@ -67,14 +64,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-      - uses: pnpm/action-setup@v2
+
+      - uses: pnpm/action-setup@v3
         name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 8.8
 
       - name: 'Install dependencies'
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: 'Build ts-rest libs'
         run: 'pnpm exec nx run-many --target=build --projects="ts-rest*"'

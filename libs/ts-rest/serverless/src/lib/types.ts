@@ -135,3 +135,34 @@ export type ServerlessHandlerOptions<
     ) => TsRestResponse | void
   >;
 };
+
+export const createTsr = <TPlatformContext = {}>() => ({
+  router: <T extends AppRouter, TRequestExtension = {}>(
+    contract: T,
+    router: RecursiveRouterObj<T, TPlatformContext, TRequestExtension>,
+  ) => router,
+  route: <T extends AppRoute, TRequestExtension = {}>(
+    contractEndpoint: T,
+    route: AppRouteImplementationOrOptions<
+      T,
+      TPlatformContext,
+      TRequestExtension
+    >,
+  ) => route,
+  routeWithMiddleware:
+    <T extends AppRoute>(contractEndpoint: T) =>
+    <TRequestGlobalExtension, TRequestLocalExtension>(
+      route: AppRouteOptions<
+        T,
+        TPlatformContext,
+        TRequestGlobalExtension & TRequestLocalExtension
+      >,
+    ) =>
+      route as AppRouteOptions<T, TPlatformContext, TRequestGlobalExtension>,
+  middleware: <TRequestExtension>(
+    middleware: RequestHandler<
+      TsRestRequest & TRequestExtension,
+      [TPlatformContext]
+    >,
+  ) => middleware,
+});

@@ -1,14 +1,19 @@
 import { initContract } from '@ts-rest/core';
-import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  Context,
+} from 'aws-lambda';
 import { parse as parseMultipart, getBoundary } from 'parse-multipart-data';
 import merge from 'ts-deepmerge';
 import { PartialDeep } from 'type-fest';
-import { createLambdaHandler } from './ts-rest-lambda';
+import { createLambdaHandler, tsr } from './ts-rest-lambda';
 import { z } from 'zod';
 import * as apiGatewayEventV1 from '../mappers/aws/test-data/api-gateway-event-v1.json';
 import * as apiGatewayEventV2 from '../mappers/aws/test-data/api-gateway-event-v2.json';
 import { TsRestResponse } from '../response';
 import { TsRestResponseError } from '../http-error';
+import { ApiGatewayEvent } from '../mappers/aws/api-gateway';
 
 const c = initContract();
 
@@ -112,6 +117,13 @@ const createV2LambdaRequest = (
 };
 
 describe('tsRestLambda', () => {
+  type GlobalRequestExtension = {
+    context: {
+      rawEvent: ApiGatewayEvent;
+      lambdaContext: Context;
+    };
+  };
+
   const lambdaHandler = createLambdaHandler(
     contract,
     {
@@ -187,20 +199,40 @@ describe('tsRestLambda', () => {
               : new Blob([new Uint8Array([4, 5, 6, 7])], { type: 'image/gif' }),
         };
       },
-      upload: async (_, { request }) => {
-        const boundary = getBoundary(
-          request.headers.get('content-type') as string,
-        );
+      upload: tsr.routeWithMiddleware(contract.upload)<
+        GlobalRequestExtension,
+        { contentType: string }
+      >({
+        middleware: [
+          async (request, args) => {
+            request.contentType = request.headers.get('content-type')!;
+          },
+        ],
+        handler: async (_, { request, responseHeaders }) => {
+          const boundary = getBoundary(
+            request.headers.get('content-type') as string,
+          );
 
-        const bodyBuffer = await request.arrayBuffer();
-        const parts = parseMultipart(Buffer.from(bodyBuffer), boundary);
-        const blob = new Blob([parts[0].data], { type: parts[0].type });
+          const bodyBuffer = await request.arrayBuffer();
+          const parts = parseMultipart(Buffer.from(bodyBuffer), boundary);
+          const blob = new Blob([parts[0].data], { type: parts[0].type });
 
-        return {
-          status: 200,
-          body: blob,
-        };
-      },
+          responseHeaders.set(
+            'x-content-type-echo',
+            request.contentType.toString(),
+          );
+
+          responseHeaders.set(
+            'x-is-base64-encoded-echo',
+            request.context.rawEvent.isBase64Encoded.toString(),
+          );
+
+          return {
+            status: 200,
+            body: blob,
+          };
+        },
+      }),
     },
     {
       jsonQuery: true,
@@ -209,6 +241,11 @@ describe('tsRestLambda', () => {
         origin: ['http://localhost'],
         credentials: true,
       },
+      requestMiddleware: [
+        tsr.middleware<GlobalRequestExtension>(async (request, lambdaArgs) => {
+          request.context = lambdaArgs;
+        }),
+      ],
       errorHandler: (error) => {
         if (error instanceof Error) {
           if (error.message === 'custom-json') {
@@ -670,6 +707,9 @@ describe('tsRestLambda', () => {
         'access-control-allow-origin': 'http://localhost',
         'content-type': 'text/html',
         vary: 'Origin',
+        'x-content-type-echo':
+          'multipart/form-data; boundary=---WebKitFormBoundary7MA4YWxkTrZu0gW',
+        'x-is-base64-encoded-echo': 'true',
       },
       body: '<html><body><h1>Hello ts-rest!</h1></body></html>',
       isBase64Encoded: false,

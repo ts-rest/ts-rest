@@ -1,39 +1,15 @@
-import { AppRoute, AppRouter } from '@ts-rest/core';
+import { AppRouter } from '@ts-rest/core';
 import { createServerlessRouter } from '../router';
 import {
-  AppRouteImplementationOrOptions,
+  createTsr,
   RecursiveRouterObj,
   ServerlessHandlerOptions,
 } from '../types';
 import { TsRestRequest } from '../request';
 
 export const tsr = {
-  router: <T extends AppRouter, TPlatformContext = {}, TRequestExtension = {}>(
-    contract: T,
-    router: RecursiveRouterObj<T, TPlatformContext, TRequestExtension>,
-  ) => router,
-  route: <T extends AppRoute, TPlatformContext = {}, TRequestExtension = {}>(
-    contractEndpoint: T,
-    route: AppRouteImplementationOrOptions<
-      T,
-      TPlatformContext,
-      TRequestExtension
-    >,
-  ) => route,
-  platformContext: <TPlatformContext>() => ({
-    router: <T extends AppRouter, TRequestExtension = {}>(
-      contract: T,
-      router: RecursiveRouterObj<T, TPlatformContext, TRequestExtension>,
-    ) => router,
-    route: <T extends AppRoute, TRequestExtension = {}>(
-      contractEndpoint: T,
-      route: AppRouteImplementationOrOptions<
-        T,
-        TPlatformContext,
-        TRequestExtension
-      >,
-    ) => route,
-  }),
+  ...createTsr(),
+  platformContext: <TPlatformContext>() => createTsr<TPlatformContext>(),
 };
 
 export type FetchHandlerOptions<
