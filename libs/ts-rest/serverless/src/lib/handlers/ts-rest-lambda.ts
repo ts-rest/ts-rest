@@ -1,5 +1,5 @@
 import type { Context } from 'aws-lambda';
-import { AppRoute, AppRouter } from '@ts-rest/core';
+import { AppRouter } from '@ts-rest/core';
 import {
   ApiGatewayEvent,
   ApiGatewayResponse,
@@ -8,7 +8,7 @@ import {
 } from '../mappers/aws/api-gateway';
 import { createServerlessRouter } from '../router';
 import {
-  AppRouteImplementationOrOptions,
+  createTsr,
   RecursiveRouterObj,
   ServerlessHandlerOptions,
 } from '../types';
@@ -18,20 +18,7 @@ type LambdaPlatformArgs = {
   lambdaContext: Context;
 };
 
-export const tsr = {
-  router: <T extends AppRouter, TRequestExtension>(
-    contract: T,
-    router: RecursiveRouterObj<T, LambdaPlatformArgs, TRequestExtension>,
-  ) => router,
-  route: <T extends AppRoute, TRequestExtension = {}>(
-    contractEndpoint: T,
-    route: AppRouteImplementationOrOptions<
-      T,
-      LambdaPlatformArgs,
-      TRequestExtension
-    >,
-  ) => route,
-};
+export const tsr = createTsr<LambdaPlatformArgs>();
 
 export type LambdaHandlerOptions<TRequestExtension = {}> =
   ServerlessHandlerOptions<LambdaPlatformArgs, TRequestExtension>;

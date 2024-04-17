@@ -1,8 +1,8 @@
-import { AppRoute, AppRouter } from '@ts-rest/core';
+import { AppRouter } from '@ts-rest/core';
 import type { NextRequest, NextResponse } from 'next/server';
 import { createServerlessRouter } from '../router';
 import {
-  AppRouteImplementationOrOptions,
+  createTsr,
   RecursiveRouterObj,
   ServerlessHandlerOptions,
 } from '../types';
@@ -12,20 +12,7 @@ type NextPlatformArgs = {
   nextRequest: NextRequest;
 };
 
-export const tsr = {
-  router: <T extends AppRouter, TRequestExtension>(
-    contract: T,
-    router: RecursiveRouterObj<T, NextPlatformArgs, TRequestExtension>,
-  ) => router,
-  route: <T extends AppRoute, TRequestExtension = {}>(
-    contractEndpoint: T,
-    route: AppRouteImplementationOrOptions<
-      T,
-      NextPlatformArgs,
-      TRequestExtension
-    >,
-  ) => route,
-};
+export const tsr = createTsr<NextPlatformArgs>();
 
 export type NextHandlerOptions<TRequestExtension> = ServerlessHandlerOptions<
   NextPlatformArgs,

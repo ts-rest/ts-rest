@@ -52,8 +52,8 @@ You can optionally return a response object from the middleware to short-circuit
 You can also extend the request object with additional properties that can be accessed in the router handlers in a type-safe manner.
 
 ```typescript
-import { TsRestRequest, TsRestResponse } from '@ts-rest/serverless';
-import { fetchRequestHandler } from '@ts-rest/serverless/fetch';
+import { TsRestResponse } from '@ts-rest/serverless';
+import { fetchRequestHandler, tsr } from '@ts-rest/serverless/fetch';
 import { contract } from './contract';
 
 export default async (request: Request) => {
@@ -62,7 +62,9 @@ export default async (request: Request) => {
     contract,
     router: {
       getPost: async ({ params: { id } }, { request }) => {
-        const post = prisma.post.findUniqueOrThrow({ where: { id, ownerId: request.userId } });
+        const post = prisma.post.findUniqueOrThrow({
+          where: { id, ownerId: request.userId },
+        });
 
         return {
           status: 200,
@@ -72,19 +74,22 @@ export default async (request: Request) => {
     },
     options: {
       requestMiddleware: [
-        (request: TsRestRequest & { userId: string }) => {
+        tsr.middleware<{ userId: string }>((request) => {
           if (request.headers.get('Authorization')) {
             const userId = authenticate(request.headers.get('Authorization'));
             if (!userId) {
-              return TsRestResponse.fromJson({ message: 'Unauthorized' }, { status: 401 });
+              return TsRestResponse.fromJson(
+                { message: 'Unauthorized' },
+                { status: 401 },
+              );
             }
             request.userId = userId;
           }
-        },
+        }),
       ],
     },
   });
-}
+};
 ```
 
 ### Global Response Handlers
@@ -93,8 +98,7 @@ You can set global response handlers by using the `responseHandlers` option. Thi
 This can be useful for logging, adding headers, etc.
 
 ```typescript
-import { TsRestRequest } from '@ts-rest/serverless';
-import { fetchRequestHandler } from '@ts-rest/serverless/fetch';
+import { fetchRequestHandler, tsr } from '@ts-rest/serverless/fetch';
 import { contract } from './contract';
 import { router } from './router';
 
@@ -105,9 +109,9 @@ export default async (request: Request) => {
     router,
     options: {
       requestMiddleware: [
-        (request: TsRestRequest & { time: Date }) => {
+        tsr.middleware<{ time: Date }>((request) => {
           request.time = new Date();
-        },
+        }),
       ],
       responseHandlers: [
         (response, request) => {
@@ -133,7 +137,7 @@ export default async (request: Request) => {
     router: {
       getPost: {
         middleware: [authenticationMiddleware],
-        handler: async ({ params: { id } }) => {
+        handler: async ({ params: { id } }, { request }) => {
           const post = prisma.post.findUniqueOrThrow({ where: { id, ownerId: request.userId } });
 
           return {
@@ -145,4 +149,55 @@ export default async (request: Request) => {
     },
   });
 }
+```
+
+If you would like to have different request contexts defined in your global middleware and route-specific middleware,
+you can use the `tsr.routeWithMiddleware()` helper function.
+Please note, that you will need to manually pass the global request middleware context type,
+so it would be a good idea to define it outside your router definition and use that everywhere.
+
+```typescript
+import { fetchRequestHandler, tsr } from '@ts-rest/serverless/fetch';
+import { contract } from './contract';
+
+type GlobalRequestContext = {
+  time: Date;
+};
+
+export default async (request: Request) => {
+  return fetchRequestHandler({
+    request,
+    contract,
+    router: {
+      getPost: tsr.routeWithMiddleware(contract.getPost)<
+        GlobalRequestContext, // <--- this is the global context
+        { userId: string } // <--- this is the route-level context
+      >({
+        middleware: [
+          (request) => {
+            // do authentication
+            request.userId = '123';
+          },
+        ],
+        handler: async ({ params: { id } }, { request }) => {
+          const post = prisma.post.findUniqueOrThrow({
+            where: { id, ownerId: request.userId },
+          });
+
+          return {
+            status: 200,
+            body: post,
+          };
+        },
+      }),
+    },
+    options: {
+      requestMiddleware: [
+        tsr.middleware<GlobalRequestContext>((request) => {
+          request.time = new Date();
+        }),
+      ],
+    },
+  });
+};
 ```
