@@ -22,7 +22,7 @@ export type ContractAnyType =
   | ContractNullType
   | null;
 export type ContractOtherResponse<T extends ContractAnyType> = Opaque<
-  { contentType: string; body: T },
+  { contentType: string; body: T; consumeAs?: 'json' | 'text' | 'blob' },
   'ContractOtherResponse'
 >;
 
@@ -236,12 +236,10 @@ type ContractInstance = {
   /**
    * Define a custom response type
    */
-  otherResponse: <T extends ContractAnyType>({
-    contentType,
-    body,
-  }: {
+  otherResponse: <T extends ContractAnyType>(options: {
     contentType: string;
     body: T;
+    consumeAs?: 'json' | 'text' | 'blob';
   }) => ContractOtherResponse<T>;
   /** Use to indicate that a route takes no body or responds with no body */
   noBody: () => ContractNoBodyType;
@@ -311,17 +309,8 @@ export const initContract = (): ContractInstance => {
     response: () => ContractPlainTypeRuntimeSymbol,
     body: () => ContractPlainTypeRuntimeSymbol,
     type: () => ContractPlainTypeRuntimeSymbol,
-    otherResponse: <T extends ContractAnyType>({
-      contentType,
-      body,
-    }: {
-      contentType: string;
-      body: T;
-    }) =>
-      ({
-        contentType,
-        body,
-      }) as ContractOtherResponse<T>,
+    otherResponse: <T extends ContractAnyType>(options: { body: T }) =>
+      options as ContractOtherResponse<T>,
     noBody: () => ContractNoBody,
   };
 };

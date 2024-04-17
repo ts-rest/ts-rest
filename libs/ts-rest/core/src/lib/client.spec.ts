@@ -80,6 +80,13 @@ const postsRouter = c.router({
         contentType: 'text/plain',
         body: z.string(),
       }),
+      201: c.otherResponse({
+        contentType: 'text/plain',
+        body: z.object({
+          message: z.string(),
+        }),
+        consumeAs: 'json',
+      }),
     },
   },
   mutationWithQuery: {
@@ -734,6 +741,41 @@ describe('client', () => {
         'text/plain;charset=UTF-8',
       );
       expect(result.body).toBe('foo=foo&bar=bar');
+    });
+
+    it('w/object 2', async () => {
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/echo',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+        (_, req) => {
+          expect(req.body).toBeInstanceOf(URLSearchParams);
+
+          return {
+            body: JSON.stringify(req.body!),
+            status: 201,
+          };
+        },
+      );
+
+      const result = await client.posts.echoPostXForm({
+        body: {
+          foo: 'foo',
+          bar: 'bar',
+        },
+      });
+
+      expect(result.status).toBe(201);
+      expect(result.headers.get('Content-Type')).toBe(
+        'text/plain;charset=UTF-8',
+      );
+      expect(result.body).toBe({
+        foo: 'foo',
+        bar: 'bar',
+      });
     });
 
     it('w/string', async () => {

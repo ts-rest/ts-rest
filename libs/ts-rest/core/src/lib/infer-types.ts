@@ -227,14 +227,9 @@ type ClientInferRequestBase<
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
 
-      /**
-       * @deprecated Use `fetchOptions.cache` instead
-       */
+      /** @deprecated Use `fetchOptions.cache` instead */
       cache?: RequestCache;
-
-      /**
-       * @deprecated Use `fetchOptions.next` instead
-       */
+      /** @deprecated Use `fetchOptions.next` instead */
       next?: 'next' extends keyof TFetchOptions ? TFetchOptions['next'] : never;
     } & ExtractExtraParametersFromClientArgs<TClientArgs>,
     never

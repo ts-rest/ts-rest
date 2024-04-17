@@ -27,9 +27,7 @@ export const isAppRouteOtherResponse = (
     | ContractOtherResponse<ContractAnyType>,
 ): response is ContractOtherResponse<ContractAnyType> => {
   return (
-    response != null &&
-    typeof response === 'object' &&
-    'contentType' in response
+    !!response && typeof response === 'object' && 'contentType' in response
   );
 };
 

@@ -10,6 +10,7 @@ import {
 } from './infer-types';
 import { isZodType } from './zod-utils';
 import { Equal, Expect } from './test-helpers';
+import { isAppRouteOtherResponse } from './server';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -115,42 +116,43 @@ export const tsRestFetchApi: ApiFetcher = async ({
     body,
   });
 
-  const contentType = result.headers.get('content-type');
+  const responseSchema = route.responses[result.status];
 
-  if (contentType?.includes('application/') && contentType?.includes('json')) {
-    const response = {
-      status: result.status,
-      body: await result.json(),
-      headers: result.headers,
-    };
+  let consumeAs: 'json' | 'text' | 'blob' = 'blob';
+  if (isAppRouteOtherResponse(responseSchema) && responseSchema.consumeAs) {
+    consumeAs = responseSchema.consumeAs;
+  } else {
+    const contentType = result.headers.get('content-type');
 
-    const responseSchema = route.responses[response.status];
     if (
-      (validateResponse ?? route.validateResponseOnClient) &&
-      isZodType(responseSchema)
+      contentType?.includes('application/') &&
+      contentType?.includes('json')
     ) {
-      return {
-        ...response,
-        body: responseSchema.parse(response.body),
-      };
+      consumeAs = 'json';
+    } else if (contentType?.includes('text/')) {
+      consumeAs = 'text';
     }
-
-    return response;
   }
 
-  if (contentType?.includes('text/')) {
+  const response = {
+    status: result.status,
+    headers: result.headers,
+    body: await result[consumeAs](),
+  };
+
+  if (
+    consumeAs !== 'blob' &&
+    // TODO: v4-deprecation-removal
+    (validateResponse ?? route.validateResponseOnClient) &&
+    isZodType(responseSchema)
+  ) {
     return {
-      status: result.status,
-      body: await result.text(),
-      headers: result.headers,
+      ...response,
+      body: responseSchema.parse(response.body),
     };
   }
 
-  return {
-    status: result.status,
-    body: await result.blob(),
-    headers: result.headers,
-  };
+  return response;
 };
 
 const createFormData = (body: unknown) => {
@@ -292,10 +294,10 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
     overrideClientOptions,
     fetchOptions,
 
-    // TODO: remove in 4.0
+    // TODO: v4-deprecation-removal
     cache,
 
-    // TODO: remove in 4.0
+    // TODO: v4-deprecation-removal
     next,
 
     // extra input args
