@@ -1,5 +1,12 @@
 # @ts-rest/serverless
 
+## 3.44.1
+
+### Patch Changes
+
+- 08878f0: Create type helpers for route-level middleware context
+  - @ts-rest/core@3.44.1
+
 ## 3.44.0
 
 ### Patch Changes
