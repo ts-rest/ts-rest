@@ -31,6 +31,7 @@ type AppRouteImplementation<T extends AppRoute> = (
   input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
     request: fastify.FastifyRequest;
     reply: fastify.FastifyReply;
+    schema: T;
   },
 ) => Promise<ServerInferResponses<T>>;
 
@@ -228,6 +229,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           body: validationResults.bodyResult.data as any,
           reply,
+          schema: appRoute,
         });
       } catch (e) {
         if (e instanceof TsRestResponseError) {
