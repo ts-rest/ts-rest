@@ -1,6 +1,7 @@
 {
   "name": "@ts-rest/serverless",
   "version": "3.44.1",
+  "type": "module",
   "dependencies": {
     "@ts-rest/core": "3.44.1",
     "itty-router": "^5.0.9"

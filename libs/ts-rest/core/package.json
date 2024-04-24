@@ -12,6 +12,7 @@
     "api",
     "type safe"
   ],
+  "type": "module",
   "private": false,
   "repository": {
     "type": "git",
