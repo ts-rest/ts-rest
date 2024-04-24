@@ -15,6 +15,7 @@
   },
   "changesets": [
     "mighty-bears-explain",
-    "seven-turtles-dance"
+    "seven-turtles-dance",
+    "stale-laws-warn"
   ]
 }

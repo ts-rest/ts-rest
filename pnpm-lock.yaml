@@ -594,7 +594,7 @@ importers:
   libs/ts-rest/serverless:
     dependencies:
       '@ts-rest/core':
-        specifier: 3.45.0-beta.0
+        specifier: 3.45.0-beta.1
         version: link:../core
       '@types/aws-lambda':
         specifier: ^8.10.115

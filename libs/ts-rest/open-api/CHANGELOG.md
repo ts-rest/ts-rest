@@ -1,5 +1,11 @@
 # @ts-rest/open-api
 
+## 3.45.0-beta.1
+
+### Patch Changes
+
+- e6b2091: Add `type: module` to package.json
+
 ## 3.45.0-beta.0
 
 ## 3.44.1

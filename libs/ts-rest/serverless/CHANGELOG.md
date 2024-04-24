@@ -1,5 +1,13 @@
 # @ts-rest/serverless
 
+## 3.45.0-beta.1
+
+### Patch Changes
+
+- e6b2091: Add `type: module` to package.json
+- Updated dependencies [e6b2091]
+  - @ts-rest/core@3.45.0-beta.1
+
 ## 3.45.0-beta.0
 
 ### Patch Changes
