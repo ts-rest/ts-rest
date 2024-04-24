@@ -29,5 +29,13 @@
     "zod": {
       "optional": true
     }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "*.cjs.d.ts"
+      ]
+    }
   }
 }
