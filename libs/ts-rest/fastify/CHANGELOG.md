@@ -1,5 +1,11 @@
 # @ts-rest/fastify
 
+## 3.45.0
+
+### Minor Changes
+
+- 3dc697f: Pass `appRoute` to route handlers
+
 ## 3.44.1
 
 ## 3.44.0
