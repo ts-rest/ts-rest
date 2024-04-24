@@ -11,10 +11,11 @@
     "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
     "docs:start": "nx serve docs",
     "example-microservice:serve": "pnpm nx run-many --target=serve --projects='example-microservice*' --parallel=10",
-    "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-core,ts-rest-express,ts-rest-express,ts-rest-nest,ts-rest-next,ts-rest-open-api,ts-rest-react-query --parallel --watch",
+    "ts-rest:build-watch": "pnpm nx run-many --target=build --projects=ts-rest-* --parallel --watch",
     "ci:nx-affected": "yarn ts-node ./tools/workflows/nx-affected.ts",
     "postinstall": "pnpm prisma generate",
     "build-test-all": "nx run-many --targets=lint,test,build",
+    "build-all": "pnpm nx run-many --target=build --projects=ts-rest-*",
     "nx": "nx"
   },
   "engines": {
