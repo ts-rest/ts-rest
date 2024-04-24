@@ -50,4 +50,5 @@ await execAndOutput(`git branch -f prerelease/${options.branch}`, { cwd });
 await execAndOutput(`git checkout prerelease/${options.branch}`, { cwd });
 await execAndOutput(`pnpm changeset pre enter ${options.tag}`, { cwd });
 await execAndOutput(`pnpm changeset version`, { cwd });
+await execAndOutput(`pnpm install --no-frozen-lockfile`, { cwd });
 await execAndOutput(`git add --all`, { cwd });
