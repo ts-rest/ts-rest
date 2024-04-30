@@ -61,6 +61,45 @@ type RegisterRouterOptions = {
       ) => void);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getMultipartBody = (requestBody: any) => {
+  const reqBodyKeys = Object.keys(requestBody);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const body: Record<string, any> = {};
+  for (let i = 0; i < reqBodyKeys.length; ++i) {
+    const key = reqBodyKeys[i];
+    const field = requestBody[key];
+
+    if (field.value !== undefined) {
+      body[key] = field.value;
+    } else if (field.file !== undefined) {
+      body[key] = field;
+    } else if (field._buf) {
+      body[key] = field._buf;
+    } else if (Array.isArray(field)) {
+      const items = [];
+
+      for (let i = 0; i < field.length; ++i) {
+        const item = field[i];
+
+        if (item.value !== undefined) {
+          items.push(item.value);
+        } else if (item.file !== undefined) {
+          items.push(item);
+        } else if (item._buf) {
+          items.push(item._buf);
+        }
+      }
+
+      if (items.length) {
+        body[key] = items;
+      }
+    }
+  }
+
+  return body;
+};
+
 const validateRequest = (
   request: fastify.FastifyRequest,
   reply: fastify.FastifyReply,
@@ -82,8 +121,13 @@ const validateRequest = (
     schema.query,
   );
 
+  const body =
+    'contentType' in schema && schema.contentType === 'multipart/form-data'
+      ? getMultipartBody(request.body)
+      : request.body;
+
   const bodyResult = checkZodSchema(
-    request.body,
+    body,
     'body' in schema ? schema.body : null,
   );
 
