@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.45.1
+
+### Patch Changes
+
+- b56a97d: Fix type inference for `createSingleRouteHandler`
+
 ## 3.45.0
 
 ## 3.44.1
