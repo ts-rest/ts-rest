@@ -231,13 +231,9 @@ export const createNextRouter = <T extends AppRouter>(
  * ```typescript
  * export default createNextRouter(contract, implementationHandler);
  * ```
- *
- * @param appRoute
- * @param options
- * @returns
  */
 export function createSingleRouteHandler<T extends AppRoute>(
-  appRoute: AppRoute,
+  appRoute: T,
   implementationHandler: AppRouteImplementation<T>,
   options?: CreateNextRouterOptions,
 ) {
