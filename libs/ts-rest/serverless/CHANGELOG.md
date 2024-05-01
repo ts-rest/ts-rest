@@ -1,5 +1,11 @@
 # @ts-rest/serverless
 
+## 3.45.1
+
+### Patch Changes
+
+- @ts-rest/core@3.45.1
+
 ## 3.45.0
 
 ### Patch Changes
