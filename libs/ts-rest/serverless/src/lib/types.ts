@@ -132,7 +132,7 @@ export type ServerlessHandlerOptions<
       response: TsRestResponse,
       request: TsRestRequest & TRequestExtension,
       args: TPlatformArgs,
-    ) => TsRestResponse | void
+    ) => TsRestResponse | Promise<TsRestResponse> | void | Promise<void>
   >;
 };
 
