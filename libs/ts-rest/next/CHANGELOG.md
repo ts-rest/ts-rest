@@ -1,5 +1,7 @@
 # @ts-rest/next
 
+## 3.45.2
+
 ## 3.45.1
 
 ### Patch Changes
