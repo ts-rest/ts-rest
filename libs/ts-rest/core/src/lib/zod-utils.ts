@@ -101,3 +101,17 @@ export const zodErrorResponse = (
     issues: error.issues,
   };
 };
+
+export const ZodErrorSchema = z.object({
+  name: z.literal('ZodError'),
+  issues: z.array(
+    z
+      .object({
+        path: z.array(z.union([z.string(), z.number()])),
+        message: z.string().optional(),
+        code: z.nativeEnum(z.ZodIssueCode),
+      })
+      // ZodIssuse type are complex and potentially unstable. So we don’t deal with his specific fields other than the common.
+      .catchall(z.any()),
+  ),
+});

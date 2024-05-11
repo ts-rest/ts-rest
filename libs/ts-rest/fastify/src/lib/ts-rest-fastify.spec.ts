@@ -1,5 +1,5 @@
 import { initContract, TsRestResponseError } from '@ts-rest/core';
-import { initServer } from './ts-rest-fastify';
+import { initServer, RequestValidationErrorSchema } from './ts-rest-fastify';
 import { z } from 'zod';
 import fastify from 'fastify';
 import * as supertest from 'supertest';
@@ -26,6 +26,7 @@ const contract = c.router({
       200: z.object({
         pong: z.string(),
       }),
+      400: RequestValidationErrorSchema,
     },
   },
   noContent: {
@@ -195,6 +196,9 @@ describe('ts-rest-fastify', () => {
       pathParameterErrors: null,
       queryParameterErrors: null,
     });
+    expect(() =>
+      RequestValidationErrorSchema.parse(response.body),
+    ).not.toThrowError();
   });
 
   it('should handle no content response', async () => {
