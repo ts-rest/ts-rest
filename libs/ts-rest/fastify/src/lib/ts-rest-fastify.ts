@@ -12,6 +12,7 @@ import {
   ServerInferResponses,
   TsRestResponseError,
   validateResponse,
+  ZodErrorSchema,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
 import { z } from 'zod';
@@ -26,6 +27,13 @@ export class RequestValidationError extends Error {
     super('[ts-rest] request validation failed');
   }
 }
+
+export const RequestValidationErrorSchema = z.object({
+  pathParameterErrors: ZodErrorSchema.nullable(),
+  headerErrors: ZodErrorSchema.nullable(),
+  queryParameterErrors: ZodErrorSchema.nullable(),
+  bodyErrors: ZodErrorSchema.nullable(),
+});
 
 type AppRouteImplementation<T extends AppRoute> = (
   input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {

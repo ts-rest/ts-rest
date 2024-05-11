@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { vi } from 'vitest';
 import { fetchRequestHandler, tsr } from './ts-rest-fetch';
 import { TsRestRequest } from '../request';
+import { RequestValidationErrorSchema } from '../types';
 
 const c = initContract();
 
@@ -18,6 +19,7 @@ const contract = c.router({
       200: z.object({
         foo: z.string(),
       }),
+      400: RequestValidationErrorSchema,
     },
   },
   ping: {
@@ -340,10 +342,13 @@ describe('fetchRequestHandler', () => {
         },
       },
     );
-
     expect(response.status).toEqual(expectedResponse.status);
     expect(response.headers).toEqual(expectedResponse.headers);
-    expect(await response.json()).toEqual(await expectedResponse.json());
+    const body = await response.json();
+    expect(body).toEqual(await expectedResponse.json());
+    expect(() => {
+      RequestValidationErrorSchema.parse(body);
+    }).not.toThrowError();
   });
 
   it('should handle 500 response', async () => {

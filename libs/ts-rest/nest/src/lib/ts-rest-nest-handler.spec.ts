@@ -1,6 +1,7 @@
 import { initContract } from '@ts-rest/core';
 import {
   doesUrlMatchContractPath,
+  RequestValidationErrorSchema,
   TsRestException,
   tsRestHandler,
   TsRestHandler,
@@ -201,6 +202,9 @@ describe('ts-rest-nest-handler', () => {
           queryResult: null,
           paramsResult: null,
         });
+        expect(() =>
+          RequestValidationErrorSchema.parse(responsePost.body),
+        ).not.toThrowError();
       });
 
       it("shouldn't validate body", async () => {

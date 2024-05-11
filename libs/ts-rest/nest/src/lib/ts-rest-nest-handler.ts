@@ -33,6 +33,7 @@ import {
   parseJsonQueryObject,
   ServerInferResponses,
   TsRestResponseError,
+  ZodErrorSchema,
 } from '@ts-rest/core';
 import {
   TsRestAppRouteMetadataKey,
@@ -62,6 +63,13 @@ export class RequestValidationError extends BadRequestException {
     });
   }
 }
+
+export const RequestValidationErrorSchema = z.object({
+  paramsResult: ZodErrorSchema.nullable(),
+  headersResult: ZodErrorSchema.nullable(),
+  queryResult: ZodErrorSchema.nullable(),
+  bodyResult: ZodErrorSchema.nullable(),
+});
 
 export class ResponseValidationError extends InternalServerErrorException {
   constructor(

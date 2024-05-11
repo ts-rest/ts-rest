@@ -10,6 +10,10 @@ import * as express from 'express';
 import { z } from 'zod';
 import { createExpressEndpoints, initServer } from './ts-rest-express';
 import * as multer from 'multer';
+import {
+  CombinedRequestValidationErrorSchema,
+  DefaultRequestValidationErrorSchema,
+} from './request-validation-error';
 
 const upload = multer();
 
@@ -466,6 +470,90 @@ describe('ts-rest-express', () => {
       .expect((res) => {
         expect(res.status).toEqual(404);
         expect(res.body).toEqual({ message: 'Not found' });
+      });
+  });
+
+  it("should throw default requestValidation error if body doesn't match", async () => {
+    const contract = c.router({
+      createPost: {
+        method: 'POST',
+        path: '/posts',
+        body: z.object({
+          id: z.string(),
+          content: z.string(),
+        }),
+        responses: {
+          200: c.noBody(),
+          400: DefaultRequestValidationErrorSchema,
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      createPost: async () => {
+        return {
+          status: 200,
+          body: undefined,
+        };
+      },
+    });
+
+    const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    createExpressEndpoints(contract, router, app, {
+      requestValidationErrorHandler: 'default',
+    });
+
+    await supertest(app)
+      .post('/posts')
+      .expect((res) => {
+        expect(res.status).toEqual(400);
+        expect(() =>
+          DefaultRequestValidationErrorSchema.parse(res.body),
+        ).not.toThrowError();
+      });
+  });
+
+  it("should throw combined requestValidation error if body doesn't match", async () => {
+    const contract = c.router({
+      createPost: {
+        method: 'POST',
+        path: '/posts',
+        body: z.object({
+          id: z.string(),
+          content: z.string(),
+        }),
+        responses: {
+          200: c.noBody(),
+          400: DefaultRequestValidationErrorSchema,
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      createPost: async () => {
+        return {
+          status: 200,
+          body: undefined,
+        };
+      },
+    });
+
+    const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    createExpressEndpoints(contract, router, app, {
+      requestValidationErrorHandler: 'combined',
+    });
+
+    await supertest(app)
+      .post('/posts')
+      .expect((res) => {
+        expect(res.status).toEqual(400);
+        expect(() =>
+          CombinedRequestValidationErrorSchema.parse(res.body),
+        ).not.toThrowError();
       });
   });
 });

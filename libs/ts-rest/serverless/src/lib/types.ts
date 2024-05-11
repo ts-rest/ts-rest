@@ -1,9 +1,10 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import {
   AppRoute,
   AppRouter,
   ServerInferRequest,
   ServerInferResponses,
+  ZodErrorSchema,
 } from '@ts-rest/core';
 import { TsRestRequest } from './request';
 import { TsRestHttpError } from './http-error';
@@ -26,6 +27,14 @@ export class RequestValidationError extends TsRestHttpError {
     });
   }
 }
+
+export const RequestValidationErrorSchema = z.object({
+  message: z.literal('Request validation failed'),
+  pathParameterErrors: ZodErrorSchema.nullable(),
+  headerErrors: ZodErrorSchema.nullable(),
+  queryParameterErrors: ZodErrorSchema.nullable(),
+  bodyErrors: ZodErrorSchema.nullable(),
+});
 
 export class ResponseValidationError extends TsRestHttpError {
   constructor(

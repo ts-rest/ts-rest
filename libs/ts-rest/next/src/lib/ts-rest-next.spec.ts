@@ -9,6 +9,7 @@ import {
   createNextRouter,
   createSingleRouteHandler,
   RequestValidationError,
+  RequestValidationErrorSchema,
 } from './ts-rest-next';
 import { z } from 'zod';
 
@@ -29,6 +30,7 @@ const contract = c.router({
     query: null,
     responses: {
       200: c.type<{ id: string }>(),
+      400: RequestValidationErrorSchema,
       404: z.object({
         message: z.literal('Not Found'),
       }),
@@ -417,6 +419,9 @@ describe('createNextRouter', () => {
 
       expect(errorHandler).not.toHaveBeenCalled();
       expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(() =>
+        RequestValidationErrorSchema.parse(jsonMock.mock.calls[0][0]),
+      ).not.toThrowError();
     });
   });
 
