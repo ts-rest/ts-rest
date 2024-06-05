@@ -34,10 +34,13 @@ export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
 export type UseQueryOptions<
   TAppRoute extends AppRoute,
   TData = DataResponse<TAppRoute>,
-> = TanStackUseQueryOptions<
-  DataResponse<TAppRoute>,
-  ErrorResponse<TAppRoute>,
-  TData
+> = Omit<
+  TanStackUseQueryOptions<
+    DataResponse<TAppRoute>,
+    ErrorResponse<TAppRoute>,
+    TData
+  >,
+  'queryKey'
 >;
 
 export type UseQueryResult<
