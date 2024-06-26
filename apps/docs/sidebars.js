@@ -123,6 +123,7 @@ const sidebars = {
             { type: 'doc', id: 'serverless/fetch-runtimes' },
             { type: 'doc', id: 'serverless/aws' },
             { type: 'doc', id: 'serverless/next-serverless' },
+            { type: 'doc', id: 'serverless/azure-functions' },
           ],
         },
         {
