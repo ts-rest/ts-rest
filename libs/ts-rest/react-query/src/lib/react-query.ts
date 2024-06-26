@@ -1,3 +1,4 @@
+import * as tanstackReactQuery from '@tanstack/react-query';
 import {
   FetchQueryOptions,
   QueryFilters,
@@ -124,6 +125,112 @@ const getRouteUseInfiniteQuery = <
   };
 };
 
+const getRouteUseSuspenseQuery = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+>(
+  route: TAppRoute,
+  clientArgs: TClientArgs,
+) => {
+  return (
+    queryKey: QueryKey,
+    args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
+    options?: TanStackUseQueryOptions<TAppRoute['responses']>,
+  ) => {
+    // check if tanstackReactQuery has the exported method useSuspenseQuery
+    // if not, fallback to useQuery passing { suspense: true } in options
+    if (typeof tanstackReactQuery.useSuspenseQuery === 'function') {
+      const useSuspenseQuery =
+        tanstackReactQuery.useSuspenseQuery as typeof tanstackReactQuery.useQuery;
+      const dataFn = queryFn(route, clientArgs, args);
+
+      return useSuspenseQuery({ queryKey, queryFn: dataFn, ...options });
+    } else {
+      const dataFn = queryFn(route, clientArgs, args);
+
+      const optionsWithSuspense = options
+        ? { ...options, suspense: true }
+        : { suspense: true };
+
+      return useQuery({ queryKey, queryFn: dataFn, ...optionsWithSuspense });
+    }
+  };
+};
+
+const getRouteUseSuspenseQueries = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+>(
+  route: TAppRoute,
+  clientArgs: TClientArgs,
+) => {
+  return (args: Parameters<DataReturnQueries<TAppRoute, TClientArgs>>[0]) => {
+    const queries = args.queries.map((fullQueryArgs: any) => {
+      const { credentials, queryKey, retry, ...queryArgs } = fullQueryArgs;
+      const dataFn = queryFn(route, clientArgs, queryArgs);
+
+      return {
+        queryFn: dataFn,
+        ...fullQueryArgs,
+      };
+    });
+
+    // check if tanstackReactQuery has the exported method useSuspenseQuery
+    // if not, fallback to useQuery passing { suspense: true } in options
+    if (typeof tanstackReactQuery.useSuspenseQueries === 'function') {
+      const useSuspenseQueries =
+        tanstackReactQuery.useSuspenseQueries as typeof tanstackReactQuery.useQueries;
+      return useSuspenseQueries({ queries, context: args.context });
+    } else {
+      return useQueries({ queries, context: args.context });
+    }
+  };
+};
+
+const getRouteUseSuspenseInfiniteQuery = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+>(
+  route: TAppRoute,
+  clientArgs: TClientArgs,
+) => {
+  return (
+    queryKey: QueryKey,
+    argsMapper: (
+      context: QueryFunctionContext,
+    ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
+    options?: TanStackUseInfiniteQueryOptions<TAppRoute['responses']>,
+  ) => {
+    const dataFn: QueryFunction<TAppRoute['responses']> = async (context) => {
+      const resultingQueryArgs = argsMapper(context);
+
+      const innerDataFn = queryFn(route, clientArgs, resultingQueryArgs);
+
+      return innerDataFn(undefined as any);
+    };
+    // check if tanstackReactQuery has the exported method useSuspenseQuery
+    // if not, fallback to useQuery passing { suspense: true } in options
+    if (typeof tanstackReactQuery.useSuspenseInfiniteQuery === 'function') {
+      const useSuspenseInfiniteQuery =
+        tanstackReactQuery.useSuspenseInfiniteQuery as typeof tanstackReactQuery.useInfiniteQuery;
+      return useSuspenseInfiniteQuery({
+        queryKey,
+        queryFn: dataFn,
+        ...options,
+      });
+    } else {
+      const optionsWithSuspense = options
+        ? { ...options, suspense: true }
+        : { suspense: true };
+      return useInfiniteQuery({
+        queryKey,
+        queryFn: dataFn,
+        ...optionsWithSuspense,
+      });
+    }
+  };
+};
+
 const getRouteUseMutation = <
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
@@ -183,6 +290,15 @@ export const initQueryClient = <
               useQuery: getRouteUseQuery(subRouter, clientArgs),
               useQueries: getRouteUseQueries(subRouter, clientArgs),
               useInfiniteQuery: getRouteUseInfiniteQuery(subRouter, clientArgs),
+              useSuspenseQuery: getRouteUseSuspenseQuery(subRouter, clientArgs),
+              useSuspenseQueries: getRouteUseSuspenseQueries(
+                subRouter,
+                clientArgs,
+              ),
+              useSuspenseInfiniteQuery: getRouteUseSuspenseInfiniteQuery(
+                subRouter,
+                clientArgs,
+              ),
               useMutation: getRouteUseMutation(subRouter, clientArgs),
               fetchQuery: (
                 queryClient: QueryClient,
