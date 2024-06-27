@@ -298,7 +298,7 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
     if (implementationIsInitialisedRouter(routerImpl)) {
       recursivelyRegisterRouter(
         routerImpl.routes,
-        routerImpl.contract,
+        appRouter,
         [...path],
         fastify,
         options,
