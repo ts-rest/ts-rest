@@ -16,7 +16,7 @@ import {
 } from './use-infinite-query';
 import { DataReturnMutation, getRouteUseMutation } from './use-mutation';
 
-type UseQueryArgs<
+export type UseQueryArgs<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
 > = {
@@ -37,7 +37,7 @@ type UseQueryArgs<
     : never;
 };
 
-type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
+export type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<UseQueryArgs<T[TKey], TClientArgs>, never>
     : T[TKey] extends AppRouter
