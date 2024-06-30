@@ -196,7 +196,7 @@ type NarrowObject<T> = {
 /**
  * The instantiated ts-rest client
  */
-type ContractInstance = {
+export type ContractInstance = {
   /**
    * A collection of routes or routers
    */
