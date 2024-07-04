@@ -35,11 +35,43 @@ type AppRouteImplementation<T extends AppRoute> = (
   },
 ) => Promise<ServerInferResponses<T>>;
 
+interface AppRouteOptions<TRoute extends AppRoute> {
+  onRequest?: fastify.onRequestHookHandler | fastify.onRequestAsyncHookHandler;
+  preParsing?:
+    | fastify.preParsingHookHandler
+    | fastify.preParsingAsyncHookHandler;
+  preValidation?:
+    | fastify.preValidationHookHandler
+    | fastify.preValidationAsyncHookHandler;
+  preHandler?:
+    | fastify.preHandlerHookHandler
+    | fastify.preHandlerAsyncHookHandler;
+  preSerialization?:
+    | fastify.preSerializationHookHandler<unknown>
+    | fastify.preSerializationAsyncHookHandler<unknown>;
+  onSend?:
+    | fastify.onSendHookHandler<unknown>
+    | fastify.onSendAsyncHookHandler<unknown>;
+  onResponse?:
+    | fastify.onResponseHookHandler
+    | fastify.onResponseAsyncHookHandler;
+  onTimeout?: fastify.onTimeoutHookHandler | fastify.onTimeoutAsyncHookHandler;
+  onError?: fastify.onErrorHookHandler | fastify.onErrorAsyncHookHandler;
+  onRequestAbort?:
+    | fastify.onRequestAbortHookHandler
+    | fastify.onRequestAbortAsyncHookHandler;
+  handler: AppRouteImplementation<TRoute>;
+}
+
+type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
+  | AppRouteOptions<TRoute>
+  | AppRouteImplementation<TRoute>;
+
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
     ? InitialisedRouter<T[TKey]> | RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? AppRouteImplementation<T[TKey]>
+    ? AppRouteImplementationOrOptions<T[TKey]>
     : never;
 };
 
@@ -197,7 +229,7 @@ const requestValidationErrorHandler = (
  * @param options - options for the routers
  */
 const registerRoute = <TAppRoute extends AppRoute>(
-  routeImpl: AppRouteImplementation<AppRoute>,
+  routeImpl: AppRouteOptions<AppRoute>,
   appRoute: TAppRoute,
   fastify: fastify.FastifyInstance,
   options: RegisterRouterOptions,
@@ -207,8 +239,21 @@ const registerRoute = <TAppRoute extends AppRoute>(
   }
 
   fastify.route({
+    config: {
+      appRoute,
+    },
     method: appRoute.method,
     url: appRoute.path,
+    onRequest: routeImpl.onRequest,
+    onResponse: routeImpl.onResponse,
+    preParsing: routeImpl.preParsing,
+    preValidation: routeImpl.preValidation,
+    preHandler: routeImpl.preHandler,
+    preSerialization: routeImpl.preSerialization,
+    onSend: routeImpl.onSend,
+    onTimeout: routeImpl.onTimeout,
+    onError: routeImpl.onError,
+    onRequestAbort: routeImpl.onRequestAbort,
     handler: async (request, reply) => {
       const validationResults = validateRequest(
         request,
@@ -219,7 +264,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
 
       let result: { status: HTTPStatusCode; body: unknown };
       try {
-        result = await routeImpl({
+        result = await routeImpl.handler({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           params: validationResults.paramsResult.data as any,
           query: validationResults.queryResult.data,
@@ -279,6 +324,12 @@ const implementationIsInitialisedRouter = <T extends AppRouter>(
   return 'contract' in implementation && 'routes' in implementation;
 };
 
+const implementationIsRouteWithHandler = <T extends AppRouter>(
+  implementation: RecursiveRouterObj<T>,
+): boolean => {
+  return 'handler' in implementation;
+};
+
 /**
  *
  * @param routerImpl - the user's implementation of the router
@@ -303,6 +354,13 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
         fastify,
         options,
       );
+    } else if (implementationIsRouteWithHandler(routerImpl)) {
+      registerRoute(
+        routerImpl as unknown as AppRouteOptions<AppRoute>,
+        appRouter as unknown as AppRoute,
+        fastify,
+        options,
+      );
     } else {
       for (const key in routerImpl) {
         recursivelyRegisterRouter(
@@ -316,7 +374,7 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
     }
   } else if (typeof routerImpl === 'function') {
     registerRoute(
-      routerImpl,
+      { handler: routerImpl },
       appRouter as unknown as AppRoute,
       fastify,
       options,
