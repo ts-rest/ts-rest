@@ -209,6 +209,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
   fastify.route({
     method: appRoute.method,
     url: appRoute.path,
+    config: appRoute.metadata,
     handler: async (request, reply) => {
       const validationResults = validateRequest(
         request,
