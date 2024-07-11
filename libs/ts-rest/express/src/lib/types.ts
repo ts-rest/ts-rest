@@ -15,14 +15,14 @@ import {
 } from 'express-serve-static-core';
 import { RequestValidationError } from './request-validation-error';
 
-type AppRouteQueryImplementation<T extends AppRouteQuery> = (
+export type AppRouteQueryImplementation<T extends AppRouteQuery> = (
   input: ServerInferRequest<T, Express['request']['headers']> & {
     req: TsRestRequest<T>;
     res: Response;
   },
 ) => Promise<ServerInferResponses<T>>;
 
-type AppRouteMutationImplementation<T extends AppRouteMutation> = (
+export type AppRouteMutationImplementation<T extends AppRouteMutation> = (
   input: ServerInferRequest<T, Express['request']['headers']> & {
     files: unknown;
     file: unknown;
