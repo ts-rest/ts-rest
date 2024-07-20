@@ -243,7 +243,7 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         return (
           doesUrlMatchContractPath(
             value.path,
-            'path' in req ? req.path : req.routeOptions.url,
+            'path' in req ? req.path : req.routeOptions.url!,
           ) && req.method === value.method
         );
       }

@@ -15,14 +15,6 @@ import {
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
 import { z } from 'zod';
-import {
-  RawServerDefault,
-  RawRequestDefaultExpression,
-  FastifySchema,
-  FastifyTypeProviderDefault,
-  RouteGenericInterface,
-  RawReplyDefaultExpression,
-} from 'fastify';
 
 export class RequestValidationError extends Error {
   constructor(
@@ -38,18 +30,18 @@ export class RequestValidationError extends Error {
 type AppRouteImplementation<T extends AppRoute> = (
   input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
     request: fastify.FastifyRequest<
-      RouteGenericInterface,
-      RawServerDefault,
-      RawRequestDefaultExpression,
-      FastifySchema,
-      FastifyTypeProviderDefault,
+      fastify.RouteGenericInterface,
+      fastify.RawServerDefault,
+      fastify.RawRequestDefaultExpression,
+      fastify.FastifySchema,
+      fastify.FastifyTypeProviderDefault,
       { tsRestRoute: T }
     >;
     reply: fastify.FastifyReply<
-      RawServerDefault,
-      RawRequestDefaultExpression,
-      RawReplyDefaultExpression,
-      RouteGenericInterface,
+      fastify.RawServerDefault,
+      fastify.RawRequestDefaultExpression,
+      fastify.RawReplyDefaultExpression,
+      fastify.RouteGenericInterface,
       { tsRestRoute: T }
     >;
     appRoute: T;
@@ -227,7 +219,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
     console.log(`[ts-rest] Initialized ${appRoute.method} ${appRoute.path}`);
   }
 
-  fastify.route({
+  fastify.route<fastify.RouteGenericInterface, { tsRestRoute: TAppRoute }>({
     method: appRoute.method,
     url: appRoute.path,
     config: {

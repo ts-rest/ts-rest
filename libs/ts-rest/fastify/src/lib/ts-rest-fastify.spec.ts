@@ -65,7 +65,11 @@ describe('ts-rest-fastify', () => {
   const s = initServer();
 
   const router = s.router(contract, {
-    test: async () => {
+    test: async ({ request, reply }) => {
+      expect(request.routeConfig.tsRestRoute).toEqual(contract.test);
+      expect(request.routeOptions.config.tsRestRoute).toEqual(contract.test);
+      expect(reply.context.config.tsRestRoute).toEqual(contract.test);
+
       return {
         status: 200,
         body: {
