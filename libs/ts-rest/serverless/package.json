@@ -1,6 +1,7 @@
 {
   "name": "@ts-rest/serverless",
   "version": "3.45.2",
+  "license": "MIT",
   "dependencies": {
     "@ts-rest/core": "3.45.2",
     "itty-router": "^5.0.9"
