@@ -202,7 +202,7 @@ describe('example-azure-function', () => {
     expect(body).toEqual({
       id: 123,
       name: 'name',
-      shouldDelete: 'foo',
+      defaultValue: 'hello world',
     });
   });
 });

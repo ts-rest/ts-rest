@@ -30,8 +30,7 @@
         }
       ],
       "options": {
-        "buildTarget": "example-azure-function:build",
-        "command": "cd apps/example-azure-function && pnpm exec func start"
+        "command": "cd apps/example-azure-function && pnpm exec func start --javascript"
       }
     },
     "lint": {

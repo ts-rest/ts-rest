@@ -29,7 +29,6 @@ dist
 .python_packages/
 
 # Python Environments
-.env
 .venv
 env/
 venv/
@@ -46,3 +45,5 @@ __pycache__/
 __blobstorage__
 __queuestorage__
 __azurite_db*__.json
+
+!.env
