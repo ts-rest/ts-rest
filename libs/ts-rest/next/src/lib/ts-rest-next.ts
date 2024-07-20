@@ -13,6 +13,7 @@ import {
   ServerInferResponses,
   TsRestResponseError,
   validateResponse,
+  ZodErrorSchema,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 import { z } from 'zod';
@@ -27,6 +28,8 @@ export class RequestValidationError extends Error {
     super('[ts-rest] request validation failed');
   }
 }
+
+export const RequestValidationErrorSchema = ZodErrorSchema;
 
 type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {
