@@ -50,15 +50,10 @@ type AppRouteImplementation<T extends AppRoute> = (
 
 type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? InitialisedRouter<T[TKey]> | RecursiveRouterObj<T[TKey]>
+    ? RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
     ? AppRouteImplementation<T[TKey]>
     : never;
-};
-
-type InitialisedRouter<TContract extends AppRouter> = {
-  contract: TContract;
-  routes: RecursiveRouterObj<TContract>;
 };
 
 type RegisterRouterOptions = {
@@ -122,20 +117,22 @@ const validateRequest = (
   };
 };
 
+const RouterEmbeddedContract = Symbol('RouterEmbeddedContract');
+
 export const initServer = () => ({
   router: <TContract extends AppRouter>(
     contract: TContract,
     routes: RecursiveRouterObj<TContract>,
-  ): InitialisedRouter<TContract> => ({
-    contract,
-    routes,
+  ): RecursiveRouterObj<TContract> => ({
+    ...routes,
+    [RouterEmbeddedContract]: contract,
   }),
   route: <TAppRoute extends AppRoute>(
     route: TAppRoute,
     implementation: AppRouteImplementation<TAppRoute>,
   ) => implementation,
   registerRouter: <
-    T extends InitialisedRouter<TContract>,
+    T extends RecursiveRouterObj<TContract>,
     TContract extends AppRouter,
   >(
     contract: TContract,
@@ -148,7 +145,7 @@ export const initServer = () => ({
       requestValidationErrorHandler: 'combined',
     },
   ) => {
-    recursivelyRegisterRouter(routerImpl.routes, contract, [], app, options);
+    recursivelyRegisterRouter(routerImpl, contract, [], app, options);
 
     app.setErrorHandler(
       requestValidationErrorHandler(options.requestValidationErrorHandler),
@@ -156,7 +153,7 @@ export const initServer = () => ({
   },
   plugin:
     <T extends AppRouter>(
-      router: InitialisedRouter<T>,
+      router: RecursiveRouterObj<T>,
     ): fastify.FastifyPluginCallback<RegisterRouterOptions> =>
     (
       app,
@@ -168,7 +165,11 @@ export const initServer = () => ({
       },
       done,
     ) => {
-      recursivelyRegisterRouter(router.routes, router.contract, [], app, opts);
+      const embeddedContract = (
+        router as RecursiveRouterObj<T> & { [RouterEmbeddedContract]: T }
+      )[RouterEmbeddedContract];
+
+      recursivelyRegisterRouter(router, embeddedContract, [], app, opts);
 
       app.setErrorHandler(
         requestValidationErrorHandler(opts.requestValidationErrorHandler),
@@ -289,12 +290,6 @@ const registerRoute = <TAppRoute extends AppRoute>(
   });
 };
 
-const implementationIsInitialisedRouter = <T extends AppRouter>(
-  implementation: InitialisedRouter<T> | RecursiveRouterObj<T>,
-): implementation is InitialisedRouter<T> => {
-  return 'contract' in implementation && 'routes' in implementation;
-};
-
 /**
  *
  * @param routerImpl - the user's implementation of the router
@@ -311,24 +306,14 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   options: RegisterRouterOptions,
 ) => {
   if (typeof routerImpl === 'object') {
-    if (implementationIsInitialisedRouter(routerImpl)) {
+    for (const key in routerImpl) {
       recursivelyRegisterRouter(
-        routerImpl.routes,
-        routerImpl.contract,
-        [...path],
+        routerImpl[key] as unknown as RecursiveRouterObj<T>,
+        appRouter[key] as unknown as T,
+        [...path, key],
         fastify,
         options,
       );
-    } else {
-      for (const key in routerImpl) {
-        recursivelyRegisterRouter(
-          routerImpl[key] as unknown as RecursiveRouterObj<T>,
-          appRouter[key] as unknown as T,
-          [...path, key],
-          fastify,
-          options,
-        );
-      }
     }
   } else if (typeof routerImpl === 'function') {
     registerRoute(
