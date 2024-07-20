@@ -15,6 +15,14 @@ import {
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
 import { z } from 'zod';
+import {
+  RawServerDefault,
+  RawRequestDefaultExpression,
+  FastifySchema,
+  FastifyTypeProviderDefault,
+  RouteGenericInterface,
+  RawReplyDefaultExpression,
+} from 'fastify';
 
 export class RequestValidationError extends Error {
   constructor(
@@ -29,8 +37,21 @@ export class RequestValidationError extends Error {
 
 type AppRouteImplementation<T extends AppRoute> = (
   input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
-    request: fastify.FastifyRequest;
-    reply: fastify.FastifyReply;
+    request: fastify.FastifyRequest<
+      RouteGenericInterface,
+      RawServerDefault,
+      RawRequestDefaultExpression,
+      FastifySchema,
+      FastifyTypeProviderDefault,
+      { tsRestRoute: T }
+    >;
+    reply: fastify.FastifyReply<
+      RawServerDefault,
+      RawRequestDefaultExpression,
+      RawReplyDefaultExpression,
+      RouteGenericInterface,
+      { tsRestRoute: T }
+    >;
     appRoute: T;
   },
 ) => Promise<ServerInferResponses<T>>;
@@ -209,6 +230,9 @@ const registerRoute = <TAppRoute extends AppRoute>(
   fastify.route({
     method: appRoute.method,
     url: appRoute.path,
+    config: {
+      tsRestRoute: appRoute,
+    },
     handler: async (request, reply) => {
       const validationResults = validateRequest(
         request,
