@@ -1,11 +1,13 @@
 import { z } from 'zod';
+import { AppRoute } from './dsl';
 
 export class ResponseValidationError extends Error {
-  cause: z.ZodError;
-
-  constructor(cause: z.ZodError) {
-    super('Response validation failed');
-
-    this.cause = cause;
+  constructor(
+    public appRoute: AppRoute,
+    public cause: z.ZodError,
+  ) {
+    super(
+      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${cause.message}`,
+    );
   }
 }

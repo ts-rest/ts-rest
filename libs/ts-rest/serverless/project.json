@@ -1,0 +1,55 @@
+{
+  "name": "ts-rest-serverless",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ts-rest/serverless/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/rollup:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "project": "libs/ts-rest/serverless/package.json",
+        "outputPath": "dist/libs/ts-rest/serverless",
+        "main": "libs/ts-rest/serverless/src/index.ts",
+        "tsConfig": "libs/ts-rest/serverless/tsconfig.lib.json",
+        "assets": [
+          {
+            "glob": "CHANGELOG.md",
+            "input": "libs/ts-rest/serverless",
+            "output": "."
+          },
+          {
+            "glob": "README.md",
+            "input": ".",
+            "output": "."
+          }
+        ],
+        "format": ["esm", "cjs"],
+        "compiler": "tsc",
+        "rollupConfig": "tools/scripts/rollup.config.js",
+        "generateExportsField": true,
+        "additionalEntryPoints": [
+          "libs/ts-rest/serverless/src/fetch.ts",
+          "libs/ts-rest/serverless/src/aws.ts",
+          "libs/ts-rest/serverless/src/next.ts",
+          "libs/ts-rest/serverless/src/azure.ts"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/ts-rest/serverless/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/serverless"],
+      "options": {
+        "reportsDirectory": "../../../coverage/libs/ts-rest/serverless"
+      }
+    }
+  },
+  "tags": []
+}

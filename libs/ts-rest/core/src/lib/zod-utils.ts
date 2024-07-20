@@ -5,7 +5,7 @@ export const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
 };
 
 export const isZodObject = (
-  obj: unknown
+  obj: unknown,
 ): obj is z.AnyZodObject | z.ZodEffects<z.AnyZodObject> => {
   if (typeof (obj as z.AnyZodObject)?.passthrough === 'function') {
     return true;
@@ -23,9 +23,9 @@ export const isZodObjectStrict = (obj: unknown): obj is z.AnyZodObject => {
 };
 
 export const extractZodObjectShape = <
-  T extends z.AnyZodObject | z.ZodEffects<z.ZodTypeAny>
+  T extends z.AnyZodObject | z.ZodEffects<z.ZodTypeAny>,
 >(
-  obj: T
+  obj: T,
 ): any => {
   if (!isZodObject(obj)) {
     throw new Error('Unknown zod object type');
@@ -57,7 +57,7 @@ export const zodMerge = (objectA: unknown, objectB: unknown) => {
 export const checkZodSchema = (
   data: unknown,
   schema: unknown,
-  { passThroughExtraKeys = false } = {}
+  { passThroughExtraKeys = false } = {},
 ):
   | {
       success: true;
@@ -94,10 +94,24 @@ export const checkZodSchema = (
 
 // Convert a ZodError to a plain object because ZodError extends Error and causes problems with NestJS
 export const zodErrorResponse = (
-  error: z.ZodError
+  error: z.ZodError,
 ): Pick<z.ZodError, 'name' | 'issues'> => {
   return {
     name: error.name,
     issues: error.issues,
   };
 };
+
+export const ZodErrorSchema = z.object({
+  name: z.literal('ZodError'),
+  issues: z.array(
+    z
+      .object({
+        path: z.array(z.union([z.string(), z.number()])),
+        message: z.string().optional(),
+        code: z.nativeEnum(z.ZodIssueCode),
+      })
+      // ZodIssuse type are complex and potentially unstable. So we don’t deal with his specific fields other than the common.
+      .catchall(z.any()),
+  ),
+});

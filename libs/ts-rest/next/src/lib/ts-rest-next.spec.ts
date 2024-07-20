@@ -1,6 +1,16 @@
-import { initContract } from '@ts-rest/core';
+import {
+  initContract,
+  ResponseValidationError,
+  TsRestResponseError,
+} from '@ts-rest/core';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createNextRoute, createNextRouter } from './ts-rest-next';
+import {
+  createNextRoute,
+  createNextRouter,
+  createSingleRouteHandler,
+  RequestValidationError,
+  RequestValidationErrorSchema,
+} from './ts-rest-next';
 import { z } from 'zod';
 
 const c = initContract();
@@ -9,9 +19,9 @@ const contract = c.router({
   get: {
     method: 'GET',
     path: '/test',
-    query: c.body<{ test: string }>(),
+    query: c.type<{ test: string }>(),
     responses: {
-      200: c.response<{ message: string }>(),
+      200: c.type<{ message: string }>(),
     },
   },
   getWithParams: {
@@ -19,24 +29,40 @@ const contract = c.router({
     path: `/test/:id`,
     query: null,
     responses: {
-      200: c.response<{ id: string }>(),
+      200: c.type<{ id: string }>(),
+      400: RequestValidationErrorSchema,
+      404: z.object({
+        message: z.literal('Not Found'),
+      }),
+      500: c.noBody(),
     },
   },
   getWithQuery: {
     method: 'GET',
     path: `/test-query`,
-    query: c.body<{ test: string; foo: number }>(),
+    query: c.type<{ test: string; foo: number }>(),
     responses: {
-      200: c.response<{ test: string; foo: number }>(),
+      200: c.type<{ test: string; foo: number }>(),
+    },
+  },
+  noContent: {
+    method: 'POST',
+    path: '/no-content',
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
     },
   },
   advanced: {
     method: 'POST',
     path: `/advanced/:id`,
-    body: c.body<{ test: string }>(),
+    body: c.type<{ test: string }>(),
     responses: {
-      200: c.response<{ id: string; test: string }>(),
+      200: c.type<{ id: string; test: string }>(),
     },
+    pathParams: z.object({
+      id: z.string(),
+    }),
   },
   getZodQuery: {
     method: 'GET',
@@ -58,15 +84,31 @@ const contract = c.router({
 });
 
 const nextEndpoint = createNextRoute(contract, {
-  get: async ({ query: { test } }) => {
+  get: createNextRoute(contract.get, async ({ query: { test } }) => {
     return {
       status: 200,
       body: {
         message: test,
       },
     };
-  },
+  }),
   getWithParams: async ({ params: { id } }) => {
+    if (id === '500') {
+      throw new TsRestResponseError(contract.getWithParams, {
+        status: 500,
+        body: undefined,
+      });
+    }
+
+    if (id === '404') {
+      throw new TsRestResponseError(contract.getWithParams, {
+        status: 404,
+        body: {
+          message: 'Not Found',
+        },
+      });
+    }
+
     return {
       status: 200,
       body: {
@@ -80,6 +122,12 @@ const nextEndpoint = createNextRoute(contract, {
       body: {
         ...query,
       },
+    };
+  },
+  noContent: async () => {
+    return {
+      status: 204,
+      body: undefined,
     };
   },
   advanced: async ({ body: { test }, params: { id } }) => {
@@ -104,10 +152,11 @@ const nextEndpoint = createNextRoute(contract, {
 
 const jsonMock = jest.fn();
 const sendMock = jest.fn();
+const endMock = jest.fn();
 
 const mockRes = {
   status: jest.fn(() => ({
-    end: jest.fn(),
+    end: endMock,
     json: jsonMock,
     send: sendMock,
   })),
@@ -138,7 +187,7 @@ describe('strict mode', () => {
   it('does not allow unknown statuses when in strict mode', () => {
     const cStrict = c.router(
       { posts: postsRouter },
-      { strictStatusCodes: true }
+      { strictStatusCodes: true },
     );
     createNextRoute(cStrict, {
       posts: {
@@ -248,6 +297,52 @@ describe('createNextRouter', () => {
     });
   });
 
+  it('should handle no content', async () => {
+    const resultingRouter = createNextRouter(contract, nextEndpoint);
+
+    const req = mockReq('/no-content', {
+      method: 'POST',
+      body: undefined,
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(204);
+    expect(jsonMock).toHaveBeenCalledTimes(0);
+    expect(sendMock).toHaveBeenCalledTimes(0);
+    expect(endMock).toHaveBeenCalled();
+  });
+
+  it('should handle thrown TsRestResponseError', async () => {
+    const resultingRouter = createNextRouter(contract, nextEndpoint);
+
+    const req = mockReq('/test/404', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(404);
+    expect(jsonMock).toHaveBeenCalledWith({
+      message: 'Not Found',
+    });
+  });
+
+  it('should handle thrown TsRestResponseError empty body', async () => {
+    const resultingRouter = createNextRouter(contract, nextEndpoint);
+
+    const req = mockReq('/test/500', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(jsonMock).toHaveBeenCalledTimes(0);
+    expect(sendMock).toHaveBeenCalledTimes(0);
+    expect(endMock).toHaveBeenCalled();
+  });
+
   describe('response validation', () => {
     it('should include default value and removes extra field', async () => {
       const resultingRouter = createNextRouter(contract, nextEndpoint, {
@@ -283,6 +378,50 @@ describe('createNextRouter', () => {
       await resultingRouter(req, mockRes);
 
       expect(errorHandler).toHaveBeenCalled();
+    });
+  });
+
+  describe('request validation', () => {
+    it('fails with invalid query type', async () => {
+      const errorHandler = jest.fn();
+      const resultingRouter = createNextRouter(contract, nextEndpoint, {
+        throwRequestValidation: true,
+        errorHandler,
+      });
+
+      const req = mockReq('/test/100/throw', {
+        method: 'GET',
+        query: { field: 42 },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(errorHandler).toHaveBeenCalledWith(
+        expect.any(RequestValidationError),
+        expect.anything(),
+        expect.anything(),
+      );
+    });
+
+    it('does not throw with invalid query type', async () => {
+      const errorHandler = jest.fn();
+      const resultingRouter = createNextRouter(contract, nextEndpoint, {
+        throwRequestValidation: false,
+        errorHandler,
+      });
+
+      const req = mockReq('/test/100/throw', {
+        method: 'GET',
+        query: { field: 42 },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(errorHandler).not.toHaveBeenCalled();
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(() =>
+        RequestValidationErrorSchema.parse(jsonMock.mock.calls[0][0]),
+      ).not.toThrowError();
     });
   });
 
@@ -350,9 +489,12 @@ describe('createNextRouter', () => {
       {
         responseValidation: true,
         errorHandler: (err: any, req, res) => {
-          res.status(500).send(err?.message || 'Error');
+          if (err instanceof ResponseValidationError) {
+            return res.status(500).send('Response validation failed');
+          }
+          return res.status(500).send('Server Error');
         },
-      }
+      },
     );
 
     let req = mockReq('/index.html', {
@@ -377,7 +519,7 @@ describe('createNextRouter', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.setHeader).toHaveBeenCalledWith(
       'content-type',
-      'text/plain'
+      'text/plain',
     );
     expect(sendMock).toHaveBeenCalledWith('User-agent: * Disallow: /');
 
@@ -389,13 +531,175 @@ describe('createNextRouter', () => {
   });
 });
 
+describe('createSingleUrlNextRouter', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should send back a 200', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test/123', {
+      method: 'GET',
+      query: { id: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '123',
+    });
+  });
+
+  it('should send back a 404', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/wrong-url', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(404);
+    expect(jsonMock).not.toHaveBeenCalled();
+  });
+
+  it('should send back a 404', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(404);
+    expect(jsonMock).not.toHaveBeenCalled();
+  });
+
+  it('should send body, params and query correctly', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.advanced,
+      nextEndpoint.advanced,
+    );
+
+    const req = mockSingleUrlReq('/advanced/123', {
+      method: 'POST',
+      body: {
+        test: 'test-body',
+      },
+      query: { id: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '123',
+      test: 'test-body',
+    });
+  });
+
+  it('should send json query correctly', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithQuery,
+      nextEndpoint.getWithQuery,
+      { jsonQuery: true },
+    );
+
+    const req = mockSingleUrlReq('/test-query', {
+      method: 'GET',
+      query: { test: '"test-query-string"', foo: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      test: 'test-query-string',
+      foo: 123,
+    });
+  });
+
+  it('should differentiate between /test and /test/id', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test/3', {
+      method: 'GET',
+      query: { id: '3' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '3',
+    });
+  });
+
+  describe('response validation', () => {
+    it('should include default value and removes extra field', async () => {
+      const resultingRouter = createSingleRouteHandler(
+        contract.getZodQuery,
+        nextEndpoint.getZodQuery,
+        { responseValidation: true },
+      );
+
+      const req = mockSingleUrlReq('/test/123/name', {
+        method: 'GET',
+        query: { field: 'foo', id: '123', name: 'name' },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith({
+        id: 123,
+        name: 'name',
+        defaultValue: 'hello world',
+      });
+    });
+
+    it('fails with invalid field', async () => {
+      const errorHandler = jest.fn();
+      const resultingRouter = createSingleRouteHandler(
+        contract.getZodQuery,
+        nextEndpoint.getZodQuery,
+        { responseValidation: true, errorHandler },
+      );
+
+      const req = mockSingleUrlReq('/test/2000/name', {
+        method: 'GET',
+        query: { id: '2000', name: 'name' },
+      });
+
+      await resultingRouter(req, mockRes);
+
+      expect(errorHandler).toHaveBeenCalled();
+    });
+  });
+});
+
 export const mockReq = (
   url: string,
   args: {
     query?: Record<string, unknown>;
     body?: unknown;
     method: string;
-  }
+  },
 ): NextApiRequest => {
   const paramArray = url.split('/').splice(1);
 
@@ -404,6 +708,20 @@ export const mockReq = (
       ...args.query,
       ['ts-rest']: paramArray,
     },
+    body: args.body,
+    method: args.method,
+  } as unknown as NextApiRequest;
+
+  return req;
+};
+
+const mockSingleUrlReq = (
+  url: string,
+  args: { query?: Record<string, unknown>; body?: unknown; method: string },
+): NextApiRequest => {
+  const req = {
+    url,
+    query: args.query,
     body: args.body,
     method: args.method,
   } as unknown as NextApiRequest;

@@ -7,62 +7,81 @@ on:
 
 jobs:
   main:
+    name: Nx Cloud - Main Job
+    uses: nrwl/ci/.github/workflows/nx-cloud-main.yml@v0.14.0
+    with:
+      main-branch-name: main
+      number-of-agents: 3
+      init-commands: |
+        pnpm exec nx-cloud start-ci-run --stop-agents-after="build" --agent-count=3
+      parallel-commands-on-agents: |
+        pnpm exec nx affected --target=lint --parallel=3
+        pnpm exec nx affected --target=test --parallel=3 --ci --code-coverage
+        pnpm exec nx affected --target=build --parallel=3
+
+  agents:
+    name: Nx Cloud - Agents
+    uses: nrwl/ci/.github/workflows/nx-cloud-agents.yml@v0.14.0
+    with:
+      number-of-agents: 3
+
+  nest-10:
+    name: 'E2E > Nest 10'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-      issues: read
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Set NX Shas
-        uses: nrwl/nx-set-shas@177b48373c6dc583ce0d9257ffb484bdd232fedf
-        with:
-          main-branch-name: 'main'
-      - name: NX Shas
-        run: |
-          echo "BASE: ${{ env.NX_BASE }}"
-          echo "HEAD: ${{ env.NX_HEAD }}"
-
+      - uses: actions/checkout@v3
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd
-        id: pnpm-install
-        with:
-          version: 8.6
-          run_install: false
+      - name: 'Install dependencies'
+        run: pnpm install --frozen-lockfile
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+      - name: 'Build ts-rest libs'
+        run: 'pnpm exec nx run-many --target=build --projects="ts-rest*"'
 
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
+      - name: 'Install dependencies in example-nest-10'
+        working-directory: ./test-projects/nest-10
         run: pnpm install
 
-      - name: Build Prisma Client
-        run: pnpm exec prisma generate
+      - name: 'Tests 🧪'
+        working-directory: ./test-projects/nest-10
+        run: pnpm run test
 
-      - run: npx nx workspace-lint
-      # - run: npx nx format:check --libs-and-apps=true
-      - run: npx nx affected --target=lint --parallel
-      - run: npx nx run-many --target=test --all --parallel --coverage --exclude=example-expo
-      - run: npx nx affected --target=build --parallel --exclude=example-expo
-      - uses: codecov/codecov-action@v3
+      - name: 'Build 🏗'
+        working-directory: ./test-projects/nest-10
+        run: pnpm run build
+
+  nest-9:
+    name: 'E2E > Nest 9'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          files: ./coverage/libs/ts-rest/core/lcov.info,./coverage/libs/ts-rest/express/lcov.info,./coverage/libs/ts-rest/nest/lcov.info,./coverage/libs/ts-rest/next/lcov.info,./coverage/libs/ts-rest/open-api/lcov.info,./coverage/libs/ts-rest/react-query/lcov.info
+          node-version: 20
+
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+
+      - name: 'Install dependencies'
+        run: pnpm install --frozen-lockfile
+
+      - name: 'Build ts-rest libs'
+        run: 'pnpm exec nx run-many --target=build --projects="ts-rest*"'
+
+      - name: 'Install dependencies in example-nest-9'
+        working-directory: ./test-projects/nest-9
+        run: pnpm install
+
+      - name: 'Tests 🧪'
+        working-directory: ./test-projects/nest-9
+        run: pnpm run test
+
+      - name: 'Build 🏗'
+        working-directory: ./test-projects/nest-9
+        run: pnpm run build

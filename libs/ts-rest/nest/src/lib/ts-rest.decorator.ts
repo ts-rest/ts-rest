@@ -8,18 +8,13 @@ import {
   SetMetadata,
   UseInterceptors,
 } from '@nestjs/common';
-import { JsonQuery } from './json-query.decorator';
 import { AppRoute } from '@ts-rest/core';
 import { TsRestInterceptor } from './ts-rest.interceptor';
 import {
   TsRestAppRouteMetadataKey,
-  ValidateResponsesSymbol,
+  TsRestOptionsMetadataKey,
 } from './constants';
-
-export type TsRestOptions = {
-  jsonQuery?: boolean;
-  validateResponses?: boolean;
-};
+import { TsRestOptions } from './ts-rest-options';
 
 type TsRestType = {
   (appRoute: AppRoute, options?: TsRestOptions): MethodDecorator;
@@ -33,7 +28,7 @@ type TsRestType = {
  */
 export const TsRest: TsRestType = (
   appRouteOrOptions: AppRoute | TsRestOptions,
-  options: TsRestOptions = {}
+  options?: TsRestOptions,
 ) => {
   const decorators = [];
 
@@ -46,18 +41,12 @@ export const TsRest: TsRestType = (
         SetMetadata(TsRestAppRouteMetadataKey, appRouteOrOptions),
         getMethodDecorator(appRouteOrOptions),
         UseInterceptors(TsRestInterceptor),
-      ]
+      ],
     );
   }
 
-  if (optionsToUse.jsonQuery !== undefined) {
-    decorators.push(JsonQuery(optionsToUse.jsonQuery));
-  }
-
-  if (optionsToUse.validateResponses !== undefined) {
-    decorators.push(
-      SetMetadata(ValidateResponsesSymbol, optionsToUse.validateResponses)
-    );
+  if (optionsToUse) {
+    decorators.push(SetMetadata(TsRestOptionsMetadataKey, optionsToUse));
   }
 
   return applyDecorators(...decorators);

@@ -1,22 +1,33 @@
+type ResolveOptionalPathParam<T extends string> =
+  T extends `${infer PathParam}?`
+    ? {
+        [key in PathParam]?: string | undefined;
+      }
+    : {
+        [key in T]: string;
+      };
+
 /**
  * @params T - The URL e.g. /posts/:id
  * @params TAcc - Accumulator object
  */
 type RecursivelyExtractPathParams<
   T extends string,
-  TAcc extends null | Record<string, string>
+  TAcc extends null | Record<string, string>,
 > = T extends `/:${infer PathParam}/${infer Right}`
-  ? { [key in PathParam]: string } & RecursivelyExtractPathParams<Right, TAcc>
+  ? ResolveOptionalPathParam<PathParam> &
+      RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/:${infer PathParam}`
-  ? { [key in PathParam]: string }
+  ? ResolveOptionalPathParam<PathParam>
   : T extends `/${string}/${infer Right}`
   ? RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/${string}`
   ? TAcc
   : T extends `:${infer PathParam}/${infer Right}`
-  ? { [key in PathParam]: string } & RecursivelyExtractPathParams<Right, TAcc>
+  ? ResolveOptionalPathParam<PathParam> &
+      RecursivelyExtractPathParams<Right, TAcc>
   : T extends `:${infer PathParam}`
-  ? TAcc & { [key in PathParam]: string }
+  ? TAcc & ResolveOptionalPathParam<PathParam>
   : T extends `${string}/${infer Right}`
   ? RecursivelyExtractPathParams<Right, TAcc>
   : TAcc;

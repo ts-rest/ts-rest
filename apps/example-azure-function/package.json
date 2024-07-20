@@ -1,0 +1,5 @@
+{
+  "name": "example-azure-function",
+  "version": "0.0.0",
+  "main": "../../dist/apps/example-azure-function/*.js"
+}

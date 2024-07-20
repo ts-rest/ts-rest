@@ -1,0 +1,49 @@
+# https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+name: Bug report
+description: Create a report to help us improve
+labels: ['bug', 'needs investigation']
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce
+      description: Steps to reproduce the behavior
+      value: |
+        <!--
+        1. Go to '...'
+        2. Change '....'
+        3. Run '....'
+        4. See error
+        -->
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+  - type: textarea
+    id: code-repro
+    attributes:
+      label: Code reproduction
+      description: Add a minimum code reproduction that triggers the error. If the bug is beyond being an obvious and simple to identify one, please provide a codesandbox reproduction.
+      value: |
+        ```ts
+        // Add your code reproduction here
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: ts-rest-version
+    attributes:
+      label: ts-rest version
+      description: Which version of the ts-rest packages are you using?
+    validations:
+      required: true

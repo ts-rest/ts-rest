@@ -16,16 +16,17 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "options": {
         "lintFilePatterns": ["apps/example-microservice/web-app/**/*.tsx"]
       }
     },
     "test": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/apps/example-microservice/web-app"],
       "options": {
-        "command": "npx vitest --run",
-        "cwd": "apps/example-microservice/web-app"
+        "passWithNoTests": true,
+        "reportsDirectory": "../../../coverage/apps/example-microservice/web-app"
       }
     }
   },

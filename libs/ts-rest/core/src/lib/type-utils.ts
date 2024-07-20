@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ContractNullType, ContractPlainType } from './dsl';
+import { ContractNoBodyType, ContractNullType, ContractPlainType } from './dsl';
 
 type GetIndexedField<T, K> = K extends keyof T
   ? T[K]
@@ -53,6 +53,8 @@ export type With<T, V> = Pick<T, ExcludeKeysWithoutTypeOf<T, V>>;
 
 export type ZodInferOrType<T> = T extends ContractNullType
   ? null
+  : T extends ContractNoBodyType
+  ? undefined
   : T extends ContractPlainType<infer U>
   ? U
   : T extends z.ZodTypeAny
@@ -61,6 +63,8 @@ export type ZodInferOrType<T> = T extends ContractNullType
 
 export type ZodInputOrType<T> = T extends ContractNullType
   ? null
+  : T extends ContractNoBodyType
+  ? undefined
   : T extends ContractPlainType<infer U>
   ? U
   : T extends z.ZodTypeAny
@@ -106,7 +110,7 @@ export type AreAllPropertiesOptional<T> = T extends Record<string, unknown>
 
 export type OptionalIfAllOptional<
   T,
-  Select extends keyof T = keyof T
+  Select extends keyof T = keyof T,
 > = PartialBy<
   T,
   Select &
@@ -121,7 +125,7 @@ export type Prettify<T> = {
 
 export type DefinedOrEmpty<
   T,
-  K extends keyof NonNullable<T>
+  K extends keyof NonNullable<T>,
 > = undefined extends T ? {} : NonNullable<T>[K];
 
 declare const tag: unique symbol;
@@ -176,3 +180,23 @@ export type Not<B extends boolean> = {
   false: true;
   true: false;
 }[`${B}`];
+
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
+  ? I
+  : never;
+
+type CommonKeys<T, R = {}> = R extends T
+  ? keyof T & CommonKeys<Exclude<T, R>>
+  : keyof T;
+
+type Common<T> = Pick<T, CommonKeys<T>>;
+
+type RemoveUnionProperties<T> = {
+  [TKey in keyof T as [T[TKey]] extends [UnionToIntersection<T[TKey]>]
+    ? TKey
+    : never]: T[TKey];
+};
+
+export type CommonAndEqual<T> = RemoveUnionProperties<Common<T>>;

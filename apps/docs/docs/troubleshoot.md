@@ -1,5 +1,5 @@
 # Troubleshoot 
-##  Why is my Typescript intellisense *slow*? 
+##  Why is my TypeScript intellisense *slow*? 
 
 You'll need to enable `strict` in your `tsconfig.json`:
 ```json

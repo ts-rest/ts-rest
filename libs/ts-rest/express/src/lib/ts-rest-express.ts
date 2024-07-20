@@ -4,9 +4,12 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  HTTPStatusCode,
   isAppRoute,
+  isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
+  TsRestResponseError,
   validateResponse,
 } from '@ts-rest/core';
 import type {
@@ -24,11 +27,16 @@ import {
   isAppRouteImplementation,
 } from './types';
 import { RequestValidationError } from './request-validation-error';
+import { Stream } from 'stream';
 
 export const initServer = () => {
   return {
     router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
       args,
+    route: <T extends AppRoute>(
+      route: T,
+      args: AppRouteImplementationOrOptions<T>,
+    ) => args,
   };
 };
 
@@ -41,7 +49,7 @@ const recursivelyApplyExpressRouter = ({
   router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<any>;
   processRoute: (
     implementation: AppRouteImplementationOrOptions<AppRoute>,
-    schema: AppRoute
+    schema: AppRoute,
   ) => void;
 }): void => {
   if (typeof router === 'object' && typeof router?.handler !== 'function') {
@@ -72,7 +80,7 @@ const validateRequest = (
   req: Request,
   res: Response,
   schema: AppRouteQuery | AppRouteMutation,
-  options: TsRestExpressOptions<AppRouter>
+  options: TsRestExpressOptions<AppRouter>,
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -90,7 +98,7 @@ const validateRequest = (
 
   const bodyResult = checkZodSchema(
     req.body,
-    'body' in schema ? schema.body : null
+    'body' in schema ? schema.body : null,
   );
 
   if (
@@ -103,7 +111,7 @@ const validateRequest = (
       !paramsResult.success ? paramsResult.error : null,
       !headersResult.success ? headersResult.error : null,
       !queryResult.success ? queryResult.error : null,
-      !bodyResult.success ? bodyResult.error : null
+      !bodyResult.success ? bodyResult.error : null,
     );
   }
 
@@ -138,29 +146,44 @@ const initializeExpressRoute = ({
     try {
       const validationResults = validateRequest(req, res, schema, options);
 
-      const result = await handler({
-        params: validationResults.paramsResult.data as any,
-        body: validationResults.bodyResult.data as any,
-        query: validationResults.queryResult.data,
-        headers: validationResults.headersResult.data as any,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        files: req.files,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        file: req.file,
-        req: req as any,
-        res: res,
-      });
+      let result: { status: HTTPStatusCode; body: any };
+      try {
+        result = await handler({
+          params: validationResults.paramsResult.data as any,
+          body: validationResults.bodyResult.data as any,
+          query: validationResults.queryResult.data,
+          headers: validationResults.headersResult.data as any,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          files: req.files,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          file: req.file,
+          req: req as any,
+          res: res,
+        });
+      } catch (e) {
+        if (e instanceof TsRestResponseError) {
+          result = {
+            status: e.statusCode,
+            body: e.body,
+          };
+        } else {
+          throw e;
+        }
+      }
 
       const statusCode = Number(result.status);
-      const responseType = schema.responses[statusCode];
+
+      if (result.body instanceof Stream) {
+        return result.body.pipe(res.status(result.status));
+      }
 
       let validatedResponseBody = result.body;
 
       if (options.responseValidation) {
         const response = validateResponse({
-          responseType,
+          appRoute: schema,
           response: {
             status: statusCode,
             body: result.body,
@@ -168,6 +191,12 @@ const initializeExpressRoute = ({
         });
 
         validatedResponseBody = response.body;
+      }
+
+      const responseType = schema.responses[statusCode];
+
+      if (isAppRouteNoBody(responseType)) {
+        return res.status(statusCode).end();
       }
 
       if (isAppRouteOtherResponse(responseType)) {
@@ -221,7 +250,7 @@ const initializeExpressRoute = ({
 };
 
 const requestValidationErrorHandler = (
-  handler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default'
+  handler: TsRestExpressOptions<any>['requestValidationErrorHandler'] = 'default',
 ) => {
   return (err: unknown, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof RequestValidationError) {
@@ -264,7 +293,7 @@ export const createExpressEndpoints = <TRouter extends AppRouter>(
     jsonQuery: false,
     responseValidation: false,
     requestValidationErrorHandler: 'default',
-  }
+  },
 ) => {
   recursivelyApplyExpressRouter({
     schema,

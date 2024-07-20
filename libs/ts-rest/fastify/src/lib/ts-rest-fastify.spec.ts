@@ -1,5 +1,5 @@
-import { initContract } from '@ts-rest/core';
-import { initServer } from './ts-rest-fastify';
+import { initContract, TsRestResponseError } from '@ts-rest/core';
+import { initServer, RequestValidationErrorSchema } from './ts-rest-fastify';
 import { z } from 'zod';
 import fastify from 'fastify';
 import * as supertest from 'supertest';
@@ -26,6 +26,15 @@ const contract = c.router({
       200: z.object({
         pong: z.string(),
       }),
+      400: RequestValidationErrorSchema,
+    },
+  },
+  noContent: {
+    method: 'POST',
+    path: '/no-content',
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
     },
   },
   testPathParams: {
@@ -57,7 +66,11 @@ describe('ts-rest-fastify', () => {
   const s = initServer();
 
   const router = s.router(contract, {
-    test: async () => {
+    test: async ({ request, reply }) => {
+      expect(request.routeConfig.tsRestRoute).toEqual(contract.test);
+      expect(request.routeOptions.config.tsRestRoute).toEqual(contract.test);
+      expect(reply.context.config.tsRestRoute).toEqual(contract.test);
+
       return {
         status: 200,
         body: {
@@ -65,12 +78,18 @@ describe('ts-rest-fastify', () => {
         },
       };
     },
-    ping: async ({ body }) => {
+    ping: s.route(contract.ping, async ({ body }) => {
       return {
         status: 200,
         body: {
           pong: body.ping,
         },
+      };
+    }),
+    noContent: async () => {
+      return {
+        status: 204,
+        body: undefined,
       };
     },
     testPathParams: async ({ params }) => {
@@ -181,6 +200,26 @@ describe('ts-rest-fastify', () => {
       pathParameterErrors: null,
       queryParameterErrors: null,
     });
+    expect(() =>
+      RequestValidationErrorSchema.parse(response.body),
+    ).not.toThrowError();
+  });
+
+  it('should handle no content response', async () => {
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app, {
+      logInitialization: false,
+    });
+
+    await app.ready();
+
+    const response = await supertest(app.server).post('/no-content');
+
+    expect(response.statusCode).toEqual(204);
+    expect(response.text).toEqual('');
+    expect(response.header['content-type']).toBeUndefined();
+    expect(response.header['content-length']).toBeUndefined();
   });
 
   it("should allow for custom error handler if body doesn't match", async () => {
@@ -218,6 +257,42 @@ describe('ts-rest-fastify', () => {
 
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({ id: 'foo' });
+  });
+
+  it('should remove extra properties from request body', async () => {
+    const contract = c.router({
+      echo: {
+        method: 'POST',
+        path: '/echo',
+        body: z.object({
+          foo: z.string(),
+        }),
+        responses: {
+          200: z.any(),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      echo: async ({ body }) => {
+        return {
+          status: 200,
+          body: body,
+        };
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, router, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server).post('/echo').send({
+      foo: 'bar',
+      bar: 'foo',
+    });
+    expect(response.body).toEqual({ foo: 'bar' });
   });
 
   it('options.responseValidation true should remove extra properties', async () => {
@@ -258,16 +333,16 @@ describe('ts-rest-fastify', () => {
         getPost: {
           path: '/:postId',
           method: 'GET',
-          responses: { 200: c.response<{ id: string }>() },
+          responses: { 200: c.type<{ id: string }>() },
         },
       },
-      { pathPrefix: '/posts' }
+      { pathPrefix: '/posts' },
     );
     const postsContract = c.router(
       {
         posts: postsContractNested,
       },
-      { pathPrefix: '/v1' }
+      { pathPrefix: '/v1' },
     );
     const router = s.router(postsContract, {
       posts: {
@@ -285,6 +360,54 @@ describe('ts-rest-fastify', () => {
 
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({ id: '10' });
+  });
+
+  it('prefixed contract should work with fastify sub-routers', async () => {
+    const postsContractNested = c.router(
+      {
+        getPost: {
+          path: '/:postId',
+          method: 'GET',
+          responses: { 200: c.type<{ id: string }>() },
+        },
+      },
+      { pathPrefix: '/posts' },
+    );
+
+    const mainContract = c.router(
+      {
+        health: {
+          method: 'GET',
+          path: '/health',
+          responses: { 200: c.type<{ message: string }>() },
+        },
+        posts: postsContractNested,
+      },
+      { pathPrefix: '/v1' },
+    );
+
+    const postsRouter = s.router(mainContract.posts, {
+      getPost: async ({ params }) => {
+        return { status: 200, body: { id: params.postId } };
+      },
+    });
+
+    const router = s.router(mainContract, {
+      health: async () => {
+        return { status: 200, body: { message: 'ok' } };
+      },
+      posts: postsRouter,
+    });
+
+    const app = fastify();
+    s.registerRouter(mainContract, router, app);
+
+    await app.ready();
+
+    await supertest(app.server).get('/v1/posts/10').expect(200, { id: '10' });
+    await supertest(app.server)
+      .get('/v1/health')
+      .expect(200, { message: 'ok' });
   });
 
   it('should handle non-json response types from contract', async () => {
@@ -355,7 +478,7 @@ describe('ts-rest-fastify', () => {
     });
 
     app.setErrorHandler((err, request, reply) => {
-      reply.status(500).send(err.message);
+      reply.status(500).send('Response validation failed');
     });
 
     await app.ready();
@@ -375,7 +498,7 @@ describe('ts-rest-fastify', () => {
     expect(responseHtmlFail.status).toEqual(500);
     expect(responseHtmlFail.text).toEqual('Response validation failed');
     expect(responseHtmlFail.header['content-type']).toEqual(
-      'text/plain; charset=utf-8'
+      'text/plain; charset=utf-8',
     );
 
     const responseTextPlain = await supertest(app.server).get('/robots.txt');
@@ -387,6 +510,288 @@ describe('ts-rest-fastify', () => {
     expect(responseCss.status).toEqual(200);
     expect(responseCss.text).toEqual('body { color: red; }');
     expect(responseCss.header['content-type']).toEqual('text/css');
+  });
+
+  it('should return errors from route handlers', async () => {
+    const erroringRouter = s.router(contract, {
+      test: async () => {
+        throw new Error('not implemented');
+      },
+      ping: async () => {
+        throw new Error('not implemented');
+      },
+      noContent: async () => {
+        throw new Error('not implemented');
+      },
+      testPathParams: async () => {
+        throw new Error('not implemented');
+      },
+      returnsTheWrongData: async () => {
+        throw new Error('not implemented');
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(contract, erroringRouter, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server)
+      .get('/test')
+      .timeout(1000)
+      .send({});
+
+    expect(response.statusCode).toEqual(500);
+    expect(response.body).toEqual({
+      error: 'Internal Server Error',
+      message: 'not implemented',
+      statusCode: 500,
+    });
+  });
+
+  it('should handle JSON parsing error', async () => {
+    const erroringContract = c.router({
+      ping: {
+        method: 'POST',
+        path: '/ping',
+        body: z.object({
+          ping: z.string(),
+        }),
+        responses: {
+          200: z.object({
+            pong: z.string(),
+          }),
+        },
+      },
+    });
+
+    const erroringRouter = s.router(erroringContract, {
+      ping: async () => {
+        throw new Error('not implemented');
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    s.registerRouter(erroringContract, erroringRouter, app);
+
+    await app.ready();
+
+    const response = await supertest(app.server)
+      .post('/ping')
+      .timeout(1000)
+      .set('Content-Type', 'application/json')
+      .send('{');
+
+    expect(response.statusCode).toEqual(400);
+    expect(response.body).toEqual({
+      error: 'Bad Request',
+      message: 'Unexpected end of JSON input',
+      statusCode: 400,
+    });
+  });
+
+  it('should be able to instantiate two routers and combine them together', async () => {
+    const contractA = c.router({
+      a: {
+        method: 'GET',
+        path: '/a',
+        responses: {
+          200: z.object({
+            a: z.string(),
+          }),
+        },
+      },
+    });
+
+    const contractB = c.router({
+      b: {
+        method: 'GET',
+        path: '/b',
+        responses: {
+          200: z.object({
+            b: z.string(),
+          }),
+        },
+      },
+    });
+
+    const combinedContract = c.router({
+      apiA: contractA,
+      apiB: contractB,
+    });
+
+    const routerA = s.router(contractA, {
+      a: async () => {
+        return {
+          status: 200,
+          body: {
+            a: 'return',
+          },
+        };
+      },
+    });
+
+    const routerB = s.router(contractB, {
+      b: async () => {
+        return {
+          status: 200,
+          body: {
+            b: 'return',
+          },
+        };
+      },
+    });
+
+    const combinedRouter = s.router(combinedContract, {
+      apiA: routerA,
+      apiB: routerB,
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(combinedRouter));
+
+    await app.ready();
+
+    const responseA = await supertest(app.server).get('/a');
+    expect(responseA.statusCode).toEqual(200);
+    expect(responseA.body).toEqual({
+      a: 'return',
+    });
+
+    const responseB = await supertest(app.server).get('/b');
+    expect(responseB.statusCode).toEqual(200);
+    expect(responseB.body).toEqual({
+      b: 'return',
+    });
+  });
+
+  it('should be able to mix and match combining routers with direct implementation', async () => {
+    const contract = c.router({
+      apiA: {
+        a: {
+          method: 'GET',
+          path: '/a',
+          responses: {
+            200: z.object({
+              a: z.string(),
+            }),
+          },
+        },
+      },
+      apiB: {
+        b: {
+          method: 'GET',
+          path: '/b',
+          responses: {
+            200: z.object({
+              b: z.string(),
+            }),
+          },
+        },
+      },
+    });
+
+    const routerForApiA = s.router(contract.apiA, {
+      a: async () => {
+        return {
+          status: 200,
+          body: {
+            a: 'return',
+          },
+        };
+      },
+    });
+
+    const router = s.router(contract, {
+      apiA: routerForApiA,
+      apiB: {
+        b: async () => {
+          return {
+            status: 200,
+            body: {
+              b: 'return',
+            },
+          };
+        },
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    const responseA = await supertest(app.server).get('/a');
+    expect(responseA.statusCode).toEqual(200);
+    expect(responseA.body).toEqual({
+      a: 'return',
+    });
+
+    const responseB = await supertest(app.server).get('/b');
+    expect(responseB.statusCode).toEqual(200);
+    expect(responseB.body).toEqual({
+      b: 'return',
+    });
+  });
+
+  it('should handle thrown TsRestResponseError', async () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts/:id',
+        responses: {
+          200: z.object({
+            id: z.string().optional(),
+          }),
+          404: z.object({
+            message: z.literal('Not found'),
+          }),
+          500: c.noBody(),
+        },
+      },
+    });
+
+    const router = s.router(contract, {
+      getPost: async ({ params: { id } }) => {
+        if (id === '500') {
+          throw new TsRestResponseError(contract.getPost, {
+            status: 500,
+            body: undefined,
+          });
+        }
+
+        throw new TsRestResponseError(contract.getPost, {
+          status: 404,
+          body: {
+            message: 'Not found',
+          },
+        });
+      },
+    });
+
+    const app = fastify({ logger: false });
+
+    app.register(s.plugin(router));
+
+    await app.ready();
+
+    await supertest(app.server)
+      .get('/posts/500')
+      .expect((res) => {
+        expect(res.status).toEqual(500);
+        expect(res.text).toEqual('');
+      });
+
+    await supertest(app.server)
+      .get('/posts/10')
+      .expect((res) => {
+        expect(res.status).toEqual(404);
+        expect(res.body).toEqual({ message: 'Not found' });
+      });
   });
 
   it('should be able to use a hook on a single endpoint', async () => {
@@ -405,7 +810,7 @@ describe('ts-rest-fastify', () => {
             reply.status(401).send({ message: 'Unauthorized' });
           },
         },
-        handler() {
+        async handler() {
           return { status: 200, body: true };
         },
       },
@@ -448,7 +853,7 @@ describe('ts-rest-fastify', () => {
             },
           ],
         },
-        handler() {
+        async handler() {
           return { status: 200, body: true };
         },
       },
@@ -477,7 +882,7 @@ describe('ts-rest-fastify', () => {
 
     const router = s.router(contract, {
       getMe: {
-        handler() {
+        async handler() {
           return { status: 200, body: true };
         },
       },
@@ -517,7 +922,7 @@ describe('ts-rest-fastify', () => {
             calledTimes += 1;
           },
         },
-        handler() {
+        async handler() {
           return { status: 200, body: true };
         },
       },

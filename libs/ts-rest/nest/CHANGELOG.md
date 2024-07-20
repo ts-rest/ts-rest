@@ -1,5 +1,163 @@
 # @ts-rest/nest
 
+## 3.45.2
+
+## 3.45.1
+
+## 3.45.0
+
+## 3.44.1
+
+## 3.44.0
+
+## 3.43.0
+
+### Minor Changes
+
+- 308b966: `TsRestResponseError` can be thrown from any server package
+
+## 3.42.0
+
+## 3.41.2
+
+## 3.41.1
+
+## 3.41.0
+
+## 3.40.1
+
+## 3.40.0
+
+## 3.39.2
+
+## 3.39.1
+
+## 3.39.0
+
+### Minor Changes
+
+- 860e402: Add contract definition for an absent body and handle accordingly on the server
+
+## 3.38.0
+
+## 3.37.0
+
+### Patch Changes
+
+- 85b262b: Fix return types for Nest handlers
+
+## 3.36.0
+
+### Minor Changes
+
+- 3e8701c: Add functionality to be able to set configuration options globally using `TsRestModule`
+
+### Breaking Change
+
+- The deprecated `@JsonQuery` decorator has been removed. Use the existing options argument on `@TsRest` instead.
+
+## 3.35.1
+
+### Patch Changes
+
+- b3fde9b: Fix Nest.js interceptor returninng promise when using new Nest.js handlers
+- 14f9416: Allow Nest.js handlers to return non-promise responses
+
+## 3.35.0
+
+## 3.34.0
+
+## 3.33.1
+
+## 3.33.0
+
+## 3.32.0
+
+## 3.31.0
+
+### Minor Changes
+
+- dcf40a6: feat: `@ts-rest/nest` allow TsRestException to be handled by NestJS exception filters
+- 89941a2: feat: `@ts-rest/nest` Adds support to provide a `cause` to `TsRestException`
+
+## 3.30.5
+
+### Patch Changes
+
+- 9bd7402: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+  - `@ts-rest/open-api` fix: Pass through contentType to OpenApi schema ([#414](https://github.com/ts-rest/ts-rest/pull/414))
+  - `@ts-rest/core` fix: Content-type text/html returns blob body (fixes [#418](https://github.com/ts-rest/ts-rest/issues/418))
+- 8cc95c5: add changeset for latest changes
+
+## 3.30.4
+
+### Patch Changes
+
+- 10dff96: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+  - ref PR: https://github.com/colinhacks/zod/pull/2824
+
+## 3.30.3
+
+## 3.30.2
+
+## 3.30.1
+
+## 3.30.0
+
+## 3.29.0
+
+### Minor Changes
+
+- 19aeb0a: - feat: Add option to disable request validation
+  - This is useful when a user wants to perform validation or handle validation errors themselves
+
+### Patch Changes
+
+- 5f7b236: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+  - bump `@ts-rest/react-query` peer dependency `zod` to `^3.21.0`
+  - upgrades NX to 16.7 for project root
+
+## 3.28.0
+
+### Minor Changes
+
+- 207e9c5: We now support the following versions of Nestjs:
+  ```
+  "@nestjs/common": "^9.0.0 || ^10.0.0",
+  "@nestjs/core": "^9.0.0 || ^10.0.0",
+  ```
+
+## 3.27.0
+
+### Patch Changes
+
+- 55411ad: Upgrade zod to 3.21.4
+  Upgrade @anatine/zod-openapi to 2.0.1
+
+## 3.26.4
+
+### Patch Changes
+
+- 62db9e0: fix: add support for trailing slashes in the nest multi-handler routing
+
+## 3.26.3
+
+### Patch Changes
+
+- 5365f2a: Fix multi-handler breaking in Fastify with query parameters
+
+## 3.26.2
+
+### Patch Changes
+
+- b3d3868: Remove extra peer dependencies from @ts-rest/nest
+
+## 3.26.1
+
+### Patch Changes
+
+- 1afbf08: Add missing ts-rest-nest support for Fastify (thanks btravers for the GH issue)
+
 ## 3.26.0
 
 ### Minor Changes

@@ -8,6 +8,8 @@ import {
   ClientInferResponses,
   PartialClientInferRequest,
 } from './infer-types';
+import { isZodType } from './zod-utils';
+import { Equal, Expect } from './test-helpers';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -35,17 +37,23 @@ export function getRouteResponses<T extends AppRouter>(router: T) {
 export type AppRouteFunction<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs,
-  TArgs = PartialClientInferRequest<TRoute, TClientArgs>
+  TArgs = PartialClientInferRequest<TRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
   : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
 
-export interface ClientArgs {
+export type FetchOptions = Omit<RequestInit, 'method' | 'headers' | 'body'>;
+
+export interface OverrideableClientArgs {
   baseUrl: string;
-  baseHeaders: Record<string, string>;
-  api?: ApiFetcher;
   credentials?: RequestCredentials;
   jsonQuery?: boolean;
+  validateResponse?: boolean;
+}
+
+export interface ClientArgs extends OverrideableClientArgs {
+  baseHeaders?: Record<string, string>;
+  api?: ApiFetcher;
 }
 
 export type ApiFetcherArgs = {
@@ -53,12 +61,29 @@ export type ApiFetcherArgs = {
   path: string;
   method: string;
   headers: Record<string, string>;
-  body: FormData | string | null | undefined;
+  body: FormData | URLSearchParams | string | null | undefined;
   rawBody: unknown;
   rawQuery: unknown;
   contentType: AppRouteMutation['contentType'];
+  fetchOptions?: FetchOptions;
+  validateResponse?: boolean;
+
+  /**
+   * @deprecated Use `fetchOptions.credentials` instead
+   */
   credentials?: RequestCredentials;
+  /**
+   * @deprecated Use `fetchOptions.signal` instead
+   */
   signal?: AbortSignal;
+  /**
+   * @deprecated Use `fetchOptions.cache` instead
+   */
+  cache?: RequestCache;
+  /**
+   * @deprecated Use `fetchOptions.next` instead
+   */
+  next?: { revalidate?: number | false; tags?: string[] } | undefined;
 };
 
 export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
@@ -75,31 +100,45 @@ export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
  * into the request to run custom logic
  */
 export const tsRestFetchApi: ApiFetcher = async ({
+  route,
   path,
   method,
   headers,
   body,
-  credentials,
-  signal,
+  validateResponse,
+  fetchOptions,
 }) => {
   const result = await fetch(path, {
+    ...fetchOptions,
     method,
     headers,
     body,
-    credentials,
-    signal,
   });
+
   const contentType = result.headers.get('content-type');
 
-  if (contentType?.includes('application/json')) {
-    return {
+  if (contentType?.includes('application/') && contentType?.includes('json')) {
+    const response = {
       status: result.status,
       body: await result.json(),
       headers: result.headers,
     };
+
+    const responseSchema = route.responses[response.status];
+    if (
+      (validateResponse ?? route.validateResponseOnClient) &&
+      isZodType(responseSchema)
+    ) {
+      return {
+        ...response,
+        body: responseSchema.parse(response.body),
+      };
+    }
+
+    return response;
   }
 
-  if (contentType?.includes('text/plain')) {
+  if (contentType?.includes('text/')) {
     return {
       status: result.status,
       body: await result.text(),
@@ -117,11 +156,21 @@ export const tsRestFetchApi: ApiFetcher = async ({
 const createFormData = (body: unknown) => {
   const formData = new FormData();
 
-  Object.entries(body as Record<string, unknown>).forEach(([key, value]) => {
+  const appendToFormData = (key: string, value: unknown) => {
     if (value instanceof File) {
       formData.append(key, value);
     } else {
       formData.append(key, JSON.stringify(value));
+    }
+  };
+
+  Object.entries(body as Record<string, unknown>).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        appendToFormData(key, item);
+      }
+    } else {
+      appendToFormData(key, value);
     }
   });
 
@@ -130,7 +179,7 @@ const createFormData = (body: unknown) => {
 
 const normalizeHeaders = (headers: Record<string, string | undefined>) => {
   return Object.fromEntries(
-    Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v])
+    Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]),
   );
 };
 
@@ -142,7 +191,7 @@ export const fetchApi = ({
   query,
   extraInputArgs,
   headers,
-  signal,
+  fetchOptions,
 }: {
   path: string;
   clientArgs: ClientArgs;
@@ -151,12 +200,12 @@ export const fetchApi = ({
   body: unknown;
   extraInputArgs: Record<string, unknown>;
   headers: Record<string, string | undefined>;
-  signal?: AbortSignal;
+  fetchOptions?: FetchOptions;
 }) => {
   const apiFetcher = clientArgs.api || tsRestFetchApi;
 
   const combinedHeaders = {
-    ...normalizeHeaders(clientArgs.baseHeaders),
+    ...(clientArgs.baseHeaders && normalizeHeaders(clientArgs.baseHeaders)),
     ...normalizeHeaders(headers),
   } as Record<string, string>;
 
@@ -167,39 +216,129 @@ export const fetchApi = ({
     }
   });
 
-  if (route.method !== 'GET' && route.contentType === 'multipart/form-data') {
-    return apiFetcher({
-      route,
-      path,
-      method: route.method,
-      credentials: clientArgs.credentials,
-      headers: combinedHeaders,
-      body: body instanceof FormData ? body : createFormData(body),
-      rawBody: body,
-      rawQuery: query,
-      contentType: 'multipart/form-data',
-      signal,
-      ...extraInputArgs,
-    });
-  }
-
-  return apiFetcher({
+  let fetcherArgs: ApiFetcherArgs = {
     route,
     path,
     method: route.method,
-    credentials: clientArgs.credentials,
-    headers: {
-      'content-type': 'application/json',
-      ...combinedHeaders,
-    },
-    body:
-      body !== null && body !== undefined ? JSON.stringify(body) : undefined,
+    headers: combinedHeaders,
+    body: undefined,
     rawBody: body,
     rawQuery: query,
-    contentType: route.method !== 'GET' ? 'application/json' : undefined,
-    signal,
+    contentType: undefined,
+    validateResponse: clientArgs.validateResponse,
+    fetchOptions: {
+      ...(clientArgs.credentials && { credentials: clientArgs.credentials }),
+      ...fetchOptions,
+    },
+    ...(fetchOptions?.signal && { signal: fetchOptions.signal }),
+    ...(fetchOptions?.cache && { cache: fetchOptions.cache }),
+    ...(fetchOptions &&
+      'next' in fetchOptions &&
+      !!fetchOptions?.next && { next: fetchOptions.next }),
+  };
+
+  if (route.method !== 'GET') {
+    if (route.contentType === 'multipart/form-data') {
+      fetcherArgs = {
+        ...fetcherArgs,
+        contentType: 'multipart/form-data',
+        body: body instanceof FormData ? body : createFormData(body),
+      };
+    } else if (route.contentType === 'application/x-www-form-urlencoded') {
+      fetcherArgs = {
+        ...fetcherArgs,
+        contentType: 'application/x-www-form-urlencoded',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          ...fetcherArgs.headers,
+        },
+        body:
+          typeof body === 'string'
+            ? body
+            : new URLSearchParams(
+                body as Record<string, string> | URLSearchParams,
+              ),
+      };
+    } else if (body !== null && body !== undefined) {
+      fetcherArgs = {
+        ...fetcherArgs,
+        contentType: 'application/json',
+        headers: {
+          'content-type': 'application/json',
+          ...fetcherArgs.headers,
+        },
+        body: JSON.stringify(body),
+      };
+    }
+  }
+
+  return apiFetcher({
+    ...fetcherArgs,
     ...extraInputArgs,
   });
+};
+
+export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
+  route: TAppRoute,
+  clientArgs: InitClientArgs,
+  inputArgs?: ClientInferRequest<AppRouteMutation, ClientArgs>,
+) => {
+  const {
+    query,
+    params,
+    body,
+    headers,
+    extraHeaders,
+    overrideClientOptions,
+    fetchOptions,
+
+    // TODO: remove in 4.0
+    cache,
+
+    // TODO: remove in 4.0
+    next,
+
+    // extra input args
+    ...extraInputArgs
+  } =
+    (inputArgs as ClientInferRequest<AppRouteMutation, ClientArgs> & {
+      next?: any;
+    }) || {};
+
+  // assert that we removed all non-extra args
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type AssertExtraInputArgsEmpty = Expect<Equal<typeof extraInputArgs, {}>>;
+
+  const overriddenClientArgs = {
+    ...clientArgs,
+    ...overrideClientOptions,
+  };
+
+  const completeUrl = getCompleteUrl(
+    query,
+    overriddenClientArgs.baseUrl,
+    params,
+    route,
+    !!overriddenClientArgs.jsonQuery,
+  );
+
+  return {
+    path: completeUrl,
+    clientArgs: overriddenClientArgs,
+    route,
+    body,
+    query,
+    extraInputArgs,
+    fetchOptions: {
+      ...(cache && { cache }),
+      ...(next && { next }),
+      ...fetchOptions,
+    },
+    headers: {
+      ...extraHeaders,
+      ...headers,
+    },
+  } as Parameters<typeof fetchApi>[0];
 };
 
 /**
@@ -210,7 +349,7 @@ export const getCompleteUrl = (
   baseUrl: string,
   params: unknown,
   route: AppRoute,
-  jsonQuery: boolean
+  jsonQuery: boolean,
 ) => {
   const path = insertParamsIntoPath({
     path: route.path,
@@ -222,35 +361,14 @@ export const getCompleteUrl = (
 
 export const getRouteQuery = <TAppRoute extends AppRoute>(
   route: TAppRoute,
-  clientArgs: InitClientArgs
+  clientArgs: InitClientArgs,
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
   return async (
-    inputArgs?: ClientInferRequest<AppRouteMutation, ClientArgs>
+    inputArgs?: ClientInferRequest<AppRouteMutation, ClientArgs>,
   ) => {
-    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
-      inputArgs || {};
-
-    const completeUrl = getCompleteUrl(
-      query,
-      clientArgs.baseUrl,
-      params,
-      route,
-      !!clientArgs.jsonQuery
-    );
-
-    const response = await fetchApi({
-      path: completeUrl,
-      clientArgs,
-      route,
-      body,
-      query,
-      extraInputArgs,
-      headers: {
-        ...extraHeaders,
-        ...headers,
-      },
-    });
+    const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, inputArgs);
+    const response = await fetchApi(fetchApiArgs);
 
     if (!clientArgs.throwOnUnknownStatus) {
       return response;
@@ -266,7 +384,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
 
 export type InitClientReturn<
   T extends AppRouter,
-  TClientArgs extends ClientArgs
+  TClientArgs extends ClientArgs,
 > = RecursiveProxyObj<T, TClientArgs>;
 
 export type InitClientArgs = ClientArgs & {
@@ -279,10 +397,10 @@ export type InitClientArgs = ClientArgs & {
 
 export const initClient = <
   T extends AppRouter,
-  TClientArgs extends InitClientArgs
+  TClientArgs extends InitClientArgs,
 >(
   router: T,
-  args: TClientArgs
+  args: TClientArgs,
 ): InitClientReturn<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
@@ -291,6 +409,6 @@ export const initClient = <
       } else {
         return [key, initClient(subRouter, args)];
       }
-    })
+    }),
   );
 };

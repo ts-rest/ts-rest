@@ -2,7 +2,7 @@
   "extends": "../../../tsconfig.settings.json",
   "compilerOptions": {
     "outDir": "../../../dist/apps/example-microservice/web-app",
-    "types": ["node"],
+    "types": ["node", "vitest"],
     "allowSyntheticDefaultImports": true,
     "jsx": "react"
   },

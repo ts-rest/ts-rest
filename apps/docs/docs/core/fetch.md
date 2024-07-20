@@ -1,9 +1,12 @@
-# Client
+# Fetch Client
 
 All of the client libraries (`@ts-rest/core`, `@ts-rest/react-query`, and `@ts-rest/solid-query`) all use the `initClient` or `initQueryClient` functions to create a client. These functions take a `baseUrl` and `baseHeaders` as the first two arguments, and then an optional `api` argument as the third argument.
 
 ```typescript
-export const client = initClient(router, {
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
+
+export const client = initClient(contract, {
   baseUrl: 'http://localhost:3334',
   baseHeaders: {},
 });
@@ -35,13 +38,15 @@ Breaking down the arguments:
 - `headers` - Request headers defined in the contract (merged and overridden with `baseHeaders` in the client)
 - `extraHeaders` - If you want to pass headers not defined in the contract
 - `params` - The path parameters of the request.
+- `fetchOptions` - Additional fetch options to pass to the fetch function.
+- `overrideClientOptions` - Override the client options for this request.
 
 :::tip Customise the API 🎨
 
 You can add your own custom arguments to the request, and they will be passed through to the `api` function - Read more here! [Custom API](/core/custom.md)
 
 ```typescript
-const client = initQueryClient(postsApi, {
+const client = initClient(contract, {
   // ...
   api: async (args: ApiFetcherArgs & { custom?: string }) => {
     return tsRestFetchApi(args);
@@ -112,7 +117,7 @@ By default, all query parameters are encoded as strings, however, you can use th
 Make sure to enable JSON query handling on the server as well.
 
 ```typescript
-const client = initClient(router, {
+const client = initClient(contract, {
   baseUrl: 'http://localhost:3334',
   baseHeaders: {},
   jsonQuery: true,
@@ -143,8 +148,55 @@ This will ensure that you could pass Date objects in your client queries. They w
 
 :::
 
+## Validate Response
+
+The `validateResponse` option allows you to validate the response body against the response schema. This is useful for ensuring that the server is returning the correct response type or performing transformations that are part of the response schema. For this to work, the responses schema must be defined using Zod (`c.type<>` will not check types at runtime).
+
+```typescript
+const c = initContract();
+export const contract = c.router({
+  method: 'GET',
+  path: '/post/:id',
+  responses: {
+    200: z.object({
+      id: z.string(),
+      createdAt: z.coerce.date(),
+    }),
+  },
+});
+
+const client = initClient(contract, { validateResponse: true });
+const response = await client.getPost({ id: '1' });
+// response will be validated against the response schema
+if (response.status === 200) {
+  // response.data will be of type { id: string, createdAt: Date }
+  // because `createdAt` has transformation of `z.coerce.date()`, it will parse any string date into a Date object
+}
+```
+
+:::caution
+
+If you are doing any non-idempotent Zod transforms that run on the server, response validation may fail on the client or produce an unintended double transformation is certain cases. Make sure your transformations are idempotent.
+
+```typescript
+// ❌❌
+z.date().transform((d) => d.toISOString());
+z.number().transform((n) => n + 1000);
+z.string().transform((s) => `Hello, ${s}`);
+
+// ✅✅
+z.coerce.date();
+z.string().transform((s) => s.toUpperCase());
+z.union([z.string().datetime(), z.date()])
+  .transform((date) => (typeof date === 'string' ? new Date(date) : date));
+```
+
+:::
+
 ## Notes About Basic Fetch Client
 
 We use the [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) API under the hood.
 
-We support basic fetch calls for application/json and text/plain content types and do not support content-type missing in resource response (per [security standards](https://knowledge-base.secureflag.com/vulnerabilities/security_misconfiguration/lack_of_content_type_headers_vulnerability.html)). If you need to implement custom API logic (like content-type header is missing for some reason, or need to handle different content types), you can implement your own Client: https://ts-rest.com/docs/core/custom
+Our built-in fetch client handles the majority of use cases such as automatically parsing response bodies to JSON or text based on the `Content-Type` header.
+However, if you need to handle some different behavior, or add extra functionality such as injecting API tokens into requests, you can implement your own
+[custom fetcher or wrap the built-in fetcher](custom.md).

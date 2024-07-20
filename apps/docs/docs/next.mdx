@@ -18,7 +18,8 @@ It is possible to split out to multiple endpoints by having multiple [...ts-rest
 // pages/api/[...ts-rest].tsx
 import { createNextRoute, createNextRouter } from '@ts-rest/next';
 
-const postsRouter = createNextRoute(api.posts, {
+// `contract` is the AppRouter returned by `c.router`
+const postsRouter = createNextRoute(contract.posts, {
   createPost: async (args) => {
     const newPost = await posts.createPost(args.body);
 
@@ -29,22 +30,40 @@ const postsRouter = createNextRoute(api.posts, {
   },
 });
 
-const router = createNextRoute(api, {
+const router = createNextRoute(contract, {
   posts: postsRouter,
 });
 
 // Actually initiate the collective endpoints
-export default createNextRouter(api, router);
+export default createNextRouter(contract, router);
 ```
 
-`createNextRouter` is a function that takes a router and a complete router, and creates endpoints, with the correct methods, paths and callbacks.
+`createNextRouter` is a function that takes a contract and a complete router, and creates endpoints, with the correct methods, paths and callbacks.
+
+It's also possible to create a handler for a single contract route.
+
+```typescript
+// pages/api/posts/index.tsx
+import { createSingleRouteHandler } from '@ts-rest/next';
+
+export default createSingleRouteHandler(api.posts.createPost, async (args) => {
+  const newPost = await posts.createPost(args.body);
+
+  return {
+    status: 201,
+    body: newPost,
+  };
+});
+```
+
+`createSingleRouteHandler` is a function that takes a single contract route and a handler, and creates a `nextApiHandler`
 
 ### JSON Query Parameters
 
 To handle JSON query parameters, you can use the `jsonQuery` option.
 
 ```typescript
-export default createNextRouter(api, router, { jsonQuery: true });
+export default createNextRouter(contract, router, { jsonQuery: true });
 ```
 
 ### Response Validation
@@ -54,7 +73,7 @@ If there is a corresponding response Zod schema defined in the contract for the 
 If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
 
 ```typescript
-export default createNextRouter(api, router, { validateResponses: true });
+export default createNextRouter(contract, router, { validateResponses: true });
 ```
 
 ### Error Handling
@@ -63,7 +82,7 @@ You can create a global error handler to handle any thrown errors by using the `
 This includes response validation errors.
 
 ```typescript
-export default createNextRouter(api, router, {
+export default createNextRouter(contract, router, {
   responseValidation: true,
   errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
     if (error instanceof ResponseValidationError) {
@@ -74,8 +93,38 @@ export default createNextRouter(api, router, {
 });
 ```
 
-## Future Work
+#### Request Validation Error Handling
 
-As this pattern doesn't support a lambda per endpoint, it is planned to provide a helper utility to allow individual endpoints to be created.
+The default behavior when validating request schema is to return a 400 status with the corresponding ZodError.
+To customize handling of the request validation errors enable the `throwRequestValidation` option.
+This option allows you to handle the request validation error in the global `errorHandler` function.
 
-The downside of this is that it will not be possible to give a Typescript warning if the path is incorrect.
+```typescript
+export default createNextRouter(contract, router, {
+  throwRequestValidation: true,
+  errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
+    if (error instanceof RequestValidationError) {
+      if (error.body !== null) {
+        return res
+          .status(400)
+          .json({ message: 'Malformed Body', errors: error.body.flatten() });
+      }
+
+      return res.status(400).json({ message: 'Bad Request' });
+    }
+  },
+});
+```
+
+```typescript
+export class RequestValidationError extends Error {
+  constructor(
+    public pathParams: z.ZodError | null,
+    public headers: z.ZodError | null,
+    public query: z.ZodError | null,
+    public body: z.ZodError | null,
+  ) {
+    super('[ts-rest] request validation failed');
+  }
+}
+```

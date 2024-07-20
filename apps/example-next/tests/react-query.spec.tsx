@@ -3,8 +3,7 @@ import {
   QueryClientProvider,
   useQueryClient,
 } from '@tanstack/react-query';
-import { waitFor } from '@testing-library/react';
-import { renderHook } from '@testing-library/react-hooks';
+import { waitFor, renderHook } from '@testing-library/react';
 import { ApiFetcher, initContract } from '@ts-rest/core';
 import { initQueryClient, useTsRestQueryClient } from '@ts-rest/react-query';
 import React from 'react';
@@ -34,14 +33,14 @@ const postsRouter = c.router(
       method: 'GET',
       path: `/posts/:id`,
       responses: {
-        200: c.response<Post | null>(),
+        200: c.type<Post | null>(),
       },
     },
     getPosts: {
       method: 'GET',
       path: '/posts',
       responses: {
-        200: c.response<Post[]>(),
+        200: c.type<Post[]>(),
       },
       query: z.object({
         take: z.number().optional(),
@@ -52,7 +51,7 @@ const postsRouter = c.router(
       method: 'POST',
       path: '/posts',
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: z.object({
         title: z.string(),
@@ -66,7 +65,7 @@ const postsRouter = c.router(
       method: 'POST',
       path: '/posts',
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: z.object({}),
       query: z.object({
@@ -77,7 +76,7 @@ const postsRouter = c.router(
       method: 'PUT',
       path: `/posts/:id`,
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: z.object({
         title: z.string(),
@@ -91,7 +90,7 @@ const postsRouter = c.router(
       method: 'PATCH',
       path: `/posts/:id`,
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       body: null,
     },
@@ -99,7 +98,7 @@ const postsRouter = c.router(
       method: 'DELETE',
       path: `/posts/:id`,
       responses: {
-        200: c.response<boolean>(),
+        200: c.type<boolean>(),
       },
       body: null,
     },
@@ -107,7 +106,7 @@ const postsRouter = c.router(
       method: 'POST',
       path: `/posts/:id/image`,
       responses: {
-        200: c.response<Post>(),
+        200: c.type<Post>(),
       },
       contentType: 'multipart/form-data',
       body: c.body<{ image: File }>(),
@@ -117,7 +116,7 @@ const postsRouter = c.router(
     baseHeaders: z.object({
       'x-test': z.string(),
     }),
-  }
+  },
 );
 
 // Three endpoints, two for posts, and one for health
@@ -127,7 +126,7 @@ export const router = c.router({
     method: 'GET',
     path: '/health',
     responses: {
-      200: c.response<{ message: string }>(),
+      200: c.type<{ message: string }>(),
     },
   },
 });
@@ -184,11 +183,13 @@ describe('react-query', () => {
       path: 'https://api.com/health',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -196,6 +197,48 @@ describe('react-query', () => {
     });
 
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
+  });
+
+  it('useQuery with select should handle success', async () => {
+    api.mockResolvedValue({ status: 200, body: { message: 'hello world' } });
+
+    const { result } = renderHook(
+      () =>
+        client.health.useQuery(
+          ['health'],
+          {},
+          {
+            select: (data) => data.body.message,
+          },
+        ),
+      {
+        wrapper,
+      },
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/health',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: router.health,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toStrictEqual(false);
+    });
+
+    expect(result.current.data).toStrictEqual('hello world');
   });
 
   it('useQuery should accept extra headers', async () => {
@@ -213,7 +256,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current.data).toStrictEqual(undefined);
@@ -225,11 +268,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -251,7 +296,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current.data).toStrictEqual(undefined);
@@ -268,6 +313,9 @@ describe('react-query', () => {
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -286,7 +334,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current.data).toStrictEqual(undefined);
@@ -298,11 +346,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -325,11 +375,13 @@ describe('react-query', () => {
       path: 'https://api.com/health',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     return waitFor(() => {
@@ -346,7 +398,7 @@ describe('react-query', () => {
 
     const { result } = renderHook(
       () => client.health.useQuery(['health'], {}, { retry: () => false }),
-      { wrapper }
+      { wrapper },
     );
 
     expect(result.current.data).toStrictEqual(undefined);
@@ -358,11 +410,13 @@ describe('react-query', () => {
       path: 'https://api.com/health',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.health,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -395,7 +449,7 @@ describe('react-query', () => {
           content: '',
           authorId: '1',
         },
-      })
+      }),
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -420,6 +474,7 @@ describe('react-query', () => {
       contentType: 'application/json',
       route: router.posts.createPost,
       signal: undefined,
+      fetchOptions: {},
     });
 
     await waitFor(() => {
@@ -452,7 +507,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current[0].data).toStrictEqual(undefined);
@@ -468,11 +523,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -480,11 +537,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -525,7 +584,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current[0].data).toStrictEqual(undefined);
@@ -541,11 +600,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -553,11 +614,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -602,7 +665,7 @@ describe('react-query', () => {
         }),
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current[0].data).toStrictEqual(undefined);
@@ -618,11 +681,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     expect(api).toHaveBeenCalledWith({
@@ -630,11 +695,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/2',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
 
     await waitFor(() => {
@@ -665,7 +732,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -673,11 +740,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -695,7 +764,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -703,11 +772,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -729,7 +800,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current).resolves.toStrictEqual(ERROR_RESPONSE);
@@ -739,11 +810,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -761,7 +834,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(api).toHaveBeenCalledWith({
@@ -769,18 +842,20 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
   it('getQueryData should return already fetched data', async () => {
     api.mockResolvedValue(SUCCESS_RESPONSE);
 
-    const { waitForNextUpdate } = renderHook(
+    renderHook(
       () => {
         const { data } = client.posts.getPost.useQuery(['post', '1'], {
           params: {
@@ -792,10 +867,10 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(1));
 
     const { result } = renderHook(
       () => {
@@ -804,7 +879,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     expect(result.current).toStrictEqual(SUCCESS_RESPONSE);
@@ -816,11 +891,13 @@ describe('react-query', () => {
       path: 'https://api.com/posts/1',
       body: undefined,
       headers: {
-        'content-type': 'application/json',
         'x-test': 'test',
       },
       route: router.posts.getPost,
       signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
     });
   });
 
@@ -842,7 +919,7 @@ describe('react-query', () => {
       } as Post,
     } as const;
 
-    const { waitForNextUpdate } = renderHook(
+    renderHook(
       () =>
         client.posts.getPost.useQuery(
           ['post', '1'],
@@ -853,14 +930,14 @@ describe('react-query', () => {
           },
           {
             staleTime: 10000,
-          }
+          },
         ),
       {
         wrapper,
-      }
+      },
     );
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(1));
 
     renderHook(
       () => {
@@ -869,7 +946,7 @@ describe('react-query', () => {
       },
       {
         wrapper,
-      }
+      },
     );
 
     const { result } = renderHook(
@@ -883,11 +960,11 @@ describe('react-query', () => {
           },
           {
             staleTime: 10000,
-          }
+          },
         ),
       {
         wrapper,
-      }
+      },
     );
 
     return waitFor(() => {

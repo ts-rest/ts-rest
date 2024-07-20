@@ -7,10 +7,13 @@ import {
   isZodType,
 } from '@ts-rest/core';
 import {
+  ExamplesObject,
   InfoObject,
+  MediaTypeObject,
   OpenAPIObject,
   OperationObject,
   PathsObject,
+  SchemaObject,
 } from 'openapi3-ts';
 import { generateSchema } from '@anatine/zod-openapi';
 import { z } from 'zod';
@@ -24,7 +27,7 @@ type RouterPath = {
 
 const getPathsFromRouter = (
   router: AppRouter,
-  pathHistory?: string[]
+  pathHistory?: string[],
 ): RouterPath[] => {
   const paths: RouterPath[] = [];
 
@@ -78,17 +81,45 @@ const getPathParameters = (path: string, zodObject?: unknown) => {
     })) || [];
 
   if (isZodObj) {
-    const paramsFromZod = Object.entries(zodShape).map(([key, value]) => ({
-      name: key,
-      in: 'path' as const,
-      required: true,
-      schema: getOpenApiSchemaFromZod(value),
-    }));
+    const paramsFromZod = Object.entries(zodShape).map(([key, value]) => {
+      const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
+      return {
+        name: key,
+        in: 'path' as const,
+        required: true,
+        schema,
+        ...(description && { description }),
+      };
+    });
 
     params.push(...paramsFromZod);
   }
 
   return params;
+};
+
+const getHeaderParameters = (zodObject?: unknown) => {
+  const isZodObj = isZodObject(zodObject);
+
+  if (!isZodObj) {
+    return [];
+  }
+
+  const zodShape = extractZodObjectShape(zodObject);
+
+  return Object.entries(zodShape).map(([key, value]) => {
+    const schema = getOpenApiSchemaFromZod(value)!;
+    const isRequired = !(value as z.ZodTypeAny).isOptional();
+
+    return {
+      name: key,
+      in: 'header' as const,
+      ...(isRequired && { required: true }),
+      ...{
+        schema: schema,
+      },
+    };
+  });
 };
 
 const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
@@ -101,28 +132,59 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
   const zodShape = extractZodObjectShape(zodObject);
 
   return Object.entries(zodShape).map(([key, value]) => {
-    const schema = getOpenApiSchemaFromZod(value)!;
-    const isObject = (value as z.ZodTypeAny)._def.typeName === 'ZodObject';
+    const {
+      description,
+      mediaExamples: examples,
+      ...schema
+    } = getOpenApiSchemaFromZod(value)!;
+    const isObject = (obj: z.ZodTypeAny) => {
+      while (obj._def.innerType) {
+        obj = obj._def.innerType;
+      }
+
+      return obj._def.typeName === 'ZodObject';
+    };
     const isRequired = !(value as z.ZodTypeAny).isOptional();
 
     return {
       name: key,
       in: 'query' as const,
+      ...(description && { description }),
       ...(isRequired && { required: true }),
       ...(jsonQuery
         ? {
             content: {
               'application/json': {
                 schema: schema,
+                ...(examples && { examples }),
               },
             },
           }
         : {
-            ...(isObject && { style: 'deepObject' as const }),
+            ...(isObject(value as z.ZodTypeAny) && {
+              style: 'deepObject' as const,
+            }),
             schema: schema,
           }),
     };
   });
+};
+
+declare module 'openapi3-ts' {
+  interface SchemaObject {
+    mediaExamples?: ExamplesObject;
+  }
+}
+
+const convertSchemaObjectToMediaTypeObject = (
+  input: SchemaObject,
+): MediaTypeObject => {
+  const { mediaExamples: examples, ...schema } = input;
+
+  return {
+    schema,
+    ...(examples && { examples }),
+  };
 };
 
 /**
@@ -133,7 +195,14 @@ const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
 export const generateOpenApi = (
   router: AppRouter,
   apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
-  options: { setOperationId?: boolean; jsonQuery?: boolean } = {}
+  options: {
+    setOperationId?: boolean | 'concatenated-path';
+    jsonQuery?: boolean;
+    operationMapper?: (
+      operation: OperationObject,
+      appRoute: AppRoute,
+    ) => OperationObject;
+  } = {},
 ): OpenAPIObject => {
   const paths = getPathsFromRouter(router);
 
@@ -148,21 +217,22 @@ export const generateOpenApi = (
   const operationIds = new Map<string, string[]>();
 
   const pathObject = paths.reduce((acc, path) => {
-    if (options.setOperationId) {
+    if (options.setOperationId === true) {
       const existingOp = operationIds.get(path.id);
       if (existingOp) {
         throw new Error(
-          `Route '${path.id}' already defined under ${existingOp.join('.')}`
+          `Route '${path.id}' already defined under ${existingOp.join('.')}`,
         );
       }
       operationIds.set(path.id, path.paths);
     }
 
     const pathParams = getPathParameters(path.path, path.route.pathParams);
+    const headerParams = getHeaderParameters(path.route.headers);
 
     const querySchema = getQueryParametersFromZod(
       path.route.query,
-      !!options.jsonQuery
+      !!options.jsonQuery,
     );
 
     const bodySchema =
@@ -170,45 +240,59 @@ export const generateOpenApi = (
         ? getOpenApiSchemaFromZod(path.route.body)
         : null;
 
-    const responses = Object.keys(path.route.responses).reduce((acc, key) => {
-      const keyAsNumber = Number(key);
+    const responses = Object.entries(path.route.responses).reduce(
+      (acc, [statusCode, response]) => {
+        const responseSchema = getOpenApiSchemaFromZod(response, true);
+        const description =
+          isZodType(response) && response.description
+            ? response.description
+            : statusCode;
 
-      const responseSchema = getOpenApiSchemaFromZod(
-        path.route.responses[keyAsNumber],
-        true
-      );
-
-      return {
-        ...acc,
-        [keyAsNumber]: {
-          description: `${keyAsNumber}`,
-          ...(responseSchema
-            ? {
-                content: {
-                  'application/json': {
-                    schema: responseSchema,
+        return {
+          ...acc,
+          [statusCode]: {
+            description,
+            ...(responseSchema
+              ? {
+                  content: {
+                    'application/json': {
+                      ...convertSchemaObjectToMediaTypeObject(responseSchema),
+                    },
                   },
-                },
-              }
-            : {}),
-        },
-      };
-    }, {});
+                }
+              : {}),
+          },
+        };
+      },
+      {},
+    );
 
-    const newPath: OperationObject = {
+    const contentType =
+      path.route?.method !== 'GET'
+        ? path.route?.contentType ?? 'application/json'
+        : 'application/json';
+
+    const pathOperation: OperationObject = {
       description: path.route.description,
       summary: path.route.summary,
       deprecated: path.route.deprecated,
       tags: path.paths,
-      parameters: [...pathParams, ...querySchema],
-      ...(options.setOperationId ? { operationId: path.id } : {}),
+      parameters: [...pathParams, ...headerParams, ...querySchema],
+      ...(options.setOperationId
+        ? {
+            operationId:
+              options.setOperationId === 'concatenated-path'
+                ? [...path.paths, path.id].join('.')
+                : path.id,
+          }
+        : {}),
       ...(bodySchema
         ? {
             requestBody: {
               description: 'Body',
               content: {
-                'application/json': {
-                  schema: bodySchema,
+                [contentType]: {
+                  ...convertSchemaObjectToMediaTypeObject(bodySchema),
                 },
               },
             },
@@ -219,7 +303,9 @@ export const generateOpenApi = (
 
     acc[path.path] = {
       ...acc[path.path],
-      [mapMethod[path.route.method]]: newPath,
+      [mapMethod[path.route.method]]: options.operationMapper
+        ? options.operationMapper(pathOperation, path.route)
+        : pathOperation,
     };
 
     return acc;

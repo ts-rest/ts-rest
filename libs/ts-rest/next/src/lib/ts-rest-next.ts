@@ -1,29 +1,41 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-/**
- * Lib is designed to follow the same structure as
- * traditional Next.js apps, with a pages folder.
- */
-
 import {
   AppRoute,
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  HTTPStatusCode,
   isAppRoute,
+  isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
+  TsRestResponseError,
   validateResponse,
+  ZodErrorSchema,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
+import { z } from 'zod';
+
+export class RequestValidationError extends Error {
+  constructor(
+    public pathParams: z.ZodError | null,
+    public headers: z.ZodError | null,
+    public query: z.ZodError | null,
+    public body: z.ZodError | null,
+  ) {
+    super('[ts-rest] request validation failed');
+  }
+}
+
+export const RequestValidationErrorSchema = ZodErrorSchema;
 
 type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {
     req: NextApiRequest;
     res: NextApiResponse;
-  }
+  },
 ) => Promise<ServerInferResponses<T>>;
 
 type RecursiveRouterObj<T extends AppRouter> = {
@@ -42,6 +54,17 @@ type AppRouterWithImplementation = {
   [key: string]: AppRouterWithImplementation | AppRouteWithImplementation<any>;
 };
 
+type CreateNextRouterOptions = {
+  jsonQuery?: boolean;
+  responseValidation?: boolean;
+  throwRequestValidation?: boolean;
+  errorHandler?: (
+    err: unknown,
+    req: NextApiRequest,
+    res: NextApiResponse,
+  ) => void;
+};
+
 /**
  * Combine all AppRoutes with their implementations into a single object
  * which is easier to work with
@@ -51,7 +74,7 @@ type AppRouterWithImplementation = {
  */
 const mergeRouterAndImplementation = <T extends AppRouter>(
   router: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: RecursiveRouterObj<T>,
 ): AppRouterWithImplementation => {
   const keys = Object.keys(router);
 
@@ -73,7 +96,7 @@ const mergeRouterAndImplementation = <T extends AppRouter>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isAppRouteWithImplementation = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: any
+  obj: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): obj is AppRouteWithImplementation<any> => {
   return obj?.implementation !== undefined && obj?.method;
@@ -119,7 +142,7 @@ const isRouteCorrect = (route: AppRoute, query: string[], method: string) => {
 const getRouteImplementation = (
   router: AppRouterWithImplementation,
   query: string[],
-  method: string
+  method: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): AppRouteWithImplementation<any> | null => {
   const keys = Object.keys(router);
@@ -150,9 +173,13 @@ const getRouteImplementation = (
  * @param implementation - Implementation of the AppRouter, e.g. your API controllers
  * @returns
  */
-export const createNextRoute = <T extends AppRouter>(
+export const createNextRoute = <T extends AppRouter | AppRoute>(
   appRouter: T,
-  implementation: RecursiveRouterObj<T>
+  implementation: T extends AppRouter
+    ? RecursiveRouterObj<T>
+    : T extends AppRoute
+    ? AppRouteImplementation<T>
+    : never,
 ) => implementation;
 
 /**
@@ -174,52 +201,103 @@ export const createNextRoute = <T extends AppRouter>(
 export const createNextRouter = <T extends AppRouter>(
   routes: T,
   obj: RecursiveRouterObj<T>,
-  options?: {
-    jsonQuery?: boolean;
-    responseValidation?: boolean;
-    errorHandler?: (
-      err: unknown,
-      req: NextApiRequest,
-      res: NextApiResponse
-    ) => void;
-  }
+  options?: CreateNextRouterOptions,
 ) => {
-  const { jsonQuery = false, responseValidation = false } = options || {};
+  return handlerFactory((req) => {
+    const combinedRouter = mergeRouterAndImplementation(routes, obj);
 
-  const combinedRouter = mergeRouterAndImplementation(routes, obj);
-
-  return async (req: NextApiRequest, res: NextApiResponse) => {
+    // eslint-disable-next-line prefer-const
     let { 'ts-rest': params, ...query } = req.query;
-    params = (params as string[]) || [];
 
+    params = (params as string[]) || [];
     const route = getRouteImplementation(
       combinedRouter,
       params,
-      req.method as string
+      req.method as string,
+    );
+    let pathParams;
+    if (route) {
+      pathParams = getPathParamsFromArray(params, route);
+    } else {
+      pathParams = {};
+    }
+    return { pathParams, query, route };
+  }, options);
+};
+
+/**
+ * Turn a contract route and a handler into a Next.js compatible handler
+ * Should be exported from your pages/api/path/to/handler.tsx file.
+ *
+ * e.g.
+ *
+ * ```typescript
+ * export default createNextRouter(contract, implementationHandler);
+ * ```
+ */
+export function createSingleRouteHandler<T extends AppRoute>(
+  appRoute: T,
+  implementationHandler: AppRouteImplementation<T>,
+  options?: CreateNextRouterOptions,
+) {
+  return handlerFactory((req) => {
+    const route = { ...appRoute, implementation: implementationHandler };
+    const urlChunks = req.url!.split('/').slice(1);
+    const pathParams = getPathParamsFromArray(urlChunks, route);
+    const query = req.query
+      ? Object.fromEntries(
+          Object.entries(req.query).filter(
+            ([key]) => pathParams[key] === undefined,
+          ),
+        )
+      : {};
+
+    const isValidRoute = isRouteCorrect(
+      appRoute,
+      urlChunks,
+      req.method as string,
     );
 
+    return { pathParams, query, route: isValidRoute ? route : null };
+  }, options);
+}
+
+/**
+ * Create a next.js compatible handler for a given route
+ * @param getArgumentsFromRequest
+ * @param options
+ * @returns
+ */
+const handlerFactory = (
+  getArgumentsFromRequest: (req: NextApiRequest) => {
+    pathParams: Record<string, string>;
+    query: NextApiRequest['query'];
+    route: AppRouterWithImplementation[keyof AppRouterWithImplementation];
+  },
+  options?: CreateNextRouterOptions,
+) => {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
+    const {
+      jsonQuery = false,
+      responseValidation = false,
+      throwRequestValidation = false,
+    } = options || {};
+
+    const args = getArgumentsFromRequest(req);
+    const { pathParams, route } = args;
+    let { query } = args;
     if (!route) {
       res.status(404).end();
       return;
     }
 
-    const pathParams = getPathParamsFromArray(params, route);
-
     const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    if (!pathParamsResult.success) {
-      return res.status(400).json(pathParamsResult.error);
-    }
-
     const headersResult = checkZodSchema(req.headers, route.headers, {
       passThroughExtraKeys: true,
     });
-
-    if (!headersResult.success) {
-      return res.status(400).send(headersResult.error);
-    }
 
     query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
@@ -227,41 +305,79 @@ export const createNextRouter = <T extends AppRouter>(
 
     const queryResult = checkZodSchema(query, route.query);
 
-    if (!queryResult.success) {
-      return res.status(400).json(queryResult.error);
-    }
-
     const bodyResult = checkZodSchema(req.body, route.body);
 
-    if (!bodyResult.success) {
-      return res.status(400).json(bodyResult.error);
-    }
-
     try {
-      const { body, status } = await route.implementation({
-        body: bodyResult.data,
-        query: queryResult.data,
-        params: pathParamsResult.data,
-        headers: headersResult.data,
-        req,
-        res,
-      });
+      if (
+        !pathParamsResult.success ||
+        !headersResult.success ||
+        !queryResult.success ||
+        !bodyResult.success
+      ) {
+        if (throwRequestValidation) {
+          throw new RequestValidationError(
+            pathParamsResult.success ? null : pathParamsResult.error,
+            headersResult.success ? null : headersResult.error,
+            queryResult.success ? null : queryResult.error,
+            bodyResult.success ? null : bodyResult.error,
+          );
+        }
 
-      const statusCode = Number(status);
-      const responseType = route.responses[statusCode];
+        if (!pathParamsResult.success) {
+          return res.status(400).json(pathParamsResult.error);
+        }
+        if (!headersResult.success) {
+          return res.status(400).send(headersResult.error);
+        }
+        if (!queryResult.success) {
+          return res.status(400).json(queryResult.error);
+        }
+        if (!bodyResult.success) {
+          return res.status(400).json(bodyResult.error);
+        }
+      }
 
-      let validatedResponseBody = body;
+      let result: { status: HTTPStatusCode; body: any };
+      try {
+        result = await route.implementation({
+          body: bodyResult.data,
+          query: queryResult.data,
+          params: pathParamsResult.data,
+          headers: headersResult.data,
+          req,
+          res,
+        });
+      } catch (e) {
+        if (e instanceof TsRestResponseError) {
+          result = {
+            status: e.statusCode,
+            body: e.body,
+          };
+        } else {
+          throw e;
+        }
+      }
+
+      const statusCode = Number(result.status);
+
+      let validatedResponseBody = result.body;
 
       if (responseValidation) {
         const response = validateResponse({
-          responseType,
+          appRoute: route,
           response: {
             status: statusCode,
-            body: body,
+            body: result.body,
           },
         });
 
         validatedResponseBody = response.body;
+      }
+
+      const responseType = route.responses[statusCode];
+
+      if (isAppRouteNoBody(responseType)) {
+        return res.status(statusCode).end();
       }
 
       if (isAppRouteOtherResponse(responseType)) {

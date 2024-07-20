@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/out-tsc",
+    "module": "commonjs",
+    "types": ["jest", "node"],
+    "resolveJsonModule": true
+  },
+  "include": ["vite.config.ts", "**/*.test.ts", "**/*.spec.ts", "**/*.d.ts"]
+}

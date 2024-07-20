@@ -33,7 +33,7 @@ export class PostJsonQueryController
   @TsRest(c.getPosts)
   async getPosts(
     @TsRestRequest()
-    { query: { take, skip, search } }: RequestShapes['getPosts']
+    { query: { take, skip, search } }: RequestShapes['getPosts'],
   ) {
     const { posts, totalPosts } = await this.postService.getPosts({
       take,

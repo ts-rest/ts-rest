@@ -28,11 +28,14 @@
         "format": ["esm", "cjs"],
         "compiler": "tsc",
         "rollupConfig": "tools/scripts/rollup.config.js",
-        "generateExportsField": true
+        "generateExportsField": true,
+        "additionalEntryPoints": [
+          "libs/ts-rest/react-query/src/tanstack.ts"
+        ]
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/ts-rest/react-query/**/*.{ts,tsx,js,jsx}"]
@@ -42,8 +45,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/ts-rest/react-query"],
       "options": {
-        "jestConfig": "libs/ts-rest/react-query/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "libs/ts-rest/react-query/jest.config.ts"
       }
     }
   }

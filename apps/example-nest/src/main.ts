@@ -17,7 +17,7 @@ async function bootstrap() {
     app,
     generateOpenApi(apiBlog, {
       info: { title: 'Blog API', version: '0.1' },
-    })
+    }),
   );
 
   await app.listen(port);

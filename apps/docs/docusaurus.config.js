@@ -56,7 +56,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/ts-rest/ts-rest',
+          editUrl: 'https://github.com/ts-rest/ts-rest/blob/main/apps/docs',
         },
         blog: {
           showReadingTime: true,
@@ -115,12 +115,6 @@ const config = {
             docId: 'quickstart',
             position: 'left',
             label: 'Quickstart',
-          },
-          {
-            type: 'doc',
-            docId: 'api/modules',
-            position: 'left',
-            label: 'API Reference',
           },
           {
             href: 'https://github.com/ts-rest/ts-rest',

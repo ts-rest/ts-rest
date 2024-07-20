@@ -4,9 +4,25 @@ import { InstallTabs } from '@site/src/components/InstallTabs';
 
 ## Installation
 
-<InstallTabs packageName="@ts-rest/react-query" />
+<InstallTabs packageName="@ts-rest/react-query @tanstack/react-query" />
 
 This is a client using `@ts-rest/react-query`, using `@tanstack/react-query` under the hood.
+
+### Initializing QueryClientProvider
+
+After installation, ensure that your React application is wrapped with `react-query`'s `QueryClientProvider`. This provider is essential for managing the state and lifecycle of your queries and mutations.
+
+```tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
+function App() {
+  return <QueryClientProvider client={queryClient}>...</QueryClientProvider>;
+}
+```
+
+For more detailed information, refer to the [official `react-query` documentation](https://tanstack.com/query/v4/docs/react/reference/QueryClientProvider).
 
 ## initQueryClient
 
@@ -48,7 +64,7 @@ Once you've created a client using `initQueryClient`, you may traverse the objec
 const queryResult = client.posts.get.useQuery(
   ['posts'], // <- queryKey
   { params: { id: '1' } }, // <- Query params, Params, Body etc (all typed)
-  { staleTime: 1000 } // <- react-query options (optional)
+  { staleTime: 1000 }, // <- react-query options (optional)
 );
 ```
 
@@ -121,7 +137,7 @@ const { isLoading, data, hasNextPage, fetchNextPage } = useInfiniteQuery(
   {
     getNextPageParam: (lastPage, allPages) => lastPage.nextCursor,
     getPreviousPageParam: (firstPage, allPages) => firstPage.prevCursor,
-  }
+  },
 );
 ```
 
@@ -146,7 +162,7 @@ export function Index() {
               ? { take: PAGE_SIZE, skip: allPages.length * PAGE_SIZE }
               : undefined
             : undefined,
-      }
+      },
     );
 
   if (isLoading) {
@@ -158,7 +174,7 @@ export function Index() {
   }
 
   const posts = data.pages.flatMap((page) =>
-    page.status === 200 ? page.body.posts : []
+    page.status === 200 ? page.body.posts : [],
   );
 
   //...
@@ -214,23 +230,28 @@ const App = () => {
   const apiQueryClient = useTsRestQueryClient(client);
 
   // You can either use apiQueryClient or client to call useQuery, useMutation, etc.
-  const { data, isLoading, error } = apiQueryClient.posts.get.useQuery(['posts']);
+  const { data, isLoading, error } = apiQueryClient.posts.get.useQuery([
+    'posts',
+  ]);
   const { mutate, isLoading } = client.posts.create.useMutation();
 
   const createPost = async () => {
-    return mutate({ body: { title: 'Hello World' } }, {
-      onSuccess: async (data) => {
-        //  this is typed ^
-        apiQueryClient.posts.get.setQueryData(['posts'], (oldPosts) => {
-          //                               this is also typed ^
-          return {
-            ...oldPosts,
-            body: [...oldPosts.body, data.body],
-          }
-        });
-      }
-    });
-  }
+    return mutate(
+      { body: { title: 'Hello World' } },
+      {
+        onSuccess: async (data) => {
+          //  this is typed ^
+          apiQueryClient.posts.get.setQueryData(['posts'], (oldPosts) => {
+            //                               this is also typed ^
+            return {
+              ...oldPosts,
+              body: [...oldPosts.body, data.body],
+            };
+          });
+        },
+      },
+    );
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -275,3 +296,25 @@ Functions that may throw on failure such as `fetchQuery` will throw an error if 
 Be sure to handle these errors appropriately.
 
 :::
+
+## Troubleshooting
+
+### `No QueryClient set, use QueryClientProvider to set one`
+
+If you see this error despite having set a `QueryClient` using `QueryClientProvider`. Then you might have different versions of `@tanstack/react-query` installed in your project.
+
+This can also happen in rare cases when ESM and CJS versions of the package are mixed by a bundler like Webpack.
+
+If you have made sure that you are using the same version of `@tanstack/react-query` across your project, and are still having problems, you can work around this
+by importing `@tanstack/react-query` from `@ts-rest/react-query/tanstack` instead of `@tanstack/react-query`. This will ensure that you are using the same version as the one used
+by `@ts-rest/react-query`.
+
+```tsx
+import { QueryClient, QueryClientProvider } from '@ts-rest/react-query/tanstack';
+
+const queryClient = new QueryClient()
+
+function App() {
+  return <QueryClientProvider client={queryClient}>...</QueryClientProvider>
+}
+```

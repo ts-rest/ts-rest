@@ -1,5 +1,4 @@
 import { InstallTabs } from '@site/src/components/InstallTabs';
-import { NestLegacyTransformer } from '@site/src/components/NestLegacyTransformer';
 
 # Nest Legacy
 
@@ -15,16 +14,17 @@ import { NestLegacyTransformer } from '@site/src/components/NestLegacyTransforme
   }}
 />
 
+:::info
+
 As part of the [v3.26.0](https://github.com/ts-rest/ts-rest) we released the new `SingleHandler` and `MultiHandler` approaches to implementing your API contracts.
 
 We don't have any immediate plans to deprecate the old approach, but we do recommend using the new approach as it is more flexible and allows for more control over your API implementation.
 
 If we do make a v4 release, we will likely deprecate the old approach.
 
-:::note
+:::
 
-<NestLegacyTransformer />
-::: ## Installation
+## Installation
 
 <InstallTabs packageName="@ts-rest/nest" />
 
@@ -41,7 +41,7 @@ import {
   TsRestRequest,
 } from '@ts-rest/nest';
 
-const c = nestControllerContract(apiBlog);
+const c = nestControllerContract(contract);
 type RequestShapes = NestRequestShapes<typeof c>;
 
 @Controller()
@@ -71,23 +71,14 @@ The `@TsRest` decorator takes the route, defines the path and method for the con
 
 The `@TsRestRequest` decorator takes the contract route defined in the `@Api` decorator, and returns the parsed and validated (if using Zod) request params, query and body.
 
-As Typescript cannot infer class method parameter types from an implemented interface, we need to explicitly define the type for the request parameter using the `NestRequestShapes` type.
+As TypeScript cannot infer class method parameter types from an implemented interface, we need to explicitly define the type for the request parameter using the `NestRequestShapes` type.
 
 ## Configuration
 
-To configure certain ts-rest options you can use the `@TsRest` decorator on either your Controller or use the existing `@Api` decorator.
+To configure `ts-rest` options you can use the `@TsRest` decorator on either your controller or use the existing `@TsRest` decorator on your method.
+Controller options will be applied to all routes in the controller and will override any global options, and method options will override the controller options for that specific route.
 
-### JSON Query Parameters
-
-To handle JSON query parameters, pass the `jsonQuery` option to the `@TsRest` decorator on your entire controller.
-
-```typescript
-@Controller()
-@TsRest({ jsonQuery: true })
-export class PostController implements NestControllerInterface<typeof c> {}
-```
-
-You can also use the method decorator to override or configure options for a specific route.
+Check out the [configuration](/docs/nest/configuration/) section for more details on the different configuration options, or on how to configure options globally.
 
 ```typescript
 @Controller()
@@ -102,21 +93,6 @@ export class PostController implements NestControllerInterface<typeof c> {
 }
 ```
 
-### Response Validation
-
-You can enable response validation by passing the `validateResponses` option to the `@TsRest()` decorator.
-This will enable response parsing and validation for a returned status code, if there is a corresponding response Zod schema defined in the contract.
-This is useful for ensuring absolute safety that your controller is returning the correct response types as well as stripping any extra properties.
-
-```typescript
-@Controller()
-@TsRest({ validateResponses: true })
-export class PostController implements NestControllerInterface<typeof c> {}
-```
-
-If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
-You can catch this error and handle it as you wish by using a [NestJS exception filter](https://docs.nestjs.com/exception-filters).
-
 ## Explicit Response Type Safety
 
 In cases where you do not want to implement `NestControllerInterface`.
@@ -124,14 +100,13 @@ Say, if you were to implement a contract's non-nested routes across multiple con
 
 ```typescript
 import {
-  Api,
   nestControllerContract,
   NestRequestShapes,
   NestResponseShapes,
   TsRestRequest,
 } from '@ts-rest/nest';
 
-const c = nestControllerContract(apiBlog);
+const c = nestControllerContract(contract);
 type RequestShapes = NestRequestShapes<typeof c>;
 type ResponseShapes = NestResponseShapes<typeof c>;
 

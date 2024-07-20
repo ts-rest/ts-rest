@@ -10,7 +10,7 @@ describe('getPathParamsFromArray', () => {
       path: `/posts/:id`,
       query: null,
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     });
 
@@ -25,13 +25,13 @@ describe('getPathParamsFromArray', () => {
       path: `/posts/:id/comments/:commentId`,
       query: null,
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     });
 
     const pathParams = getPathParamsFromArray(
       ['posts', '1', 'comments', '2'],
-      appRoute
+      appRoute,
     );
 
     expect(pathParams).toStrictEqual({ id: '1', commentId: '2' });
@@ -42,7 +42,7 @@ describe('getPathParamsFromArray', () => {
       path: `/posts/:id`,
       query: null,
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     });
 

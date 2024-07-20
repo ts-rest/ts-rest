@@ -14,6 +14,7 @@ import {
   HTTPStatusCode,
   SuccessfulHttpStatusCode,
 } from './status-codes';
+import { FetchOptions, OverrideableClientArgs } from './client';
 
 const c = initContract();
 
@@ -58,7 +59,7 @@ const contract = c.router(
       method: 'POST',
       path: '/images',
       contentType: 'multipart/form-data',
-      body: c.body<{ image: File }>(),
+      body: c.type<{ image: File; images: File[] }>(),
       responses: {
         201: c.otherResponse({
           contentType: 'text/plain',
@@ -86,7 +87,7 @@ const contract = c.router(
               z.object({
                 id: z.number(),
                 content: z.string(),
-              })
+              }),
             ),
           }),
           404: c.type<null>(),
@@ -99,11 +100,34 @@ const contract = c.router(
       Authorization: z.string(),
       age: z.coerce.number().optional(),
     }),
-  }
+  },
 );
 
 const contractStrict = c.router(contract, {
   strictStatusCodes: true,
+});
+
+const headerlessContract = c.router({
+  getPost: {
+    method: 'GET',
+    path: '/posts/:id',
+    pathParams: z.object({
+      id: z.string().transform((id) => Number(id)),
+    }),
+    query: z.object({
+      includeComments: z.boolean().default(false),
+    }),
+    responses: {
+      200: z.object({
+        id: z.number(),
+        title: z.string().default('Untitled'),
+        content: z.string(),
+      }),
+      404: z.object({
+        message: z.string(),
+      }),
+    },
+  },
 });
 
 it('type inference helpers', () => {
@@ -410,6 +434,27 @@ it('type inference helpers', () => {
     >
   >;
 
+  const commonErrors = c.responses({
+    400: c.type<{ message: string }>(),
+  });
+
+  const contractWithCommonErrors = c.router({
+    get: {
+      method: 'GET',
+      path: '/',
+      responses: {
+        ...commonErrors,
+      },
+    },
+  });
+
+  type ClientInferResponseBodyCommonResponsesTest = Expect<
+    Equal<
+      ClientInferResponseBody<typeof contractWithCommonErrors.get, 400>,
+      { message: string }
+    >
+  >;
+
   type ServerInferRequestTest = Expect<
     Equal<
       ServerInferRequest<typeof contract>,
@@ -504,6 +549,9 @@ it('type inference helpers', () => {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
         createPost: {
           body: { title: string; content: string };
@@ -512,11 +560,15 @@ it('type inference helpers', () => {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
         uploadImage: {
           body:
             | {
                 image: File;
+                images: File[];
               }
             | FormData;
           headers: { authorization: string; age?: number };
@@ -524,6 +576,9 @@ it('type inference helpers', () => {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
         nested: {
           getComments: {
@@ -538,7 +593,26 @@ it('type inference helpers', () => {
               'pagination-page'?: undefined;
               age?: undefined;
             } & Record<string, string | undefined>;
+            fetchOptions?: FetchOptions;
+            overrideClientOptions?: Partial<OverrideableClientArgs>;
+            cache?: RequestCache;
           };
+        };
+      }
+    >
+  >;
+
+  type ClientInferRequestHeaderlessTest = Expect<
+    Equal<
+      ClientInferRequest<typeof headerlessContract>,
+      {
+        getPost: {
+          query: { includeComments?: boolean | undefined };
+          params: { id: string };
+          extraHeaders?: Record<string, string | undefined>;
+          fetchOptions?: FetchOptions;
+          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          cache?: RequestCache;
         };
       }
     >

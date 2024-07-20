@@ -1,19 +1,25 @@
 import * as fetchMock from 'fetch-mock-jest';
-import { HTTPStatusCode, initContract } from '..';
+import {
+  FetchOptions,
+  HTTPStatusCode,
+  initContract,
+  OverrideableClientArgs,
+} from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 
 const c = initContract();
 
-export type Post = {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  published: boolean;
-  authorId: string;
-};
+const postSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  content: z.string().nullable(),
+  published: z.boolean(),
+  authorId: z.string(),
+});
+export type Post = z.infer<typeof postSchema>;
 
 export type User = {
   id: string;
@@ -29,7 +35,7 @@ const postsRouter = c.router({
       'x-api-key': z.string().optional(),
     }),
     responses: {
-      200: c.response<Post | null>(),
+      200: postSchema.nullable(),
     },
   },
   getPosts: {
@@ -39,7 +45,7 @@ const postsRouter = c.router({
       'x-pagination': z.coerce.number().optional(),
     }),
     responses: {
-      200: c.response<Post[]>(),
+      200: c.type<Post[]>(),
     },
     query: z.object({
       take: z.number().optional(),
@@ -51,7 +57,7 @@ const postsRouter = c.router({
     method: 'POST',
     path: '/posts',
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: z.object({
       title: z.string(),
@@ -61,11 +67,26 @@ const postsRouter = c.router({
       authorId: z.string(),
     }),
   },
+  echoPostXForm: {
+    method: 'POST',
+    path: '/echo',
+    contentType: 'application/x-www-form-urlencoded',
+    body: z.object({
+      foo: z.string(),
+      bar: z.string(),
+    }),
+    responses: {
+      200: c.otherResponse({
+        contentType: 'text/plain',
+        body: z.string(),
+      }),
+    },
+  },
   mutationWithQuery: {
     method: 'POST',
     path: '/posts',
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: z.object({}),
     query: z.object({
@@ -76,7 +97,7 @@ const postsRouter = c.router({
     method: 'PUT',
     path: `/posts/:id`,
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
     body: z.object({
       title: z.string(),
@@ -90,17 +111,20 @@ const postsRouter = c.router({
     method: 'PATCH',
     path: `/posts/:id`,
     responses: {
-      200: c.response<Post>(),
+      200: c.type<Post>(),
     },
-    body: null,
+    headers: z.object({
+      'content-type': z.literal('application/merge-patch+json'),
+    }),
+    body: z.object({}).passthrough(),
   },
   deletePost: {
     method: 'DELETE',
     path: `/posts/:id`,
+    body: c.noBody(),
     responses: {
-      200: c.response<boolean>(),
+      204: c.noBody(),
     },
-    body: null,
   },
 });
 
@@ -112,15 +136,24 @@ export const router = c.router(
       method: 'GET',
       path: '/health',
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
       },
     },
     upload: {
       method: 'POST',
       path: '/upload',
-      body: c.body<{ file: File }>(),
+      body: c.type<{ file: File }>(),
       responses: {
-        200: c.response<{ message: string }>(),
+        200: c.type<{ message: string }>(),
+      },
+      contentType: 'multipart/form-data',
+    },
+    uploadArray: {
+      method: 'POST',
+      path: '/upload-array',
+      body: c.type<{ files: File[] }>(),
+      responses: {
+        200: c.type<{ message: string }>(),
       },
       contentType: 'multipart/form-data',
     },
@@ -131,7 +164,7 @@ export const router = c.router(
       'x-test': z.string().optional(),
       'base-header': z.string().optional(),
     }),
-  }
+  },
 );
 
 const routerStrict = c.router(router, {
@@ -143,6 +176,10 @@ const client = initClient(router, {
   baseHeaders: {
     'X-Api-Key': 'foo',
   },
+});
+
+const clientWithoutBaseHeaders = initClient(router, {
+  baseUrl: 'https://api.com',
 });
 
 const clientStrict = initClient(routerStrict, {
@@ -173,8 +210,39 @@ type ClientGetPostsType = Expect<
           'base-header'?: never;
           'x-api-key'?: never;
         } & Record<string, string | undefined>;
+        fetchOptions?: FetchOptions;
+        overrideClientOptions?: Partial<OverrideableClientArgs>;
+        cache?: RequestCache;
       }
     | undefined
+  >
+>;
+
+type ClientWithoutBaseHeadersGetPostsType = Expect<
+  Equal<
+    Parameters<typeof clientWithoutBaseHeaders.posts.getPosts>[0],
+    {
+      query?: {
+        take?: number;
+        skip?: number;
+        order?: string;
+      };
+      headers: {
+        'x-pagination'?: number;
+        'x-test'?: string;
+        'base-header'?: string;
+        'x-api-key': string;
+      };
+      extraHeaders?: {
+        'x-pagination'?: never;
+        'x-test'?: never;
+        'base-header'?: never;
+        'x-api-key'?: never;
+      } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
+    }
   >
 >;
 
@@ -195,14 +263,17 @@ type ClientGetPostType = Expect<
         'base-header'?: never;
         'x-api-key'?: never;
       } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
     }
   >
 >;
 type RouterHealthStrict = Expect<
-  Equal<typeof routerStrict.health['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.health)['strictStatusCodes'], true>
 >;
 type RouterGetPostStrict = Expect<
-  Equal<typeof routerStrict.posts.getPost['strictStatusCodes'], true>
+  Equal<(typeof routerStrict.posts.getPost)['strictStatusCodes'], true>
 >;
 type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
 type ClientGetPostResponseType = Expect<
@@ -223,11 +294,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({});
@@ -243,11 +311,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({ query: {} });
@@ -263,11 +328,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts();
@@ -283,11 +345,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts?take=10',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({ query: { take: 10 } });
@@ -315,20 +374,17 @@ describe('client', () => {
           baseUrl: 'https://api.com',
           baseHeaders: {},
           jsonQuery: true,
-        }
+        },
       );
 
       const value = { key: 'value' };
       fetchMock.getOnce(
         {
           url: `https://api.com/posts?take=10&order=asc&published=true&filter=${encodeURIComponent(
-            '{"title":"test"}'
+            '{"title":"test"}',
           )}`,
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.getPosts({
@@ -351,11 +407,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts?take=10',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPosts({
@@ -365,7 +418,6 @@ describe('client', () => {
       expect(result.body).toStrictEqual(value);
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Length')).toBe('15');
-      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
     it('w/ sub path', async () => {
@@ -373,11 +425,8 @@ describe('client', () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.getPost({ params: { id: '1' } });
@@ -385,16 +434,12 @@ describe('client', () => {
       expect(result.body).toStrictEqual(value);
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Length')).toBe('15');
-      expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('w/ a non json response (string)', async () => {
+    it('w/ a non json response (string, text/plain)', async () => {
       fetchMock.getOnce(
         {
           url: 'https://api.com/posts',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
         {
           headers: {
@@ -402,7 +447,7 @@ describe('client', () => {
           },
           body: 'string',
           status: 200,
-        }
+        },
       );
 
       const result = await client.posts.getPosts({});
@@ -412,6 +457,28 @@ describe('client', () => {
       expect(result.headers.get('Content-Length')).toBe('6');
       expect(result.headers.get('Content-Type')).toBe('text/plain');
     });
+  });
+
+  it('w/ a non json response (string, text/html)', async () => {
+    fetchMock.getOnce(
+      {
+        url: 'https://api.com/posts',
+      },
+      {
+        headers: {
+          'Content-Type': 'text/html',
+        },
+        body: 'string',
+        status: 200,
+      },
+    );
+
+    const result = await client.posts.getPosts({});
+
+    expect(result.body).toStrictEqual('string');
+    expect(result.status).toBe(200);
+    expect(result.headers.get('Content-Length')).toBe('6');
+    expect(result.headers.get('Content-Type')).toBe('text/html');
   });
 
   describe('post', () => {
@@ -424,7 +491,7 @@ describe('client', () => {
             'Content-Type': 'application/json',
           },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.createPost({
@@ -446,7 +513,7 @@ describe('client', () => {
           },
           body: {},
         },
-        { body: {}, status: 200 }
+        { body: {}, status: 200 },
       );
 
       const result = await client.posts.mutationWithQuery({
@@ -476,7 +543,7 @@ describe('client', () => {
             authorId: 'authorId',
           },
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const result = await client.posts.updatePost({
@@ -494,48 +561,54 @@ describe('client', () => {
   describe('patch', () => {
     it('w/ body', async () => {
       const value = { key: 'value' };
+
       fetchMock.patchOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        (_, req) => ({
+          body: {
+            contentType: (req.headers as any)['content-type'],
+            reqBody: JSON.parse(req.body as string),
+          },
+          status: 200,
+        }),
       );
 
       const result = await client.posts.patchPost({
         params: { id: '1' },
+        headers: {
+          'content-type': 'application/merge-patch+json',
+        },
+        body: value,
       });
 
-      expect(result.body).toStrictEqual(value);
+      expect(result.body).toEqual({
+        contentType: 'application/merge-patch+json',
+        reqBody: value,
+      });
       expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Length')).toBe('15');
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
   });
 
   describe('delete', () => {
-    it('w/ body', async () => {
-      const value = { key: 'value' };
+    it('w/ no body', async () => {
       fetchMock.deleteOnce(
         {
           url: 'https://api.com/posts/1',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        { body: value, status: 200 }
+        { status: 204 },
       );
 
       const result = await client.posts.deletePost({
         params: { id: '1' },
       });
 
-      expect(result.body).toStrictEqual(value);
-      expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Length')).toBe('15');
-      expect(result.headers.get('Content-Type')).toBe('application/json');
+      expect((result.body as Blob).size).toStrictEqual(0);
+      expect(result.status).toBe(204);
+      expect(result.headers.has('Content-Length')).toBe(false);
+      expect(result.headers.has('Content-Type')).toBe(false);
     });
   });
 
@@ -546,7 +619,7 @@ describe('client', () => {
         {
           url: 'https://api.com/upload',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const file = new File([''], 'filename', { type: 'text/plain' });
@@ -574,7 +647,7 @@ describe('client', () => {
         {
           url: 'https://api.com/upload',
         },
-        { body: value, status: 200 }
+        { body: value, status: 200 },
       );
 
       const formData = new FormData();
@@ -596,6 +669,151 @@ describe('client', () => {
         },
       });
     });
+
+    it('w/ File Array', async () => {
+      const value = { key: 'value' };
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/upload-array',
+        },
+        { body: value, status: 200 },
+      );
+
+      const files = [
+        new File([''], 'filename-1', { type: 'text/plain' }),
+        new File([''], 'filename-2', { type: 'text/plain' }),
+      ];
+
+      const result = await client.uploadArray({
+        body: { files },
+      });
+
+      expect(result.body).toStrictEqual(value);
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Length')).toBe('15');
+      expect(result.headers.get('Content-Type')).toBe('application/json');
+
+      expect(fetchMock).toHaveLastFetched(true, {
+        matcher: (_, options) => {
+          const formData = options.body as FormData;
+          const formDataFiles = formData.getAll('files');
+          return formDataFiles[0] === files[0] && formDataFiles[1] === files[1];
+        },
+      });
+    });
+  });
+
+  describe('application/x-www-form-urlencoded', () => {
+    it('w/object', async () => {
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/echo',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+        (_, req) => {
+          expect(req.body).toBeInstanceOf(URLSearchParams);
+
+          return {
+            body: req.body!.toString(),
+            status: 200,
+          };
+        },
+      );
+
+      const result = await client.posts.echoPostXForm({
+        body: {
+          foo: 'foo',
+          bar: 'bar',
+        },
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Type')).toBe(
+        'text/plain;charset=UTF-8',
+      );
+      expect(result.body).toBe('foo=foo&bar=bar');
+    });
+
+    it('w/string', async () => {
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/echo',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+        (_, req) => {
+          expect(typeof req.body).toBe('string');
+
+          return {
+            body: req.body,
+            status: 200,
+          };
+        },
+      );
+
+      const result = await client.posts.echoPostXForm({
+        body: 'foo=foo&bar=bar',
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('Content-Type')).toBe(
+        'text/plain;charset=UTF-8',
+      );
+      expect(result.body).toBe('foo=foo&bar=bar');
+    });
+  });
+
+  describe('next', () => {
+    it('should include "next" property in the fetch request', async () => {
+      const client = initClient(router, {
+        baseHeaders: {},
+        baseUrl: 'http://localhost:5002',
+      });
+
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              id: '1',
+              name: 'John',
+              email: 'some@email',
+            }),
+          headers: new Headers({
+            'content-type': 'application/json',
+          }),
+        } as Response),
+      );
+
+      await client.posts.getPost({
+        params: { id: '1' },
+        fetchOptions: {
+          next: {
+            revalidate: 1,
+            tags: ['user1'],
+          },
+        } as RequestInit,
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:5002/posts/1',
+        {
+          cache: undefined,
+          headers: {},
+          body: undefined,
+          credentials: undefined,
+          method: 'GET',
+          signal: undefined,
+          next: {
+            revalidate: 1,
+            tags: ['user1'],
+          },
+        },
+      );
+      (global.fetch as jest.Mock).mockClear();
+    });
   });
 });
 
@@ -607,7 +825,7 @@ const customClient = initClient(router, {
     'Base-Header': 'foo',
   },
   api: async (
-    args: ApiFetcherArgs & { uploadProgress?: (progress: number) => void }
+    args: ApiFetcherArgs & { uploadProgress?: (progress: number) => void },
   ) => {
     args.uploadProgress?.(10);
 
@@ -646,6 +864,9 @@ type CustomClientGetPostsType = Expect<
         'base-header'?: never;
         'x-api-key'?: never;
       } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -668,6 +889,9 @@ type CustomClientGetPostType = Expect<
         'base-header'?: never;
         'x-api-key'?: never;
       } & Record<string, string | undefined>;
+      fetchOptions?: FetchOptions;
+      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      cache?: RequestCache;
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -691,7 +915,7 @@ describe('custom api', () => {
     expect(argsCalledMock).toBeCalledWith(
       expect.objectContaining({
         uploadProgress,
-      })
+      }),
     );
   });
 
@@ -708,9 +932,8 @@ describe('custom api', () => {
         headers: {
           'base-header': 'foo',
           'x-test': 'test',
-          'content-type': 'application/json',
         },
-      })
+      }),
     );
   });
 
@@ -731,7 +954,7 @@ describe('custom api', () => {
           'base-header': 'bar',
           'content-type': 'application/html',
         },
-      })
+      }),
     );
   });
 
@@ -757,7 +980,7 @@ describe('custom api', () => {
           'x-test': 'test',
         },
         uploadProgress: expect.any(Function),
-      })
+      }),
     );
   });
 
@@ -801,7 +1024,25 @@ describe('custom api', () => {
     fetchMock.getOnce({ url: 'https://isolated.com/posts' }, { status: 419 });
 
     await expect(client.posts.getPosts({})).rejects.toThrowError(
-      'Server returned unexpected response. Expected one of: 200 got: 419'
+      'Server returned unexpected response. Expected one of: 200 got: 419',
     );
+  });
+
+  it('throw an error when validateResponse is configured and response is invalid', async () => {
+    const client = initClient(router, {
+      baseUrl: 'https://isolated.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      validateResponse: true,
+    });
+    fetchMock.getOnce(
+      { url: 'https://isolated.com/posts/1' },
+      { status: 200, body: { key: 'invalid value' } },
+    );
+
+    await expect(
+      client.posts.getPost({ params: { id: '1' } }),
+    ).rejects.toThrowError(ZodError);
   });
 });

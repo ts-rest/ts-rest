@@ -29,7 +29,7 @@ export const SAMPLE_OWNER_JWT = jwt.sign(
     id: 'mock-owner-id',
     role: 'user',
   },
-  JWT_SECRET
+  JWT_SECRET,
 );
 
 export const SAMPLE_NON_OWNER_JWT = jwt.sign(
@@ -37,7 +37,7 @@ export const SAMPLE_NON_OWNER_JWT = jwt.sign(
     id: 'mock-user-id',
     role: 'user',
   },
-  JWT_SECRET
+  JWT_SECRET,
 );
 
 export const SAMPLE_GUEST_JWT = jwt.sign(
@@ -45,7 +45,7 @@ export const SAMPLE_GUEST_JWT = jwt.sign(
     id: 'mock-guest-id',
     role: 'guest',
   },
-  JWT_SECRET
+  JWT_SECRET,
 );
 
 const app = express();
@@ -69,8 +69,8 @@ passport.use(
       }
 
       return done(null, false);
-    }
-  )
+    },
+  ),
 );
 
 const s = initServer();

@@ -9,6 +9,7 @@ import { serve, setup } from 'swagger-ui-express';
 import { mockPostFixtureFactory } from './fixtures';
 import cors = require('cors');
 import { tsRouter } from './ts-router';
+import { getPost } from './get-post';
 
 const app = express();
 
@@ -19,21 +20,7 @@ app.use(bodyParser.json());
 const s = initServer();
 
 const completedRouter = s.router(apiBlog, {
-  getPost: async ({ params: { id } }) => {
-    const post = mockPostFixtureFactory({ id });
-
-    if (!post) {
-      return {
-        status: 404,
-        body: null,
-      };
-    }
-
-    return {
-      status: 200,
-      body: post,
-    };
-  },
+  getPost,
   getPosts: async ({ query }) => {
     const posts = [
       mockPostFixtureFactory({ id: '1' }),
@@ -118,7 +105,7 @@ createExpressEndpoints(
     },
   }),
   app,
-  { responseValidation: true }
+  { responseValidation: true },
 );
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

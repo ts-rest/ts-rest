@@ -6,15 +6,13 @@
 import * as express from 'express';
 import * as cors from 'cors';
 import * as multer from 'multer';
-
-const upload = multer({ dest: 'uploads/' });
-
+import * as swaggerUi from 'swagger-ui-express';
 import { postsApi } from '@ts-rest/example-microservice/util-posts-api';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import { userAdapter } from './app/userAdapter';
 import { generateOpenApi } from '@ts-rest/open-api';
-import * as swaggerUi from 'swagger-ui-express';
 
+const upload = multer();
 const s = initServer();
 
 const postsRouter = s.router(postsApi, {
@@ -49,24 +47,24 @@ const postsRouter = s.router(postsApi, {
       ],
     };
   },
-  updatePostThumbnail: async ({ file }) => {
-    const thumbnail = file as Express.Multer.File;
+  updatePostThumbnail: {
+    middleware: [upload.single('thumbnail')],
+    handler: async ({ file }) => {
+      const thumbnail = file as Express.Multer.File;
 
-    return {
-      status: 200,
-      body: {
-        message: `File ${thumbnail.originalname} successfully!`,
-      },
-    };
+      return {
+        status: 200,
+        body: {
+          message: `File ${thumbnail.originalname} successfully!`,
+        },
+      };
+    },
   },
 });
 
 const app = express();
 
 app.use(cors());
-
-// File upload
-app.post(postsApi.updatePostThumbnail.path, upload.single('thumbnail'));
 
 createExpressEndpoints(postsApi, postsRouter, app);
 
@@ -80,7 +78,7 @@ const openApiSchema = generateOpenApi(
   },
   {
     jsonQuery: true,
-  }
+  },
 );
 
 app.use('/api', swaggerUi.serve, swaggerUi.setup(openApiSchema));
