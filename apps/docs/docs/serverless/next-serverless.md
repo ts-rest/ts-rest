@@ -2,10 +2,13 @@
 
 The Next handler can be used for the Pages Router Edge Runtime or for the App Router.
 
-The handler file needs to be a catch-all route file, which is a file that matches the pattern `[...ts-rest].ts` pattern.
+The handler file needs to be a catch-all route file, which is a file that matches the pattern `[...ts-rest]` pattern.
 In the case of the Pages Router, it must be named exactly `[...ts-rest].ts`.
 
 ```typescript
+// App router: /app/[...ts-rest]/route.ts
+// Pages router: /pages/api/[...ts-rest].ts
+
 import { createNextHandler } from '@ts-rest/serverless/next';
 import { contract } from './contract';
 import { router } from './router';
