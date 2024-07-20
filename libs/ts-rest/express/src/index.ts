@@ -1,5 +1,7 @@
 export * from './lib/ts-rest-express';
 export type {
+  AppRouteQueryImplementation,
+  AppRouteMutationImplementation,
   AppRouteImplementation,
   AppRouteOptions,
   TsRestRequest,
