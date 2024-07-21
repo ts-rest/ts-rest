@@ -1,9 +1,9 @@
 {
   "name": "@ts-rest/serverless",
-  "version": "3.45.2",
+  "version": "3.46.0",
   "license": "MIT",
   "dependencies": {
-    "@ts-rest/core": "3.45.2",
+    "@ts-rest/core": "3.46.0",
     "itty-router": "^5.0.9"
   },
   "peerDependencies": {

@@ -1,5 +1,17 @@
 # @ts-rest/serverless
 
+## 3.46.0
+
+### Minor Changes
+
+- d763d45: Export `RequestValidationErrorSchema` for default request validation error responses.
+- 72fd14e: Add Azure Functions compatibility
+
+### Patch Changes
+
+- Updated dependencies [d763d45]
+  - @ts-rest/core@3.46.0
+
 ## 3.45.2
 
 ### Patch Changes
