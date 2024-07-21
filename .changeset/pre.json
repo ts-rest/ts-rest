@@ -1,0 +1,10 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@ts-rest/react-query": "3.45.2"
+  },
+  "changesets": [
+    "red-sloths-yell"
+  ]
+}

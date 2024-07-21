@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 4.0.0-beta.0
+
+### Major Changes
+
+- e206168: Update to @tanstack/react-query v5
+
 ## 3.45.2
 
 ## 3.45.1
