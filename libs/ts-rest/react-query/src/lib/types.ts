@@ -5,11 +5,14 @@ import {
   UseMutationResult as TanStackUseMutationResult,
   UseQueryOptions as TanStackUseQueryOptions,
   UseQueryResult as TanStackUseQueryResult,
+  UseSuspenseQueryOptions as TanStackUseSuspenseQueryOptions,
+  UseSuspenseQueryResult as TanStackUseSuspenseQueryResult,
+  UseSuspenseInfiniteQueryOptions as TanStackUseSuspenseInfiniteQueryOptions,
+  UseSuspenseInfiniteQueryResult as TanStackUseSuspenseInfiniteQueryResult,
 } from '@tanstack/react-query';
 import {
   AppRoute,
   ClientArgs,
-  ClientInferRequest,
   ClientInferResponses,
   ErrorHttpStatusCode,
   PartialClientInferRequest,
@@ -34,10 +37,25 @@ export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
 export type UseQueryOptions<
   TAppRoute extends AppRoute,
   TData = DataResponse<TAppRoute>,
-> = TanStackUseQueryOptions<
-  DataResponse<TAppRoute>,
-  ErrorResponse<TAppRoute>,
-  TData
+> = Omit<
+  TanStackUseQueryOptions<
+    DataResponse<TAppRoute>,
+    ErrorResponse<TAppRoute>,
+    TData
+  >,
+  'queryFn'
+>;
+
+export type UseSuspenseQueryOptions<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = Omit<
+  TanStackUseSuspenseQueryOptions<
+    DataResponse<TAppRoute>,
+    ErrorResponse<TAppRoute>,
+    TData
+  >,
+  'queryFn'
 >;
 
 export type UseQueryResult<
@@ -45,19 +63,44 @@ export type UseQueryResult<
   TData = DataResponse<TAppRoute>,
 > = TanStackUseQueryResult<TData, ErrorResponse<TAppRoute>>;
 
+export type UseSuspenseQueryResult<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = TanStackUseSuspenseQueryResult<TData, ErrorResponse<TAppRoute>>;
+
 export type UseInfiniteQueryOptions<
   TAppRoute extends AppRoute,
   TData = DataResponse<TAppRoute>,
-> = TanStackUseInfiniteQueryOptions<
-  DataResponse<TAppRoute>,
-  ErrorResponse<TAppRoute>,
-  TData
+> = Omit<
+  TanStackUseInfiniteQueryOptions<
+    DataResponse<TAppRoute>,
+    ErrorResponse<TAppRoute>,
+    TData
+  >,
+  'queryFn'
+>;
+
+export type UseSuspenseInfiniteQueryOptions<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = Omit<
+  TanStackUseSuspenseInfiniteQueryOptions<
+    DataResponse<TAppRoute>,
+    ErrorResponse<TAppRoute>,
+    TData
+  >,
+  'queryFn'
 >;
 
 export type UseInfiniteQueryResult<
   TAppRoute extends AppRoute,
   TData = DataResponse<TAppRoute>,
 > = TanStackUseInfiniteQueryResult<TData, ErrorResponse<TAppRoute>>;
+
+export type UseSuspenseInfiniteQueryResult<
+  TAppRoute extends AppRoute,
+  TData = DataResponse<TAppRoute>,
+> = TanStackUseSuspenseInfiniteQueryResult<TData, ErrorResponse<TAppRoute>>;
 
 type InferClientArgs<TClient extends InitClientReturn<any, any>> =
   TClient extends InitClientReturn<any, infer TClientArgs>
