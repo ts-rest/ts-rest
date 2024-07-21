@@ -43,7 +43,7 @@ jobs:
         id: release-version
         uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
         with:
-          path: libs/ts-rest/core
+          path: libs/ts-rest/react-query
 
       - if: ${{ contains(steps.release-version.outputs.current-version, '-') }}
         name: Create Release Pull Request or Publish to npm
