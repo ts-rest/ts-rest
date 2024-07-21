@@ -36,6 +36,10 @@ export const RequestValidationErrorSchema = z.object({
   bodyErrors: ZodErrorSchema.nullable(),
 });
 
+type FastifyContextConfig<T extends AppRouter | AppRoute> = {
+  tsRestRoute: T extends AppRoute ? T : FlattenAppRouter<T>;
+};
+
 type AppRouteImplementation<T extends AppRoute> = (
   input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
     request: fastify.FastifyRequest<
@@ -44,14 +48,14 @@ type AppRouteImplementation<T extends AppRoute> = (
       fastify.RawRequestDefaultExpression,
       fastify.FastifySchema,
       fastify.FastifyTypeProviderDefault,
-      { tsRestRoute: T }
+      FastifyContextConfig<T>
     >;
     reply: fastify.FastifyReply<
       fastify.RawServerDefault,
       fastify.RawRequestDefaultExpression,
       fastify.RawReplyDefaultExpression,
       fastify.RouteGenericInterface,
-      { tsRestRoute: T }
+      FastifyContextConfig<T>
     >;
     appRoute: T;
   },
@@ -64,6 +68,45 @@ type RecursiveRouterObj<T extends AppRouter> = {
     ? AppRouteImplementationOrOptions<T[TKey]>
     : never;
 };
+
+export type RouteHooks<T extends AppRouter | AppRoute> = Pick<
+  fastify.RouteOptions<
+    fastify.RawServerDefault,
+    fastify.RawRequestDefaultExpression,
+    fastify.RawReplyDefaultExpression,
+    fastify.RouteGenericInterface,
+    FastifyContextConfig<T>
+  >,
+  | 'preParsing'
+  | 'preValidation'
+  | 'preHandler'
+  | 'preSerialization'
+  | 'onRequest'
+  | 'onSend'
+  | 'onResponse'
+  | 'onTimeout'
+  | 'onError'
+  | 'onRequestAbort'
+>;
+
+export type ApplicationHooks<TContract extends AppRouter> =
+  RouteHooks<TContract> & {
+    onRoute?:
+      | fastify.onRouteHookHandler<
+          fastify.RawServerDefault,
+          fastify.RawRequestDefaultExpression,
+          fastify.RawReplyDefaultExpression,
+          fastify.RouteGenericInterface,
+          FastifyContextConfig<TContract>
+        >
+      | fastify.onRouteHookHandler<
+          fastify.RawServerDefault,
+          fastify.RawRequestDefaultExpression,
+          fastify.RawReplyDefaultExpression,
+          fastify.RouteGenericInterface,
+          FastifyContextConfig<TContract>
+        >[];
+  };
 
 type BaseRegisterRouterOptions = {
   logInitialization?: boolean;
@@ -78,30 +121,9 @@ type BaseRegisterRouterOptions = {
       ) => void);
 };
 
-type RegisterRouterOptions<TContract extends AppRouter | AppRoute> =
-  BaseRegisterRouterOptions & {
-    hooks?: RouteHooks<FlattenAppRouter<TContract>>;
-  };
-
-export type RouteHooks<TRoute extends AppRoute> = Pick<
-  fastify.RouteOptions<
-    fastify.RawServerDefault,
-    fastify.RawRequestDefaultExpression,
-    fastify.RawReplyDefaultExpression,
-    fastify.RouteGenericInterface,
-    { tsRestRoute: TRoute }
-  >,
-  | 'preParsing'
-  | 'preValidation'
-  | 'preHandler'
-  | 'preSerialization'
-  | 'onRequest'
-  | 'onSend'
-  | 'onResponse'
-  | 'onTimeout'
-  | 'onError'
-  | 'onRequestAbort'
->;
+type RegisterRouterOptions<T extends AppRouter> = BaseRegisterRouterOptions & {
+  hooks?: ApplicationHooks<T>;
+};
 
 type AppRouteOptions<TRoute extends AppRoute> = {
   hooks?: RouteHooks<TRoute>;
@@ -195,12 +217,21 @@ export const initServer = () => ({
     },
   ) => {
     const { hooks = {}, ...restOfOptions } = options;
-    recursivelyRegisterRouter(routerImpl, contract, [], app, restOfOptions);
 
-    Object.keys(hooks).forEach((hookName) =>
-      // @ts-expect-error Fastify's hook overload seems to be complaining here for no reason afaik
-      app.addHook(hookName, hooks[hookName]),
-    );
+    Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
+      if (Array.isArray(hookOrHookArray)) {
+        hookOrHookArray.forEach((hook) => {
+          // @ts-expect-error - function expects specific hook names rather than just a string
+          app.addHook(hookName, hook);
+        });
+        return;
+      } else {
+        // @ts-expect-error - function expects specific hook names rather than just a string
+        app.addHook(hookName, hookOrHookArray);
+      }
+    });
+
+    recursivelyRegisterRouter(routerImpl, contract, [], app, restOfOptions);
 
     app.setErrorHandler(
       requestValidationErrorHandler(options.requestValidationErrorHandler),
@@ -225,17 +256,26 @@ export const initServer = () => ({
       )[RouterEmbeddedContract];
 
       const { hooks = {}, ...restOfOptions } = opts;
+
+      Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
+        if (Array.isArray(hookOrHookArray)) {
+          hookOrHookArray.forEach((hook) => {
+            // @ts-expect-error - function expects specific hook names rather than just a string
+            app.addHook(hookName, hook);
+          });
+          return;
+        } else {
+          // @ts-expect-error - function expects specific hook names rather than just a string
+          app.addHook(hookName, hookOrHookArray);
+        }
+      });
+
       recursivelyRegisterRouter(
         router,
         embeddedContract,
         [],
         app,
         restOfOptions,
-      );
-
-      Object.keys(hooks).forEach((hookName) =>
-        // @ts-expect-error Fastify's hook overload seems to be complaining here for no reason afaik
-        app.addHook(hookName, hooks[hookName]),
       );
 
       app.setErrorHandler(
@@ -300,7 +340,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
     fastify.RawRequestDefaultExpression,
     fastify.RawReplyDefaultExpression,
     fastify.RouteGenericInterface,
-    { tsRestRoute: TAppRoute }
+    FastifyContextConfig<AppRoute>
   > = {
     ...hooks,
     method: appRoute.method,
