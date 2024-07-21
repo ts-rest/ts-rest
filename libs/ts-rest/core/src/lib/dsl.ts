@@ -166,6 +166,17 @@ export type AppRouter = {
   [key: string]: AppRouter | AppRoute;
 };
 
+export type FlattenAppRouter<T extends AppRouter | AppRoute> =
+  T extends AppRoute
+    ? T
+    : {
+        [TKey in keyof T]: T[TKey] extends AppRoute
+          ? T[TKey]
+          : T[TKey] extends AppRouter
+          ? FlattenAppRouter<T[TKey]>
+          : never;
+      }[keyof T];
+
 export type RouterOptions<TPrefix extends string = string> = {
   baseHeaders?: unknown;
   strictStatusCodes?: boolean;
