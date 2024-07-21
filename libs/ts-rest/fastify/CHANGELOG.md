@@ -1,5 +1,17 @@
 # @ts-rest/fastify
 
+## 3.46.0
+
+### Minor Changes
+
+- fb42b94: Add ts-rest route to fastify config object
+- bfec125: Add option to define hooks on app level or route level
+- d763d45: Export `RequestValidationErrorSchema` for default request validation error responses.
+
+### Patch Changes
+
+- 610428d: Fix when `pathPrefix` is used multiple times in nested contracts
+
 ## 3.45.2
 
 ## 3.45.1

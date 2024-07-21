@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/open-api",
-  "version": "3.45.2",
+  "version": "3.46.0",
   "license": "MIT",
   "dependencies": {
     "@anatine/zod-openapi": "^1.12.0",

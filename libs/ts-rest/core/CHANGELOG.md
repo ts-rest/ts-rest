@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.46.0
+
+### Minor Changes
+
+- d763d45: Export `RequestValidationErrorSchema` for default request validation error responses.
+
 ## 3.45.2
 
 ## 3.45.1
