@@ -4,6 +4,7 @@ import {
   AppRouteQuery,
   AppRouter,
   checkZodSchema,
+  FlattenAppRouter,
   HTTPStatusCode,
   isAppRouteNoBody,
   isAppRouteOtherResponse,
@@ -35,6 +36,10 @@ export const RequestValidationErrorSchema = z.object({
   bodyErrors: ZodErrorSchema.nullable(),
 });
 
+type FastifyContextConfig<T extends AppRouter | AppRoute> = {
+  tsRestRoute: T extends AppRoute ? T : FlattenAppRouter<T>;
+};
+
 type AppRouteImplementation<T extends AppRoute> = (
   input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
     request: fastify.FastifyRequest<
@@ -43,14 +48,14 @@ type AppRouteImplementation<T extends AppRoute> = (
       fastify.RawRequestDefaultExpression,
       fastify.FastifySchema,
       fastify.FastifyTypeProviderDefault,
-      { tsRestRoute: T }
+      FastifyContextConfig<T>
     >;
     reply: fastify.FastifyReply<
       fastify.RawServerDefault,
       fastify.RawRequestDefaultExpression,
       fastify.RawReplyDefaultExpression,
       fastify.RouteGenericInterface,
-      { tsRestRoute: T }
+      FastifyContextConfig<T>
     >;
     appRoute: T;
   },
@@ -60,11 +65,50 @@ type RecursiveRouterObj<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
     ? RecursiveRouterObj<T[TKey]>
     : T[TKey] extends AppRoute
-    ? AppRouteImplementation<T[TKey]>
+    ? AppRouteImplementationOrOptions<T[TKey]>
     : never;
 };
 
-type RegisterRouterOptions = {
+export type RouteHooks<T extends AppRouter | AppRoute> = Pick<
+  fastify.RouteOptions<
+    fastify.RawServerDefault,
+    fastify.RawRequestDefaultExpression,
+    fastify.RawReplyDefaultExpression,
+    fastify.RouteGenericInterface,
+    FastifyContextConfig<T>
+  >,
+  | 'preParsing'
+  | 'preValidation'
+  | 'preHandler'
+  | 'preSerialization'
+  | 'onRequest'
+  | 'onSend'
+  | 'onResponse'
+  | 'onTimeout'
+  | 'onError'
+  | 'onRequestAbort'
+>;
+
+export type ApplicationHooks<TContract extends AppRouter> =
+  RouteHooks<TContract> & {
+    onRoute?:
+      | fastify.onRouteHookHandler<
+          fastify.RawServerDefault,
+          fastify.RawRequestDefaultExpression,
+          fastify.RawReplyDefaultExpression,
+          fastify.RouteGenericInterface,
+          FastifyContextConfig<TContract>
+        >
+      | fastify.onRouteHookHandler<
+          fastify.RawServerDefault,
+          fastify.RawRequestDefaultExpression,
+          fastify.RawReplyDefaultExpression,
+          fastify.RouteGenericInterface,
+          FastifyContextConfig<TContract>
+        >[];
+  };
+
+type BaseRegisterRouterOptions = {
   logInitialization?: boolean;
   jsonQuery?: boolean;
   responseValidation?: boolean;
@@ -77,11 +121,30 @@ type RegisterRouterOptions = {
       ) => void);
 };
 
+type RegisterRouterOptions<T extends AppRouter> = BaseRegisterRouterOptions & {
+  hooks?: ApplicationHooks<T>;
+};
+
+type AppRouteOptions<TRoute extends AppRoute> = {
+  hooks?: RouteHooks<TRoute>;
+  handler: AppRouteImplementation<TRoute>;
+};
+
+type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
+  | AppRouteOptions<TRoute>
+  | AppRouteImplementation<TRoute>;
+
+const isAppRouteImplementation = <TRoute extends AppRoute>(
+  obj: AppRouteImplementationOrOptions<TRoute>,
+): obj is AppRouteImplementation<TRoute> => {
+  return typeof obj === 'function';
+};
+
 const validateRequest = (
   request: fastify.FastifyRequest,
   reply: fastify.FastifyReply,
   schema: AppRouteQuery | AppRouteMutation,
-  options: RegisterRouterOptions,
+  options: BaseRegisterRouterOptions,
 ) => {
   const paramsResult = checkZodSchema(request.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -146,14 +209,29 @@ export const initServer = () => ({
     contract: TContract,
     routerImpl: T,
     app: fastify.FastifyInstance,
-    options: RegisterRouterOptions = {
+    options: RegisterRouterOptions<TContract> = {
       logInitialization: true,
       jsonQuery: false,
       responseValidation: false,
       requestValidationErrorHandler: 'combined',
     },
   ) => {
-    recursivelyRegisterRouter(routerImpl, contract, [], app, options);
+    const { hooks = {}, ...restOfOptions } = options;
+
+    Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
+      if (Array.isArray(hookOrHookArray)) {
+        hookOrHookArray.forEach((hook) => {
+          // @ts-expect-error - function expects specific hook names rather than just a string
+          app.addHook(hookName, hook);
+        });
+        return;
+      } else {
+        // @ts-expect-error - function expects specific hook names rather than just a string
+        app.addHook(hookName, hookOrHookArray);
+      }
+    });
+
+    recursivelyRegisterRouter(routerImpl, contract, [], app, restOfOptions);
 
     app.setErrorHandler(
       requestValidationErrorHandler(options.requestValidationErrorHandler),
@@ -162,7 +240,7 @@ export const initServer = () => ({
   plugin:
     <T extends AppRouter>(
       router: RecursiveRouterObj<T>,
-    ): fastify.FastifyPluginCallback<RegisterRouterOptions> =>
+    ): fastify.FastifyPluginCallback<RegisterRouterOptions<T>> =>
     (
       app,
       opts = {
@@ -177,7 +255,28 @@ export const initServer = () => ({
         router as RecursiveRouterObj<T> & { [RouterEmbeddedContract]: T }
       )[RouterEmbeddedContract];
 
-      recursivelyRegisterRouter(router, embeddedContract, [], app, opts);
+      const { hooks = {}, ...restOfOptions } = opts;
+
+      Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
+        if (Array.isArray(hookOrHookArray)) {
+          hookOrHookArray.forEach((hook) => {
+            // @ts-expect-error - function expects specific hook names rather than just a string
+            app.addHook(hookName, hook);
+          });
+          return;
+        } else {
+          // @ts-expect-error - function expects specific hook names rather than just a string
+          app.addHook(hookName, hookOrHookArray);
+        }
+      });
+
+      recursivelyRegisterRouter(
+        router,
+        embeddedContract,
+        [],
+        app,
+        restOfOptions,
+      );
 
       app.setErrorHandler(
         requestValidationErrorHandler(opts.requestValidationErrorHandler),
@@ -188,7 +287,7 @@ export const initServer = () => ({
 });
 
 const requestValidationErrorHandler = (
-  handler: RegisterRouterOptions['requestValidationErrorHandler'] = 'combined',
+  handler: BaseRegisterRouterOptions['requestValidationErrorHandler'] = 'combined',
 ) => {
   return (
     err: unknown,
@@ -215,20 +314,35 @@ const requestValidationErrorHandler = (
 /**
  * @param routeImpl - User's implementation of the route
  * @param appRoute - the `ts-rest` contract for this route (e.g. with Path, params, query, body, etc.)
- * @param fastify - the fastify instance to register the route on
+ * @param app - the fastify instance to register the route on
  * @param options - options for the routers
  */
 const registerRoute = <TAppRoute extends AppRoute>(
-  routeImpl: AppRouteImplementation<AppRoute>,
+  routeImpl: AppRouteImplementationOrOptions<AppRoute>,
   appRoute: TAppRoute,
-  fastify: fastify.FastifyInstance,
-  options: RegisterRouterOptions,
+  app: fastify.FastifyInstance,
+  options: BaseRegisterRouterOptions,
 ) => {
   if (options.logInitialization) {
     console.log(`[ts-rest] Initialized ${appRoute.method} ${appRoute.path}`);
   }
 
-  fastify.route<fastify.RouteGenericInterface, { tsRestRoute: TAppRoute }>({
+  const handler = isAppRouteImplementation(routeImpl)
+    ? routeImpl
+    : routeImpl.handler;
+
+  const hooks = isAppRouteImplementation(routeImpl)
+    ? {}
+    : routeImpl.hooks || {};
+
+  const route: fastify.RouteOptions<
+    fastify.RawServerDefault,
+    fastify.RawRequestDefaultExpression,
+    fastify.RawReplyDefaultExpression,
+    fastify.RouteGenericInterface,
+    FastifyContextConfig<AppRoute>
+  > = {
+    ...hooks,
     method: appRoute.method,
     url: appRoute.path,
     config: {
@@ -244,7 +358,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
 
       let result: { status: HTTPStatusCode; body: unknown };
       try {
-        result = await routeImpl({
+        result = await handler({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           params: validationResults.paramsResult.data as any,
           query: validationResults.queryResult.data,
@@ -295,7 +409,9 @@ const registerRoute = <TAppRoute extends AppRoute>(
 
       return reply.status(statusCode).send(validatedResponseBody);
     },
-  });
+  };
+
+  app.route(route);
 };
 
 /**
@@ -311,9 +427,12 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   appRouter: T,
   path: string[],
   fastify: fastify.FastifyInstance,
-  options: RegisterRouterOptions,
+  options: BaseRegisterRouterOptions,
 ) => {
-  if (typeof routerImpl === 'object') {
+  if (
+    typeof routerImpl === 'object' &&
+    typeof routerImpl?.['handler'] !== 'function'
+  ) {
     for (const key in routerImpl) {
       recursivelyRegisterRouter(
         routerImpl[key] as unknown as RecursiveRouterObj<T>,
@@ -323,9 +442,12 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
         options,
       );
     }
-  } else if (typeof routerImpl === 'function') {
+  } else if (
+    typeof routerImpl === 'function' ||
+    typeof routerImpl?.['handler'] === 'function'
+  ) {
     registerRoute(
-      routerImpl,
+      routerImpl as unknown as AppRouteImplementationOrOptions<AppRoute>,
       appRouter as unknown as AppRoute,
       fastify,
       options,

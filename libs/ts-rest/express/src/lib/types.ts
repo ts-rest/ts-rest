@@ -3,6 +3,7 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
+  FlattenAppRouter,
   ServerInferRequest,
   ServerInferResponseBody,
   ServerInferResponses,
@@ -102,13 +103,3 @@ export type TsRestExpressOptions<T extends AppRouter> = {
         next: NextFunction,
       ) => void);
 };
-
-type FlattenAppRouter<T extends AppRouter | AppRoute> = T extends AppRoute
-  ? T
-  : {
-      [TKey in keyof T]: T[TKey] extends AppRoute
-        ? T[TKey]
-        : T[TKey] extends AppRouter
-        ? FlattenAppRouter<T[TKey]>
-        : never;
-    }[keyof T];
