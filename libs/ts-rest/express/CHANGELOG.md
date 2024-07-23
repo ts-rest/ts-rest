@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.47.0
+
+### Minor Changes
+
+- eb2c647: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+
 ## 3.46.0
 
 ### Minor Changes
