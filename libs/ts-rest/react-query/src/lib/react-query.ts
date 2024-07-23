@@ -149,14 +149,20 @@ const getRouteUseMutation = <
   };
 };
 
+/** @deprecated Use `TsRestReactQueryClient` instead */
 export type InitClientReturn<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs,
+> = UseTsRestQueryClient<T, TClientArgs>;
+
+export type TsRestReactQueryClient<
   T extends AppRouter,
   TClientArgs extends ClientArgs,
 > = {
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<AppRouteFunctions<T[TKey], TClientArgs>, never>
     : T[TKey] extends AppRouter
-    ? InitClientReturn<T[TKey], TClientArgs>
+    ? TsRestReactQueryClient<T[TKey], TClientArgs>
     : never;
 };
 
@@ -168,10 +174,10 @@ export const initQueryClient = <
 >(
   router: T,
   clientArgs: TClientArgs,
-): InitClientReturn<T, TClientArgs> => {
+): TsRestReactQueryClient<T, TClientArgs> => {
   const recursiveInit = <TInner extends AppRouter>(
     innerRouter: TInner,
-  ): InitClientReturn<TInner, TClientArgs> => {
+  ): TsRestReactQueryClient<TInner, TClientArgs> => {
     return Object.fromEntries(
       Object.entries(innerRouter).map(([key, subRouter]) => {
         if (isAppRoute(subRouter)) {
@@ -311,14 +317,14 @@ export const initQueryClient = <
   };
 };
 
-type InitUseTsRestQueryClientReturn<
+export type UseTsRestQueryClient<
   T extends AppRouter,
   TClientArgs extends ClientArgs,
 > = {
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<AppRouteFunctionsWithQueryClient<T[TKey], TClientArgs>, never>
     : T[TKey] extends AppRouter
-    ? InitUseTsRestQueryClientReturn<T[TKey], TClientArgs>
+    ? UseTsRestQueryClient<T[TKey], TClientArgs>
     : never;
 };
 
@@ -326,8 +332,8 @@ export const useTsRestQueryClient = <
   T extends AppRouter,
   TClientArgs extends ClientArgs,
 >(
-  client: InitClientReturn<T, TClientArgs>,
-): InitUseTsRestQueryClientReturn<T, TClientArgs> => {
+  client: TsRestReactQueryClient<T, TClientArgs>,
+): UseTsRestQueryClient<T, TClientArgs> => {
   // @ts-expect-error - hidden symbol, so we can refetch the original client router and clientArgs
   const { router } = client[ClientParameters] as unknown as {
     router: T;
@@ -338,8 +344,8 @@ export const useTsRestQueryClient = <
 
   const recursiveInit = <TInner extends AppRouter>(
     innerRouter: TInner,
-    innerClient: InitClientReturn<TInner, TClientArgs>,
-  ): InitUseTsRestQueryClientReturn<TInner, TClientArgs> => {
+    innerClient: TsRestReactQueryClient<TInner, TClientArgs>,
+  ): UseTsRestQueryClient<TInner, TClientArgs> => {
     return Object.fromEntries(
       Object.entries(innerRouter).map(([key, subRouter]) => {
         if (isAppRoute(subRouter)) {

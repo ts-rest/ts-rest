@@ -80,9 +80,9 @@ export const isAppRouteImplementation = <TRoute extends AppRoute>(
   return typeof obj === 'function';
 };
 
-export type RecursiveRouterObj<T extends AppRouter> = {
+export type RouterImplementation<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey]>
+    ? RouterImplementation<T[TKey]>
     : T[TKey] extends AppRoute
     ? AppRouteImplementationOrOptions<T[TKey]>
     : never;

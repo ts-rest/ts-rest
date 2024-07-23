@@ -234,7 +234,13 @@ const getRouteUseMutation = <
   };
 };
 
+/** @deprecated Use `TsRestSolidQueryClient` instead */
 export type InitClientReturn<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs,
+> = TsRestSolidQueryClient<T, TClientArgs>;
+
+export type TsRestSolidQueryClient<
   T extends AppRouter,
   TClientArgs extends ClientArgs,
 > = RecursiveProxyObj<T, TClientArgs>;
@@ -245,7 +251,7 @@ export const initQueryClient = <
 >(
   router: T,
   args: TClientArgs,
-): InitClientReturn<T, TClientArgs> => {
+): TsRestSolidQueryClient<T, TClientArgs> => {
   return Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) => {
       if (isAppRoute(subRouter)) {

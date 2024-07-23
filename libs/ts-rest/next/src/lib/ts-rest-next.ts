@@ -38,9 +38,9 @@ type AppRouteImplementation<T extends AppRoute> = (
   },
 ) => Promise<ServerInferResponses<T>>;
 
-type RecursiveRouterObj<T extends AppRouter> = {
+export type RouterImplementation<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey]>
+    ? RouterImplementation<T[TKey]>
     : T[TKey] extends AppRoute
     ? AppRouteImplementation<T[TKey]>
     : never;
@@ -74,7 +74,7 @@ type CreateNextRouterOptions = {
  */
 const mergeRouterAndImplementation = <T extends AppRouter>(
   router: T,
-  implementation: RecursiveRouterObj<T>,
+  implementation: RouterImplementation<T>,
 ): AppRouterWithImplementation => {
   const keys = Object.keys(router);
 
@@ -176,7 +176,7 @@ const getRouteImplementation = (
 export const createNextRoute = <T extends AppRouter | AppRoute>(
   appRouter: T,
   implementation: T extends AppRouter
-    ? RecursiveRouterObj<T>
+    ? RouterImplementation<T>
     : T extends AppRoute
     ? AppRouteImplementation<T>
     : never,
@@ -200,7 +200,7 @@ export const createNextRoute = <T extends AppRouter | AppRoute>(
  */
 export const createNextRouter = <T extends AppRouter>(
   routes: T,
-  obj: RecursiveRouterObj<T>,
+  obj: RouterImplementation<T>,
   options?: CreateNextRouterOptions,
 ) => {
   return handlerFactory((req) => {

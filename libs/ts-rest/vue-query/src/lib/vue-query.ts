@@ -45,7 +45,13 @@ type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
     : never;
 };
 
+/** @deprecated Use `TsRestVueQueryClient` instead */
 export type InitClientReturn<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs,
+> = TsRestVueQueryClient<T, TClientArgs>;
+
+export type TsRestVueQueryClient<
   T extends AppRouter,
   TClientArgs extends ClientArgs,
 > = RecursiveProxyObj<T, TClientArgs>;
@@ -56,7 +62,7 @@ export const initQueryClient = <
 >(
   router: T,
   args: TClientArgs,
-): InitClientReturn<T, TClientArgs> =>
+): TsRestVueQueryClient<T, TClientArgs> =>
   Object.fromEntries(
     Object.entries(router).map(([key, subRouter]) =>
       isAppRoute(subRouter)
