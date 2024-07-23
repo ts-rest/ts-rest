@@ -3,7 +3,9 @@
   "version": "0.2.0",
   "license": "MIT",
   "scripts": {
-    "version-packages": "changeset version",
+    "see-react-query-only": "sed -e \"s;\\\"libs/ts-rest/\\*\\\";\\\"libs/ts-rest/react-query\\\";g\" package.json > package-new.json && mv package-new.json package.json",
+    "revert-see-react-query-only": "sed -e \"s;\\\"libs/ts-rest/react-query\\\";\\\"libs/ts-rest/\\*\\\";g\" package.json > package-new.json && mv package-new.json package.json",
+    "version-packages": "pnpm see-react-query-only && changeset version && pnpm revert-see-react-query-only",
     "version-packages-update-lockfile": "changeset version && pnpm install --no-frozen-lockfile",
     "release": "pnpm nx run-many --target=build --projects=ts-rest-react-query && changeset publish",
     "nest": "pnpm nx run example-nest:serve",
