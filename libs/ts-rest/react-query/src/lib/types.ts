@@ -15,7 +15,7 @@ import {
   PartialClientInferRequest,
   SuccessfulHttpStatusCode,
 } from '@ts-rest/core';
-import { InitClientReturn } from './react-query';
+import { TsRestReactQueryClient } from './react-query';
 
 // Data response if it's a 2XX
 export type DataResponse<TAppRoute extends AppRoute> = ClientInferResponses<
@@ -59,20 +59,20 @@ export type UseInfiniteQueryResult<
   TData = DataResponse<TAppRoute>,
 > = TanStackUseInfiniteQueryResult<TData, ErrorResponse<TAppRoute>>;
 
-type InferClientArgs<TClient extends InitClientReturn<any, any>> =
-  TClient extends InitClientReturn<any, infer TClientArgs>
+type InferClientArgs<TClient extends TsRestReactQueryClient<any, any>> =
+  TClient extends TsRestReactQueryClient<any, infer TClientArgs>
     ? TClientArgs
     : never;
 
 export type UseMutationOptions<
   TAppRoute extends AppRoute,
-  TClientArgsOrClient extends ClientArgs | InitClientReturn<any, any>,
+  TClientArgsOrClient extends ClientArgs | TsRestReactQueryClient<any, any>,
 > = TanStackUseMutationOptions<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
   TClientArgsOrClient extends ClientArgs
     ? PartialClientInferRequest<TAppRoute, TClientArgsOrClient>
-    : TClientArgsOrClient extends InitClientReturn<any, any>
+    : TClientArgsOrClient extends TsRestReactQueryClient<any, any>
     ? PartialClientInferRequest<TAppRoute, InferClientArgs<TClientArgsOrClient>>
     : never,
   unknown
@@ -80,13 +80,13 @@ export type UseMutationOptions<
 
 export type UseMutationResult<
   TAppRoute extends AppRoute,
-  TClientArgsOrClient extends ClientArgs | InitClientReturn<any, any>,
+  TClientArgsOrClient extends ClientArgs | TsRestReactQueryClient<any, any>,
 > = TanStackUseMutationResult<
   DataResponse<TAppRoute>,
   ErrorResponse<TAppRoute>,
   TClientArgsOrClient extends ClientArgs
     ? PartialClientInferRequest<TAppRoute, TClientArgsOrClient>
-    : TClientArgsOrClient extends InitClientReturn<any, any>
+    : TClientArgsOrClient extends TsRestReactQueryClient<any, any>
     ? PartialClientInferRequest<TAppRoute, InferClientArgs<TClientArgsOrClient>>
     : never,
   unknown

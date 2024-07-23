@@ -10,6 +10,7 @@ import { TsRestRequest } from './request';
 import { TsRestHttpError } from './http-error';
 import { TsRestResponse } from './response';
 import { CorsOptions, RequestHandler } from 'itty-router';
+import { CompleteRouter, RouterBuilder } from './router-builder';
 
 export class RequestValidationError extends TsRestHttpError {
   constructor(
@@ -96,29 +97,37 @@ export const isAppRouteImplementation = <
   return typeof obj === 'function';
 };
 
-export const isRecursiveRouterObj = <
+export const isRouterImplementation = <
   T extends AppRouter,
   TPlatformArgs,
   TRequestExtension,
 >(
   obj:
-    | RecursiveRouterObj<T, TPlatformArgs, TRequestExtension>
+    | RouterImplementation<T, TPlatformArgs, TRequestExtension>
     | AppRouteImplementationOrOptions<any, TPlatformArgs, TRequestExtension>,
-): obj is RecursiveRouterObj<T, TPlatformArgs, TRequestExtension> => {
+): obj is RouterImplementation<T, TPlatformArgs, TRequestExtension> => {
   return typeof obj === 'object' && typeof obj?.handler !== 'function';
 };
 
-export type RecursiveRouterObj<
+export type RouterImplementation<
   T extends AppRouter,
   TPlatformArgs,
   TRequestExtension,
 > = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey], TPlatformArgs, TRequestExtension>
+    ? RouterImplementation<T[TKey], TPlatformArgs, TRequestExtension>
     : T[TKey] extends AppRoute
     ? AppRouteImplementationOrOptions<T[TKey], TPlatformArgs, TRequestExtension>
     : never;
 };
+
+export type RouterImplementationOrFluentRouter<
+  T extends AppRouter,
+  TPlatformArgs,
+  TRequestExtension,
+> =
+  | RouterImplementation<T, TPlatformArgs, TRequestExtension>
+  | CompleteRouter<T, TPlatformArgs, TRequestExtension>;
 
 export type ServerlessHandlerOptions<
   TPlatformArgs = {},
@@ -146,17 +155,32 @@ export type ServerlessHandlerOptions<
 };
 
 export const createTsr = <TPlatformContext = {}>() => ({
-  router: <T extends AppRouter, TRequestExtension = {}>(
-    contract: T,
-    router: RecursiveRouterObj<T, TPlatformContext, TRequestExtension>,
-  ) => router,
-  route: <T extends AppRoute, TRequestExtension = {}>(
-    contractEndpoint: T,
-    route: AppRouteImplementationOrOptions<
+  router: <
+    TRequestExtension = {},
+    T extends AppRouter = AppRouter,
+    TRouter extends RouterImplementation<
       T,
       TPlatformContext,
       TRequestExtension
-    >,
+    > = RouterImplementation<T, TPlatformContext, TRequestExtension>,
+  >(
+    contract: T,
+    router: TRouter,
+  ) => router,
+  routerBuilder: <T extends AppRouter = AppRouter>(contract: T) => {
+    return new RouterBuilder<T, TPlatformContext, {}>(contract);
+  },
+  route: <
+    TRequestExtension = {},
+    T extends AppRoute = AppRoute,
+    TRoute extends AppRouteImplementationOrOptions<
+      T,
+      TPlatformContext,
+      TRequestExtension
+    > = AppRouteImplementationOrOptions<T, TPlatformContext, TRequestExtension>,
+  >(
+    contractEndpoint: T,
+    route: TRoute,
   ) => route,
   routeWithMiddleware:
     <T extends AppRoute>(contractEndpoint: T) =>
@@ -168,10 +192,13 @@ export const createTsr = <TPlatformContext = {}>() => ({
       >,
     ) =>
       route as AppRouteOptions<T, TPlatformContext, TRequestGlobalExtension>,
-  middleware: <TRequestExtension>(
-    middleware: RequestHandler<
+  middleware: <
+    TRequestExtension,
+    TMiddleware extends RequestHandler<
       TsRestRequest & TRequestExtension,
       [TPlatformContext]
-    >,
+    > = RequestHandler<TsRestRequest & TRequestExtension, [TPlatformContext]>,
+  >(
+    middleware: TMiddleware,
   ) => middleware,
 });

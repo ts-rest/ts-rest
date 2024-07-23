@@ -61,9 +61,9 @@ type AppRouteImplementation<T extends AppRoute> = (
   },
 ) => Promise<ServerInferResponses<T>>;
 
-type RecursiveRouterObj<T extends AppRouter> = {
+export type RouterImplementation<T extends AppRouter> = {
   [TKey in keyof T]: T[TKey] extends AppRouter
-    ? RecursiveRouterObj<T[TKey]>
+    ? RouterImplementation<T[TKey]>
     : T[TKey] extends AppRoute
     ? AppRouteImplementationOrOptions<T[TKey]>
     : never;
@@ -193,8 +193,8 @@ const RouterEmbeddedContract = Symbol('RouterEmbeddedContract');
 export const initServer = () => ({
   router: <TContract extends AppRouter>(
     contract: TContract,
-    routes: RecursiveRouterObj<TContract>,
-  ): RecursiveRouterObj<TContract> => ({
+    routes: RouterImplementation<TContract>,
+  ): RouterImplementation<TContract> => ({
     ...routes,
     [RouterEmbeddedContract]: contract,
   }),
@@ -203,7 +203,7 @@ export const initServer = () => ({
     implementation: AppRouteImplementation<TAppRoute>,
   ) => implementation,
   registerRouter: <
-    T extends RecursiveRouterObj<TContract>,
+    T extends RouterImplementation<TContract>,
     TContract extends AppRouter,
   >(
     contract: TContract,
@@ -239,7 +239,7 @@ export const initServer = () => ({
   },
   plugin:
     <T extends AppRouter>(
-      router: RecursiveRouterObj<T>,
+      router: RouterImplementation<T>,
     ): fastify.FastifyPluginCallback<RegisterRouterOptions<T>> =>
     (
       app,
@@ -252,7 +252,7 @@ export const initServer = () => ({
       done,
     ) => {
       const embeddedContract = (
-        router as RecursiveRouterObj<T> & { [RouterEmbeddedContract]: T }
+        router as RouterImplementation<T> & { [RouterEmbeddedContract]: T }
       )[RouterEmbeddedContract];
 
       const { hooks = {}, ...restOfOptions } = opts;
@@ -423,7 +423,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
  * @param options
  */
 const recursivelyRegisterRouter = <T extends AppRouter>(
-  routerImpl: RecursiveRouterObj<T>,
+  routerImpl: RouterImplementation<T>,
   appRouter: T,
   path: string[],
   fastify: fastify.FastifyInstance,
@@ -435,7 +435,7 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   ) {
     for (const key in routerImpl) {
       recursivelyRegisterRouter(
-        routerImpl[key] as unknown as RecursiveRouterObj<T>,
+        routerImpl[key] as unknown as RouterImplementation<T>,
         appRouter[key] as unknown as T,
         [...path, key],
         fastify,

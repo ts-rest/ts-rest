@@ -3,7 +3,6 @@ import { parse as parseMultipart, getBoundary } from 'parse-multipart-data';
 import { z } from 'zod';
 import { vi } from 'vitest';
 import { fetchRequestHandler, tsr } from './ts-rest-fetch';
-import { TsRestRequest } from '../request';
 import { RequestValidationErrorSchema } from '../types';
 
 const c = initContract();
@@ -73,70 +72,80 @@ const contract = c.router({
 
 const mockFn = vi.fn();
 
+const router = tsr
+  .routerBuilder(contract)
+  .requestMiddleware<{ foo: string }>((req) => {
+    req.foo = 'bar';
+  })
+  .responseHandler((res, req) => {
+    res.headers.set('x-foo', req.foo);
+  })
+  .partialRouter({
+    ping: async ({ body, params }) => {
+      if (params.id === 500) {
+        throw new TsRestResponseError(contract.ping, {
+          status: 500,
+          body: undefined,
+        });
+      }
+
+      if (params.id === 404) {
+        throw new TsRestResponseError(contract.ping, {
+          status: 404,
+          body: {
+            message: 'Not Found',
+          },
+        });
+      }
+
+      return {
+        status: 200,
+        body: {
+          id: params.id,
+          pong: body.ping,
+        },
+      };
+    },
+    noContent: {
+      middleware: [(req) => mockFn(req.foo)],
+      handler: async () => {
+        return {
+          status: 204,
+          body: undefined,
+        } as const;
+      },
+    },
+    upload: async (_, { request }) => {
+      const boundary = getBoundary(
+        request.headers.get('content-type') as string,
+      );
+
+      const bodyBuffer = await request.arrayBuffer();
+      const parts = parseMultipart(Buffer.from(bodyBuffer), boundary);
+      const blob = new Blob([parts[0].data], { type: parts[0].type });
+
+      return {
+        status: 200,
+        body: blob,
+      };
+    },
+  })
+  .route('test', async ({ query }) => {
+    return {
+      status: 200,
+      body: {
+        foo: query.foo,
+      },
+    };
+  })
+  .route('throw', async () => {
+    throw new Error('Test error');
+  });
+
 const testFetchRequestHandler = (request: Request) => {
   return fetchRequestHandler({
     contract,
-    router: {
-      test: async ({ query }) => {
-        return {
-          status: 200,
-          body: {
-            foo: query.foo,
-          },
-        };
-      },
-      ping: async ({ body, params }) => {
-        if (params.id === 500) {
-          throw new TsRestResponseError(contract.ping, {
-            status: 500,
-            body: undefined,
-          });
-        }
-
-        if (params.id === 404) {
-          throw new TsRestResponseError(contract.ping, {
-            status: 404,
-            body: {
-              message: 'Not Found',
-            },
-          });
-        }
-
-        return {
-          status: 200,
-          body: {
-            id: params.id,
-            pong: body.ping,
-          },
-        };
-      },
-      noContent: {
-        middleware: [(req) => mockFn(req.foo)],
-        handler: async () => {
-          return {
-            status: 204,
-            body: undefined,
-          } as const;
-        },
-      },
-      upload: async (_, { request }) => {
-        const boundary = getBoundary(
-          request.headers.get('content-type') as string,
-        );
-
-        const bodyBuffer = await request.arrayBuffer();
-        const parts = parseMultipart(Buffer.from(bodyBuffer), boundary);
-        const blob = new Blob([parts[0].data], { type: parts[0].type });
-
-        return {
-          status: 200,
-          body: blob,
-        };
-      },
-      throw: async () => {
-        throw new Error('Test error');
-      },
-    },
+    router,
     options: {
       jsonQuery: true,
       responseValidation: true,
@@ -144,16 +153,6 @@ const testFetchRequestHandler = (request: Request) => {
         origin: ['http://localhost'],
         credentials: true,
       },
-      requestMiddleware: [
-        (req: TsRestRequest & { foo: string }) => {
-          req.foo = 'bar';
-        },
-      ],
-      responseHandlers: [
-        (res, req) => {
-          res.headers.set('x-foo', req.foo);
-        },
-      ],
     },
     request,
   });

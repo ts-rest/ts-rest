@@ -22,7 +22,7 @@ import type {
 import {
   AppRouteImplementationOrOptions,
   TsRestExpressOptions,
-  RecursiveRouterObj,
+  RouterImplementation,
   TsRestRequestHandler,
   isAppRouteImplementation,
 } from './types';
@@ -31,12 +31,21 @@ import { Stream } from 'stream';
 
 export const initServer = () => {
   return {
-    router: <T extends AppRouter>(router: T, args: RecursiveRouterObj<T>) =>
-      args,
-    route: <T extends AppRoute>(
-      route: T,
-      args: AppRouteImplementationOrOptions<T>,
-    ) => args,
+    router: <
+      T extends AppRouter = AppRouter,
+      TRouter extends RouterImplementation<T> = RouterImplementation<T>,
+    >(
+      contract: T,
+      router: TRouter,
+    ) => router,
+    route: <
+      T extends AppRoute,
+      TRoute extends
+        AppRouteImplementationOrOptions<T> = AppRouteImplementationOrOptions<T>,
+    >(
+      contract: T,
+      route: TRoute,
+    ) => route,
   };
 };
 
@@ -46,7 +55,7 @@ const recursivelyApplyExpressRouter = ({
   processRoute,
 }: {
   schema: AppRouter | AppRoute;
-  router: RecursiveRouterObj<any> | AppRouteImplementationOrOptions<any>;
+  router: RouterImplementation<any> | AppRouteImplementationOrOptions<any>;
   processRoute: (
     implementation: AppRouteImplementationOrOptions<AppRoute>,
     schema: AppRoute,
@@ -60,7 +69,7 @@ const recursivelyApplyExpressRouter = ({
 
       recursivelyApplyExpressRouter({
         schema: schema[key],
-        router: (router as RecursiveRouterObj<any>)[key],
+        router: (router as RouterImplementation<any>)[key],
         processRoute,
       });
     }
@@ -286,7 +295,7 @@ const requestValidationErrorHandler = (
 
 export const createExpressEndpoints = <TRouter extends AppRouter>(
   schema: TRouter,
-  router: RecursiveRouterObj<TRouter>,
+  router: RouterImplementation<TRouter>,
   app: IRouter,
   options: TsRestExpressOptions<TRouter> = {
     logInitialization: true,

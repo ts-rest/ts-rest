@@ -35,7 +35,6 @@ import { tsr } from '@ts-rest/serverless/aws';
 import { contract } from './contract';
 
 export const postsRouter = tsr.router<
-  typeof contract,   // <-- You have to add the contract type here
   { userId: string } // <-- Add the extended part here. This will be visible in request.userId
 >(contract, { ... });
 ```
