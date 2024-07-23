@@ -1,5 +1,17 @@
 # @ts-rest/serverless
 
+## 3.47.0
+
+### Minor Changes
+
+- eb2c647: BREAKING CHANGE: The order of generics on the `tsr.*` methods have been swapped. Now you don't have to pass `typeof contract` first. You can now pass your request extension type only.
+- eb2c647: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+- eb2c647: Fluent router builder for easier modification of request context type in middleware. Try it out through `tsr.routerBuilder(contract)`!
+
+### Patch Changes
+
+- @ts-rest/core@3.47.0
+
 ## 3.46.0
 
 ### Minor Changes

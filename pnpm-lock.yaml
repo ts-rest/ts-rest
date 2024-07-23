@@ -599,7 +599,7 @@ importers:
         specifier: ^4.0.0
         version: 4.5.0
       '@ts-rest/core':
-        specifier: 3.46.0
+        specifier: 3.47.0
         version: link:../core
       '@types/aws-lambda':
         specifier: ^8.10.115
