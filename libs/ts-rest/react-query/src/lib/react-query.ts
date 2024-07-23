@@ -1,5 +1,6 @@
 import {
   FetchQueryOptions,
+  FetchInfiniteQueryOptions,
   QueryFilters,
   QueryFunction,
   QueryFunctionContext,
@@ -13,6 +14,9 @@ import {
   useQuery,
   useQueryClient,
   QueryClient,
+  useSuspenseQuery,
+  useSuspenseQueries,
+  useSuspenseInfiniteQuery,
 } from '@tanstack/react-query';
 import {
   AppRoute,
@@ -58,69 +62,85 @@ const queryFn = <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
   };
 };
 
-const getRouteUseQuery = <
-  TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
->(
-  route: TAppRoute,
-  clientArgs: TClientArgs,
-) => {
-  return (
-    queryKey: QueryKey,
-    args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
-    options?: TanStackUseQueryOptions<TAppRoute['responses']>,
+type UseQueryFunction = typeof useQuery | typeof useSuspenseQuery;
+
+const getRouteUseQuery = (useQueryFunction: UseQueryFunction) => {
+  return <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
+    route: TAppRoute,
+    clientArgs: TClientArgs,
   ) => {
-    const dataFn = queryFn(route, clientArgs, args);
+    return (
+      options: TanStackUseQueryOptions<TAppRoute['responses']> & {
+        request?: ClientInferRequest<AppRouteMutation, ClientArgs>;
+      },
+    ) => {
+      const { request, ...useQueryOptions } = options;
+      const dataFn = queryFn(route, clientArgs, request);
 
-    return useQuery({ queryKey, queryFn: dataFn, ...options });
-  };
-};
-
-const getRouteUseQueries = <
-  TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
->(
-  route: TAppRoute,
-  clientArgs: TClientArgs,
-) => {
-  return (args: Parameters<DataReturnQueries<TAppRoute, TClientArgs>>[0]) => {
-    const queries = args.queries.map((fullQueryArgs: any) => {
-      const { credentials, queryKey, retry, ...queryArgs } = fullQueryArgs;
-      const dataFn = queryFn(route, clientArgs, queryArgs);
-
-      return {
-        queryFn: dataFn,
-        ...fullQueryArgs,
-      };
-    });
-
-    return useQueries({ queries, context: args.context });
-  };
-};
-
-const getRouteUseInfiniteQuery = <
-  TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
->(
-  route: TAppRoute,
-  clientArgs: TClientArgs,
-) => {
-  return (
-    queryKey: QueryKey,
-    argsMapper: (
-      context: QueryFunctionContext,
-    ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-    options?: TanStackUseInfiniteQueryOptions<TAppRoute['responses']>,
-  ) => {
-    const dataFn: QueryFunction<TAppRoute['responses']> = async (context) => {
-      const resultingQueryArgs = argsMapper(context);
-
-      const innerDataFn = queryFn(route, clientArgs, resultingQueryArgs);
-
-      return innerDataFn(undefined as any);
+      return useQueryFunction({ queryFn: dataFn, ...useQueryOptions });
     };
+  };
+};
 
-    return useInfiniteQuery({ queryKey, queryFn: dataFn, ...options });
+type UseQueriesFunction = typeof useQueries | typeof useSuspenseQueries;
+
+const getRouteUseQueries = (useQueriesFunction: UseQueriesFunction) => {
+  return <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
+    route: TAppRoute,
+    clientArgs: TClientArgs,
+  ) => {
+    return (args: Parameters<DataReturnQueries<TAppRoute, TClientArgs>>[0]) => {
+      const queries = args.queries.map((fullQueryArgs: any) => {
+        const { request, ...useQueriesOptions } = fullQueryArgs;
+        const dataFn = queryFn(route, clientArgs, request);
+
+        return {
+          queryFn: dataFn,
+          ...useQueriesOptions,
+        };
+      });
+
+      return useQueriesFunction({ queries, combine: args.combine as any });
+    };
+  };
+};
+
+type UseInfiniteQueryFunction =
+  | typeof useInfiniteQuery
+  | typeof useSuspenseInfiniteQuery;
+
+const getRouteUseInfiniteQuery = (
+  useInfiniteQueryFunction: UseInfiniteQueryFunction,
+) => {
+  return <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
+    route: TAppRoute,
+    clientArgs: TClientArgs,
+  ) => {
+    return (
+      options: TanStackUseInfiniteQueryOptions<TAppRoute['responses']> & {
+        requestMapper: (
+          context: QueryFunctionContext,
+        ) => ClientInferRequest<AppRouteMutation, ClientArgs>;
+      },
+    ) => {
+      const { requestMapper, ...useInfiniteQueryOptions } = options;
+      const dataFn: QueryFunction<
+        TAppRoute['responses'],
+        QueryKey,
+        unknown
+      > = async (context) => {
+        const resultingQueryArgs = requestMapper(context);
+
+        const innerDataFn = queryFn(route, clientArgs, resultingQueryArgs);
+
+        return innerDataFn(undefined as any);
+      };
+
+      return useInfiniteQueryFunction({
+        queryFn: dataFn,
+        ...useInfiniteQueryOptions,
+      });
+    };
   };
 };
 
@@ -186,35 +206,49 @@ export const initQueryClient = <
             {
               query: getRouteQuery(subRouter, clientArgs),
               mutation: getRouteQuery(subRouter, clientArgs),
-              useQuery: getRouteUseQuery(subRouter, clientArgs),
-              useQueries: getRouteUseQueries(subRouter, clientArgs),
-              useInfiniteQuery: getRouteUseInfiniteQuery(subRouter, clientArgs),
+              useQuery: getRouteUseQuery(useQuery)(subRouter, clientArgs),
+              useSuspenseQuery: getRouteUseQuery(useSuspenseQuery)(
+                subRouter,
+                clientArgs,
+              ),
+              useQueries: getRouteUseQueries(useQueries)(subRouter, clientArgs),
+              useSuspenseQueries: getRouteUseQueries(useSuspenseQueries)(
+                subRouter,
+                clientArgs,
+              ),
+              useInfiniteQuery: getRouteUseInfiniteQuery(useInfiniteQuery)(
+                subRouter,
+                clientArgs,
+              ),
+              useSuspenseInfiniteQuery: getRouteUseInfiniteQuery(
+                useSuspenseInfiniteQuery,
+              )(subRouter, clientArgs),
               useMutation: getRouteUseMutation(subRouter, clientArgs),
               fetchQuery: (
                 queryClient: QueryClient,
-                queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
+                options: FetchQueryOptions<any> & {
+                  request: ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
               ) => {
-                const dataFn = queryFn(subRouter, clientArgs, args);
+                const { request, ...fetchQueryOptions } = options;
+                const dataFn = queryFn(subRouter, clientArgs, request);
                 return queryClient.fetchQuery({
-                  queryKey,
                   queryFn: dataFn,
-                  ...options,
+                  ...fetchQueryOptions,
                 });
               },
               fetchInfiniteQuery: (
                 queryClient: QueryClient,
-                queryKey: QueryKey,
-                argsMapper: (
-                  context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
+                options: FetchInfiniteQueryOptions<any> & {
+                  requestMapper: (
+                    context: QueryFunctionContext,
+                  ) => ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
               ) => {
+                const { requestMapper, ...fetchInfiniteQueryOptions } = options;
                 return queryClient.fetchInfiniteQuery({
-                  queryKey,
                   queryFn: async (context) => {
-                    const resultingQueryArgs = argsMapper(context);
+                    const resultingQueryArgs = requestMapper(context);
 
                     const innerDataFn = queryFn(
                       subRouter,
@@ -224,35 +258,35 @@ export const initQueryClient = <
 
                     return innerDataFn(undefined as any);
                   },
-                  ...options,
+                  ...fetchInfiniteQueryOptions,
                 });
               },
               prefetchQuery: (
                 queryClient: QueryClient,
-                queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
+                options: FetchQueryOptions<any> & {
+                  request: ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
               ) => {
-                const dataFn = queryFn(subRouter, clientArgs, args);
+                const { request, ...fetchQueryOptions } = options;
+                const dataFn = queryFn(subRouter, clientArgs, request);
 
                 return queryClient.prefetchQuery({
-                  queryKey,
                   queryFn: dataFn,
-                  ...options,
+                  ...fetchQueryOptions,
                 });
               },
               prefetchInfiniteQuery: (
                 queryClient: QueryClient,
-                queryKey: QueryKey,
-                argsMapper: (
-                  context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
+                options: FetchInfiniteQueryOptions<any> & {
+                  requestMapper: (
+                    context: QueryFunctionContext,
+                  ) => ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
               ) => {
+                const { requestMapper, ...fetchInfiniteQueryOptions } = options;
                 return queryClient.prefetchInfiniteQuery({
-                  queryKey,
                   queryFn: async (context) => {
-                    const resultingQueryArgs = argsMapper(context);
+                    const resultingQueryArgs = requestMapper(context);
 
                     const innerDataFn = queryFn(
                       subRouter,
@@ -262,28 +296,24 @@ export const initQueryClient = <
 
                     return innerDataFn(undefined as any);
                   },
-                  ...options,
+                  ...fetchInfiniteQueryOptions,
                 });
               },
-              getQueryData: (
-                queryClient: QueryClient,
-                queryKey: QueryKey,
-                filters?: QueryFilters,
-              ) => {
-                return queryClient.getQueryData(queryKey, filters);
+              getQueryData: (queryClient: QueryClient, queryKey: QueryKey) => {
+                return queryClient.getQueryData(queryKey);
               },
               ensureQueryData: (
                 queryClient: QueryClient,
-                queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
+                options: FetchQueryOptions<any> & {
+                  request: ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
               ) => {
-                const dataFn = queryFn(subRouter, clientArgs, args);
+                const { request, ...fetchQueryOptions } = options;
+                const dataFn = queryFn(subRouter, clientArgs, request);
 
                 return queryClient.ensureQueryData({
-                  queryKey,
                   queryFn: dataFn,
-                  ...options,
+                  ...fetchQueryOptions,
                 });
               },
               getQueriesData: (
@@ -360,66 +390,41 @@ export const useTsRestQueryClient = <
             {
               ...routeFunctions,
               fetchQuery: (
-                queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
-              ) =>
-                routeFunctions.fetchQuery(
-                  queryClient,
-                  queryKey,
-                  args as any,
-                  options,
-                ),
+                options: FetchQueryOptions<any> & {
+                  request: ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
+              ) => routeFunctions.fetchQuery(queryClient, options as any),
               fetchInfiniteQuery: (
-                queryKey: QueryKey,
-                argsMapper: (
-                  context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
+                options: FetchInfiniteQueryOptions<any> & {
+                  requestMapper: (
+                    context: QueryFunctionContext,
+                  ) => ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
               ) =>
-                routeFunctions.fetchInfiniteQuery(
-                  queryClient,
-                  queryKey,
-                  argsMapper as any,
-                  options,
-                ),
+                routeFunctions.fetchInfiniteQuery(queryClient, options as any),
               prefetchQuery: (
-                queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
-              ) =>
-                routeFunctions.prefetchQuery(
-                  queryClient,
-                  queryKey,
-                  args as any,
-                  options,
-                ),
+                options: FetchQueryOptions<any> & {
+                  request: ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
+              ) => routeFunctions.prefetchQuery(queryClient, options as any),
               prefetchInfiniteQuery: (
-                queryKey: QueryKey,
-                argsMapper: (
-                  context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
+                options: FetchInfiniteQueryOptions<any> & {
+                  requestMapper: (
+                    context: QueryFunctionContext,
+                  ) => ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
               ) =>
                 routeFunctions.prefetchInfiniteQuery(
                   queryClient,
-                  queryKey,
-                  argsMapper as any,
-                  options,
+                  options as any,
                 ),
-              getQueryData: (queryKey: QueryKey, filters?: QueryFilters) =>
-                routeFunctions.getQueryData(queryClient, queryKey, filters),
+              getQueryData: (queryKey: QueryKey) =>
+                routeFunctions.getQueryData(queryClient, queryKey),
               ensureQueryData: (
-                queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
-                options?: FetchQueryOptions<any>,
-              ) =>
-                routeFunctions.ensureQueryData(
-                  queryClient,
-                  queryKey,
-                  args as any,
-                  options,
-                ),
+                options: FetchQueryOptions<any> & {
+                  request: ClientInferRequest<AppRouteMutation, ClientArgs>;
+                },
+              ) => routeFunctions.ensureQueryData(queryClient, options as any),
               getQueriesData: (filters: QueryFilters) =>
                 routeFunctions.getQueriesData(queryClient, filters),
               setQueryData: (queryKey: QueryKey, updater: any) =>
