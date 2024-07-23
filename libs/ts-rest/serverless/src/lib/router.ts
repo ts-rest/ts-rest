@@ -19,14 +19,16 @@ import { TsRestResponse } from './response';
 import {
   AppRouteImplementationOrOptions,
   isAppRouteImplementation,
-  isRecursiveRouterObj,
-  RecursiveRouterObj,
+  isRouterImplementation,
+  RouterImplementation,
   RequestValidationError,
   ResponseValidationError,
   ServerlessHandlerOptions,
+  RouterImplementationOrFluentRouter,
 } from './types';
 import { blobToArrayBuffer } from './utils';
 import { TsRestHttpError } from './http-error';
+import { RouterBuilder } from './router-builder';
 
 const recursivelyProcessContract = ({
   schema,
@@ -35,7 +37,7 @@ const recursivelyProcessContract = ({
 }: {
   schema: AppRouter | AppRoute;
   router:
-    | RecursiveRouterObj<any, any, any>
+    | RouterImplementation<any, any, any>
     | AppRouteImplementationOrOptions<any, any, any>;
   processRoute: (
     implementationOrOptions: AppRouteImplementationOrOptions<
@@ -46,7 +48,7 @@ const recursivelyProcessContract = ({
     schema: AppRoute,
   ) => void;
 }): void => {
-  if (isRecursiveRouterObj(router)) {
+  if (isRouterImplementation(router)) {
     for (const key in router) {
       if (isAppRoute(schema)) {
         throw new Error(`[ts-rest] Expected AppRouter but received AppRoute`);
@@ -67,10 +69,10 @@ const recursivelyProcessContract = ({
   }
 };
 
-const validateRequest = <TPlatformArgs>(
+const validateRequest = <TPlatformArgs, TRequestExtension>(
   req: TsRestRequest,
   schema: AppRouteQuery | AppRouteMutation,
-  options: ServerlessHandlerOptions<TPlatformArgs>,
+  options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension>,
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
@@ -119,8 +121,8 @@ const validateRequest = <TPlatformArgs>(
   };
 };
 
-const tsRestMiddleware = <TPlatformArgs>(
-  options: ServerlessHandlerOptions<TPlatformArgs>,
+const tsRestMiddleware = <TPlatformArgs, TRequestExtension>(
+  options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension>,
 ) => {
   const { preflight: ittyPreflight, corsify: ittyCorsify } = cors(
     options.cors || {},
@@ -206,30 +208,46 @@ export const createServerlessRouter = <
   TRequestExtension,
 >(
   routes: T,
-  obj: RecursiveRouterObj<T, TPlatformArgs, TRequestExtension>,
-  options: ServerlessHandlerOptions<TPlatformArgs> = {},
+  obj: RouterImplementationOrFluentRouter<T, TPlatformArgs, TRequestExtension>,
+  options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension> = {},
 ) => {
   const { basePathChecker, varyHeader, evaluateContent, preflight, corsify } =
     tsRestMiddleware(options);
 
-  const router = Router<TsRestRequest, [TPlatformArgs]>({
+  let requestMiddleware = options.requestMiddleware ?? [];
+  let responseHandlers = options.responseHandlers ?? [];
+  let routerImplementation: RouterImplementation<
+    T,
+    TPlatformArgs,
+    TRequestExtension
+  >;
+
+  if (obj instanceof RouterBuilder) {
+    requestMiddleware = obj.getRequestMiddleware();
+    responseHandlers = obj.getResponseHandlers();
+    routerImplementation = obj.build();
+  } else {
+    routerImplementation = obj;
+  }
+
+  const router = Router<TsRestRequest & TRequestExtension, [TPlatformArgs]>({
     before: [
       ...(options.basePath ? [basePathChecker] : []),
       ...(options.cors ? [preflight] : []),
       withParams,
       evaluateContent,
-      ...(options.requestMiddleware ?? []),
+      ...requestMiddleware,
     ],
     catch: errorHandler(options),
     finally: [
       ...(options.cors ? [corsify, varyHeader] : []),
-      ...(options.responseHandlers ?? []),
+      ...responseHandlers,
     ],
   });
 
   recursivelyProcessContract({
     schema: routes,
-    router: obj,
+    router: routerImplementation,
     processRoute: (implementationOrOptions, appRoute) => {
       const routeHandler = async (
         request: TsRestRequest,
@@ -352,7 +370,9 @@ export const createServerlessRouter = <
 };
 
 const errorHandler =
-  <TPlatformArgs>(options: ServerlessHandlerOptions<TPlatformArgs>) =>
+  <TPlatformArgs, TRequestExtension>(
+    options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension>,
+  ) =>
   async (error: unknown, request: TsRestRequest) => {
     if (options?.errorHandler) {
       const maybeResponse = await options.errorHandler(error, request);

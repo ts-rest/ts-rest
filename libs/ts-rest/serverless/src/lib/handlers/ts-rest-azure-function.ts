@@ -11,7 +11,7 @@ import {
 import { createServerlessRouter } from '../router';
 import {
   createTsr,
-  RecursiveRouterObj,
+  RouterImplementationOrFluentRouter,
   ServerlessHandlerOptions,
 } from '../types';
 
@@ -29,15 +29,19 @@ export const createAzureFunctionHandler = <
   T extends AppRouter,
   TRequestExtension,
 >(
-  routes: T,
-  obj: RecursiveRouterObj<T, AzureFunctionPlatformArgs, TRequestExtension>,
-  options: AzureFunctionHandlerOptions<TRequestExtension> = {},
-) => {
-  const router = createServerlessRouter<
+  contract: T,
+  router: RouterImplementationOrFluentRouter<
     T,
     AzureFunctionPlatformArgs,
     TRequestExtension
-  >(routes, obj, options as ServerlessHandlerOptions);
+  >,
+  options: AzureFunctionHandlerOptions<TRequestExtension> = {},
+) => {
+  const serverlessRouter = createServerlessRouter<
+    T,
+    AzureFunctionPlatformArgs,
+    TRequestExtension
+  >(contract, router, options);
 
   return async (
     httpRequest: HttpRequest,
@@ -45,7 +49,7 @@ export const createAzureFunctionHandler = <
   ): Promise<HttpResponse> => {
     const request = await requestFromHttpRequest(httpRequest);
 
-    return router
+    return serverlessRouter
       .fetch(request, {
         rawHttpRequest: httpRequest,
         azureContext: context,

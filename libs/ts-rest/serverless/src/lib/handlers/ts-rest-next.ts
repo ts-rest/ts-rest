@@ -3,7 +3,7 @@ import type { NextRequest, NextResponse } from 'next/server';
 import { createServerlessRouter } from '../router';
 import {
   createTsr,
-  RecursiveRouterObj,
+  RouterImplementationOrFluentRouter,
   ServerlessHandlerOptions,
 } from '../types';
 import { TsRestRequest } from '../request';
@@ -23,14 +23,18 @@ export type NextHandlerOptions<TRequestExtension> = ServerlessHandlerOptions<
 
 export const createNextHandler = <T extends AppRouter, TRequestExtension>(
   contract: T,
-  router: RecursiveRouterObj<T, NextPlatformArgs, TRequestExtension>,
+  router: RouterImplementationOrFluentRouter<
+    T,
+    NextPlatformArgs,
+    TRequestExtension
+  >,
   options: NextHandlerOptions<TRequestExtension>,
 ) => {
   const serverlessRouter = createServerlessRouter<
     T,
     NextPlatformArgs,
     TRequestExtension
-  >(contract, router, options as ServerlessHandlerOptions);
+  >(contract, router, options);
 
   return async (nextRequest: NextRequest): Promise<NextResponse> => {
     if (options.handlerType === 'pages-router-edge') {

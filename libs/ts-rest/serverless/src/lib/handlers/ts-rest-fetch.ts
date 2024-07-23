@@ -2,7 +2,7 @@ import { AppRouter } from '@ts-rest/core';
 import { createServerlessRouter } from '../router';
 import {
   createTsr,
-  RecursiveRouterObj,
+  RouterImplementationOrFluentRouter,
   ServerlessHandlerOptions,
 } from '../types';
 import { TsRestRequest } from '../request';
@@ -29,7 +29,11 @@ export const fetchRequestHandler = <
   platformContext,
 }: {
   contract: T;
-  router: RecursiveRouterObj<T, TPlatformContext, TRequestExtension>;
+  router: RouterImplementationOrFluentRouter<
+    T,
+    TPlatformContext,
+    TRequestExtension
+  >;
   options: FetchHandlerOptions<TPlatformContext, TRequestExtension>;
   request: Request;
   platformContext?: TPlatformContext;
@@ -38,7 +42,7 @@ export const fetchRequestHandler = <
     T,
     TPlatformContext,
     TRequestExtension
-  >(contract, router, options as ServerlessHandlerOptions<TPlatformContext>);
+  >(contract, router, options);
   const tsRestRequest = new TsRestRequest(request);
   return serverlessRouter.fetch(tsRestRequest, {
     ...platformContext,

@@ -9,7 +9,7 @@ import {
 import { createServerlessRouter } from '../router';
 import {
   createTsr,
-  RecursiveRouterObj,
+  RouterImplementationOrFluentRouter,
   ServerlessHandlerOptions,
 } from '../types';
 
@@ -24,15 +24,19 @@ export type LambdaHandlerOptions<TRequestExtension = {}> =
   ServerlessHandlerOptions<LambdaPlatformArgs, TRequestExtension>;
 
 export const createLambdaHandler = <T extends AppRouter, TRequestExtension>(
-  routes: T,
-  obj: RecursiveRouterObj<T, LambdaPlatformArgs, TRequestExtension>,
-  options: LambdaHandlerOptions<TRequestExtension> = {},
-) => {
-  const router = createServerlessRouter<
+  contract: T,
+  router: RouterImplementationOrFluentRouter<
     T,
     LambdaPlatformArgs,
     TRequestExtension
-  >(routes, obj, options as ServerlessHandlerOptions);
+  >,
+  options: LambdaHandlerOptions<TRequestExtension> = {},
+) => {
+  const serverlessRouter = createServerlessRouter<
+    T,
+    LambdaPlatformArgs,
+    TRequestExtension
+  >(contract, router, options);
 
   return async (
     event: ApiGatewayEvent,
@@ -40,7 +44,7 @@ export const createLambdaHandler = <T extends AppRouter, TRequestExtension>(
   ): Promise<ApiGatewayResponse> => {
     const request = requestFromEvent(event);
 
-    return router
+    return serverlessRouter
       .fetch(request, {
         rawEvent: event,
         lambdaContext: context,
