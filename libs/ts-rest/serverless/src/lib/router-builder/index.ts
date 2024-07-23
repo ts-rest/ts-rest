@@ -60,10 +60,10 @@ export class RouterBuilder<
   ) {
     if (contractOrBuilder instanceof RouterBuilder) {
       this.contract = contractOrBuilder.contract;
-      this._requestMiddleware = contractOrBuilder._requestMiddleware;
-      this._responseHandlers = contractOrBuilder._responseHandlers;
-      this._router = contractOrBuilder._router;
-      this._remainingRoutes = contractOrBuilder._remainingRoutes;
+      this._requestMiddleware = [...contractOrBuilder._requestMiddleware];
+      this._responseHandlers = [...contractOrBuilder._responseHandlers];
+      this._router = Object.assign({}, contractOrBuilder._router);
+      this._remainingRoutes = new Set(contractOrBuilder._remainingRoutes);
     } else {
       this.contract = contractOrBuilder;
       this._requestMiddleware = [];
@@ -75,6 +75,15 @@ export class RouterBuilder<
         ) as TRemainingRoutes[],
       );
     }
+  }
+
+  clone() {
+    return new RouterBuilder<
+      TContract,
+      TPlatformContext,
+      TRequestExtensionCumulative,
+      TRemainingRoutes
+    >(this);
   }
 
   private isRouteImplementationOrOptions(

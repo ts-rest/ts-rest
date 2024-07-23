@@ -65,21 +65,23 @@ type GlobalExtension = {
   user: { id: string };
 };
 
+const routerBuilderBase = tsr
+  .routerBuilder(contract)
+  .requestMiddleware<Pick<GlobalExtension, 'globalContext'>>(
+    async (request) => {
+      request.globalContext = { health: 'ok' };
+    },
+  )
+  .requestMiddleware<Pick<GlobalExtension, 'user'>>(async (request) => {
+    request.user = { id: '123' };
+  });
+
 describe('RouterBuilder', () => {
   let routerBuilder: RouterBuilder<typeof contract, {}, GlobalExtension>;
   let completeRouter: CompleteRouter<typeof contract, {}, GlobalExtension>;
 
   beforeEach(() => {
-    routerBuilder = tsr
-      .routerBuilder(contract)
-      .requestMiddleware<Pick<GlobalExtension, 'globalContext'>>(
-        async (request) => {
-          request.globalContext = { health: 'ok' };
-        },
-      )
-      .requestMiddleware<Pick<GlobalExtension, 'user'>>(async (request) => {
-        request.user = { id: '123' };
-      });
+    routerBuilder = routerBuilderBase.clone();
   });
 
   const healthHandler = async () => {
