@@ -1,5 +1,11 @@
 # @ts-rest/serverless
 
+## 3.48.0
+
+### Patch Changes
+
+- @ts-rest/core@3.48.0
+
 ## 3.47.0
 
 ### Minor Changes
