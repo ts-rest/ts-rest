@@ -324,7 +324,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
   options: BaseRegisterRouterOptions,
 ) => {
   if (options.logInitialization) {
-    console.log(`[ts-rest] Initialized ${appRoute.method} ${appRoute.path}`);
+    app.log.info(`[ts-rest] Initialized ${appRoute.method} ${appRoute.path}`);
   }
 
   const handler = isAppRouteImplementation(routeImpl)
