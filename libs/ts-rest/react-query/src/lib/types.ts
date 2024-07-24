@@ -28,11 +28,9 @@ export type DataResponse<TAppRoute extends AppRoute> = ClientInferResponses<
 >;
 
 // Error response if it's not a 2XX
-export type ErrorResponse<TAppRoute extends AppRoute> = ClientInferResponses<
-  TAppRoute,
-  ErrorHttpStatusCode,
-  'ignore'
->;
+export type ErrorResponse<TAppRoute extends AppRoute> =
+  | ClientInferResponses<TAppRoute, ErrorHttpStatusCode, 'ignore'>
+  | Error;
 
 export type UseQueryOptions<
   TAppRoute extends AppRoute,
