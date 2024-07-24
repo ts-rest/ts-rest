@@ -1,8 +1,15 @@
 name: Pre-Release
 on:
-  push:
-    branches:
-      - prerelease/**
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The release tag'
+        required: true
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
 
 jobs:
   build:
@@ -35,6 +42,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Set changesets to prerelease mode
+        run: pnpm changeset pre enter ${{ inputs.tag }}
+
+      - name: Set versions in package.json
+        run: pnpm changeset version
 
       - name: Modify "workspaces" value in package.json
         run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/react-query;g" package.json > package-new.json && mv package-new.json package.json
