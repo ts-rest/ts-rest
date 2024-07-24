@@ -278,6 +278,61 @@ describe('contract', () => {
     >;
   });
 
+  it('should be typed correctly with merged plain type headers', () => {
+    const contract = c.router(
+      {
+        posts: {
+          getPost: {
+            method: 'GET',
+            path: '/posts/:id',
+            responses: {
+              200: z.object({
+                id: z.number(),
+              }),
+            },
+            headers: c.type<{ 'x-bar': string }>(),
+          },
+        },
+      },
+      {
+        baseHeaders: c.type<{ 'x-foo': string }>(),
+      },
+    );
+
+    type ContractShape = Expect<
+      Equal<
+        typeof contract,
+        {
+          posts: {
+            getPost: {
+              method: 'GET';
+              path: '/posts/:id';
+              responses: {
+                200: z.ZodObject<
+                  {
+                    id: z.ZodNumber;
+                  },
+                  'strip',
+                  z.ZodTypeAny,
+                  {
+                    id: number;
+                  },
+                  {
+                    id: number;
+                  }
+                >;
+              };
+              headers: {
+                'x-foo': string;
+                'x-bar': string;
+              };
+            };
+          };
+        }
+      >
+    >;
+  });
+
   it('should be typed correctly with overridden headers', () => {
     const contract = c.router(
       {
