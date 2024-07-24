@@ -47,7 +47,7 @@ jobs:
         run: pnpm changeset pre enter ${{ inputs.tag }}
 
       - name: Set versions in package.json
-        run: pnpm changeset version
+        run: node tools/scripts/prerelease-ci.mjs
 
       - name: Modify "workspaces" value in package.json
         run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/react-query;g" package.json > package-new.json && mv package-new.json package.json
