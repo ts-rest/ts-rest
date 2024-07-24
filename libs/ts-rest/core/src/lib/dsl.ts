@@ -126,7 +126,12 @@ type UniversalMerge<A, B> = A extends z.AnyZodObject
   ? MixedZodError<A, B>
   : unknown extends B
   ? A
-  : Prettify<Merge<A, B>>;
+  : Prettify<
+      Merge<
+        A extends ContractPlainType<infer APlain> ? APlain : A,
+        B extends ContractPlainType<infer BPlain> ? BPlain : B
+      >
+    >;
 
 type ApplyOptions<
   TRoute extends AppRoute,
