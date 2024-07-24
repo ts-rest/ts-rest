@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.48.0
+
+### Minor Changes
+
+- 24bb37c: RECOMMENDED: Add `includeThrownErrorsInErrorType` in react query client options. This should include the `Error` exception in the `error` type to cover non-HTTP errors such as network or CORS errors. Disabled by default so it does not break existing code, but extremely recommended to switch on.
+
 ## 3.47.0
 
 ### Minor Changes
