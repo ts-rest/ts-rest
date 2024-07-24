@@ -108,6 +108,29 @@ The reason for this is error handling! Please see the [Relevant Docs](/docs/core
 
 :::
 
+## Error Handling
+
+If a request fails, the `error` property will be set to the response from the server, or the thrown error by `fetch`. This is the same as the `data` property for successful requests.
+
+By default, the type of the `error` property on the React Query hooks will only be set as `{ status: ...; body: ...; headers: ... }`, where status is a non-2xx status code, and `body`
+set to your response schema for status codes defined in your contract, or `unknown` for status codes not in your contract.
+
+However, queries and mutations can also fail for other reasons, such as network failures, or CORS errors.
+In such cases, the current default behavior may cause runtime errors if you try to access the `error.(status|body|headers)` properties without first checking if the error is an instance of `Error`.
+
+To include the `Error` exception type, you can set the `includeThrownErrorsInErrorType` option to `true` when initializing the client.
+
+```tsx
+export const client = initQueryClient(router, {
+  ...,
+  includeThrownErrorsInErrorType: true
+});
+```
+
+This will force you the handle these errors if you attempt to access the `error.status` property, without first checking if the error is an instance of `Error`.
+
+This will be enabled by default starting from `@ts-rest/react-query` v4.0.0.
+
 ## Regular Query and Mutations
 
 `@ts-rest/react-query` allows for a regular fetch or mutation if you want, without having to initialise two different clients, one with `@ts-rest/core` and one with `@ts-rest/react-query`.

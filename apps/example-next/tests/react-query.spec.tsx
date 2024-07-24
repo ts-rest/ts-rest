@@ -127,6 +127,7 @@ export const router = c.router({
     path: '/health',
     responses: {
       200: c.type<{ message: string }>(),
+      503: c.type<{ message: string }>(),
     },
   },
 });
@@ -139,6 +140,15 @@ const client = initQueryClient(router, {
     'x-test': 'test',
   },
   api: api as ApiFetcher,
+});
+
+const clientWithThrownErrors = initQueryClient(router, {
+  baseUrl: 'https://api.com',
+  baseHeaders: {
+    'x-test': 'test',
+  },
+  api: api as ApiFetcher,
+  includeThrownErrorsInErrorType: true,
 });
 
 let queryClient = new QueryClient();
@@ -155,7 +165,7 @@ const SUCCESS_RESPONSE = {
 };
 
 const ERROR_RESPONSE = {
-  status: 500,
+  status: 503,
   body: {
     message: 'Internal Server Error',
   },
@@ -426,6 +436,51 @@ describe('react-query', () => {
     expect(result.current.data).toStrictEqual(undefined);
 
     expect(result.current.error).toStrictEqual(ERROR_RESPONSE);
+    expect(result.current.error!.status).toStrictEqual(503);
+  });
+
+  it('useQuery should handle failure with connection failure', async () => {
+    api.mockImplementation(() => {
+      throw new TypeError();
+    });
+
+    const { result } = renderHook(
+      () =>
+        clientWithThrownErrors.health.useQuery(
+          ['health'],
+          {},
+          { retry: () => false },
+        ),
+      { wrapper },
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/health',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: router.health,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toStrictEqual(false);
+    });
+
+    expect(result.current.data).toStrictEqual(undefined);
+    expect(result.current.error).toBeInstanceOf(TypeError);
+
+    // @ts-expect-error - error might be an exception - so not guaranteed to have a status property
+    expect(result.current.error!.status).toStrictEqual(undefined);
   });
 
   it('should handle mutation', async () => {
@@ -482,6 +537,134 @@ describe('react-query', () => {
     });
 
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
+    expect(result.current.error).toEqual(null);
+  });
+
+  it('should handle mutation with failure', async () => {
+    api.mockResolvedValue(ERROR_RESPONSE);
+
+    const { result } = renderHook(() => client.posts.createPost.useMutation(), {
+      wrapper,
+    });
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(false);
+
+    expect(result.current.error).toStrictEqual(null);
+
+    await act(() =>
+      result.current
+        .mutateAsync({
+          body: {
+            description: 'test',
+            title: 'test',
+            content: '',
+            authorId: '1',
+          },
+        })
+        .catch(() => {}),
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'POST',
+      path: 'https://api.com/posts',
+      body: JSON.stringify({
+        description: 'test',
+        title: 'test',
+        content: '',
+        authorId: '1',
+      }),
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+      rawBody: {
+        authorId: '1',
+        content: '',
+        description: 'test',
+        title: 'test',
+      },
+      contentType: 'application/json',
+      route: router.posts.createPost,
+      signal: undefined,
+      fetchOptions: {},
+    });
+
+    await waitFor(() => {
+      expect(result.current.error).not.toBeUndefined();
+    });
+
+    expect(result.current.data).toStrictEqual(undefined);
+    expect(result.current.error).toStrictEqual(ERROR_RESPONSE);
+    expect(result.current.error!.status).toStrictEqual(503);
+  });
+
+  it('should handle mutation with connection failure', async () => {
+    api.mockImplementation(() => {
+      throw new TypeError();
+    });
+
+    const { result } = renderHook(
+      () => clientWithThrownErrors.posts.createPost.useMutation(),
+      {
+        wrapper,
+      },
+    );
+
+    expect(result.current.data).toStrictEqual(undefined);
+
+    expect(result.current.isLoading).toStrictEqual(false);
+
+    expect(result.current.error).toStrictEqual(null);
+
+    await act(() =>
+      result.current
+        .mutateAsync({
+          body: {
+            description: 'test',
+            title: 'test',
+            content: '',
+            authorId: '1',
+          },
+        })
+        .catch(() => {}),
+    );
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'POST',
+      path: 'https://api.com/posts',
+      body: JSON.stringify({
+        description: 'test',
+        title: 'test',
+        content: '',
+        authorId: '1',
+      }),
+      headers: {
+        'content-type': 'application/json',
+        'x-test': 'test',
+      },
+      rawBody: {
+        authorId: '1',
+        content: '',
+        description: 'test',
+        title: 'test',
+      },
+      contentType: 'application/json',
+      route: router.posts.createPost,
+      signal: undefined,
+      fetchOptions: {},
+    });
+
+    await waitFor(() => {
+      expect(result.current.error).not.toBeUndefined();
+    });
+
+    expect(result.current.data).toStrictEqual(undefined);
+    expect(result.current.error).toBeInstanceOf(TypeError);
+
+    // @ts-expect-error - error might be an exception - so not guaranteed to have a status property
+    expect(result.current.error!.status).toStrictEqual(undefined);
   });
 
   it('useQueries should handle success', async () => {
@@ -633,9 +816,179 @@ describe('react-query', () => {
 
     expect(result.current[0].data).toStrictEqual(undefined);
     expect(result.current[0].error).toStrictEqual(ERROR_RESPONSE);
+    expect(result.current[0].error!.status).toStrictEqual(503);
 
     expect(result.current[1].data).toStrictEqual(undefined);
     expect(result.current[1].error).toStrictEqual(ERROR_RESPONSE);
+    expect(result.current[1].error!.status).toStrictEqual(503);
+  });
+
+  it('useQueries should handle failure', async () => {
+    api.mockResolvedValue(ERROR_RESPONSE);
+
+    const { result } = renderHook(
+      () =>
+        client.posts.getPost.useQueries({
+          queries: [
+            {
+              queryKey: ['posts', '1'],
+              params: {
+                id: '1',
+              },
+              retry: false,
+            },
+            {
+              queryKey: ['posts', '2'],
+              params: {
+                id: '2',
+              },
+              retry: false,
+            },
+          ],
+        }),
+      {
+        wrapper,
+      },
+    );
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+
+    expect(result.current[0].isLoading).toStrictEqual(true);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+
+    expect(result.current[1].isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/2',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].failureCount).toStrictEqual(1);
+    });
+
+    await waitFor(() => {
+      expect(result.current[1].failureCount).toStrictEqual(1);
+    });
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+    expect(result.current[0].error).toStrictEqual(ERROR_RESPONSE);
+    expect(result.current[0].error!.status).toStrictEqual(503);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+    expect(result.current[1].error).toStrictEqual(ERROR_RESPONSE);
+    expect(result.current[1].error!.status).toStrictEqual(503);
+  });
+
+  it('useQueries should handle connection failure', async () => {
+    api.mockImplementation(() => {
+      throw new TypeError();
+    });
+
+    const { result } = renderHook(
+      () =>
+        clientWithThrownErrors.posts.getPost.useQueries({
+          queries: [
+            {
+              queryKey: ['posts', '1'],
+              params: {
+                id: '1',
+              },
+              retry: false,
+            },
+            {
+              queryKey: ['posts', '2'],
+              params: {
+                id: '2',
+              },
+              retry: false,
+            },
+          ],
+        }),
+      {
+        wrapper,
+      },
+    );
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+
+    expect(result.current[0].isLoading).toStrictEqual(true);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+
+    expect(result.current[1].isLoading).toStrictEqual(true);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/2',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: router.posts.getPost,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].failureCount).toStrictEqual(1);
+    });
+
+    await waitFor(() => {
+      expect(result.current[1].failureCount).toStrictEqual(1);
+    });
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+    expect(result.current[0].error).toBeInstanceOf(TypeError);
+
+    // @ts-expect-error - error might be an exception - so not guaranteed to have a status property
+    expect(result.current[0].error!.status).toStrictEqual(undefined);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+    expect(result.current[1].error).toBeInstanceOf(TypeError);
+
+    // @ts-expect-error - error might be an exception - so not guaranteed to have a status property
+    expect(result.current[1].error!.status).toStrictEqual(undefined);
   });
 
   it('useQueries should handle success and failure', async () => {
