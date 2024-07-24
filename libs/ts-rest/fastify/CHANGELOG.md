@@ -1,5 +1,11 @@
 # @ts-rest/fastify
 
+## 3.48.1
+
+### Patch Changes
+
+- 48f2a8c: Use fastify logger for route initalization logs
+
 ## 3.48.0
 
 ## 3.47.0

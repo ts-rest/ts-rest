@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.48.1
+
+### Patch Changes
+
+- f2835dd: Fix merging of `baseHeaders` and `headers` in contracts when they are defined using plain types
+
 ## 3.48.0
 
 ## 3.47.0
