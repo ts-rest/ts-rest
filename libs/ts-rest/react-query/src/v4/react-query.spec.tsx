@@ -5,8 +5,8 @@ import {
 } from '@tanstack/react-query';
 import { waitFor, renderHook } from '@testing-library/react';
 import { ApiFetcher, initContract } from '@ts-rest/core';
-import { initQueryClient, useTsRestQueryClient } from '@ts-rest/react-query';
-import React from 'react';
+import { initQueryClient, useTsRestQueryClient } from './react-query';
+import * as React from 'react';
 import { act } from 'react-dom/test-utils';
 import { z } from 'zod';
 
@@ -1142,7 +1142,7 @@ describe('react-query', () => {
       async () => {
         const apiQueryClient = useTsRestQueryClient(client);
         try {
-          await apiQueryClient.posts.getPost.fetchQuery(['post', '1'], {
+          return await apiQueryClient.posts.getPost.fetchQuery(['post', '1'], {
             params: {
               id: '1',
             },

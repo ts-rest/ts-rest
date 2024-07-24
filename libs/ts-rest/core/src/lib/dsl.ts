@@ -205,6 +205,16 @@ export const isAppRoute = (obj: AppRoute | AppRouter): obj is AppRoute => {
   return 'method' in obj && 'path' in obj;
 };
 
+export const isAppRouteQuery = (route: AppRoute): route is AppRouteQuery => {
+  return route.method === 'GET';
+};
+
+export const isAppRouteMutation = (
+  route: AppRoute,
+): route is AppRouteMutation => {
+  return !isAppRouteQuery(route);
+};
+
 type NarrowObject<T> = {
   [K in keyof T]: T[K];
 };

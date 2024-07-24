@@ -2,8 +2,15 @@
   "name": "@ts-rest/serverless",
   "version": "3.48.1",
   "license": "MIT",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "*.cjs.d.ts"
+      ]
+    }
+  },
   "dependencies": {
-    "@ts-rest/core": "3.48.1",
     "itty-router": "^5.0.9"
   },
   "peerDependencies": {
@@ -24,14 +31,6 @@
     },
     "zod": {
       "optional": true
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "*.cjs.d.ts"
-      ]
     }
   }
 }

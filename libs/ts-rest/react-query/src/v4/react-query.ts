@@ -23,6 +23,7 @@ import {
   fetchApi,
   getRouteQuery,
   isAppRoute,
+  isErrorResponse,
   Without,
   ZodInferOrType,
 } from '@ts-rest/core';
@@ -53,7 +54,7 @@ const queryFn = <
     });
 
     // If the response is not a 2XX, throw an error to be handled by react-query
-    if (!String(result.status).startsWith('2')) {
+    if (isErrorResponse(result)) {
       throw result;
     }
 

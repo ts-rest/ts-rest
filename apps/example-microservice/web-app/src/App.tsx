@@ -1,8 +1,10 @@
 import React from 'react';
-import { postsClient } from './main';
+import { tsr } from './main';
 
 export const App = () => {
-  const { data } = postsClient.getPosts.useQuery(['posts']);
+  const { data } = tsr.getPosts.useQuery({
+    queryKey: ['posts'],
+  });
 
   const posts = data?.body || [];
 
@@ -23,7 +25,7 @@ export const App = () => {
           <button
             onClick={() => {
               if (file) {
-                postsClient.updatePostThumbnail.mutation({
+                tsr.updatePostThumbnail.mutate({
                   body: {
                     thumbnail: file,
                     data: 'Hey there!',

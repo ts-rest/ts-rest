@@ -98,7 +98,7 @@ export const apiBlog = c.router(
         skip: z.string().transform(Number),
         search: z.string().optional(),
       }),
-      summary: 'Get all posts',
+      summary: 'Get all posts!',
       headers: z.object({
         'x-pagination': z.coerce.number().optional(),
       }),

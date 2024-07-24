@@ -1,45 +1,44 @@
-import { apiBlog } from '@ts-rest/example-contracts';
-import { initQueryClient } from '@ts-rest/react-query';
 import classNames from 'classnames';
 import Link from 'next/link';
+import { tsr } from '../pages-tsr';
 
-export const api = initQueryClient(apiBlog, {
-  baseUrl: 'http://localhost:4200/api',
-  baseHeaders: {
-    'x-api-key': 'key',
-  },
-});
+const PAGE_SIZE = 5;
 
 export function Index() {
-  const PAGE_SIZE = 5;
-
-  const { isLoading, data, hasNextPage, fetchNextPage } =
-    api.getPosts.useInfiniteQuery(
-      ['posts'],
-      ({ pageParam = { skip: 0, take: PAGE_SIZE } }) => ({
+  const { isPending, isError, data, hasNextPage, fetchNextPage } =
+    tsr.getPosts.useInfiniteQuery({
+      queryKey: ['posts'],
+      queryData: ({ pageParam }) => ({
         query: {
-          skip: pageParam.skip,
-          take: pageParam.take,
+          skip: pageParam.skip.toString(),
+          take: pageParam.take.toString(),
         },
       }),
-      {
-        getNextPageParam: (lastPage, allPages) =>
-          lastPage.status === 200
-            ? lastPage.body.count > allPages.length * PAGE_SIZE
-              ? { take: PAGE_SIZE, skip: allPages.length * PAGE_SIZE }
-              : undefined
-            : undefined,
-        networkMode: 'offlineFirst',
-        staleTime: 1000 * 5,
+      initialPageParam: { skip: 0, take: PAGE_SIZE },
+      getNextPageParam: (lastPage, allPages) =>
+        lastPage.body.count > allPages.length * PAGE_SIZE
+          ? { take: PAGE_SIZE, skip: allPages.length * PAGE_SIZE }
+          : undefined,
+      networkMode: 'offlineFirst',
+      staleTime: 1000 * 5,
+      initialData: {
+        pageParams: [{ skip: 0, take: PAGE_SIZE }],
+        pages: [
+          {
+            status: 200,
+            body: { posts: [], count: 0, skip: 0, take: PAGE_SIZE },
+            headers: new Headers(),
+          },
+        ],
       },
-    );
+    });
 
-  if (isLoading) {
+  if (isPending) {
     return <div>Loading...</div>;
   }
 
-  if (!data) {
-    return <div>No posts found</div>;
+  if (isError) {
+    return <div>Error!</div>;
   }
 
   const posts = data.pages.flatMap((page) =>

@@ -1,7 +1,6 @@
 import '../pages/styles.css';
 
 import React from 'react';
-import { ReactQueryProvider } from './react-query-utils/react-query-provider';
 
 export const metadata = {
   title: 'ts-rest example app',
@@ -14,9 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <ReactQueryProvider>{children}</ReactQueryProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
