@@ -18,7 +18,6 @@ import {
   AppRoute,
   AppRouteMutation,
   AppRouter,
-  ClientArgs,
   ClientInferRequest,
   evaluateFetchApiArgs,
   fetchApi,
@@ -33,11 +32,15 @@ import {
   AppRouteFunctionsWithQueryClient,
   DataReturnQueries,
 } from './inner-types';
+import { ReactQueryClientArgs } from './types';
 
-const queryFn = <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
+const queryFn = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ReactQueryClientArgs,
+>(
   route: TAppRoute,
   clientArgs: TClientArgs,
-  args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
+  args?: ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
 ): QueryFunction<TAppRoute['responses']> => {
   return async (queryFnContext?: QueryFunctionContext) => {
     const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, args);
@@ -60,14 +63,14 @@ const queryFn = <TAppRoute extends AppRoute, TClientArgs extends ClientArgs>(
 
 const getRouteUseQuery = <
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 >(
   route: TAppRoute,
   clientArgs: TClientArgs,
 ) => {
   return (
     queryKey: QueryKey,
-    args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
+    args?: ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
     options?: TanStackUseQueryOptions<TAppRoute['responses']>,
   ) => {
     const dataFn = queryFn(route, clientArgs, args);
@@ -78,7 +81,7 @@ const getRouteUseQuery = <
 
 const getRouteUseQueries = <
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 >(
   route: TAppRoute,
   clientArgs: TClientArgs,
@@ -100,7 +103,7 @@ const getRouteUseQueries = <
 
 const getRouteUseInfiniteQuery = <
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 >(
   route: TAppRoute,
   clientArgs: TClientArgs,
@@ -109,7 +112,7 @@ const getRouteUseInfiniteQuery = <
     queryKey: QueryKey,
     argsMapper: (
       context: QueryFunctionContext,
-    ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
+    ) => ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
     options?: TanStackUseInfiniteQueryOptions<TAppRoute['responses']>,
   ) => {
     const dataFn: QueryFunction<TAppRoute['responses']> = async (context) => {
@@ -126,14 +129,14 @@ const getRouteUseInfiniteQuery = <
 
 const getRouteUseMutation = <
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 >(
   route: TAppRoute,
   clientArgs: TClientArgs,
 ) => {
   return (options?: TanStackUseMutationOptions<TAppRoute['responses']>) => {
     const mutationFunction = async (
-      args?: ClientInferRequest<AppRouteMutation, ClientArgs>,
+      args?: ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
     ) => {
       const dataFn = queryFn(route, clientArgs, args);
 
@@ -152,12 +155,12 @@ const getRouteUseMutation = <
 /** @deprecated Use `TsRestReactQueryClient` instead */
 export type InitClientReturn<
   T extends AppRouter,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = UseTsRestQueryClient<T, TClientArgs>;
 
 export type TsRestReactQueryClient<
   T extends AppRouter,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = {
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<AppRouteFunctions<T[TKey], TClientArgs>, never>
@@ -170,7 +173,7 @@ const ClientParameters = Symbol('ClientParameters');
 
 export const initQueryClient = <
   T extends AppRouter,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 >(
   router: T,
   clientArgs: TClientArgs,
@@ -193,7 +196,10 @@ export const initQueryClient = <
               fetchQuery: (
                 queryClient: QueryClient,
                 queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
+                args: ClientInferRequest<
+                  AppRouteMutation,
+                  ReactQueryClientArgs
+                >,
                 options?: FetchQueryOptions<any>,
               ) => {
                 const dataFn = queryFn(subRouter, clientArgs, args);
@@ -208,7 +214,7 @@ export const initQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
+                ) => ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
                 options?: FetchQueryOptions<any>,
               ) => {
                 return queryClient.fetchInfiniteQuery({
@@ -230,7 +236,10 @@ export const initQueryClient = <
               prefetchQuery: (
                 queryClient: QueryClient,
                 queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
+                args: ClientInferRequest<
+                  AppRouteMutation,
+                  ReactQueryClientArgs
+                >,
                 options?: FetchQueryOptions<any>,
               ) => {
                 const dataFn = queryFn(subRouter, clientArgs, args);
@@ -246,7 +255,7 @@ export const initQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
+                ) => ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
                 options?: FetchQueryOptions<any>,
               ) => {
                 return queryClient.prefetchInfiniteQuery({
@@ -275,7 +284,10 @@ export const initQueryClient = <
               ensureQueryData: (
                 queryClient: QueryClient,
                 queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
+                args: ClientInferRequest<
+                  AppRouteMutation,
+                  ReactQueryClientArgs
+                >,
                 options?: FetchQueryOptions<any>,
               ) => {
                 const dataFn = queryFn(subRouter, clientArgs, args);
@@ -319,7 +331,7 @@ export const initQueryClient = <
 
 export type UseTsRestQueryClient<
   T extends AppRouter,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = {
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? Without<AppRouteFunctionsWithQueryClient<T[TKey], TClientArgs>, never>
@@ -330,7 +342,7 @@ export type UseTsRestQueryClient<
 
 export const useTsRestQueryClient = <
   T extends AppRouter,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 >(
   client: TsRestReactQueryClient<T, TClientArgs>,
 ): UseTsRestQueryClient<T, TClientArgs> => {
@@ -361,7 +373,10 @@ export const useTsRestQueryClient = <
               ...routeFunctions,
               fetchQuery: (
                 queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
+                args: ClientInferRequest<
+                  AppRouteMutation,
+                  ReactQueryClientArgs
+                >,
                 options?: FetchQueryOptions<any>,
               ) =>
                 routeFunctions.fetchQuery(
@@ -374,7 +389,7 @@ export const useTsRestQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
+                ) => ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
                 options?: FetchQueryOptions<any>,
               ) =>
                 routeFunctions.fetchInfiniteQuery(
@@ -385,7 +400,10 @@ export const useTsRestQueryClient = <
                 ),
               prefetchQuery: (
                 queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
+                args: ClientInferRequest<
+                  AppRouteMutation,
+                  ReactQueryClientArgs
+                >,
                 options?: FetchQueryOptions<any>,
               ) =>
                 routeFunctions.prefetchQuery(
@@ -398,7 +416,7 @@ export const useTsRestQueryClient = <
                 queryKey: QueryKey,
                 argsMapper: (
                   context: QueryFunctionContext,
-                ) => ClientInferRequest<AppRouteMutation, ClientArgs>,
+                ) => ClientInferRequest<AppRouteMutation, ReactQueryClientArgs>,
                 options?: FetchQueryOptions<any>,
               ) =>
                 routeFunctions.prefetchInfiniteQuery(
@@ -411,7 +429,10 @@ export const useTsRestQueryClient = <
                 routeFunctions.getQueryData(queryClient, queryKey, filters),
               ensureQueryData: (
                 queryKey: QueryKey,
-                args: ClientInferRequest<AppRouteMutation, ClientArgs>,
+                args: ClientInferRequest<
+                  AppRouteMutation,
+                  ReactQueryClientArgs
+                >,
                 options?: FetchQueryOptions<any>,
               ) =>
                 routeFunctions.ensureQueryData(

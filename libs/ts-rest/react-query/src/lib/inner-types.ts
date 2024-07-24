@@ -4,11 +4,11 @@ import {
   AppRouteMutation,
   AppRouteQuery,
   AreAllPropertiesOptional,
-  ClientArgs,
   PartialClientInferRequest,
 } from '@ts-rest/core';
 import {
   DataResponse,
+  ReactQueryClientArgs,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
   UseMutationOptions,
@@ -27,7 +27,7 @@ import {
 
 export type AppRouteFunctions<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = {
   useQuery: TAppRoute extends AppRouteQuery
     ? DataReturnQuery<TAppRoute, TClientArgs>
@@ -75,7 +75,7 @@ export type AppRouteFunctions<
 
 export type AppRouteFunctionsWithQueryClient<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = AppRouteFunctions<TAppRoute, TClientArgs> & {
   fetchQuery: TAppRoute extends AppRouteQuery
     ? DataReturnFetchQueryHook<TAppRoute, TClientArgs>
@@ -106,60 +106,99 @@ export type AppRouteFunctionsWithQueryClient<
 // Used on X.useQuery
 export type DataReturnQuery<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? <TData = DataResponse<TAppRoute>>(
       queryKey: QueryKey,
       args?: TArgs,
-      options?: UseQueryOptions<TAppRoute, TData>,
-    ) => UseQueryResult<TAppRoute, TData>
+      options?: UseQueryOptions<
+        TAppRoute,
+        TData,
+        TClientArgs['includeThrownErrorsInErrorType']
+      >,
+    ) => UseQueryResult<
+      TAppRoute,
+      TData,
+      TClientArgs['includeThrownErrorsInErrorType']
+    >
   : <TData = DataResponse<TAppRoute>>(
       queryKey: QueryKey,
       args: TArgs,
-      options?: UseQueryOptions<TAppRoute, TData>,
-    ) => UseQueryResult<TAppRoute, TData>;
+      options?: UseQueryOptions<
+        TAppRoute,
+        TData,
+        TClientArgs['includeThrownErrorsInErrorType']
+      >,
+    ) => UseQueryResult<
+      TAppRoute,
+      TData,
+      TClientArgs['includeThrownErrorsInErrorType']
+    >;
 
 export type DataReturnQueriesOptions<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = PartialClientInferRequest<TAppRoute, TClientArgs> &
-  Omit<UseQueryOptions<TAppRoute>, 'queryFn'> & {
+  Omit<
+    UseQueryOptions<
+      TAppRoute,
+      DataResponse<TAppRoute>,
+      TClientArgs['includeThrownErrorsInErrorType']
+    >,
+    'queryFn'
+  > & {
     queryKey: QueryKey;
   };
 
 export type DataReturnQueries<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TQueries = readonly DataReturnQueriesOptions<TAppRoute, TClientArgs>[],
-> = (args: {
+> = <TData = DataResponse<TAppRoute>>(args: {
   queries: TQueries;
-  context?: UseQueryOptions<TAppRoute>['context'];
-}) => UseQueryResult<TAppRoute>[];
+  context?: UseQueryOptions<
+    TAppRoute,
+    TData,
+    TClientArgs['includeThrownErrorsInErrorType']
+  >['context'];
+}) => UseQueryResult<
+  TAppRoute,
+  TData,
+  TClientArgs['includeThrownErrorsInErrorType']
+>[];
 
 // Used on X.useInfiniteQuery
 export type DataReturnInfiniteQuery<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = <TData = DataResponse<TAppRoute>>(
   queryKey: QueryKey,
   args: (
     context: QueryFunctionContext<QueryKey>,
   ) => PartialClientInferRequest<TAppRoute, TClientArgs>,
-  options?: UseInfiniteQueryOptions<TAppRoute, TData>,
-) => UseInfiniteQueryResult<TAppRoute, TData>;
+  options?: UseInfiniteQueryOptions<
+    TAppRoute,
+    TData,
+    TClientArgs['includeThrownErrorsInErrorType']
+  >,
+) => UseInfiniteQueryResult<
+  TAppRoute,
+  TData,
+  TClientArgs['includeThrownErrorsInErrorType']
+>;
 
 // Used pn X.useMutation
 export type DataReturnMutation<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
 > = (
   options?: UseMutationOptions<TAppRoute, TClientArgs>,
 ) => UseMutationResult<TAppRoute, TClientArgs>;
 
 export type DataReturnFetchQuery<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
@@ -177,7 +216,7 @@ export type DataReturnFetchQuery<
 
 export type DataReturnFetchQueryHook<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
@@ -193,7 +232,7 @@ export type DataReturnFetchQueryHook<
 
 export type DataReturnPrefetchQuery<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
@@ -211,7 +250,7 @@ export type DataReturnPrefetchQuery<
 
 export type DataReturnPrefetchQueryHook<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = AreAllPropertiesOptional<TArgs> extends true
   ? (
@@ -227,7 +266,7 @@ export type DataReturnPrefetchQueryHook<
 
 export type DataReturnFetchInfiniteQuery<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = (
   queryClient: QueryClient,
@@ -238,7 +277,7 @@ export type DataReturnFetchInfiniteQuery<
 
 export type DataReturnFetchInfiniteQueryHook<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = (
   queryKey: QueryKey,
@@ -248,7 +287,7 @@ export type DataReturnFetchInfiniteQueryHook<
 
 export type DataReturnPrefetchInfiniteQuery<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = (
   queryClient: QueryClient,
@@ -259,7 +298,7 @@ export type DataReturnPrefetchInfiniteQuery<
 
 export type DataReturnPrefetchInfiniteQueryHook<
   TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
+  TClientArgs extends ReactQueryClientArgs,
   TArgs = PartialClientInferRequest<TAppRoute, TClientArgs>,
 > = (
   queryKey: QueryKey,
