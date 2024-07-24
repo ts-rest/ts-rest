@@ -36,6 +36,7 @@
       ],
       "@ts-rest/open-api": ["libs/ts-rest/open-api/src/index.ts"],
       "@ts-rest/react-query": ["libs/ts-rest/react-query/src/index.ts"],
+      "@ts-rest/react-query/v5": ["libs/ts-rest/react-query-v5/src/v5.ts"],
       "@ts-rest/solid-query": ["libs/ts-rest/solid-query/src/index.ts"],
       "@ts-rest/ts-rest/utils": ["libs/ts-rest/utils/src/index.ts"],
       "@ts-rest/vue-query": ["libs/ts-rest/vue-query/src/index.ts"],

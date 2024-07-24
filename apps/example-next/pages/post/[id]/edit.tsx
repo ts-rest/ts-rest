@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router';
-import { api } from '../..';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { Post } from '@ts-rest/example-contracts';
+import { tsr } from '../../../pages-tsr';
 
 interface Form {
   title: string;
@@ -21,7 +21,7 @@ const Edit = ({ post }: { post: Post }) => {
     },
   });
 
-  const { mutate } = api.updatePost.useMutation({
+  const { mutate } = tsr.updatePost.useMutation({
     onSuccess: (res) => {
       router.push(`/post/${res.body.id}`);
       toast.success('Post updated!');
@@ -85,11 +85,14 @@ export function Index() {
 
   const postId = router.query.id as string;
 
-  const { data, error, isLoading } = api.getPost.useQuery([`post-${postId}`], {
-    params: { id: postId },
+  const { data, isPending, isError } = tsr.getPost.useQuery({
+    queryKey: [`post-${postId}`],
+    queryData: {
+      params: { id: postId },
+    },
   });
 
-  if (error) {
+  if (isError) {
     return (
       <div className="prose w-full h-full flex flex-row justify-center items-center">
         <div>
@@ -99,7 +102,7 @@ export function Index() {
     );
   }
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="prose w-full h-full flex flex-row justify-center items-center">
         <div>

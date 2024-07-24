@@ -52,7 +52,7 @@ export interface OverrideableClientArgs {
 }
 
 export interface ClientArgs extends OverrideableClientArgs {
-  baseHeaders?: Record<string, string>;
+  baseHeaders?: Record<string, string | ((options: FetchApiOptions) => string)>;
   api?: ApiFetcher;
 }
 
@@ -183,16 +183,7 @@ const normalizeHeaders = (headers: Record<string, string | undefined>) => {
   );
 };
 
-export const fetchApi = ({
-  path,
-  clientArgs,
-  route,
-  body,
-  query,
-  extraInputArgs,
-  headers,
-  fetchOptions,
-}: {
+export type FetchApiOptions = {
   path: string;
   clientArgs: ClientArgs;
   route: AppRoute;
@@ -201,11 +192,35 @@ export const fetchApi = ({
   extraInputArgs: Record<string, unknown>;
   headers: Record<string, string | undefined>;
   fetchOptions?: FetchOptions;
-}) => {
+};
+
+export const fetchApi = (options: FetchApiOptions) => {
+  const {
+    path,
+    clientArgs,
+    route,
+    body,
+    query,
+    extraInputArgs,
+    headers,
+    fetchOptions,
+  } = options;
   const apiFetcher = clientArgs.api || tsRestFetchApi;
 
+  const baseHeaders =
+    clientArgs.baseHeaders &&
+    Object.fromEntries(
+      Object.entries(clientArgs.baseHeaders).map(([name, valueOrFunction]) => {
+        if (typeof valueOrFunction === 'function') {
+          return [name, valueOrFunction(options)];
+        } else {
+          return [name, valueOrFunction];
+        }
+      }),
+    );
+
   const combinedHeaders = {
-    ...(clientArgs.baseHeaders && normalizeHeaders(clientArgs.baseHeaders)),
+    ...(baseHeaders && normalizeHeaders(baseHeaders)),
     ...normalizeHeaders(headers),
   } as Record<string, string>;
 
@@ -370,6 +385,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
     const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, inputArgs);
     const response = await fetchApi(fetchApiArgs);
 
+    // TODO: in next major version, throw by default if `strictStatusCode` is enabled
     if (!clientArgs.throwOnUnknownStatus) {
       return response;
     }
@@ -387,6 +403,7 @@ export type InitClientReturn<
   TClientArgs extends ClientArgs,
 > = RecursiveProxyObj<T, TClientArgs>;
 
+// TODO: in next major version, turn on by default if `strictStatusCode` is enabled and remove `throwOnUnknownStatus`
 export type InitClientArgs = ClientArgs & {
   /**
    * Ensures that the responses from the server match those defined in the

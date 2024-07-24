@@ -67,6 +67,18 @@ export type ResolveResponseType<
     | ContractOtherResponse<ContractAnyType>,
 > = T extends ContractOtherResponse<infer U> ? U : T;
 
+export type InferResponseDefinedStatusCodes<
+  T extends AppRoute,
+  TStatus extends HTTPStatusCode = HTTPStatusCode,
+> = {
+  [K in keyof T['responses'] & TStatus]: K;
+}[keyof T['responses'] & TStatus];
+
+export type InferResponseUndefinedStatusCodes<
+  T extends AppRoute,
+  TStatus extends HTTPStatusCode = HTTPStatusCode,
+> = Exclude<TStatus, InferResponseDefinedStatusCodes<T, TStatus>>;
+
 type AppRouteResponses<
   T extends AppRoute,
   TStatus extends HTTPStatusCode,

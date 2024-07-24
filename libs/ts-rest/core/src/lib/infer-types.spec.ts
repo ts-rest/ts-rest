@@ -8,6 +8,8 @@ import {
   ServerInferResponseBody,
   ClientInferResponses,
   ServerInferResponses,
+  InferResponseDefinedStatusCodes,
+  InferResponseUndefinedStatusCodes,
 } from './infer-types';
 import {
   ErrorHttpStatusCode,
@@ -617,4 +619,55 @@ it('type inference helpers', () => {
       }
     >
   >;
+
+  type InferResponseDefinedStatusCodesTests = [
+    Expect<
+      Equal<InferResponseDefinedStatusCodes<typeof contract.getPost>, 200 | 404>
+    >,
+    Expect<
+      Equal<
+        InferResponseDefinedStatusCodes<
+          typeof contract.getPost,
+          SuccessfulHttpStatusCode
+        >,
+        200
+      >
+    >,
+    Expect<
+      Equal<
+        InferResponseDefinedStatusCodes<
+          typeof contract.getPost,
+          ErrorHttpStatusCode
+        >,
+        404
+      >
+    >,
+  ];
+
+  type InferResponseUndefinedStatusCodesTests = [
+    Expect<
+      Equal<
+        InferResponseUndefinedStatusCodes<typeof contract.getPost>,
+        Exclude<HTTPStatusCode, 200 | 404>
+      >
+    >,
+    Expect<
+      Equal<
+        InferResponseUndefinedStatusCodes<
+          typeof contract.getPost,
+          SuccessfulHttpStatusCode
+        >,
+        Exclude<SuccessfulHttpStatusCode, 200>
+      >
+    >,
+    Expect<
+      Equal<
+        InferResponseUndefinedStatusCodes<
+          typeof contract.getPost,
+          ErrorHttpStatusCode
+        >,
+        Exclude<ErrorHttpStatusCode, 404>
+      >
+    >,
+  ];
 });

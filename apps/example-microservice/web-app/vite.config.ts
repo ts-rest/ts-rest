@@ -4,6 +4,10 @@ import { defineConfig } from 'vite';
 
 import viteTsConfigPaths from 'vite-tsconfig-paths';
 
+console.log(
+  path.resolve(__dirname, '../../../libs/ts-rest/react-query-v5/src/v5.ts'),
+);
+
 export default defineConfig({
   cacheDir: '../../../node_modules/.vite/example-microservice-web-app',
 
@@ -19,15 +23,15 @@ export default defineConfig({
     alias: {
       '@ts-rest/core': path.resolve(
         __dirname,
-        '../../../libs/ts-rest/core/src/index.ts'
+        '../../../libs/ts-rest/core/src/index.ts',
       ),
-      '@ts-rest/react-query': path.resolve(
+      '@ts-rest/react-query/v5': path.resolve(
         __dirname,
-        '../../../libs/ts-rest/react-query/src/index.ts'
+        '../../../libs/ts-rest/react-query-v5/src/v5/index.ts',
       ),
       '@ts-rest/example-microservice/util-posts-api': path.resolve(
         __dirname,
-        '../../../libs/example-microservice/util-posts-api/src/index.ts'
+        '../../../libs/example-microservice/util-posts-api/src/index.ts',
       ),
     },
   },
