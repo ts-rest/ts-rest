@@ -115,7 +115,7 @@ const client = initClient(contract, {
         headers,
         data: body,
       });
-      return { status: result.status, body: result.data, headers: response.headers };
+      return { status: result.status, body: result.data, headers: result.headers };
     } catch (e: Error | AxiosError | any) {
       if (isAxiosError(e)) {
         const error = e as AxiosError;
@@ -158,7 +158,7 @@ export class SampleAPI {
             headers,
             data: body,
           });
-          return { status: result.status, body: result.data, headers: response.headers };
+          return { status: result.status, body: result.data, headers: result.headers };
         } catch (e: Error | AxiosError | any) {
           if (isAxiosError(e)) {
             const error = e as AxiosError;
