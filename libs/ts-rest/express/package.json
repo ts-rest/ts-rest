@@ -1,6 +1,11 @@
 {
   "name": "@ts-rest/express",
   "version": "3.48.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "libs/ts-rest/express"
+  },
   "license": "MIT",
   "peerDependencies": {
     "express": "^4.0.0",
