@@ -5,7 +5,7 @@
   "scripts": {
     "version-packages": "changeset version",
     "version-packages-update-lockfile": "changeset version && pnpm install --no-frozen-lockfile",
-    "release": "pnpm nx run-many --target=build && changeset publish",
+    "release": "pnpm nx run-many --target=build --projects=ts-rest* && changeset publish",
     "nest": "pnpm nx run example-nest:serve",
     "affected:all": "pnpm nx affected:lint && pnpm nx affected:test && pnpm nx affected:build",
     "docs:build": "pnpm nx run docs:build && ts-node ./tools/scripts/docs-redirects.ts",
@@ -18,10 +18,10 @@
     "nx": "nx"
   },
   "engines": {
-    "pnpm": "8",
-    "node": "^18 || ^20"
+    "pnpm": "^9.4.0",
+    "node": "20.16.0"
   },
-  "packageManager": "pnpm@8.15.7+sha256.50783dd0fa303852de2dd1557cd4b9f07cb5b018154a6e76d0f40635d6cee019",
+  "packageManager": "pnpm@9.4.0+sha512.f549b8a52c9d2b8536762f99c0722205efc5af913e77835dbccc3b0b0b2ca9e7dc8022b78062c17291c48e88749c70ce88eb5a74f1fa8c4bf5e18bb46c8bd83a",
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
   "workspaces": [
@@ -195,5 +195,8 @@
     "webpack": "^5.76.0",
     "webpack-merge": "^5.8.0",
     "wrangler": "^3.1.0"
+  },
+  "volta": {
+    "node": "20.16.0"
   }
 }

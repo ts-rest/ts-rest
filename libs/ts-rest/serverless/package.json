@@ -1,6 +1,11 @@
 {
   "name": "@ts-rest/serverless",
   "version": "3.48.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "libs/ts-rest/serverless"
+  },
   "license": "MIT",
   "typesVersions": {
     "*": {
