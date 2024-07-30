@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/vue-query",
-  "version": "3.48.1",
+  "version": "3.49.0",
   "private": false,
   "description": "vue-query client integration for @ts-rest",
   "keywords": [
