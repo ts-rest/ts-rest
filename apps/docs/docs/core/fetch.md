@@ -4,11 +4,15 @@ All of the client libraries (`@ts-rest/core`, `@ts-rest/react-query`, and `@ts-r
 
 ```typescript
 import { initClient } from '@ts-rest/core';
+import { getAccessToken } from '@some-auth-lib/sdk';
 import { contract } from './contract';
 
 export const client = initClient(contract, {
   baseUrl: 'http://localhost:3334',
-  baseHeaders: {},
+  baseHeaders: {
+    'x-app-source': 'ts-rest',
+    'x-access-token': () => getAccessToken(),
+  },
 });
 ```
 

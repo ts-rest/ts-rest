@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
-import { api } from '..';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { tsr } from '../../pages-tsr';
 
 interface Form {
   title: string;
@@ -12,7 +12,7 @@ interface Form {
 export function Index() {
   const router = useRouter();
 
-  const { mutate } = api.createPost.useMutation({
+  const { mutate } = tsr.createPost.useMutation({
     onSuccess: (res) => {
       router.push(`/post/${res.body.id}`);
       toast.success('Post created!');

@@ -593,7 +593,7 @@ describe('ts-rest-fastify', () => {
     expect(response.statusCode).toEqual(400);
     expect(response.body).toEqual({
       error: 'Bad Request',
-      message: 'Unexpected end of JSON input',
+      message: "Expected property name or '}' in JSON at position 1",
       statusCode: 400,
     });
   });

@@ -17,6 +17,7 @@ jobs:
     permissions:
       actions: read
       contents: write
+      id-token: write
       packages: write
       pull-requests: write
       issues: read
@@ -46,8 +47,41 @@ jobs:
       - name: Set changesets to prerelease mode
         run: pnpm changeset pre enter ${{ inputs.tag }}
 
-      - name: Set versions in package.json
-        run: node tools/scripts/prerelease-ci.mjs
+      - name: Evaluate pre-release version
+        run: pnpm version-packages
+
+      - name: Get pre-release version
+        id: pre-release-version
+        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
+        with:
+          path: libs/ts-rest/core
+
+      - name: Reset changes
+        run: git checkout .
+
+      - name: Get latest published version and strip tag
+        id: package-versions
+        run: |
+          export LATEST_PUBLISHED_VERSION=$(pnpm dlx latest-version-cli @ts-rest/core --range=${{ inputs.tag }})
+          export CURRENT_PRERELEASE_VERSION=${{ steps.pre-release-version.outputs.current-version }}
+          echo "latest_version=${LATEST_PUBLISHED_VERSION}" >> $GITHUB_OUTPUT
+          echo "latest_version_stripped=${LATEST_PUBLISHED_VERSION%-*}" >> $GITHUB_OUTPUT
+          echo "project_version_stripped=${CURRENT_PRERELEASE_VERSION%-*}" >> $GITHUB_OUTPUT
+
+      - name: Set to latest published version so we can bump to next version
+        if: ${{ steps.package-versions.outputs.latest_version_stripped  == steps.package-versions.outputs.project_version_stripped }}
+        uses: jaywcjlove/github-action-package@f6a7afaf74f96a166243f05560d5af4bd4eaa570
+        with:
+          path: libs/ts-rest/core/package.json
+          version: '${{ steps.package-versions.outputs.latest_version }}'
+
+      - name: Reset pre-release mode
+        run: |
+          rm .changeset/pre.json
+          pnpm changeset pre enter ${{ inputs.tag }}
+
+      - name: Update versions in all packages
+        run: pnpm version-packages
 
       - name: Modify "workspaces" value in package.json
         run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
@@ -72,3 +106,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

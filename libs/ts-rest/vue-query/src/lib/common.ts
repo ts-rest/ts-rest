@@ -13,6 +13,7 @@ import {
   SuccessfulHttpStatusCode,
   fetchApi,
   evaluateFetchApiArgs,
+  isErrorResponse,
 } from '@ts-rest/core';
 
 // Data response if it's a 2XX
@@ -57,7 +58,7 @@ export const queryFn = <
     });
 
     // If the response is not a 2XX, throw an error to be handled by react-query
-    if (!String(result.status).startsWith('2')) {
+    if (isErrorResponse(result)) {
       throw result;
     }
 

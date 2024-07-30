@@ -26,6 +26,7 @@ import {
   fetchApi,
   getRouteQuery,
   isAppRoute,
+  isErrorResponse,
   PartialClientInferRequest,
   SuccessfulHttpStatusCode,
   Without,
@@ -148,7 +149,7 @@ const getRouteUseQuery = <
       });
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
-      if (!String(result.status).startsWith('2')) {
+      if (isErrorResponse(result)) {
         throw result;
       }
 
@@ -194,7 +195,7 @@ const getRouteUseInfiniteQuery = <
       });
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
-      if (!String(result.status).startsWith('2')) {
+      if (isErrorResponse(result)) {
         throw result;
       }
 
@@ -220,7 +221,7 @@ const getRouteUseMutation = <
       const result = await fetchApi(fetchApiArgs);
 
       // If the response is not a 2XX, throw an error to be handled by solid-query
-      if (!String(result.status).startsWith('2')) {
+      if (isErrorResponse(result)) {
         throw result;
       }
 

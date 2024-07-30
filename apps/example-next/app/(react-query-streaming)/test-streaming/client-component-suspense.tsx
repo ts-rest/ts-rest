@@ -1,21 +1,18 @@
 'use client';
 
-import { edgeApi } from '../react-query-utils/api-client';
+import { tsr } from '../../react-query-utils/tsr';
 
-export function ClientComponent() {
-  const { isLoading, isError, data } = edgeApi.test.useQuery(
-    ['TEST'],
-    {
+export function ClientComponentSuspense() {
+  const { data } = tsr.test.useSuspenseQuery({
+    queryKey: ['TEST_SUSPENSE'],
+    queryData: {
       params: { id: 1 },
       query: { foo: 'test', bar: 123 },
+      fetchOptions: {
+        cache: 'no-store',
+      },
     },
-    {
-      staleTime: 5000,
-    },
-  );
-
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error</div>;
+  });
 
   return (
     <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
