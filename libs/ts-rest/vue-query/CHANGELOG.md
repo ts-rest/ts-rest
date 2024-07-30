@@ -1,5 +1,11 @@
 # @ts-rest/vue-query
 
+## 3.49.0
+
+### Minor Changes
+
+- 597cd92: You can now pass functions as values for your `baseHeaders` in your client. This makes it much easier now to fetch and set access tokens from your authentication libraries.
+
 ## 3.48.1
 
 ## 3.48.0

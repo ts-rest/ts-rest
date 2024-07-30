@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/nest",
-  "version": "3.48.1",
+  "version": "3.49.0",
   "private": false,
   "description": "Nest server integration for @ts-rest",
   "keywords": [
