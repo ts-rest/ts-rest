@@ -1,39 +1,29 @@
 import {
   AppRoute,
   AppRouteMutation,
-  AppRouteQuery,
   AppRouter,
   checkZodSchema,
   FlattenAppRouter,
   HTTPStatusCode,
   isAppRouteNoBody,
   isAppRouteOtherResponse,
-  parseJsonQueryObject,
   ServerInferRequest,
   ServerInferResponses,
   TsRestResponseError,
-  validateResponse,
   ZodErrorSchema,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
+import { FastifySerializerCompiler } from 'fastify/types/schema';
 import { z } from 'zod';
 
 export class RequestValidationError extends Error {
-  constructor(
-    public pathParams: z.ZodError | null,
-    public headers: z.ZodError | null,
-    public query: z.ZodError | null,
-    public body: z.ZodError | null,
-  ) {
+  constructor(public errors: z.ZodError) {
     super('[ts-rest] request validation failed');
   }
 }
 
 export const RequestValidationErrorSchema = z.object({
-  pathParameterErrors: ZodErrorSchema.nullable(),
-  headerErrors: ZodErrorSchema.nullable(),
-  queryParameterErrors: ZodErrorSchema.nullable(),
-  bodyErrors: ZodErrorSchema.nullable(),
+  errors: ZodErrorSchema,
 });
 
 type FastifyContextConfig<T extends AppRouter | AppRoute> = {
@@ -58,7 +48,7 @@ type AppRouteImplementation<T extends AppRoute> = (
       FastifyContextConfig<T>
     >;
     appRoute: T;
-  },
+  }
 ) => Promise<ServerInferResponses<T>>;
 
 export type RouterImplementation<T extends AppRouter> = {
@@ -89,24 +79,25 @@ export type RouteHooks<T extends AppRouter | AppRoute> = Pick<
   | 'onRequestAbort'
 >;
 
-export type ApplicationHooks<TContract extends AppRouter> =
-  RouteHooks<TContract> & {
-    onRoute?:
-      | fastify.onRouteHookHandler<
-          fastify.RawServerDefault,
-          fastify.RawRequestDefaultExpression,
-          fastify.RawReplyDefaultExpression,
-          fastify.RouteGenericInterface,
-          FastifyContextConfig<TContract>
-        >
-      | fastify.onRouteHookHandler<
-          fastify.RawServerDefault,
-          fastify.RawRequestDefaultExpression,
-          fastify.RawReplyDefaultExpression,
-          fastify.RouteGenericInterface,
-          FastifyContextConfig<TContract>
-        >[];
-  };
+export type ApplicationHooks<TContract extends AppRouter> = RouteHooks<
+  TContract
+> & {
+  onRoute?:
+    | fastify.onRouteHookHandler<
+        fastify.RawServerDefault,
+        fastify.RawRequestDefaultExpression,
+        fastify.RawReplyDefaultExpression,
+        fastify.RouteGenericInterface,
+        FastifyContextConfig<TContract>
+      >
+    | fastify.onRouteHookHandler<
+        fastify.RawServerDefault,
+        fastify.RawRequestDefaultExpression,
+        fastify.RawReplyDefaultExpression,
+        fastify.RouteGenericInterface,
+        FastifyContextConfig<TContract>
+      >[];
+};
 
 type BaseRegisterRouterOptions = {
   logInitialization?: boolean;
@@ -117,7 +108,7 @@ type BaseRegisterRouterOptions = {
     | ((
         err: RequestValidationError,
         request: fastify.FastifyRequest,
-        reply: fastify.FastifyReply,
+        reply: fastify.FastifyReply
       ) => void);
 };
 
@@ -135,76 +126,70 @@ type AppRouteImplementationOrOptions<TRoute extends AppRoute> =
   | AppRouteImplementation<TRoute>;
 
 const isAppRouteImplementation = <TRoute extends AppRoute>(
-  obj: AppRouteImplementationOrOptions<TRoute>,
+  obj: AppRouteImplementationOrOptions<TRoute>
 ): obj is AppRouteImplementation<TRoute> => {
   return typeof obj === 'function';
 };
 
-const validateRequest = (
-  request: fastify.FastifyRequest,
-  reply: fastify.FastifyReply,
-  schema: AppRouteQuery | AppRouteMutation,
-  options: BaseRegisterRouterOptions,
-) => {
-  const paramsResult = checkZodSchema(request.params, schema.pathParams, {
-    passThroughExtraKeys: true,
-  });
+const RouterEmbeddedContract = Symbol('RouterEmbeddedContract');
 
-  const headersResult = checkZodSchema(request.headers, schema.headers, {
-    passThroughExtraKeys: true,
-  });
+const validatorCompiler: fastify.FastifySchemaCompiler<unknown> = ({
+  schema,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+}) => (data): any => {
+  const result = checkZodSchema(data, schema, { passThroughExtraKeys: true });
 
-  const queryResult = checkZodSchema(
-    options.jsonQuery
-      ? parseJsonQueryObject(request.query as Record<string, string>)
-      : request.query,
-    schema.query,
-  );
+  if (result.success) {
+    return result.data;
+  } else {
+    const error = new RequestValidationError(result.error);
 
-  const bodyResult = checkZodSchema(
-    request.body,
-    'body' in schema ? schema.body : null,
-  );
-
-  if (
-    !paramsResult.success ||
-    !headersResult.success ||
-    !queryResult.success ||
-    !bodyResult.success
-  ) {
-    throw new RequestValidationError(
-      paramsResult.success ? null : paramsResult.error,
-      headersResult.success ? null : headersResult.error,
-      queryResult.success ? null : queryResult.error,
-      bodyResult.success ? null : bodyResult.error,
-    );
+    return { error };
   }
-
-  return {
-    paramsResult,
-    headersResult,
-    queryResult,
-    bodyResult,
-  };
 };
 
-const RouterEmbeddedContract = Symbol('RouterEmbeddedContract');
+function resolveSchema(schema: unknown) {
+  if (Object.prototype.hasOwnProperty.call(schema, 'safeParse')) {
+    return schema;
+  }
+  if (Object.prototype.hasOwnProperty.call(schema, 'properties')) {
+    return (schema as { properties: unknown }).properties;
+  }
+  throw new Error(`Invalid schema passed: ${JSON.stringify(schema)}`);
+}
+
+const serializerCompiler: FastifySerializerCompiler<unknown> = ({
+  schema: maybeSchema,
+}) => (data) => {
+  const schema = resolveSchema(maybeSchema);
+
+  // @ts-expect-error
+  const responseSchema = isAppRouteOtherResponse(schema) ? schema.body : schema;
+
+  const result = checkZodSchema(data, responseSchema);
+
+  if (result.success) {
+    return JSON.stringify(result.data);
+  } else {
+    throw new Error('Response Validation failed');
+  }
+};
 
 export const initServer = () => ({
   router: <TContract extends AppRouter>(
     contract: TContract,
-    routes: RouterImplementation<TContract>,
+    routes: RouterImplementation<TContract>
   ): RouterImplementation<TContract> => ({
     ...routes,
     [RouterEmbeddedContract]: contract,
   }),
   route: <TAppRoute extends AppRoute>(
     route: TAppRoute,
-    implementation: AppRouteImplementation<TAppRoute>,
+    implementation: AppRouteImplementation<TAppRoute>
   ) => implementation,
   registerRouter: <
     T extends RouterImplementation<TContract>,
-    TContract extends AppRouter,
+    TContract extends AppRouter
   >(
     contract: TContract,
     routerImpl: T,
@@ -214,8 +199,11 @@ export const initServer = () => ({
       jsonQuery: false,
       responseValidation: false,
       requestValidationErrorHandler: 'combined',
-    },
+    }
   ) => {
+    app.setValidatorCompiler(validatorCompiler);
+    app.setSerializerCompiler(serializerCompiler);
+
     const { hooks = {}, ...restOfOptions } = options;
 
     Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
@@ -234,73 +222,65 @@ export const initServer = () => ({
     recursivelyRegisterRouter(routerImpl, contract, [], app, restOfOptions);
 
     app.setErrorHandler(
-      requestValidationErrorHandler(options.requestValidationErrorHandler),
+      requestValidationErrorHandler(options.requestValidationErrorHandler)
     );
   },
-  plugin:
-    <T extends AppRouter>(
-      router: RouterImplementation<T>,
-    ): fastify.FastifyPluginCallback<RegisterRouterOptions<T>> =>
-    (
-      app,
-      opts = {
-        logInitialization: true,
-        jsonQuery: false,
-        responseValidation: false,
-        requestValidationErrorHandler: 'combined',
-      },
-      done,
-    ) => {
-      const embeddedContract = (
-        router as RouterImplementation<T> & { [RouterEmbeddedContract]: T }
-      )[RouterEmbeddedContract];
-
-      const { hooks = {}, ...restOfOptions } = opts;
-
-      Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
-        if (Array.isArray(hookOrHookArray)) {
-          hookOrHookArray.forEach((hook) => {
-            // @ts-expect-error - function expects specific hook names rather than just a string
-            app.addHook(hookName, hook);
-          });
-          return;
-        } else {
-          // @ts-expect-error - function expects specific hook names rather than just a string
-          app.addHook(hookName, hookOrHookArray);
-        }
-      });
-
-      recursivelyRegisterRouter(
-        router,
-        embeddedContract,
-        [],
-        app,
-        restOfOptions,
-      );
-
-      app.setErrorHandler(
-        requestValidationErrorHandler(opts.requestValidationErrorHandler),
-      );
-
-      done();
+  plugin: <T extends AppRouter>(
+    router: RouterImplementation<T>
+  ): fastify.FastifyPluginCallback<RegisterRouterOptions<T>> => (
+    app,
+    opts = {
+      logInitialization: true,
+      jsonQuery: false,
+      responseValidation: false,
+      requestValidationErrorHandler: 'combined',
     },
+    done
+  ) => {
+    app.setValidatorCompiler(validatorCompiler);
+    app.setSerializerCompiler(serializerCompiler);
+
+    const embeddedContract = (router as RouterImplementation<T> & {
+      [RouterEmbeddedContract]: T;
+    })[RouterEmbeddedContract];
+
+    const { hooks = {}, ...restOfOptions } = opts;
+
+    Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
+      if (Array.isArray(hookOrHookArray)) {
+        hookOrHookArray.forEach((hook) => {
+          // @ts-expect-error - function expects specific hook names rather than just a string
+          app.addHook(hookName, hook);
+        });
+        return;
+      } else {
+        // @ts-expect-error - function expects specific hook names rather than just a string
+        app.addHook(hookName, hookOrHookArray);
+      }
+    });
+
+    recursivelyRegisterRouter(router, embeddedContract, [], app, restOfOptions);
+
+    app.setErrorHandler(
+      requestValidationErrorHandler(opts.requestValidationErrorHandler)
+    );
+
+    done();
+  },
 });
 
 const requestValidationErrorHandler = (
-  handler: BaseRegisterRouterOptions['requestValidationErrorHandler'] = 'combined',
+  handler: BaseRegisterRouterOptions['requestValidationErrorHandler'] = 'combined'
 ) => {
   return (
     err: unknown,
     request: fastify.FastifyRequest,
-    reply: fastify.FastifyReply,
+    reply: fastify.FastifyReply
   ) => {
     if (err instanceof RequestValidationError) {
       if (handler === 'combined') {
         return reply.status(400).send({
-          pathParameterErrors: err.pathParams,
-          headerErrors: err.headers,
-          queryParameterErrors: err.query,
-          bodyErrors: err.body,
+          errors: err.errors,
         });
       } else {
         return handler(err, request, reply);
@@ -321,7 +301,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
   routeImpl: AppRouteImplementationOrOptions<AppRoute>,
   appRoute: TAppRoute,
   app: fastify.FastifyInstance,
-  options: BaseRegisterRouterOptions,
+  options: BaseRegisterRouterOptions
 ) => {
   if (options.logInitialization) {
     app.log.info(`[ts-rest] Initialized ${appRoute.method} ${appRoute.path}`);
@@ -335,6 +315,23 @@ const registerRoute = <TAppRoute extends AppRoute>(
     ? {}
     : routeImpl.hooks || {};
 
+  const schema: Record<string, unknown> = {};
+  if (Object.prototype.hasOwnProperty.call(appRoute, 'body')) {
+    schema['body'] = (appRoute as AppRouteMutation).body;
+  }
+  if (Object.prototype.hasOwnProperty.call(appRoute, 'query')) {
+    schema['querystring'] = appRoute.query;
+  }
+  if (Object.prototype.hasOwnProperty.call(appRoute, 'pathParams')) {
+    schema['params'] = appRoute.pathParams;
+  }
+  if (appRoute.headers && Object.keys(appRoute.headers).length > 0) {
+    schema['headers'] = appRoute.headers;
+  }
+  if (options.responseValidation && appRoute.responses) {
+    schema['response'] = { ...appRoute.responses };
+  }
+
   const route: fastify.RouteOptions<
     fastify.RawServerDefault,
     fastify.RawRequestDefaultExpression,
@@ -343,30 +340,24 @@ const registerRoute = <TAppRoute extends AppRoute>(
     FastifyContextConfig<AppRoute>
   > = {
     ...hooks,
+    schema,
     method: appRoute.method,
     url: appRoute.path,
     config: {
       tsRestRoute: appRoute,
     },
     handler: async (request, reply) => {
-      const validationResults = validateRequest(
-        request,
-        reply,
-        appRoute,
-        options,
-      );
-
       let result: { status: HTTPStatusCode; body: unknown };
       try {
         result = await handler({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          params: validationResults.paramsResult.data as any,
-          query: validationResults.queryResult.data,
+          params: request.params as any,
+          query: request.query,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          headers: validationResults.headersResult.data as any,
+          headers: request.headers as any,
           request,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          body: validationResults.bodyResult.data as any,
+          body: request.body as any,
           reply,
           appRoute,
         });
@@ -383,20 +374,6 @@ const registerRoute = <TAppRoute extends AppRoute>(
 
       const statusCode = result.status;
 
-      let validatedResponseBody = result.body;
-
-      if (options.responseValidation) {
-        const response = validateResponse({
-          appRoute,
-          response: {
-            status: statusCode,
-            body: result.body,
-          },
-        });
-
-        validatedResponseBody = response.body;
-      }
-
       const responseType = appRoute.responses[statusCode];
 
       if (isAppRouteNoBody(responseType)) {
@@ -407,7 +384,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
         reply.header('content-type', responseType.contentType);
       }
 
-      return reply.status(statusCode).send(validatedResponseBody);
+      return reply.status(statusCode).send(result.body);
     },
   };
 
@@ -427,7 +404,7 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   appRouter: T,
   path: string[],
   fastify: fastify.FastifyInstance,
-  options: BaseRegisterRouterOptions,
+  options: BaseRegisterRouterOptions
 ) => {
   if (
     typeof routerImpl === 'object' &&
@@ -435,11 +412,11 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
   ) {
     for (const key in routerImpl) {
       recursivelyRegisterRouter(
-        routerImpl[key] as unknown as RouterImplementation<T>,
-        appRouter[key] as unknown as T,
+        (routerImpl[key] as unknown) as RouterImplementation<T>,
+        (appRouter[key] as unknown) as T,
         [...path, key],
         fastify,
-        options,
+        options
       );
     }
   } else if (
@@ -447,10 +424,10 @@ const recursivelyRegisterRouter = <T extends AppRouter>(
     typeof routerImpl?.['handler'] === 'function'
   ) {
     registerRoute(
-      routerImpl as unknown as AppRouteImplementationOrOptions<AppRoute>,
-      appRouter as unknown as AppRoute,
+      (routerImpl as unknown) as AppRouteImplementationOrOptions<AppRoute>,
+      (appRouter as unknown) as AppRoute,
       fastify,
-      options,
+      options
     );
   }
 };
