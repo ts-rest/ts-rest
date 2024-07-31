@@ -1,0 +1,358 @@
+diff --git a/src/executors/rollup/lib/update-package-json.js b/src/executors/rollup/lib/update-package-json.js
+index 120cc0f682b3b98da42a5e1257f7f27e3b4c8b3b..552c2159b6c5872c78be2d4681b8dd736c016ea8 100644
+--- a/src/executors/rollup/lib/update-package-json.js
++++ b/src/executors/rollup/lib/update-package-json.js
+@@ -11,27 +11,37 @@ function updatePackageJson(options, packageJson) {
+     const hasCjsFormat = options.format.includes('cjs');
+     if (options.generateExportsField) {
+         packageJson.exports =
+-            typeof packageJson.exports === 'string' ? {} : { ...packageJson.exports };
++          typeof packageJson.exports === 'string' ? {} : { ...packageJson.exports };
+         packageJson.exports['./package.json'] = './package.json';
+     }
+     if (hasEsmFormat) {
+         const esmExports = getExports({
+             ...options,
+-            fileExt: '.esm.js',
++            fileExt: (hasCjsFormat && packageJson.type !== 'module') ? '.esm.mjs' : '.esm.js',
+         });
+-        packageJson.module = esmExports['.'];
++        packageJson.module = esmExports['.']['jsFile'];
+         if (!hasCjsFormat) {
+             packageJson.type = 'module';
+-            packageJson.main ??= esmExports['.'];
++            packageJson.main ??= esmExports['.']['jsFile'];
++            packageJson.types ??= esmExports['.']['typesFile'];
+         }
+         if (options.generateExportsField) {
+-            for (const [exportEntry, filePath] of Object.entries(esmExports)) {
+-                packageJson.exports[exportEntry] = hasCjsFormat
+-                    ? // If CJS format is used, make sure `import` (from Node) points to same instance of the package.
+-                        // Otherwise, packages that are required to be singletons (like React, RxJS, etc.) will break.
+-                        // Reserve `module` entry for bundlers to accommodate tree-shaking.
+-                        { [hasCjsFormat ? 'module' : 'import']: filePath }
+-                    : filePath;
++            for (const [exportEntry, { jsFile, typesFile } ] of Object.entries(esmExports)) {
++                const originalExportsEntry = packageJson.exports[exportEntry];
++                packageJson.exports[exportEntry] = typeof originalExportsEntry === 'string' ? {} : { ...originalExportsEntry };
++
++                if (hasCjsFormat) {
++                    packageJson.exports[exportEntry]['import'] ??= jsFile;
++                } else {
++                    packageJson.exports[exportEntry]['default'] ??= jsFile;
++                    packageJson.exports[exportEntry]['types'] ??= typesFile;
++                }
++
++                if (typeof originalExportsEntry === 'string' && jsFile !== originalExportsEntry) {
++                    packageJson.exports[exportEntry]['default'] = originalExportsEntry;
++                }
++
++                ensureExportDefaultIsLast(packageJson.exports[exportEntry]);
+             }
+         }
+     }
+@@ -40,53 +50,83 @@ function updatePackageJson(options, packageJson) {
+             ...options,
+             fileExt: '.cjs.js',
+         });
+-        packageJson.main = cjsExports['.'];
++        packageJson.main = cjsExports['.']['jsFile'];
++        packageJson.types ??= cjsExports['.']['typesFile'];
+         if (!hasEsmFormat) {
+             packageJson.type = 'commonjs';
+         }
+         if (options.generateExportsField) {
+-            for (const [exportEntry, filePath] of Object.entries(cjsExports)) {
++            for (const [exportEntry, { jsFile, typesFile }] of Object.entries(cjsExports)) {
++                const originalExportsEntry = packageJson.exports[exportEntry];
++                packageJson.exports[exportEntry] = typeof originalExportsEntry === 'string' ? {} : { ...originalExportsEntry };
++
+                 if (hasEsmFormat) {
+-                    // If ESM format used, make sure `import` (from Node) points to a wrapped
+-                    // version of CJS file to ensure the package remains a singleton.
+-                    // TODO(jack): This can be made into a rollup plugin to re-use in Vite.
+-                    const relativeFile = (0, path_1.parse)(filePath).base;
+-                    const fauxEsmFilePath = filePath.replace(/\.cjs\.js$/, '.cjs.mjs');
+-                    packageJson.exports[exportEntry]['import'] ??= fauxEsmFilePath;
+-                    packageJson.exports[exportEntry]['default'] ??= filePath;
+-                    // Re-export from relative CJS file, and Node will synthetically export it as ESM.
+-                    // Make sure both ESM and CJS point to same instance of the package because libs like React, RxJS, etc. requires it.
+-                    // Also need a special .cjs.default.js file that re-exports the `default` from CJS, or else
+-                    // default import in Node will not work.
+-                    (0, fs_1.writeFileSync)((0, path_1.join)(options.outputPath, filePath.replace(/\.cjs\.js$/, '.cjs.default.js')), `exports._default = require('./${(0, path_1.parse)(filePath).base}').default;`);
+-                    (0, fs_1.writeFileSync)((0, path_1.join)(options.outputPath, fauxEsmFilePath),
+-                    // Re-export from relative CJS file, and Node will synthetically export it as ESM.
+-                    (0, devkit_1.stripIndents) `
+-            export * from './${relativeFile}';
+-            export { _default as default } from './${relativeFile.replace(/\.cjs\.js$/, '.cjs.default.js')}';
+-            `);
++                    packageJson.exports[exportEntry]['require'] ??= jsFile;
+                 }
+                 else {
+-                    packageJson.exports[exportEntry] = filePath;
++                    packageJson.exports[exportEntry]['default'] ??= jsFile;
++                }
++
++                packageJson.exports[exportEntry]['types'] ??= typesFile;
++
++                if (typeof originalExportsEntry === 'string' && jsFile !== originalExportsEntry) {
++                    packageJson.exports[exportEntry]['default'] = originalExportsEntry;
+                 }
++
++                ensureExportDefaultIsLast(packageJson.exports[exportEntry]);
+             }
+         }
+     }
++    if (options.generateExportsField && options.additionalEntryPoints && options.additionalEntryPoints.length > 0) {
++        packageJson.typesVersions = typeof packageJson.typesVersions === 'string' ? {} : { ...packageJson.typesVersions };
++        packageJson.typesVersions['*'] = {
++            ...typesVersions(options),
++            ...packageJson.typesVersions['*'],
++        }
++    }
+     (0, fileutils_1.writeJsonFile)(`${options.outputPath}/package.json`, packageJson);
+ }
+ exports.updatePackageJson = updatePackageJson;
+ function getExports(options) {
+     const mainFile = options.outputFileName
+-        ? options.outputFileName.replace(/\.[tj]s$/, '')
+-        : (0, path_1.basename)(options.main).replace(/\.[tj]s$/, '');
++      ? options.outputFileName.replace(/\.[tj]s$/, '')
++      : (0, path_1.basename)(options.main).replace(/\.[tj]s$/, '');
+     const exports = {
+-        '.': './' + mainFile + options.fileExt,
++        '.': { jsFile: './' + mainFile + options.fileExt, typesFile: getDeclarationFile(options, mainFile) },
+     };
+     if (options.additionalEntryPoints) {
+         for (const file of options.additionalEntryPoints) {
+             const { name: fileName } = (0, path_1.parse)(file);
+-            exports['./' + fileName] = './' + fileName + options.fileExt;
++            exports['./' + fileName] = { jsFile: './' + fileName + options.fileExt, typesFile: getDeclarationFile(options, fileName) };
+         }
+     }
+     return exports;
+ }
++function ensureExportDefaultIsLast(exportEntry) {
++    if (!exportEntry['default']) {
++        return;
++    }
++
++    const value = exportEntry['default'];
++    delete exportEntry['default'];
++    exportEntry['default'] = value;
++}
++function typesVersions(options) {
++    if (!options.additionalEntryPoints) {
++        return {};
++    }
++
++    const typesVersions = {};
++    for (const file of options.additionalEntryPoints) {
++        const { name: fileName } = (0, path_1.parse)(file);
++        typesVersions[fileName] = [getDeclarationFile(options, fileName)];
++    }
++    return typesVersions;
++}
++function getDeclarationFile(options, fileName) {
++    if (options.format.length === 1 && options.format[0] === 'esm') {
++        return `./${fileName}.esm.d.ts`;
++    }
++
++    return `./${fileName}.cjs.d.ts`;
++}
+diff --git a/src/executors/rollup/rollup.impl.js b/src/executors/rollup/rollup.impl.js
+index a40cdd52ebf8f428b42e8dc1fddafa99dd424191..e3564abe565e1dbfd6adc8af527d86a898433839 100644
+--- a/src/executors/rollup/rollup.impl.js
++++ b/src/executors/rollup/rollup.impl.js
+@@ -35,8 +35,8 @@ async function* rollupExecutor(rawOptions, context) {
+     const options = (0, normalize_1.normalizeRollupExecutorOptions)(rawOptions, context, sourceRoot);
+     const packageJson = (0, devkit_1.readJsonFile)(options.project);
+     const npmDeps = (context.projectGraph.dependencies[context.projectName] ?? [])
+-        .filter((d) => d.target.startsWith('npm:'))
+-        .map((d) => d.target.slice(4));
++      .filter((d) => d.target.startsWith('npm:'))
++      .map((d) => d.target.slice(4));
+     const rollupOptions = createRollupOptions(options, dependencies, context, packageJson, sourceRoot, npmDeps);
+     const outfile = resolveOutfile(context, options);
+     if (options.watch) {
+@@ -68,27 +68,27 @@ async function* rollupExecutor(rawOptions, context) {
+         }
+         const start = process.hrtime.bigint();
+         return (0, rxjs_1.from)(rollupOptions)
+-            .pipe((0, operators_1.concatMap)((opts) => (0, run_rollup_1.runRollup)(opts).pipe((0, operators_1.catchError)((e) => {
+-            devkit_1.logger.error(`Error during bundle: ${e}`);
+-            return (0, rxjs_1.of)({ success: false });
+-        }))), (0, operators_1.scan)((acc, result) => {
+-            if (!acc.success)
+-                return acc;
+-            return result;
+-        }, { success: true, outfile }), (0, operators_1.last)(), (0, operators_1.tap)({
+-            next: (result) => {
+-                if (result.success) {
+-                    const end = process.hrtime.bigint();
+-                    const duration = `${(Number(end - start) / 1000000000).toFixed(2)}s`;
+-                    (0, update_package_json_1.updatePackageJson)(options, packageJson);
+-                    devkit_1.logger.info(`⚡ Done in ${duration}`);
+-                }
+-                else {
+-                    devkit_1.logger.error(`Bundle failed: ${context.projectName}`);
+-                }
+-            },
+-        }))
+-            .toPromise();
++          .pipe((0, operators_1.concatMap)((opts) => (0, run_rollup_1.runRollup)(opts).pipe((0, operators_1.catchError)((e) => {
++              devkit_1.logger.error(`Error during bundle: ${e}`);
++              return (0, rxjs_1.of)({ success: false });
++          }))), (0, operators_1.scan)((acc, result) => {
++              if (!acc.success)
++                  return acc;
++              return result;
++          }, { success: true, outfile }), (0, operators_1.last)(), (0, operators_1.tap)({
++              next: (result) => {
++                  if (result.success) {
++                      const end = process.hrtime.bigint();
++                      const duration = `${(Number(end - start) / 1000000000).toFixed(2)}s`;
++                      (0, update_package_json_1.updatePackageJson)(options, packageJson);
++                      devkit_1.logger.info(`⚡ Done in ${duration}`);
++                  }
++                  else {
++                      devkit_1.logger.error(`Bundle failed: ${context.projectName}`);
++                  }
++              },
++          }))
++          .toPromise();
+     }
+ }
+ exports.rollupExecutor = rollupExecutor;
+@@ -114,18 +114,18 @@ function createRollupOptions(options, dependencies, context, packageJson, source
+             image(),
+             json(),
+             (useTsc || shouldBundleTypes) &&
+-                require('rollup-plugin-typescript2')({
+-                    check: !options.skipTypeCheck,
+-                    tsconfig: options.tsConfig,
+-                    tsconfigOverride: {
+-                        compilerOptions: createTsCompilerOptions(config, dependencies, options),
+-                    },
+-                }),
++            require('rollup-plugin-typescript2')({
++                check: !options.skipTypeCheck,
++                tsconfig: options.tsConfig,
++                tsconfigOverride: {
++                    compilerOptions: createTsCompilerOptions(config, dependencies, options),
++                },
++            }),
+             shouldBundleTypes &&
+-                (0, type_definitions_1.typeDefinitions)({
+-                    main: options.main,
+-                    projectRoot: options.projectRoot,
+-                }),
++            (0, type_definitions_1.typeDefinitions)({
++                main: options.main,
++                projectRoot: options.projectRoot,
++            }),
+             peerDepsExternal({
+                 packageJsonPath: options.project,
+             }),
+@@ -146,29 +146,29 @@ function createRollupOptions(options, dependencies, context, packageJson, source
+             }),
+             useSwc && (0, swc_plugin_1.swc)(),
+             useBabel &&
+-                (0, plugin_babel_1.getBabelInputPlugin)({
+-                    // Lets `@nx/js/babel` preset know that we are packaging.
+-                    caller: {
+-                        // @ts-ignore
+-                        // Ignoring type checks for caller since we have custom attributes
+-                        isNxPackage: true,
+-                        // Always target esnext and let rollup handle cjs
+-                        supportsStaticESM: true,
+-                        isModern: true,
+-                    },
+-                    cwd: (0, path_1.join)(context.root, sourceRoot),
+-                    rootMode: options.babelUpwardRootMode ? 'upward' : undefined,
+-                    babelrc: true,
+-                    extensions: fileExtensions,
+-                    babelHelpers: 'bundled',
+-                    skipPreflightCheck: true,
+-                    exclude: /node_modules/,
+-                    plugins: [
+-                        format === 'esm'
+-                            ? undefined
+-                            : require.resolve('babel-plugin-transform-async-to-promises'),
+-                    ].filter(Boolean),
+-                }),
++            (0, plugin_babel_1.getBabelInputPlugin)({
++                // Lets `@nx/js/babel` preset know that we are packaging.
++                caller: {
++                    // @ts-ignore
++                    // Ignoring type checks for caller since we have custom attributes
++                    isNxPackage: true,
++                    // Always target esnext and let rollup handle cjs
++                    supportsStaticESM: true,
++                    isModern: true,
++                },
++                cwd: (0, path_1.join)(context.root, sourceRoot),
++                rootMode: options.babelUpwardRootMode ? 'upward' : undefined,
++                babelrc: true,
++                extensions: fileExtensions,
++                babelHelpers: 'bundled',
++                skipPreflightCheck: true,
++                exclude: /node_modules/,
++                plugins: [
++                    format === 'esm'
++                      ? undefined
++                      : require.resolve('babel-plugin-transform-async-to-promises'),
++                ].filter(Boolean),
++            }),
+             commonjs(),
+             (0, analyze_plugin_1.analyze)(),
+         ];
+@@ -178,8 +178,8 @@ function createRollupOptions(options, dependencies, context, packageJson, source
+         ]; // If external is set to none, include all dependencies and peerDependencies in externalPackages
+         if (options.external === 'all') {
+             externalPackages = externalPackages
+-                .concat(dependencies.map((d) => d.name))
+-                .concat(npmDeps);
++              .concat(dependencies.map((d) => d.name))
++              .concat(npmDeps);
+         }
+         else if (Array.isArray(options.external) && options.external.length > 0) {
+             externalPackages = externalPackages.concat(options.external);
+@@ -191,14 +191,18 @@ function createRollupOptions(options, dependencies, context, packageJson, source
+         options.additionalEntryPoints.forEach((entry) => {
+             input[(0, path_1.parse)(entry).name] = entry;
+         });
++        let jsExtension = 'js';
++        if (format === 'esm' && packageJson.type !== 'module' && options.format.includes('cjs')) {
++            jsExtension = 'mjs';
++        }
+         const rollupConfig = {
+             input,
+             output: {
+                 format,
+                 dir: `${options.outputPath}`,
+                 name: (0, devkit_1.names)(context.projectName).className,
+-                entryFileNames: `[name].${format}.js`,
+-                chunkFileNames: `[name].${format}.js`,
++                entryFileNames: `[name].${format}.${jsExtension}`,
++                chunkFileNames: `[name].${format}.${jsExtension}`,
+             },
+             external: (id) => {
+                 return externalPackages.some((name) => id === name || id.startsWith(`${name}/`)); // Could be a deep import
+@@ -229,11 +233,11 @@ function createTsCompilerOptions(config, dependencies, options) {
+ }
+ function convertCopyAssetsToRollupOptions(outputPath, assets) {
+     return assets
+-        ? assets.map((a) => ({
+-            src: (0, path_1.join)(a.input, a.glob).replace(/\\/g, '/'),
+-            dest: (0, path_1.join)(outputPath, a.output).replace(/\\/g, '/'),
+-        }))
+-        : undefined;
++      ? assets.map((a) => ({
++          src: (0, path_1.join)(a.input, a.glob).replace(/\\/g, '/'),
++          dest: (0, path_1.join)(outputPath, a.output).replace(/\\/g, '/'),
++      }))
++      : undefined;
+ }
+ function readCompatibleFormats(config) {
+     switch (config.options.module) {

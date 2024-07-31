@@ -41,8 +41,6 @@
     "@nestjs/platform-express": "10.3.10",
     "@nestjs/platform-fastify": "10.3.10",
     "@nestjs/swagger": "7.1.4",
-    "@nx/rollup": "17.1.1",
-    "@nx/webpack": "17.1.1",
     "@prisma/client": "^4.5.0",
     "@stackblitz/sdk": "^1.8.0",
     "@swc/helpers": "0.5.3",
@@ -101,7 +99,6 @@
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.14.5",
-    "@betit/rollup-plugin-rename-extensions": "0.1.0",
     "@cloudflare/workers-types": "^4.20240405.0",
     "@docusaurus/module-type-aliases": "2.4.1",
     "@nestjs/schematics": "10.0.1",
@@ -118,8 +115,10 @@
     "@nx/next": "17.1.1",
     "@nx/node": "17.1.1",
     "@nx/react": "17.1.1",
+    "@nx/rollup": "17.1.1",
     "@nx/vite": "17.1.1",
     "@nx/web": "17.1.1",
+    "@nx/webpack": "17.1.1",
     "@nx/workspace": "17.1.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
     "@svgr/webpack": "^6.1.2",
@@ -163,7 +162,6 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "fetch-mock-jest": "^1.5.1",
     "fs-extra": "^11.2.0",
-    "glob": "^11.0.0",
     "jest": "29.4.3",
     "jest-circus": "28.1.1",
     "jest-environment-jsdom": "29.4.3",
@@ -201,7 +199,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@betit/rollup-plugin-rename-extensions@0.1.0": "patches/@betit__rollup-plugin-rename-extensions@0.1.0.patch"
+      "@nx/rollup@17.1.1": "patches/@nx__rollup@17.1.1.patch"
     }
   }
 }
