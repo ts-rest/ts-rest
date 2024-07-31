@@ -7,14 +7,6 @@
     "directory": "libs/ts-rest/serverless"
   },
   "license": "MIT",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "*.cjs.d.ts"
-      ]
-    }
-  },
   "dependencies": {
     "itty-router": "^5.0.9"
   },
