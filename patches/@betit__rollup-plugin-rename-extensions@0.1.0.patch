@@ -1,0 +1,19 @@
+diff --git a/dist/index.js b/dist/index.js
+index 4fc489eb311f53f38264b6659f0bdab4992047d9..48605c84395312a388f75085dfc734718a99bcc4 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -58,9 +58,11 @@ function getExportSource(node) {
+     return node.source;
+ }
+ function rewrite(input, extensions) {
+-    var extension = path_1.extname(input);
+-    if (extensions.hasOwnProperty(extension)) {
+-        return "" + input.slice(0, -extension.length) + extensions[extension];
++    const extensionMappings = Object.entries(extensions);
++    for (const [originalExtension, replacementExtension] of extensionMappings) {
++        if (input.endsWith(originalExtension)) {
++            return "" + input.slice(0, -originalExtension.length) + replacementExtension;
++        }
+     }
+     return false;
+ }
