@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/react-query",
-  "version": "3.49.1",
+  "version": "3.49.2",
   "private": false,
   "description": "react-query client integration for @ts-rest",
   "keywords": [

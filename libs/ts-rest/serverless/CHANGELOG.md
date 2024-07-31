@@ -1,5 +1,11 @@
 # @ts-rest/serverless
 
+## 3.49.2
+
+### Patch Changes
+
+- 6d7bea2: Fix broken package exports
+
 ## 3.49.1
 
 ### Patch Changes
