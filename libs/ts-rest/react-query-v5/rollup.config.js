@@ -21,15 +21,7 @@ logger.info = new Proxy(logger.info, {
       packageJson['peerDependencies']['@tanstack/react-query'] =
         '^4.0.0 || ^5.0.0';
 
-      packageJson['exports']['./v5'] = Object.fromEntries(
-        Object.entries(packageJson['exports']['.']).map(([key, value]) => {
-          return [key, value.replace('index', 'v5')];
-        }),
-      );
-
       fs.writeJsonSync(path.join(v4BuildDir, 'package.json'), packageJson, {
-        flag: 'w+',
-        replacer: null,
         spaces: 2,
       });
 

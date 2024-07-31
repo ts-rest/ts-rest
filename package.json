@@ -101,6 +101,7 @@
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.14.5",
+    "@betit/rollup-plugin-rename-extensions": "0.1.0",
     "@cloudflare/workers-types": "^4.20240405.0",
     "@docusaurus/module-type-aliases": "2.4.1",
     "@nestjs/schematics": "10.0.1",
@@ -174,7 +175,6 @@
     "prisma": "^4.5.0",
     "qs": "^6.11.0",
     "rollup": "^3.10.1",
-    "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-preserve-directives": "^0.4.0",
     "sass": "1.55.0",
     "sort-package-json": "^2.10.0",
@@ -198,5 +198,10 @@
   },
   "volta": {
     "node": "20.16.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@betit/rollup-plugin-rename-extensions@0.1.0": "patches/@betit__rollup-plugin-rename-extensions@0.1.0.patch"
+    }
   }
 }
