@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.49.1
+
+### Patch Changes
+
+- b31454f: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+
 ## 3.49.0
 
 ## 3.48.1

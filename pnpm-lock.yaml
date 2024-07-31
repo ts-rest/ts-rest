@@ -540,10 +540,6 @@ importers:
         specifier: ^3.22.3
         version: 3.22.3
 
-  libs/ts-rest/core/dist/commonjs: {}
-
-  libs/ts-rest/core/dist/esm: {}
-
   libs/ts-rest/express:
     dependencies:
       express:
