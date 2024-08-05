@@ -1,5 +1,12 @@
 # @ts-rest/core
 
+## 3.49.3
+
+### Patch Changes
+
+- 1f9fd4a: Fix client functions resolving as `any` in TS 5.5 when `dom` is not included in tsconfig libs
+- 740c538: Fix pnpm `Maximum call stack size exceeded` when installing @ts-rest/core
+
 ## 3.49.2
 
 ## 3.49.1

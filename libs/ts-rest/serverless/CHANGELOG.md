@@ -1,5 +1,7 @@
 # @ts-rest/serverless
 
+## 3.49.3
+
 ## 3.49.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@ts-rest/solid-query",
-  "version": "3.49.2",
+  "version": "3.49.3",
   "private": false,
   "description": "solid-query client integration for @ts-rest",
   "keywords": [
