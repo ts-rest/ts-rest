@@ -119,13 +119,9 @@ const sidebars = {
           ],
         },
         {
-          type: 'category',
+          type: 'doc',
+          id: 'fastify',
           label: 'Fastify',
-          collapsed: true,
-          items: [
-            { type: 'doc', id: 'fastify/fastify' },
-            { type: 'doc', id: 'fastify/openapi' },
-          ],
         },
         {
           type: 'category',
