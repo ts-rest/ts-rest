@@ -10,7 +10,7 @@ logger.info = new Proxy(logger.info, {
     target.apply(thisArg, args);
 
     // nx prints this message after rollup finishes and nx itself has completed building the resulting package.json
-    if (args[0].includes('Done in')) {
+    if (args[0].includes('Done in') && builtCompleteFunction) {
       builtCompleteFunction();
     }
   },
@@ -25,6 +25,10 @@ const rollupConfig = (config) => {
   const outputDir = config.output.dir;
 
   builtCompleteFunction = () => {
+    if (path.basename(outputDir) === 'core') {
+      return;
+    }
+
     // STEP 1: Add @ts-rest/core to peerDependencies of all libs, except core itself
     // Can't let changesets handle this for us because it sees peerDependencies updates as a breaking change
     const packageJsonPath = path.join(outputDir, 'package.json');
@@ -33,7 +37,7 @@ const rollupConfig = (config) => {
     splitVersion.splice(-1, 1, '0');
 
     const peerVersion = packageJsonObject.version.includes('-')
-      ? packageJsonObject.version          // pre-release needs to use exact version
+      ? packageJsonObject.version // pre-release needs to use exact version
       : `~${splitVersion.join('.')}`;
 
     packageJsonObject.peerDependencies = {
@@ -41,11 +45,11 @@ const rollupConfig = (config) => {
       '@ts-rest/core': peerVersion,
     };
 
-    fs.writeJsonSync(packageJsonPath, sortPackageJson(packageJsonObject), { spaces: 2 });
+    fs.writeJsonSync(packageJsonPath, sortPackageJson(packageJsonObject), {
+      spaces: 2,
+    });
 
-    logger.info(
-      '\nAdded @ts-rest/core to peer dependencies',
-    );
+    logger.info('\nAdded @ts-rest/core to peer dependencies');
   };
 
   return {
@@ -57,10 +61,8 @@ const rollupConfig = (config) => {
       }
       return config.external(source, importer, isResolved);
     },
-    plugins: [
-      ...config.plugins,
-    ]
-  }
-}
+    plugins: [...config.plugins],
+  };
+};
 
 module.exports = rollupConfig;
