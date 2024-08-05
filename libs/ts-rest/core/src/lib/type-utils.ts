@@ -41,11 +41,11 @@ export type GetFieldType<T, P> = P extends `${infer Left}.${infer Right}`
 // https://stackoverflow.com/questions/63447660/typescript-remove-all-properties-with-particular-type
 // Nested solution also available ^
 type ExcludeKeysWithTypeOf<T, V> = {
-  [K in keyof T]-?: Exclude<T[K], undefined> extends V ? never : K;
+  [K in keyof T]-?: [Exclude<T[K], undefined>] extends [V] ? never : K;
 }[keyof T];
 
 type ExcludeKeysWithoutTypeOf<T, V> = {
-  [K in keyof T]-?: Exclude<T[K], undefined> extends V ? K : never;
+  [K in keyof T]-?: [Exclude<T[K], undefined>] extends [V] ? K : never;
 }[keyof T];
 
 export type Without<T, V> = Pick<T, ExcludeKeysWithTypeOf<T, V>>;
