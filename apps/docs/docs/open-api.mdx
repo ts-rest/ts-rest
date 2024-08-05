@@ -190,12 +190,35 @@ async function bootstrap() {
     },
   });
 
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api-docs', app, document);
   //                   ^ Path for swagger
 
   await app.listen(3000);
 }
 bootstrap();
+```
+
+In Fastify use `@fastify/swagger` and `@fastify/swagger-ui`:
+
+```typescript
+import { myContract } from './my-api';
+import { generateOpenApi } from '@ts-rest/open-api';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUI from '@fastify/swagger-ui';
+
+const openApiDocument = generateOpenApi(myContract, {
+  info: {
+    title: 'Posts API',
+    version: '1.0.0',
+  },
+});
+
+app.register(fastifySwagger, {
+  transformObject: () => openApiDocument
+})
+.register(fastifySwaggerUI, {
+  routePrefix: '/api-docs',
+});
 ```
 
 Don't worry if you don't use express or Nest, whatever library you want to use is OK our OpenAPI returns a plain JSON object which is fully compliant with the OpenAPI spec.
