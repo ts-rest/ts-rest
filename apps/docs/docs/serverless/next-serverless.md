@@ -37,10 +37,10 @@ In addition to the regular context properties, the context object for Next handl
 - `nextRequest: NextRequest`: The Next.js specific request object.
 
 ```typescript
-import { createLambdaHandler } from '@ts-rest/serverless/aws';
+import { createNextHandler } from '@ts-rest/serverless/next';
 import { contract } from './contract';
 
-export const handler = createLambdaHandler(
+export const handler = createNextHandler(
   contract,
   {
     getPost: async ({ params: { id } }, { nextRequest, responseHeaders }) => {

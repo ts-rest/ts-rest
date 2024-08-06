@@ -46,7 +46,7 @@ In addition to the regular context properties, the context object for Azure Func
 - `azureContext: InvocationContext`: The Azure Function Invocation Context passed with each invocation of a function
 
 ```typescript
-import { createLambdaHandler } from '@ts-rest/serverless/aws';
+import { createAzureFunctionHandler } from '@ts-rest/serverless/azure';
 import { contract } from './contract';
 
 export const handler = createAzureFunctionHandler(
