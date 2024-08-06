@@ -12,6 +12,8 @@ import {
   INestApplication,
   ModuleMetadata,
   Type,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
@@ -22,6 +24,16 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { tsRestHandler, TsRestHandler } from './ts-rest-nest-handler';
+import { Reflector } from '@nestjs/core';
+import {
+  initializeTsRestRoutes,
+  TsrController,
+  TsRestController,
+} from './ts-rest-create-routes';
+import { TsRestAppRouteMetadataKey } from './constants';
+import { FileInterceptor } from '@nestjs/platform-express';
+import 'multer';
+import * as path from 'node:path';
 
 const c = initContract();
 const postsRouter = c.router({
@@ -471,36 +483,39 @@ describe('ts-rest-nest', () => {
 
     @TsRest({ validateResponses: true })
     @Controller()
-    class NonJsonController
-      implements NestControllerInterface<typeof nonJsonContract>
-    {
-      @TsRest(nonJsonContract.postIndex)
-      async postIndex(
-        @TsRestRequest()
-        {
-          body: { echoHtml },
-        }: NestRequestShapes<typeof nonJsonContract>['postIndex'],
-      ) {
-        return {
-          status: 200,
-          body: echoHtml,
-        } as const;
-      }
+    class NonJsonController extends TsRestController<NonJsonController>()(
+      nonJsonContract,
+      {
+        postIndex: {
+          md: [UseInterceptors(FileInterceptor('avatar'))],
+          pd: [UploadedFile()],
+          handler: async function (
+            { body },
+            uploadedFile: Express.Multer.File,
+          ) {
+            console.log(uploadedFile);
+            console.log('body', body);
 
-      @TsRest(nonJsonContract.getRobots)
-      async getRobots(@TsRestRequest() _: any) {
-        return {
-          status: 200,
-          body: 'User-agent: * Disallow: /',
-        } as const;
-      }
-
-      @TsRest(nonJsonContract.getCss)
-      async getCss(@TsRestRequest() _: any) {
-        return {
+            return {
+              status: 200,
+              body: body.echoHtml,
+            };
+          },
+        },
+        getRobots: async function () {
+          return {
+            status: 200,
+            body: 'User-agent: * Disallow: /',
+          };
+        },
+        getCss: async () => ({
           status: 200,
           body: 'body { color: red; }',
-        } as const;
+        }),
+      },
+    ) {
+      constructor(private reflector: Reflector) {
+        super();
       }
     }
 
@@ -509,7 +524,8 @@ describe('ts-rest-nest', () => {
 
       const responseHtml = await supertest(server)
         .post('/index.html')
-        .send({ echoHtml: '<h1>hello world</h1>' });
+        .field('echoHtml', '<h1>hello world</h1>')
+        .attach('avatar', path.join(__dirname, './nest.png'));
       expect(responseHtml.status).toEqual(200);
       expect(responseHtml.text).toEqual('<h1>hello world</h1>');
       expect(responseHtml.header['content-type']).toEqual(
@@ -604,15 +620,17 @@ describe('ts-rest-nest', () => {
     });
 
     @Controller()
-    class TestController implements NestControllerInterface<typeof contract> {
-      @TsRest(contract.getIndex)
-      async getIndex(
-        @TsRestRequest()
-        { query }: NestRequestShapes<typeof contract>['getIndex'],
-      ) {
+    class TestController implements TsrController<typeof contract> {
+      static {
+        initializeTsRestRoutes(this, contract);
+      }
+
+      async getIndex({ query }: TsrRequest<typeof contract.getIndex>) {
         return {
           status: 200,
-          body: query,
+          body: {
+            foo: true,
+          },
         } as const;
       }
     }
