@@ -1,14 +1,17 @@
 import { createNextHandler } from '@ts-rest/serverless/next';
 import { testContract } from '../../../../contracts/test-contract';
+import { randomInt } from 'crypto';
 
 const handler = createNextHandler(
   testContract,
   {
     test: async ({ params, query }) => {
+      console.log('hitting test endpoint', params, query);
+
       return {
         status: 200,
         body: {
-          ...params,
+          id: randomInt(1000),
           ...query,
           deleteMe: 'response validation will delete me :(',
         },
