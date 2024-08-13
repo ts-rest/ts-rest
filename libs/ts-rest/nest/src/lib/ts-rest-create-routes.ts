@@ -9,43 +9,122 @@ import { TsRest } from './ts-rest.decorator';
 import { TsRestOptions } from './ts-rest-options';
 import { NestControllerInterface } from './ts-rest-nest';
 
-export type NestHandler<T extends AppRoute, C> = (
-  this: C,
-  request: TsRestRequestShape<T>,
-  ...args: any[]
-) => Promise<ServerInferResponses<T>>;
-
-type NestMethodDefinition<T extends AppRoute, C> = {
-  handler: NestHandler<T, C>;
-  md?: MethodDecorator[];
-  pd?: ParameterDecorator[];
-} & TsRestOptions;
-
-type NestRoutes<T extends AppRouter, C> = {
-  [K in keyof T]: T[K] extends AppRoute
-    ? NestHandler<T[K], C> | NestMethodDefinition<T[K], C>
-    : never;
-};
-
-interface TsRestControllerClass<T extends AppRouter> {
-  new (): Omit<NestControllerInterface<T>, 'handler'>;
-  copyDecorators(): void;
+export interface NestHandler<T extends AppRoute, C> {
+  (
+    this: C,
+    request: TsRestRequestShape<T>,
+    ...args: any[]
+  ): Promise<ServerInferResponses<T>>;
 }
 
-export type TsrController<T extends AppRouter> = Omit<
-  NestControllerInterface<T>,
-  'handler'
->;
+type NestRoutes<T extends AppRouter, C> = {
+  [K in keyof T]: T[K] extends AppRoute ? NestHandler<T[K], C> : never;
+};
+
+type TsrControllerInterface<T extends AppRouter, C> = {
+  [K in keyof T]: T[K] extends AppRoute ? NestHandler<T[K], C> : never;
+};
+
+interface TsRestControllerClass<T extends AppRouter, C> {
+  new (): TsrControllerInterface<T, C>;
+}
+
+export class TsrController<T extends AppRouter> {
+  tsr!: {
+    [K in keyof T]: T[K] extends AppRoute ? TsRestRequestShape<T[K]> : never;
+  };
+}
 
 export const TsRestController =
   <C>() =>
   <T extends AppRouter>(contract: T, routes: NestRoutes<T, C>) => {
-    const tsRestController = class {} as TsRestControllerClass<T>;
+    const tsRestController = class {
+      constructor() {
+        const proto = Object.getPrototypeOf(this);
+
+        if (Reflect.getMetadata('__metadataCopied__', proto)) {
+          return;
+        }
+
+        for (const key in routes) {
+          if (Object.prototype.hasOwnProperty.call(proto, `_${key}`)) {
+            const methodMetadataKeys = Reflect.getMetadataKeys(
+              proto[`_${key}`],
+            );
+
+            for (const methodMetadataKey of methodMetadataKeys) {
+              const methodMetadata = Reflect.getMetadata(
+                methodMetadataKey,
+                proto[`_${key}`],
+              );
+
+              if (Array.isArray(methodMetadata)) {
+                const originalArrayMetadata = Reflect.getMetadata(
+                  methodMetadataKey,
+                  proto[key],
+                );
+
+                Reflect.defineMetadata(
+                  methodMetadataKey,
+                  originalArrayMetadata
+                    ? [...methodMetadata, ...originalArrayMetadata]
+                    : methodMetadata,
+                  proto[key],
+                );
+              } else {
+                Reflect.defineMetadata(
+                  methodMetadataKey,
+                  methodMetadata,
+                  proto[key],
+                );
+              }
+            }
+
+            const routeArgumentMetadata = Reflect.getMetadata(
+              '__routeArguments__',
+              proto['constructor'],
+              `_${key}`,
+            );
+
+            if (routeArgumentMetadata) {
+              const originalRouteArgumentMetadata = Reflect.getMetadata(
+                '__routeArguments__',
+                proto['constructor'],
+                key,
+              );
+
+              Reflect.defineMetadata(
+                '__routeArguments__',
+                {
+                  ...originalRouteArgumentMetadata,
+                  ...Object.fromEntries(
+                    Object.entries(routeArgumentMetadata).map(
+                      ([k, v]: [string, any]) => [
+                        k,
+                        {
+                          ...v,
+                          index: v.index + 1,
+                        },
+                      ],
+                    ),
+                  ),
+                },
+                proto['constructor'],
+                key,
+              );
+            }
+          }
+        }
+
+        Reflect.defineMetadata('__metadataCopied__', true, proto);
+      }
+    } as TsRestControllerClass<T, C>;
 
     for (const key in routes) {
-      const methodDefinition = routes[key] as unknown as
-        | NestHandler<AppRoute, C>
-        | NestMethodDefinition<AppRoute, C>;
+      const methodDefinition = routes[key] as unknown as NestHandler<
+        AppRoute,
+        C
+      >;
 
       let handler: NestHandler<AppRoute, C>;
       let pd: ParameterDecorator[] = [];
@@ -86,7 +165,7 @@ export const TsRestController =
   };
 
 export const initializeTsRestRoutes = <T extends AppRouter>(
-  controllerClass: TsRestControllerClass<T>,
+  controllerClass: TsRestControllerClass<T, {}>,
   contract: T,
 ) => {
   for (const key in contract) {

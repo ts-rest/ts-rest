@@ -486,21 +486,20 @@ describe('ts-rest-nest', () => {
     class NonJsonController extends TsRestController<NonJsonController>()(
       nonJsonContract,
       {
-        postIndex: {
-          md: [UseInterceptors(FileInterceptor('avatar'))],
-          pd: [UploadedFile()],
-          handler: async function (
-            { body },
-            uploadedFile: Express.Multer.File,
-          ) {
-            console.log(uploadedFile);
-            console.log('body', body);
+        postIndex: async function (
+          { body },
+          uploadedFile: Express.Multer.File,
+        ) {
+          console.log(uploadedFile);
+          console.log('body', body);
 
-            return {
-              status: 200,
-              body: body.echoHtml,
-            };
-          },
+          console.log(Reflect.getMetadataKeys(this.postIndex));
+          console.log(Reflect.getMetadata('__interceptors__', this.postIndex));
+
+          return {
+            status: 200,
+            body: body.echoHtml,
+          };
         },
         getRobots: async function () {
           return {
@@ -517,6 +516,9 @@ describe('ts-rest-nest', () => {
       constructor(private reflector: Reflector) {
         super();
       }
+
+      @UseInterceptors(FileInterceptor('avatar'))
+      _postIndex(@UploadedFile() _2: never) {}
     }
 
     it('express', async () => {
@@ -620,18 +622,18 @@ describe('ts-rest-nest', () => {
     });
 
     @Controller()
-    class TestController implements TsrController<typeof contract> {
+    class TestController extends TsrController<typeof contract> {
       static {
         initializeTsRestRoutes(this, contract);
       }
 
-      async getIndex({ query }: TsrRequest<typeof contract.getIndex>) {
-        return {
+      async getIndex({ query, res }: typeof this.tsr.getIndex) {
+        return res({
           status: 200,
           body: {
-            foo: true,
+            foo: query.foo,
           },
-        } as const;
+        });
       }
     }
 

@@ -13,6 +13,7 @@ import {
   checkZodSchema,
   parseJsonQueryObject,
   ServerInferRequest,
+  ServerInferResponses,
   zodErrorResponse,
 } from '@ts-rest/core';
 import type { Request } from 'express-serve-static-core';
@@ -24,7 +25,9 @@ import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
 export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
   TRoute,
   Request['headers']
->;
+> & {
+  res: <T extends ServerInferResponses<TRoute>>(res: T) => T;
+};
 
 @Injectable()
 class TsRestValidatorPipe implements PipeTransform {
@@ -89,6 +92,7 @@ class TsRestValidatorPipe implements PipeTransform {
       headers: headersResult.success
         ? (headersResult.data as TsRestRequestShape<typeof appRoute>['headers'])
         : req.headers,
+      res: (res) => res,
     };
   }
 }
