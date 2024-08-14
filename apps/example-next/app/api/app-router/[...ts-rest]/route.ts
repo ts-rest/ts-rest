@@ -1,14 +1,10 @@
 import { createNextHandler } from '@ts-rest/serverless/next';
 import { testContract } from '../../../../contracts/test-contract';
 
-let counter = 0;
-
 const handler = createNextHandler(
   testContract,
   {
     test: async ({ params, query }) => {
-      counter++;
-      console.log({ counter });
       return {
         status: 200,
         body: {
