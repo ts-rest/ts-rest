@@ -19,9 +19,13 @@
   },
   "license": "MIT",
   "peerDependencies": {
+    "@types/node": "^18.18.7 || >=20.8.4",
     "zod": "^3.22.3"
   },
   "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }

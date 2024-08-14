@@ -212,7 +212,7 @@ type ClientGetPostsType = Expect<
         } & Record<string, string | undefined>;
         fetchOptions?: FetchOptions;
         overrideClientOptions?: Partial<OverrideableClientArgs>;
-        cache?: RequestCache;
+        cache?: FetchOptions['cache'];
       }
     | undefined
   >
@@ -241,7 +241,7 @@ type ClientWithoutBaseHeadersGetPostsType = Expect<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: RequestCache;
+      cache?: FetchOptions['cache'];
     }
   >
 >;
@@ -265,7 +265,7 @@ type ClientGetPostType = Expect<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: RequestCache;
+      cache?: FetchOptions['cache'];
     }
   >
 >;
@@ -773,7 +773,7 @@ describe('client', () => {
         baseUrl: 'http://localhost:5002',
       });
 
-      global.fetch = jest.fn(() =>
+      globalThis.fetch = jest.fn(() =>
         Promise.resolve({
           json: () =>
             Promise.resolve({
@@ -797,7 +797,7 @@ describe('client', () => {
         } as RequestInit,
       });
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'http://localhost:5002/posts/1',
         {
           cache: undefined,
@@ -812,7 +812,7 @@ describe('client', () => {
           },
         },
       );
-      (global.fetch as jest.Mock).mockClear();
+      (globalThis.fetch as jest.Mock).mockClear();
     });
   });
 });
@@ -866,7 +866,7 @@ type CustomClientGetPostsType = Expect<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: RequestCache;
+      cache?: FetchOptions['cache'];
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -891,7 +891,7 @@ type CustomClientGetPostType = Expect<
       } & Record<string, string | undefined>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: RequestCache;
+      cache?: FetchOptions['cache'];
       uploadProgress?: (progress: number) => void;
     }
   >
