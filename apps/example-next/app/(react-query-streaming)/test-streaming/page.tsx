@@ -13,7 +13,7 @@ export default function Test() {
   tsrQueryClient.test.prefetchQuery({
     queryKey: ['TEST_SUSPENSE'],
     queryData: {
-      params: { id: 2 },
+      params: { id: 1 },
       query: { foo: 'test', bar: 123 },
     },
   });
