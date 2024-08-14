@@ -29,4 +29,5 @@ export {
   handler as PUT,
   handler as PATCH,
   handler as DELETE,
+  handler as OPTIONS,
 };
