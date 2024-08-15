@@ -34,9 +34,9 @@ To get around this, you can manually add back the extended part in the generics 
 import { tsr } from '@ts-rest/serverless/aws';
 import { contract } from './contract';
 
-export const postsRouter = tsr.router<
+export const postsRouter = tsr.routerWithMiddleware(contract)<
   { userId: string } // <-- Add the extended part here. This will be visible in request.userId
->(contract, { ... });
+>({ ... });
 ```
 ## Context Object
 

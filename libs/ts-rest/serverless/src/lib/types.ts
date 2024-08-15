@@ -156,8 +156,8 @@ export type ServerlessHandlerOptions<
 
 export const createTsr = <TPlatformContext = {}>() => ({
   router: <
+    T extends AppRouter,
     TRequestExtension = {},
-    T extends AppRouter = AppRouter,
     TRouter extends RouterImplementation<
       T,
       TPlatformContext,
@@ -167,12 +167,25 @@ export const createTsr = <TPlatformContext = {}>() => ({
     contract: T,
     router: TRouter,
   ) => router,
-  routerBuilder: <T extends AppRouter = AppRouter>(contract: T) => {
+  routerWithMiddleware:
+    <T extends AppRouter>(contract: T) =>
+    <
+      TRequestExtension,
+      TRouter extends RouterImplementation<
+        T,
+        TPlatformContext,
+        TRequestExtension
+      > = RouterImplementation<T, TPlatformContext, TRequestExtension>,
+    >(
+      router: TRouter,
+    ) =>
+      router,
+  routerBuilder: <T extends AppRouter>(contract: T) => {
     return new RouterBuilder<T, TPlatformContext, {}>(contract);
   },
   route: <
+    T extends AppRoute,
     TRequestExtension = {},
-    T extends AppRoute = AppRoute,
     TRoute extends AppRouteImplementationOrOptions<
       T,
       TPlatformContext,
