@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.50.0
+
+### Minor Changes
+
+- 83f6675: Do not require `body` to be defined for DELETE endpoints in contracts
+
 ## 3.49.4
 
 ### Patch Changes

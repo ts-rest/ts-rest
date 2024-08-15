@@ -1,5 +1,11 @@
 # @ts-rest/serverless
 
+## 3.50.0
+
+### Minor Changes
+
+- e6af1db: Revert breaking change from v3.47.0. Order of generics on `tsr.router` and `tsr.route` have been reverted. `tsr.routerWithMiddleware` has been introduced so the contract does need to be passed twice.
+
 ## 3.49.4
 
 ## 3.49.3
