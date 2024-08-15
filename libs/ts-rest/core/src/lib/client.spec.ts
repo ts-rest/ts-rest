@@ -126,6 +126,13 @@ const postsRouter = c.router({
       204: c.noBody(),
     },
   },
+  deletePostUndefinedBody: {
+    method: 'DELETE',
+    path: `/posts/:id`,
+    responses: {
+      204: c.noBody(),
+    },
+  },
 });
 
 // Three endpoints, two for posts, and one for health
@@ -602,6 +609,24 @@ describe('client', () => {
       );
 
       const result = await client.posts.deletePost({
+        params: { id: '1' },
+      });
+
+      expect((result.body as Blob).size).toStrictEqual(0);
+      expect(result.status).toBe(204);
+      expect(result.headers.has('Content-Length')).toBe(false);
+      expect(result.headers.has('Content-Type')).toBe(false);
+    });
+
+    it('w/ undefined body', async () => {
+      fetchMock.deleteOnce(
+        {
+          url: 'https://api.com/posts/1',
+        },
+        { status: 204 },
+      );
+
+      const result = await client.posts.deletePostUndefinedBody({
         params: { id: '1' },
       });
 

@@ -69,6 +69,14 @@ export type AppRouteMutation = AppRouteCommon & {
   body: ContractAnyType | ContractNoBodyType;
 };
 
+/**
+ * A mutation endpoint. In REST terms, one using POST, PUT,
+ * PATCH, or DELETE.
+ */
+export type AppRouteDeleteNoBody = AppRouteCommon & {
+  method: 'DELETE';
+};
+
 type ValidatedHeaders<
   T extends AppRoute,
   TOptions extends RouterOptions,
@@ -158,7 +166,7 @@ type ApplyOptions<
 /**
  * A union of all possible endpoint types.
  */
-export type AppRoute = AppRouteQuery | AppRouteMutation;
+export type AppRoute = AppRouteQuery | AppRouteMutation | AppRouteDeleteNoBody;
 export type AppRouteStrictStatusCodes = Omit<AppRoute, 'strictStatusCodes'> & {
   strictStatusCodes: true;
 };

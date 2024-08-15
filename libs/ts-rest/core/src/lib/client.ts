@@ -263,13 +263,16 @@ export const fetchApi = (options: FetchApiOptions) => {
   };
 
   if (route.method !== 'GET') {
-    if (route.contentType === 'multipart/form-data') {
+    if ('contentType' in route && route.contentType === 'multipart/form-data') {
       fetcherArgs = {
         ...fetcherArgs,
         contentType: 'multipart/form-data',
         body: body instanceof FormData ? body : createFormData(body),
       };
-    } else if (route.contentType === 'application/x-www-form-urlencoded') {
+    } else if (
+      'contentType' in route &&
+      route.contentType === 'application/x-www-form-urlencoded'
+    ) {
       fetcherArgs = {
         ...fetcherArgs,
         contentType: 'application/x-www-form-urlencoded',
