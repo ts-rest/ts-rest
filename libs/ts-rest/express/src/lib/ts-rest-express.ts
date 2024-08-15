@@ -1,7 +1,5 @@
 import {
   AppRoute,
-  AppRouteMutation,
-  AppRouteQuery,
   AppRouter,
   checkZodSchema,
   HTTPStatusCode,
@@ -88,7 +86,7 @@ const recursivelyApplyExpressRouter = ({
 const validateRequest = (
   req: Request,
   res: Response,
-  schema: AppRouteQuery | AppRouteMutation,
+  schema: AppRoute,
   options: TsRestExpressOptions<AppRouter>,
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {

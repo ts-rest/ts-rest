@@ -71,7 +71,7 @@ const recursivelyProcessContract = ({
 
 const validateRequest = <TPlatformArgs, TRequestExtension>(
   req: TsRestRequest,
-  schema: AppRouteQuery | AppRouteMutation,
+  schema: AppRoute,
   options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension>,
 ) => {
   const paramsResult = checkZodSchema(req.params, schema.pathParams, {

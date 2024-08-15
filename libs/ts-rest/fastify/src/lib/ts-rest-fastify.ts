@@ -1,7 +1,5 @@
 import {
   AppRoute,
-  AppRouteMutation,
-  AppRouteQuery,
   AppRouter,
   checkZodSchema,
   FlattenAppRouter,
@@ -143,7 +141,7 @@ const isAppRouteImplementation = <TRoute extends AppRoute>(
 const validateRequest = (
   request: fastify.FastifyRequest,
   reply: fastify.FastifyReply,
-  schema: AppRouteQuery | AppRouteMutation,
+  schema: AppRoute,
   options: BaseRegisterRouterOptions,
 ) => {
   const paramsResult = checkZodSchema(request.params, schema.pathParams, {

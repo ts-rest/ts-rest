@@ -236,7 +236,7 @@ export const generateOpenApi = (
     );
 
     const bodySchema =
-      path.route?.method !== 'GET'
+      path.route?.method !== 'GET' && 'body' in path.route
         ? getOpenApiSchemaFromZod(path.route.body)
         : null;
 
@@ -268,7 +268,7 @@ export const generateOpenApi = (
     );
 
     const contentType =
-      path.route?.method !== 'GET'
+      path.route?.method !== 'GET' && 'contentType' in path.route
         ? path.route?.contentType ?? 'application/json'
         : 'application/json';
 
