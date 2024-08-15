@@ -553,7 +553,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
-          cache?: RequestCache;
+          cache?: FetchOptions['cache'];
         };
         createPost: {
           body: { title: string; content: string };
@@ -564,7 +564,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
-          cache?: RequestCache;
+          cache?: FetchOptions['cache'];
         };
         uploadImage: {
           body:
@@ -580,7 +580,7 @@ it('type inference helpers', () => {
           } & Record<string, string | undefined>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
-          cache?: RequestCache;
+          cache?: FetchOptions['cache'];
         };
         nested: {
           getComments: {
@@ -597,7 +597,7 @@ it('type inference helpers', () => {
             } & Record<string, string | undefined>;
             fetchOptions?: FetchOptions;
             overrideClientOptions?: Partial<OverrideableClientArgs>;
-            cache?: RequestCache;
+            cache?: FetchOptions['cache'];
           };
         };
       }
@@ -614,7 +614,7 @@ it('type inference helpers', () => {
           extraHeaders?: Record<string, string | undefined>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
-          cache?: RequestCache;
+          cache?: FetchOptions['cache'];
         };
       }
     >

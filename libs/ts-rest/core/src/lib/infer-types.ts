@@ -242,7 +242,9 @@ type ClientInferRequestBase<
       /**
        * @deprecated Use `fetchOptions.cache` instead
        */
-      cache?: RequestCache;
+      cache?: 'cache' extends keyof TFetchOptions
+        ? TFetchOptions['cache']
+        : never;
 
       /**
        * @deprecated Use `fetchOptions.next` instead

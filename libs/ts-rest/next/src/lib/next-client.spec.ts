@@ -39,7 +39,7 @@ describe('next-client', () => {
       extraHeaders?: Test['extraHeaders'];
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: RequestCache;
+      cache?: FetchOptions['cache'];
       next?: FetchOptions['next'];
     };
     type NextClientTypeTest = Expect<Equal<Test, ExpectedClientArgs>>;

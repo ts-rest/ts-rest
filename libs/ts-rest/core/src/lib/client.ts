@@ -42,11 +42,18 @@ export type AppRouteFunction<
   ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
   : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
 
-export type FetchOptions = Omit<RequestInit, 'method' | 'headers' | 'body'>;
+export type FetchOptions = typeof globalThis extends {
+  Request: infer T extends typeof Request;
+}
+  ? Omit<
+      NonNullable<ConstructorParameters<T>[1]>,
+      'method' | 'headers' | 'body'
+    >
+  : never;
 
 export interface OverrideableClientArgs {
   baseUrl: string;
-  credentials?: RequestCredentials;
+  credentials?: FetchOptions['credentials'];
   jsonQuery?: boolean;
   validateResponse?: boolean;
 }
@@ -56,35 +63,38 @@ export interface ClientArgs extends OverrideableClientArgs {
   api?: ApiFetcher;
 }
 
-export type ApiFetcherArgs = {
-  route: AppRoute;
-  path: string;
-  method: string;
-  headers: Record<string, string>;
-  body: FormData | URLSearchParams | string | null | undefined;
-  rawBody: unknown;
-  rawQuery: unknown;
-  contentType: AppRouteMutation['contentType'];
-  fetchOptions?: FetchOptions;
-  validateResponse?: boolean;
+export type ApiFetcherArgs<TFetchOptions extends FetchOptions = FetchOptions> =
+  {
+    route: AppRoute;
+    path: string;
+    method: string;
+    headers: Record<string, string>;
+    body: FormData | URLSearchParams | string | null | undefined;
+    rawBody: unknown;
+    rawQuery: unknown;
+    contentType: AppRouteMutation['contentType'];
+    fetchOptions?: FetchOptions;
+    validateResponse?: boolean;
 
-  /**
-   * @deprecated Use `fetchOptions.credentials` instead
-   */
-  credentials?: RequestCredentials;
-  /**
-   * @deprecated Use `fetchOptions.signal` instead
-   */
-  signal?: AbortSignal;
-  /**
-   * @deprecated Use `fetchOptions.cache` instead
-   */
-  cache?: RequestCache;
-  /**
-   * @deprecated Use `fetchOptions.next` instead
-   */
-  next?: { revalidate?: number | false; tags?: string[] } | undefined;
-};
+    /**
+     * @deprecated Use `fetchOptions.credentials` instead
+     */
+    credentials?: TFetchOptions['credentials'];
+    /**
+     * @deprecated Use `fetchOptions.signal` instead
+     */
+    signal?: TFetchOptions['signal'];
+    /**
+     * @deprecated Use `fetchOptions.cache` instead
+     */
+    cache?: 'cache' extends keyof TFetchOptions
+      ? TFetchOptions['cache']
+      : never;
+    /**
+     * @deprecated Use `fetchOptions.next` instead
+     */
+    next?: 'next' extends keyof TFetchOptions ? TFetchOptions['next'] : never;
+  };
 
 export type ApiFetcher = (args: ApiFetcherArgs) => Promise<{
   status: number;
@@ -249,7 +259,7 @@ export const fetchApi = (options: FetchApiOptions) => {
     ...(fetchOptions?.cache && { cache: fetchOptions.cache }),
     ...(fetchOptions &&
       'next' in fetchOptions &&
-      !!fetchOptions?.next && { next: fetchOptions.next }),
+      !!fetchOptions?.next && { next: fetchOptions.next as any }),
   };
 
   if (route.method !== 'GET') {
