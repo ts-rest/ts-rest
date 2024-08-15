@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.49.4
+
+### Patch Changes
+
+- 52a2b35: Fix broken types on TS 5.5 in Node environments without `lib.dom`
+
 ## 3.49.3
 
 ### Patch Changes
