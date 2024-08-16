@@ -43,13 +43,24 @@ Import your contract, and pass it with the client options to the `initTsrReactQu
 
 ```tsx
 import { initTsrReactQuery } from '@ts-rest/react-query/v5';
+import { getAccessToken } from '@some-auth-lib/sdk';
 import { contract } from './contract';
 
 export const tsr = initTsrReactQuery(contract, {
   baseUrl: 'http://localhost:3333',
-  baseHeaders: {},
+  baseHeaders: {
+    'x-app-source': 'ts-rest',
+    'x-access-token': () => getAccessToken(),
+  },
 });
 ```
+
+:::info
+
+`initTsrReactQuery` uses our the fetch client under the hood, so you can configure it just as you would the fetch client, including passing a custom API fetcher.
+For more information, see the [fetch client documentation](/docs/core/fetch).
+
+:::
 
 ### 4. Setup ts-rest Provider
 
