@@ -716,7 +716,43 @@ describe('tsRestLambda', () => {
     });
   });
 
-  it('should handle cookies returned in response', async () => {
+  it('V1 should handle cookies returned in response', async () => {
+    const event = createV1LambdaRequest({
+      httpMethod: 'GET',
+      path: '/test',
+      queryStringParameters: {
+        foo: 'baz',
+        setCookies: 'true',
+      },
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 200,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        'set-cookie':
+          'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict, bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+        vary: 'Origin',
+      },
+      multiValueHeaders: {
+        'access-control-allow-credentials': ['true'],
+        'access-control-allow-origin': ['http://localhost'],
+        'content-type': ['application/json'],
+        'set-cookie': [
+          'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+          'bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+        ],
+        vary: ['Origin'],
+      },
+      body: '{"foo":"baz"}',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('V2 should handle cookies returned in response', async () => {
     const event = createV2LambdaRequest({
       requestContext: {
         http: {
