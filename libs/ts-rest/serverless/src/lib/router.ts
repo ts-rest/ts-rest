@@ -1,7 +1,5 @@
 import {
   AppRoute,
-  AppRouteMutation,
-  AppRouteQuery,
   AppRouter,
   checkZodSchema,
   isAppRoute,
@@ -139,21 +137,20 @@ const tsRestMiddleware = <TPlatformArgs, TRequestExtension>(
     }
   };
 
-  const preflight = (
-    request: TsRestRequest & { preflightCorsHeadersSet: boolean },
-  ): TsRestResponse | void => {
+  type RequestWithPreflightContext = TsRestRequest & {
+    preflightCorsHeadersSet: boolean;
+  };
+
+  const preflight = (request: TsRestRequest): TsRestResponse | void => {
     const preflightResult = ittyPreflight(request);
     if (preflightResult) {
-      request.preflightCorsHeadersSet = true;
+      (request as RequestWithPreflightContext).preflightCorsHeadersSet = true;
       return new TsRestResponse(null, preflightResult);
     }
   };
 
-  const corsify = (
-    response: TsRestResponse,
-    request: TsRestRequest & { preflightCorsHeadersSet: boolean },
-  ) => {
-    if (!request.preflightCorsHeadersSet) {
+  const corsify = (response: TsRestResponse, request: TsRestRequest) => {
+    if (!(request as RequestWithPreflightContext).preflightCorsHeadersSet) {
       return ittyCorsify(response, request);
     }
     return response;

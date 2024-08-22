@@ -34,4 +34,8 @@ export class TsRestResponse extends Response {
       headers,
     });
   }
+
+  override clone() {
+    return new TsRestResponse(this.rawBody, this);
+  }
 }
