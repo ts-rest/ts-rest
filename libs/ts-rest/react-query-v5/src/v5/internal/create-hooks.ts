@@ -12,6 +12,7 @@ import {
   usePrefetchQuery,
   usePrefetchInfiniteQuery,
   QueryOptions,
+  skipToken,
 } from '@tanstack/react-query';
 import {
   AppRoute,
@@ -70,20 +71,25 @@ function createBaseQueryOptions<
   TClientArgs extends ClientArgs,
   TOptions extends QueryOptions<any, any>,
 >(route: TAppRoute, clientArgs: TClientArgs, options: TOptions): TOptions {
-  const { queryData, ...rqOptions } = options as unknown as TOptions &
-    (
-      | TsRestQueryOptions<TAppRoute, TClientArgs>
-      | TsRestInfiniteQueryOptions<TAppRoute, TClientArgs>
-    );
+  const { queryData: queryDataOrFunction, ...rqOptions } =
+    options as unknown as TOptions &
+      (
+        | TsRestQueryOptions<TAppRoute, TClientArgs>
+        | TsRestInfiniteQueryOptions<TAppRoute, TClientArgs>
+      );
   return {
     ...rqOptions,
-    queryFn: (context?: QueryFunctionContext<QueryKey, unknown>) => {
-      return apiFetcher(
-        route,
-        clientArgs,
-        context?.signal,
-      )(typeof queryData === 'function' ? queryData(context!) : queryData);
-    },
+    queryFn:
+      queryDataOrFunction === skipToken
+        ? skipToken
+        : (context?: QueryFunctionContext<QueryKey, unknown>) => {
+            const requestData =
+              typeof queryDataOrFunction === 'function'
+                ? queryDataOrFunction(context!)
+                : queryDataOrFunction;
+
+            return apiFetcher(route, clientArgs, context?.signal)(requestData);
+          },
   } as unknown as TOptions;
 }
 
