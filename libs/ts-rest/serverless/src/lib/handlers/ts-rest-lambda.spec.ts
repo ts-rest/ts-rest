@@ -1,3 +1,7 @@
+/**
+ * @vitest-environment node
+ */
+
 import { initContract } from '@ts-rest/core';
 import type {
   APIGatewayProxyEvent,
