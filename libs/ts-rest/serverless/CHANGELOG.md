@@ -1,5 +1,16 @@
 # @ts-rest/serverless
 
+## 3.51.0
+
+### Minor Changes
+
+- d4692e3: New `createFetchHandler` function added so a fetch handler can be initialized once and re-used
+
+### Patch Changes
+
+- 7cf4415: Fix AWS Lambda handler not working in Node.js environments.
+- d4692e3: Fix response handling for itty-router >= 5.0.17
+
 ## 3.50.0
 
 ### Minor Changes

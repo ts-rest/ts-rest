@@ -1,5 +1,11 @@
 # @ts-rest/react-query
 
+## 3.51.0
+
+### Minor Changes
+
+- d9111cc: Add ability to pass `skipToken` to `queryData` similar to how you can pass it to `queryFn` in plain React Query
+
 ## 3.50.0
 
 ## 3.49.4
