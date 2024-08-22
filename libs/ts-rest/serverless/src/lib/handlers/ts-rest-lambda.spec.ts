@@ -158,7 +158,10 @@ describe('tsRestLambda', () => {
           },
         };
       },
-      ping: async ({ body, params }) => {
+      ping: async ({ body, params }, { responseHeaders }) => {
+        responseHeaders.append('Cache-Control', 'no-cache');
+        responseHeaders.append('Cache-Control', 'no-store');
+
         return {
           status: 200,
           body: {
@@ -336,12 +339,14 @@ describe('tsRestLambda', () => {
       headers: {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
+        'cache-control': 'no-cache, no-store',
         'content-type': 'application/json',
         vary: 'Origin',
       },
       multiValueHeaders: {
         'access-control-allow-credentials': ['true'],
         'access-control-allow-origin': ['http://localhost'],
+        'cache-control': ['no-cache', 'no-store'],
         'content-type': ['application/json'],
         vary: ['Origin'],
       },
@@ -370,6 +375,7 @@ describe('tsRestLambda', () => {
       headers: {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
+        'cache-control': 'no-cache, no-store',
         'content-type': 'application/json',
         vary: 'Origin',
       },

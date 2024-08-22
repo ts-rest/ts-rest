@@ -26,7 +26,6 @@ import {
   ServerlessHandlerOptions,
   RouterImplementationOrFluentRouter,
 } from './types';
-import { blobToArrayBuffer } from './utils';
 import { TsRestHttpError } from './http-error';
 import { RouterBuilder } from './router-builder';
 
@@ -324,10 +323,6 @@ export const createServerlessRouter = <
             responseHeaders.set(
               'content-type',
               validatedResponseBody.type || responseType.contentType,
-            );
-
-            validatedResponseBody = await blobToArrayBuffer(
-              validatedResponseBody,
             );
           } else {
             responseHeaders.set('content-type', responseType.contentType);

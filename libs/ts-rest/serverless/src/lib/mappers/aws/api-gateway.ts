@@ -6,7 +6,11 @@ import type {
 } from 'aws-lambda';
 import { TsRestRequest } from '../../request';
 import { TsRestResponse } from '../../response';
-import { arrayBufferToBase64, arrayBufferToString } from '../../utils';
+import {
+  arrayBufferToBase64,
+  arrayBufferToString,
+  splitCookiesString,
+} from '../../utils';
 
 type EventV1 = APIGatewayProxyEvent;
 type EventV2 = APIGatewayProxyEventV2;
@@ -124,13 +128,16 @@ export async function responseToResult(
   const multiValueHeaders = {} as Record<string, string[]>;
 
   response.headers.forEach((value, key) => {
-    headers[key] = (headers[key] ? [headers[key]] : [])
-      .concat(value)
-      .join(', ');
+    headers[key] = headers[key] ? `${headers[key]}, ${value}` : value;
 
-    multiValueHeaders[key] = (
-      multiValueHeaders[key] ? multiValueHeaders[key] : []
-    ).concat(value);
+    const multiValueHeaderValue =
+      key === 'set-cookie'
+        ? splitCookiesString(value)
+        : value.split(',').map((v) => v.trim());
+
+    multiValueHeaders[key] = multiValueHeaders[key]
+      ? [...multiValueHeaders[key], ...multiValueHeaderValue]
+      : multiValueHeaderValue;
   });
 
   let cookies = [] as string[];
