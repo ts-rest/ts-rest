@@ -1,7 +1,5 @@
 import {
   AppRoute,
-  AppRouteMutation,
-  AppRouteQuery,
   AppRouter,
   checkZodSchema,
   isAppRoute,

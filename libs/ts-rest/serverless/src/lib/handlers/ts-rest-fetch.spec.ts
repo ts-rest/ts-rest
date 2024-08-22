@@ -2,7 +2,12 @@ import { initContract, TsRestResponseError } from '@ts-rest/core';
 import { parse as parseMultipart, getBoundary } from 'parse-multipart-data';
 import { z } from 'zod';
 import { vi } from 'vitest';
-import { fetchRequestHandler, tsr } from './ts-rest-fetch';
+import {
+  createFetchHandler,
+  FetchHandlerOptions,
+  fetchRequestHandler,
+  tsr,
+} from './ts-rest-fetch';
 import { RequestValidationErrorSchema } from '../types';
 
 const c = initContract();
@@ -142,21 +147,25 @@ const router = tsr
     throw new Error('Test error');
   });
 
+const options = {
+  jsonQuery: true,
+  responseValidation: true,
+  cors: {
+    origin: ['http://localhost'],
+    credentials: true,
+  },
+} as FetchHandlerOptions<{}, { foo: string }>;
+
 const testFetchRequestHandler = (request: Request) => {
   return fetchRequestHandler({
     contract,
     router,
-    options: {
-      jsonQuery: true,
-      responseValidation: true,
-      cors: {
-        origin: ['http://localhost'],
-        credentials: true,
-      },
-    },
+    options,
     request,
   });
 };
+
+const newFetchRequestHandler = createFetchHandler(contract, router, options);
 
 describe('fetchRequestHandler', () => {
   afterEach(() => {
@@ -194,7 +203,7 @@ describe('fetchRequestHandler', () => {
       body: JSON.stringify({ ping: 'foo' }),
     });
 
-    const response = await testFetchRequestHandler(request);
+    const response = await newFetchRequestHandler(request);
     const expectedResponse = new Response('{"id":123,"pong":"foo"}', {
       headers: {
         'access-control-allow-credentials': 'true',
@@ -270,7 +279,7 @@ describe('fetchRequestHandler', () => {
       body: JSON.stringify({ ping: 'foo' }),
     });
 
-    const response = await testFetchRequestHandler(request);
+    const response = await newFetchRequestHandler(request);
     const expectedResponse = new Response(null, {
       status: 500,
       headers: {
@@ -356,7 +365,7 @@ describe('fetchRequestHandler', () => {
       headers: { origin: 'http://localhost' },
     });
 
-    const response = await testFetchRequestHandler(request);
+    const response = await newFetchRequestHandler(request);
     const expectedResponse = new Response(null, {
       status: 500,
       headers: {
