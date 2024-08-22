@@ -1,37 +1,83 @@
+function isArrayBuffer(maybeBuffer: unknown): maybeBuffer is ArrayBuffer {
+  return (
+    maybeBuffer instanceof ArrayBuffer ||
+    (typeof maybeBuffer === 'object' &&
+      Object.prototype.toString.call(maybeBuffer) === '[object ArrayBuffer]')
+  );
+}
+
 export async function arrayBufferToBase64(bufferOrBlob: ArrayBuffer | Blob) {
-  const blob =
-    bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
-  return await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
-      resolve(base64);
-    };
-    reader.readAsDataURL(blob);
-  });
+  if (isArrayBuffer(bufferOrBlob)) {
+    if (globalThis.Buffer) {
+      return Buffer.from(bufferOrBlob).toString('base64');
+    }
+
+    return btoa(String.fromCharCode(...new Uint8Array(bufferOrBlob)));
+  }
+
+  return arrayBufferToBase64(await blobToArrayBuffer(bufferOrBlob));
 }
 
 export async function arrayBufferToString(bufferOrBlob: ArrayBuffer | Blob) {
-  const blob =
-    bufferOrBlob instanceof Blob ? bufferOrBlob : new Blob([bufferOrBlob]);
-  return await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve(reader.result as string);
-    };
-    reader.readAsText(blob);
-  });
+  if (isArrayBuffer(bufferOrBlob)) {
+    if (globalThis.TextDecoder) {
+      return new TextDecoder().decode(bufferOrBlob);
+    }
+
+    if (globalThis.Buffer) {
+      return Buffer.from(bufferOrBlob).toString();
+    }
+
+    return String.fromCharCode(...new Uint8Array(bufferOrBlob));
+  }
+
+  if (bufferOrBlob instanceof Blob) {
+    if (typeof bufferOrBlob.text === 'function') {
+      return bufferOrBlob.text();
+    }
+
+    if (globalThis.FileReader) {
+      return await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve(reader.result as string);
+        };
+        reader.readAsText(bufferOrBlob);
+      });
+    }
+  }
+
+  return arrayBufferToString(await blobToArrayBuffer(bufferOrBlob));
 }
 
 export async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
-  return new Promise((resolve) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      resolve(fileReader.result as ArrayBuffer);
-    };
-    fileReader.readAsArrayBuffer(blob);
-  });
+  if (typeof blob.arrayBuffer === 'function') {
+    return await blob.arrayBuffer();
+  }
+
+  for (const symbolKey of Object.getOwnPropertySymbols(blob)) {
+    // detecting if blob is a jsdom polyfill
+    if (symbolKey.description === 'impl') {
+      const blobImpl = (blob as any)[symbolKey];
+      const buffer = blobImpl._buffer as Buffer;
+      return buffer.buffer.slice(
+        buffer.byteOffset,
+        buffer.byteOffset + buffer.byteLength,
+      );
+    }
+  }
+
+  if (globalThis.FileReader) {
+    return new Promise((resolve) => {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        resolve(fileReader.result as ArrayBuffer);
+      };
+      fileReader.readAsArrayBuffer(blob);
+    });
+  }
+
+  throw new Error('Unable to convert blob to array buffer');
 }
 
 // Credits: https://github.com/nfriedly/set-cookie-parser/blob/master/lib/set-cookie.js

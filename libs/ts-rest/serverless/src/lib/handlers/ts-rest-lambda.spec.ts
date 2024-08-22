@@ -1,3 +1,7 @@
+/**
+ * @vitest-environment node
+ */
+
 import { initContract } from '@ts-rest/core';
 import type {
   APIGatewayProxyEvent,
@@ -158,7 +162,10 @@ describe('tsRestLambda', () => {
           },
         };
       },
-      ping: async ({ body, params }) => {
+      ping: async ({ body, params }, { responseHeaders }) => {
+        responseHeaders.append('Cache-Control', 'no-cache');
+        responseHeaders.append('Cache-Control', 'no-store');
+
         return {
           status: 200,
           body: {
@@ -336,12 +343,14 @@ describe('tsRestLambda', () => {
       headers: {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
+        'cache-control': 'no-cache, no-store',
         'content-type': 'application/json',
         vary: 'Origin',
       },
       multiValueHeaders: {
         'access-control-allow-credentials': ['true'],
         'access-control-allow-origin': ['http://localhost'],
+        'cache-control': ['no-cache', 'no-store'],
         'content-type': ['application/json'],
         vary: ['Origin'],
       },
@@ -370,6 +379,7 @@ describe('tsRestLambda', () => {
       headers: {
         'access-control-allow-credentials': 'true',
         'access-control-allow-origin': 'http://localhost',
+        'cache-control': 'no-cache, no-store',
         'content-type': 'application/json',
         vary: 'Origin',
       },
@@ -716,7 +726,43 @@ describe('tsRestLambda', () => {
     });
   });
 
-  it('should handle cookies returned in response', async () => {
+  it('V1 should handle cookies returned in response', async () => {
+    const event = createV1LambdaRequest({
+      httpMethod: 'GET',
+      path: '/test',
+      queryStringParameters: {
+        foo: 'baz',
+        setCookies: 'true',
+      },
+    });
+
+    const response = await lambdaHandler(event as any, {} as any);
+    expect(response).toEqual({
+      statusCode: 200,
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': 'http://localhost',
+        'content-type': 'application/json',
+        'set-cookie':
+          'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict, bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+        vary: 'Origin',
+      },
+      multiValueHeaders: {
+        'access-control-allow-credentials': ['true'],
+        'access-control-allow-origin': ['http://localhost'],
+        'content-type': ['application/json'],
+        'set-cookie': [
+          'foo=bar; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+          'bar=foo; path=/; expires=Thu, 21 Oct 2021 07:28:00 GMT; secure; httponly; samesite=strict',
+        ],
+        vary: ['Origin'],
+      },
+      body: '{"foo":"baz"}',
+      isBase64Encoded: false,
+    });
+  });
+
+  it('V2 should handle cookies returned in response', async () => {
     const event = createV2LambdaRequest({
       requestContext: {
         http: {

@@ -128,13 +128,16 @@ export async function responseToResult(
   const multiValueHeaders = {} as Record<string, string[]>;
 
   response.headers.forEach((value, key) => {
-    headers[key] = value;
+    headers[key] = headers[key] ? `${headers[key]}, ${value}` : value;
 
-    if (key === 'set-cookie') {
-      multiValueHeaders[key] = splitCookiesString(value);
-    } else {
-      multiValueHeaders[key] = value.split(',').map((v) => v.trim());
-    }
+    const multiValueHeaderValue =
+      key === 'set-cookie'
+        ? splitCookiesString(value)
+        : value.split(',').map((v) => v.trim());
+
+    multiValueHeaders[key] = multiValueHeaders[key]
+      ? [...multiValueHeaders[key], ...multiValueHeaderValue]
+      : multiValueHeaderValue;
   });
 
   let cookies = [] as string[];
