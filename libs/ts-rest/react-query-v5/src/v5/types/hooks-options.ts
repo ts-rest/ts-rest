@@ -7,8 +7,9 @@ import {
   UseQueryOptions as TanStackUseQueryOptions,
   UseSuspenseInfiniteQueryOptions as TanStackUseSuspenseInfiniteQueryOptions,
   UseSuspenseQueryOptions as TanStackUseSuspenseQueryOptions,
+  SkipToken,
 } from '@tanstack/react-query';
-import { AppRoute, AreAllPropertiesOptional, ClientArgs } from '@ts-rest/core';
+import { AppRoute, ClientArgs, IfAllPropertiesOptional } from '@ts-rest/core';
 import { QueriesOptions, QueriesResults } from '../internal/queries-options';
 import {
   SuspenseQueriesOptions,
@@ -20,11 +21,35 @@ export type TsRestQueryOptions<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
   TQueryData = RequestData<TAppRoute, TClientArgs>,
-> = AreAllPropertiesOptional<TQueryData> extends true
-  ? { queryData?: TQueryData }
-  : { queryData: TQueryData };
+> = IfAllPropertiesOptional<
+  TQueryData,
+  { queryData?: TQueryData | SkipToken },
+  { queryData: TQueryData | SkipToken }
+>;
+
+export type TsRestSuspenseQueryOptions<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+  TQueryData = RequestData<TAppRoute, TClientArgs>,
+> = IfAllPropertiesOptional<
+  TQueryData,
+  { queryData?: TQueryData },
+  { queryData: TQueryData }
+>;
 
 export type TsRestInfiniteQueryOptions<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+  TPageParam = unknown,
+> = {
+  queryData:
+    | ((
+        context: QueryFunctionContext<QueryKey, TPageParam>,
+      ) => RequestData<TAppRoute, TClientArgs>)
+    | SkipToken;
+};
+
+export type TsRestSuspenseInfiniteQueryOptions<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
   TPageParam = unknown,
@@ -96,7 +121,7 @@ export type UseSuspenseQueryOptions<
   >,
   'queryFn'
 > &
-  TsRestQueryOptions<TAppRoute, TClientArgs>;
+  TsRestSuspenseQueryOptions<TAppRoute, TClientArgs>;
 
 export type UseInfiniteQueryOptions<
   TAppRoute extends AppRoute,
@@ -152,7 +177,7 @@ export type UseSuspenseInfiniteQueryOptions<
   >,
   'queryFn'
 > &
-  TsRestInfiniteQueryOptions<TAppRoute, TClientArgs, TPageParam>;
+  TsRestSuspenseInfiniteQueryOptions<TAppRoute, TClientArgs, TPageParam>;
 
 export type UseMutationOptions<
   TAppRoute extends AppRoute,

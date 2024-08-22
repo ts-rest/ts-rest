@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  skipToken,
+} from '@tanstack/react-query';
 import {
   waitFor,
   renderHook,
@@ -233,6 +237,27 @@ describe('react-query', () => {
     });
 
     expect(result.current.data).toStrictEqual(SUCCESS_RESPONSE);
+  });
+
+  it('useQuery should handle skipToken', async () => {
+    const { result } = renderHook(
+      () => {
+        return tsr.health.useQuery({
+          queryKey: ['health'],
+          queryData: skipToken,
+        });
+      },
+      {
+        wrapper: ReactQueryProvider,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.isPending).toStrictEqual(true);
+    });
+
+    expect(result.current.data).toStrictEqual(undefined);
+    expect(api).toHaveBeenCalledTimes(0);
   });
 
   it('useQuery should handle error response', async () => {
@@ -799,6 +824,19 @@ describe('react-query', () => {
     });
   });
 
+  it('useSuspenseQuery should not allow skipToken', async () => {
+    renderHook(
+      () => {
+        return tsr.health.useSuspenseQuery({
+          queryKey: ['health'],
+          // @ts-expect-error - skipToken is not allowed in suspense
+          queryData: skipToken,
+        });
+      },
+      { wrapper: ReactQueryProvider },
+    );
+  });
+
   it('should handle mutation', async () => {
     api.mockResolvedValue(SUCCESS_RESPONSE);
 
@@ -935,6 +973,65 @@ describe('react-query', () => {
     expect(result.current[0].data).toStrictEqual(SUCCESS_RESPONSE);
 
     expect(result.current[1].data).toStrictEqual(SUCCESS_RESPONSE);
+  });
+
+  it('useQueries should handle skipToken', async () => {
+    api.mockResolvedValue(SUCCESS_RESPONSE);
+
+    const { result } = renderHook(
+      () => {
+        return tsr.posts.getPost.useQueries({
+          queries: [
+            {
+              queryKey: ['posts', '1'],
+              queryData: {
+                params: {
+                  id: '1',
+                },
+              },
+            },
+            {
+              queryKey: ['posts', '2'],
+              queryData: skipToken,
+            },
+          ],
+        });
+      },
+      {
+        wrapper: ReactQueryProvider,
+      },
+    );
+
+    expect(result.current[0].data).toStrictEqual(undefined);
+    expect(result.current[0].isPending).toStrictEqual(true);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+    expect(result.current[1].isPending).toStrictEqual(true);
+
+    await waitFor(() => {
+      expect(result.current[0].isPending).toStrictEqual(false);
+      expect(result.current[1].isPending).toStrictEqual(true);
+    });
+
+    expect(result.current[0].data).toStrictEqual(SUCCESS_RESPONSE);
+
+    expect(result.current[1].data).toStrictEqual(undefined);
+
+    expect(api).toHaveBeenCalledWith({
+      method: 'GET',
+      path: 'https://api.com/posts/1',
+      body: undefined,
+      headers: {
+        'x-test': 'test',
+      },
+      route: contract.posts.getPost,
+      signal: expect.any(AbortSignal),
+      fetchOptions: {
+        signal: expect.any(AbortSignal),
+      },
+    });
+
+    expect(api).toHaveBeenCalledTimes(1);
   });
 
   it('useQueries should handle `select`', async () => {
