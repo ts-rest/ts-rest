@@ -1,0 +1,66 @@
+{
+  "name": "@ts-rest/examples",
+  "private": true,
+  "scripts": {
+    "install-deps": "pnpm install --frozen-lockfile",
+    "build": "pnpm -r run build",
+    "build:watch": "pnpm -r run build:watch",
+    "lint": "pnpm lint:packages && pnpm lint:examples",
+    "lint:examples": "pnpm -r run lint",
+    "lint:packages": "syncpack list-mismatches --types=dev,prod",
+    "lint:packages:fix": "syncpack fix-mismatches --types=dev,prod"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "syncpack": "^13.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@ts-rest/core": "file:../dist/packages/core",
+      "@ts-rest/express": "file:../dist/packages/express",
+      "@ts-rest/fastify": "file:../dist/packages/fastify",
+      "@ts-rest/nest": "file:../dist/packages/nest",
+      "@ts-rest/next": "file:../dist/packages/next",
+      "@ts-rest/open-api": "file:../dist/packages/open-api",
+      "@ts-rest/react-query": "file:../dist/packages/react-query",
+      "@ts-rest/serverless": "file:../dist/packages/serverless",
+      "@ts-rest/solid-query": "file:../dist/packages/solid-query",
+      "@ts-rest/vue-query": "file:../dist/packages/vue-query"
+    },
+    "peerDependencyRules": {
+      "allowAny": [
+        "@ts-rest/*"
+      ]
+    }
+  },
+  "nx": {
+    "implicitDependencies": [
+      "tag:package"
+    ],
+    "namedInputs": {
+      "default": [
+        "{projectRoot}/**/*"
+      ],
+      "production": [
+        "!{projectRoot}/**/*.spec.ts",
+        "!{projectRoot}/**/*.spec.tsx"
+      ]
+    },
+    "targets": {
+      "install-deps": {
+        "dependsOn": ["^build"]
+      },
+      "build": {
+        "outputs": [
+          "{projectRoot}/*/dist"
+        ],
+        "dependsOn": [
+          "install-deps"
+        ]
+      },
+      "lint": {
+        "dependsOn": ["install-deps"]
+      }
+    }
+  }
+}

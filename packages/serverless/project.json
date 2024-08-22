@@ -1,0 +1,22 @@
+{
+  "name": "ts-rest-serverless",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "{projectRoot}/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "options": {
+        "additionalEntryPoints": [
+          "{projectRoot}/src/fetch.ts",
+          "{projectRoot}/src/aws.ts",
+          "{projectRoot}/src/next.ts",
+          "{projectRoot}/src/azure.ts"
+        ]
+      }
+    },
+    "lint": {},
+    "test": {},
+    "type-check": {}
+  },
+  "tags": ["package"]
+}

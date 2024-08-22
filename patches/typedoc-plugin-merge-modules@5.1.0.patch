@@ -1,0 +1,13 @@
+diff --git a/dist/merger/module_merger.js b/dist/merger/module_merger.js
+index 6d31791c13dc7e16f16e0c2abe04ffeb3ffef92f..90ff540bf1b833a4645063ba5246652016d01c63 100644
+--- a/dist/merger/module_merger.js
++++ b/dist/merger/module_merger.js
+@@ -37,7 +37,7 @@ class ModuleMerger {
+      */
+     createModuleBundles() {
+         var _a, _b;
+-        const modules = ((_a = this.project.children) !== null && _a !== void 0 ? _a : []).filter((c) => c.kindOf(typedoc_1.ReflectionKind.Module));
++        const modules = ((_a = this.project.children) !== null && _a !== void 0 ? _a : []).flatMap((cc) => [cc, ...cc.children] ?? [cc]).filter((c) => c.kindOf(typedoc_1.ReflectionKind.Module));
+         const moduleBundleMap = new Map();
+         for (const module of modules) {
+             const bundleId = this.createModuleBundleId(module);

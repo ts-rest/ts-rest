@@ -57,7 +57,16 @@ web-build/
 
 
 # example apps upload directory
-uploads/ 
+uploads/
 .env
 
 .nx/cache
+*.tsbuildinfo
+.next
+.nx
+
+.swc
+.tshy
+.tshy-build
+
+dev.db

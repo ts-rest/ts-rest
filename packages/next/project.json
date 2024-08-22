@@ -1,0 +1,13 @@
+{
+  "name": "ts-rest-next",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "{projectRoot}/src",
+  "projectType": "library",
+  "targets": {
+    "build": {},
+    "lint": {},
+    "test": {},
+    "type-check": {}
+  },
+  "tags": ["package"]
+}

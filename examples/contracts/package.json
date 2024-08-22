@@ -1,0 +1,43 @@
+{
+  "name": "@ts-rest-examples/contracts",
+  "private": true,
+  "type": "module",
+  "main": "./dist/commonjs/index.js",
+  "types": "./dist/commonjs/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "scripts": {
+    "build": "pnpm exec tshy",
+    "build:watch": "pnpm exec tshy --watch",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "lint:fix:unsafe": "biome check --fix --unsafe"
+  },
+  "dependencies": {
+    "@ts-rest/core": "*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "tshy": "^3.0.2",
+    "typescript": "5.5.4"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/index.d.ts",
+        "default": "./dist/commonjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "tshy": {
+    "exports": [
+      "./src/index.ts"
+    ],
+    "selfLink": false
+  }
+}

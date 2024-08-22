@@ -1,0 +1,6 @@
+name = "example-cloudflare-worker"
+main = "src/index.ts"
+compatibility_date = "2023-07-01"
+
+[dev]
+port=8787

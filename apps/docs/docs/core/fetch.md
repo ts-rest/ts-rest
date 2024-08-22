@@ -64,7 +64,7 @@ const { data } = await client.getPosts({
 
 :::
 
-## Understanding the return type
+## Understanding the Return Type
 
 Because we type status codes, to check if the request was successful, we can use the `status` property.
 
@@ -102,7 +102,7 @@ const data: {
 In this context, the term 'headers' refers to the response headers retrieved either from the default Fetch client or a custom client implementation.
 :::
 
-## Credentials (sending cookies)
+## Credentials (Sending Cookies)
 
 The `fetch()` function used by ts-rest does not send cookies in cross-origin requests by default unless the `credentials`
 option is set to `include`.
@@ -204,3 +204,23 @@ We use the [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Us
 Our built-in fetch client handles the majority of use cases such as automatically parsing response bodies to JSON or text based on the `Content-Type` header.
 However, if you need to handle some different behavior, or add extra functionality such as injecting API tokens into requests, you can implement your own
 [custom fetcher or wrap the built-in fetcher](custom.md).
+
+## Using the Client on Node.js
+
+Since we use the `fetch` API internally, the minimum supported version of Node.js is v18
+
+#### For Node.js v18
+
+For file uploads, we use the `File` class, which is only available in Node.js >= 18.13.0
+
+However, for Node.js versions below v20, the `File` class is not exposed globally as it is an experimental feature in v18.
+Therefore, you will need to expose it globally in your code entrypoint so ts-rest can use it.
+
+```ts
+import { File as NodeFile } from 'node:buffer';
+declare global {
+  interface File extends NodeFile {}
+  var File: typeof NodeFile;
+}
+globalThis.File = NodeFile;
+```

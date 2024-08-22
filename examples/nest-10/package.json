@@ -1,0 +1,41 @@
+{
+  "name": "example-nest-10",
+  "private": true,
+  "scripts": {
+    "postinstall": "pnpm db:prepare",
+    "clean": "rimraf dist",
+    "build": "pnpm db:prepare && pnpm clean && tsc",
+    "build:watch": "pnpm build --watch",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "db:prepare": "prisma generate && prisma db push",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "lint:fix:unsafe": "biome check --fix --unsafe"
+  },
+  "dependencies": {
+    "@nestjs/common": "10.4.1",
+    "@nestjs/core": "10.4.1",
+    "@nestjs/platform-express": "10.4.1",
+    "@nestjs/swagger": "7.1.4",
+    "@prisma/client": "^5.19.1",
+    "@ts-rest-examples/contracts": "workspace:*",
+    "@ts-rest/core": "*",
+    "@ts-rest/nest": "*",
+    "@ts-rest/open-api": "*",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@nestjs/cli": "10.4.1",
+    "@nestjs/schematics": "10.1.4",
+    "@nestjs/testing": "10.4.1",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.16.0",
+    "prisma": "^5.19.1",
+    "rimraf": "^6.0.1",
+    "typescript": "5.5.4"
+  }
+}

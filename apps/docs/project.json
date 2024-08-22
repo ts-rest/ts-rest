@@ -2,12 +2,12 @@
   "name": "docs",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "sourceRoot": "apps/docs/src",
+  "sourceRoot": "{projectRoot}/src",
   "targets": {
     "build": {
       "executor": "@nx-plus/docusaurus:browser",
       "options": {
-        "outputPath": "dist/apps/docs"
+        "outputPath": "dist/{projectRoot}"
       }
     },
     "serve": {
@@ -17,12 +17,11 @@
         "host": "::"
       }
     },
-    "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/apps/docs"],
+    "type-check": {
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/apps/docs"
+        "commands": [
+          "tsc --noEmit"
+        ]
       }
     }
   },
