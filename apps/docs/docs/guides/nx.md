@@ -8,7 +8,7 @@ NX is a smart build system to help you and your teams build, test, and deploy yo
 
 ## Declaring an API Lib
 
-Using ts-rest you declare a contract as a seperate lib, which is shared between applications.
+Using ts-rest you declare a contract as a separate lib, which is shared between applications.
 
 This is because we want to enable NX to correctly mark projects as affected, thus enabling NX to only lint/test/build/deploy the affected projects.
 
@@ -18,7 +18,7 @@ This is because we want to enable NX to correctly mark projects as affected, thu
 
 In a situation where you've only updated the server, having the API as a lib will only rebuild the backend, not any of its consumers.
 
-Without a seperate lib, NX will always rebuild the dependencies, in this case, the whole frontend - unecessarily.
+Without a separate lib, NX will always rebuild the dependencies, in this case, the whole frontend - unnecessarily.
 
 ![Lib Structure](../../static/img/ts-rest-affected-multi.png)
 
@@ -30,6 +30,6 @@ You can further improve this model when you have many consumers per API. It's po
 
 ## Example Library
 
-Below is an example lib is an example of a contract in a shared lib, shared between many libraries (in the ts-rest example repo)
+Below is an example of a contract in a shared lib, shared between many libraries (in the ts-rest example repo)
 
 ![Example Lib](../../static/img/nx-example-lib.png)
