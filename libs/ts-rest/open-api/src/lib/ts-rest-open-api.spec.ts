@@ -181,6 +181,7 @@ const expectedApiDoc = {
         ],
         requestBody: {
           description: 'Body',
+          required: true,
           content: {
             'application/json': {
               schema: {
@@ -285,6 +286,7 @@ const expectedApiDoc = {
         description: undefined,
         parameters: [],
         requestBody: {
+          required: true,
           content: {
             'application/json': {
               schema: {
@@ -474,6 +476,7 @@ const expectedApiDoc = {
         ],
         requestBody: {
           description: 'Body',
+          required: true,
           content: {
             'application/json': {
               schema: {
@@ -1069,6 +1072,7 @@ describe('ts-rest-open-api', () => {
               description: undefined,
               parameters: [],
               requestBody: {
+                required: true,
                 content: {
                   'multipart/form-data': {
                     schema: {
