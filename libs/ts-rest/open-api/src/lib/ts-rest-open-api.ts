@@ -235,9 +235,14 @@ export const generateOpenApi = (
       !!options.jsonQuery,
     );
 
-    const bodySchema =
-      path.route?.method !== 'GET' && 'body' in path.route
-        ? getOpenApiSchemaFromZod(path.route.body)
+    const bodyInfo =
+      path.route?.method !== 'GET' &&
+      'body' in path.route &&
+      isZodType(path.route.body)
+        ? {
+            schema: getOpenApiSchemaFromZod(path.route.body)!,
+            isRequired: !path.route.body.isOptional(),
+          }
         : null;
 
     const responses = Object.entries(path.route.responses).reduce(
@@ -286,13 +291,14 @@ export const generateOpenApi = (
                 : path.id,
           }
         : {}),
-      ...(bodySchema
+      ...(bodyInfo
         ? {
             requestBody: {
               description: 'Body',
+              required: bodyInfo.isRequired,
               content: {
                 [contentType]: {
-                  ...convertSchemaObjectToMediaTypeObject(bodySchema),
+                  ...convertSchemaObjectToMediaTypeObject(bodyInfo.schema),
                 },
               },
             },
