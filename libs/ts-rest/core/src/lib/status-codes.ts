@@ -1,12 +1,8 @@
+export const SuccessfulHttpStatusCodes = [
+  200, 201, 202, 203, 204, 205, 206, 207,
+] as const;
 export type SuccessfulHttpStatusCode =
-  | 200
-  | 201
-  | 202
-  | 203
-  | 204
-  | 205
-  | 206
-  | 207;
+  (typeof SuccessfulHttpStatusCodes)[number];
 
 /**
  * All available HTTP Status codes
