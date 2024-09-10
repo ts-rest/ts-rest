@@ -16,7 +16,7 @@ export class TsRestResponse extends Response {
         : new Headers(init?.headers);
 
     headers.set('content-type', 'application/json');
-    return new TsRestResponse(JSON.stringify(json) ?? null, {
+    return new TsRestResponse(JSON.stringify(json), {
       ...init,
       headers,
     });
