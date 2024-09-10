@@ -26,24 +26,5 @@
     "typescript": "5.5.4",
     "vite": "^5.4.2",
     "vitest": "^2.0.5"
-  },
-  "nx": {
-    "sourceRoot": "{projectRoot}/src",
-    "projectType": "application",
-    "implicitDependencies": ["examples"],
-    "targets": {
-      "install-deps": {
-        "dependsOn": ["^build"]
-      },
-      "build": {
-        "dependsOn": ["install-deps"]
-      },
-      "test": {
-        "dependsOn": ["build"]
-      },
-      "lint": {
-        "dependsOn": ["install-deps"]
-      }
-    }
   }
 }

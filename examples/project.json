@@ -1,5 +1,30 @@
 {
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "name": "examples",
-  "projectType": "application"
+  "projectType": "application",
+  "implicitDependencies": ["tag:package"],
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"],
+    "production": [
+      "!{projectRoot}/**/*.spec.ts",
+      "!{projectRoot}/**/*.spec.tsx"
+    ]
+  },
+  "targets": {
+    "install-deps": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "outputs": [
+        "{projectRoot}/node_modules",
+        "{projectRoot}/*/node_modules"
+      ]
+    },
+    "build": {
+      "outputs": ["{projectRoot}/*/dist"],
+      "dependsOn": ["install-deps"]
+    },
+    "lint": {
+      "dependsOn": ["install-deps"]
+    }
+  }
 }

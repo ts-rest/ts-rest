@@ -1,3 +1,22 @@
 {
-  "name": "examples-e2e"
+  "name": "examples-e2e",
+  "sourceRoot": "{projectRoot}/src",
+  "projectType": "application",
+  "implicitDependencies": ["examples"],
+  "targets": {
+    "install-deps": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "outputs": ["{projectRoot}/node_modules"]
+    },
+    "build": {
+      "dependsOn": ["install-deps"]
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "dependsOn": ["install-deps"]
+    }
+  }
 }
