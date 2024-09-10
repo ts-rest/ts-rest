@@ -1,56 +1,28 @@
-name: Build Test
+name: Build & Test
 on:
   pull_request:
   push:
     branches:
       - main
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   main:
-    name: Nx Cloud - Main Job
-    uses: nrwl/ci/.github/workflows/nx-cloud-main.yml@v0.15.0
-    with:
-      main-branch-name: main
-      number-of-agents: 4
-      init-commands: |
-        pnpm exec nx-cloud start-ci-run --stop-agents-after="build" --agent-count=4
-      parallel-commands-on-agents: |
-        pnpm exec nx affected --target=lint --exclude='*,!tag:package' --parallel=3
-        pnpm exec nx affected --target=type-check --exclude='*,!tag:package' --parallel=3
-        pnpm exec nx affected --target=test --exclude='*,!tag:package' --parallel=3 --ci --code-coverage
-        pnpm exec nx affected --target=build --exclude='*,!tag:package' --parallel=3
-
-  agents:
-    name: Nx Cloud - Agents
-    uses: nrwl/ci/.github/workflows/nx-cloud-agents.yml@v0.15.0
-    with:
-      number-of-agents: 4
-
-  docs:
-    name: Build Docs
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm nx run-many -t build type-check --projects=docs --parallel
-
-  e2e-tests:
-    name: Examples & E2E Tests
+    name: NX Cloud - Build & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
+      - run: pnpm dlx nx-cloud start-ci-run --distribute-on="8 linux-medium-js" --stop-agents-after="test"
       - uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
           cache: 'pnpm'
       - run: pnpm install
       - uses: nrwl/nx-set-shas@v4
-      - run: pnpm exec nx affected -t build lint test --exclude='docs,tag:package' --parallel
+      - run: pnpm exec nx affected -t lint type-check test build package-import-check
