@@ -86,6 +86,15 @@
         ],
         "cwd": "{projectRoot}"
       }
+    },
+    "package-import-check": {
+      "dependsOn": ["build"],
+      "inputs": ["default"],
+      "cache": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "attw --pack dist/{projectRoot}"
+      }
     }
   },
   "workspaceLayout": {

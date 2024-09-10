@@ -7,7 +7,8 @@
     "build": {},
     "lint": {},
     "test": {},
-    "type-check": {}
+    "type-check": {},
+    "package-import-check": {}
   },
   "tags": ["package"]
 }

@@ -74,7 +74,7 @@
     "zod": "^3.22.3"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.15.4",
+    "@arethetypeswrong/cli": "^0.16.2",
     "@docusaurus/module-type-aliases": "2.4.1",
     "@nestjs/schematics": "10.0.1",
     "@nestjs/testing": "10.1.2",
@@ -155,6 +155,7 @@
     "patchedDependencies": {
       "docusaurus-plugin-typedoc@0.20.2": "patches/docusaurus-plugin-typedoc@0.20.2.patch",
       "typedoc-plugin-merge-modules@5.1.0": "patches/typedoc-plugin-merge-modules@5.1.0.patch",
+      "@nx/js@17.1.1": "patches/@nx__js@17.1.1.patch",
       "@nx/rollup@17.1.1": "patches/@nx__rollup@17.1.1.patch"
     }
   }

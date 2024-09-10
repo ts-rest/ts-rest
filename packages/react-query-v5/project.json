@@ -18,7 +18,12 @@
     },
     "lint": {},
     "test": {},
-    "type-check": {}
+    "type-check": {},
+    "package-import-check": {
+      "options": {
+        "command": "attw --pack dist/packages/react-query"
+      }
+    }
   },
   "tags": ["package"]
 }
