@@ -1,15 +1,15 @@
+const fs = require('fs');
 const nxPreset = require('@nx/jest/preset').default;
+
+const swcConfig = JSON.parse(
+  fs.readFileSync(`${__dirname}/.swcrc`, 'utf-8')
+);
 
 module.exports = {
   ...nxPreset,
-  /* TODO: Update to latest Jest snapshotFormat
-   * By default Nx has kept the older style of Jest Snapshot formats
-   * to prevent breaking of any existing tests with snapshots.
-   * It's recommend you update to the latest format.
-   * You can do this by removing snapshotFormat property
-   * and running tests with --update-snapshot flag.
-   * Example: "nx affected --targets=test --update-snapshot"
-   * More info: https://jestjs.io/docs/upgrading-to-jest29#snapshot-format
-   */
-  snapshotFormat: { escapeString: true, printBasicPrototype: true },
+  displayName: process.env.NX_TASK_TARGET_PROJECT ?? undefined,
+  transform: {
+    "^.+\\.(t|j)sx?$": ['@swc/jest', swcConfig],
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'html'],
 };

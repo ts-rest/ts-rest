@@ -1,3 +1,5 @@
 packages:
-  - 'apps/**/*'
-  - 'libs/**/*'
+  - 'apps/*'
+  - 'packages/*'
+  - 'packages-internal/*'
+  - '!apps/examples-e2e'

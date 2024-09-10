@@ -1,0 +1,5 @@
+{
+  "name": "@types/fetch-types",
+  "private": true,
+  "types": "index.d.ts"
+}

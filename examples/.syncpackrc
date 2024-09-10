@@ -1,0 +1,9 @@
+{
+  "versionGroups": [
+    {
+      "packages": ["example-nest-9"],
+      "dependencies": ["@nestjs/*"],
+      "isIgnored": true
+    }
+  ]
+}

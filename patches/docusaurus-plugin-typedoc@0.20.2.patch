@@ -1,0 +1,29 @@
+diff --git a/dist/theme.js b/dist/theme.js
+index 9f4cb6d9511572c9c9b996023fe09de227e9708a..b15c82c143c1493a0f75c7f483ef80a5ac3fdd53 100644
+--- a/dist/theme.js
++++ b/dist/theme.js
+@@ -53,6 +53,8 @@ class DocusaurusTheme extends theme_1.MarkdownTheme {
+             [typedoc_1.PageEvent.END]: this.onPageEnd,
+             [typedoc_1.RendererEvent.END]: this.onRendererEnd,
+         });
++        this.positionTally = 1;
++        this.pagePositionMap = new Map();
+     }
+     getRelativeUrl(url) {
+         const re = new RegExp(this.includeExtension === 'true' ? '' : '.md', 'g');
+@@ -130,8 +132,13 @@ class DocusaurusTheme extends theme_1.MarkdownTheme {
+         if (page.url === this.globalsFile) {
+             return '0.5';
+         }
+-        if (page.model.getFullName().split('.').length === 1) {
+-            return '0';
++        const pageFullNameSplit = page.model.getFullName().split('.');
++        if (pageFullNameSplit.length === 1) {
++            const pos = this.positionTally++;
++            this.pagePositionMap.set(pageFullNameSplit[0], pos);
++            return String(pos);
++        } else if (pageFullNameSplit.length > 1 && this.pagePositionMap.has(pageFullNameSplit[0])) {
++            return `${this.pagePositionMap.get(pageFullNameSplit[0])}.5`;
+         }
+         return null;
+     }

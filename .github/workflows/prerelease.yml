@@ -22,24 +22,18 @@ jobs:
       pull-requests: write
       issues: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: "${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}"
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version-file: 'package.json'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -54,10 +48,10 @@ jobs:
         id: pre-release-version
         uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
         with:
-          path: libs/ts-rest/core
+          path: packages/core
 
       - name: Reset changes
-        run: git checkout .
+        run: git restore .
 
       - name: Get latest published version and strip tag
         id: package-versions
@@ -72,7 +66,7 @@ jobs:
         if: ${{ steps.package-versions.outputs.latest_version_stripped  == steps.package-versions.outputs.project_version_stripped }}
         uses: jaywcjlove/github-action-package@f6a7afaf74f96a166243f05560d5af4bd4eaa570
         with:
-          path: libs/ts-rest/core/package.json
+          path: packages/core/package.json
           version: '${{ steps.package-versions.outputs.latest_version }}'
 
       - name: Reset pre-release mode
@@ -84,13 +78,13 @@ jobs:
         run: pnpm version-packages
 
       - name: Modify "workspaces" value in package.json
-        run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
+        run: sed -i -e "s;packages/\*;dist/packages/*;g" package.json
 
       - name: Get Release Version
         id: release-version
         uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
         with:
-          path: libs/ts-rest/core
+          path: packages/core
 
       - if: ${{ contains(steps.release-version.outputs.current-version, '-') }}
         name: Create Release Pull Request or Publish to npm

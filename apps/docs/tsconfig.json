@@ -5,13 +5,13 @@
     "esModuleInterop": true,
     "jsx": "react",
     "lib": ["DOM"],
+    "moduleResolution": "bundler",
     "noEmit": true,
     "noImplicitAny": false,
     "types": [
       "node",
       "@docusaurus/module-type-aliases",
-      "@docusaurus/theme-classic",
-      "vitest"
+      "@docusaurus/theme-classic"
     ],
     "baseUrl": ".",
     "paths": {

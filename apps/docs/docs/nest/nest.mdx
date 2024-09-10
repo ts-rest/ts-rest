@@ -21,7 +21,7 @@ Nest has always been a tricky framework to integrate with ts-rest, due to the wa
 We recommend the single handler approach as it provides a 1-1 migration strategy for legacy controllers. You can swap one Nest route for one ts-rest route without affecting other routes in a Controller.
 
 ```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest-10';
 import { c } from './contract';
 
 @Controller()
@@ -69,7 +69,7 @@ You may be wondering why do we return `tsRestHandler` from this method, all this
 The multi handler approach is fantastic for those of you who tend towards a more functional approach to your code, or if you want to ensure that your controller methods are **always** returning the correct response types.
 
 ```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest-10';
 import { c } from './contract';
 
 @Controller()
@@ -118,7 +118,7 @@ We're looking into ways to solve this, but right now this may be a Nest limitati
 Despite using `@TsRestHandler` rather than `@Get` or `@Post` (etc.) you can still use all of the existing Nest decorators on your controller methods.
 
 ```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest-10';
 
 @Controller()
 export class MyController {
@@ -173,7 +173,7 @@ Controller options will be applied to all routes in the controller and will over
 Check out the [configuration](/docs/nest/configuration/) section for more details on the different configuration options, or on how to configure options globally.
 
 ```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest-10';
 
 @Controller()
 @TsRest({ jsonQuery: true })

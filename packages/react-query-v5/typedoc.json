@@ -1,0 +1,6 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/v5.ts"],
+  "tsconfig": "./tsconfig.lib.json",
+  "name": "@ts-rest/react-query/v5"
+}

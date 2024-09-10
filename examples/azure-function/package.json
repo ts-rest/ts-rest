@@ -1,0 +1,26 @@
+{
+  "name": "example-azure-function",
+  "private": true,
+  "main": "dist/functions/*.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "pnpm clean && tsc",
+    "start": "cross-env-shell FUNCTIONS_WORKER_RUNTIME=node \"func start --javascript --port ${PORT:-7071}\"",
+    "start:prod": "pnpm start",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "lint:fix:unsafe": "biome check --fix --unsafe"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.1",
+    "@ts-rest/core": "*",
+    "@ts-rest-examples/contracts": "workspace:*",
+    "@ts-rest/serverless": "*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "azure-functions-core-tools": "^4.0.5907",
+    "rimraf": "^6.0.1",
+    "typescript": "5.5.4"
+  }
+}

@@ -1,0 +1,16 @@
+diff --git a/src/plugins/rollup/type-definitions.js b/src/plugins/rollup/type-definitions.js
+index b8d612ab16aecad1d48f0253df85d39e6619f73e..3e9509b041bc26b3b6949ab7116c2904c1851f04 100644
+--- a/src/plugins/rollup/type-definitions.js
++++ b/src/plugins/rollup/type-definitions.js
+@@ -28,8 +28,9 @@ function typeDefinitions(options) {
+                 const hasDefaultExport = file.exports.includes('default');
+                 const entrySourceFileName = (0, path_1.relative)(options.projectRoot, file.facadeModuleId);
+                 const entrySourceDtsName = entrySourceFileName.replace(/\.[cm]?[jt]sx?$/, '');
+-                const dtsFileName = file.fileName.replace(/\.[cm]?js$/, '.d.ts');
+-                const relativeSourceDtsName = JSON.stringify('./' + entrySourceDtsName);
++                const dtsFileName = file.fileName.replace(/\.([cm]?)js$/, '.d.$1ts');
++                const entryExt = options.addJsExt ? '.js' : '';
++                const relativeSourceDtsName = JSON.stringify('./' + entrySourceDtsName + entryExt);
+                 const dtsFileSource = hasDefaultExport
+                     ? (0, devkit_1.stripIndents) `
+               export * from ${relativeSourceDtsName};

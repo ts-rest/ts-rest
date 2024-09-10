@@ -1,0 +1,20 @@
+{
+  "name": "ts-rest-react-query",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "{projectRoot}/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "options": {
+        "additionalEntryPoints": [
+          "{projectRoot}/src/tanstack.ts",
+          "{projectRoot}/src/v5.ts"
+        ]
+      }
+    },
+    "lint": {},
+    "test": {},
+    "type-check": {}
+  },
+  "tags": ["package"]
+}

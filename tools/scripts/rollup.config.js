@@ -31,9 +31,11 @@ const rollupConfig = (config) => {
 
     // STEP 1: Add @ts-rest/core to peerDependencies of all libs, except core itself
     // Can't let changesets handle this for us because it sees peerDependencies updates as a breaking change
+    const corePackageJson = path.join(process.cwd(), 'packages/core/package.json');
+    const corePackageJsonObject = fs.readJsonSync(corePackageJson);
     const packageJsonPath = path.join(outputDir, 'package.json');
     const packageJsonObject = fs.readJsonSync(packageJsonPath);
-    const splitVersion = packageJsonObject.version.split('.');
+    const splitVersion = corePackageJsonObject.version.split('.');
     splitVersion.splice(-1, 1, '0');
 
     const peerVersion = packageJsonObject.version.includes('-')

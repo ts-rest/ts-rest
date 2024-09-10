@@ -1,0 +1,27 @@
+{
+  "name": "example-fastify",
+  "private": true,
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "pnpm clean && tsc",
+    "build:watch": "pnpm build --watch",
+    "start": "tsx src/main.ts",
+    "start:prod": "node dist/main.js",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "lint:fix:unsafe": "biome check --fix --unsafe"
+  },
+  "dependencies": {
+    "@ts-rest-examples/contracts": "workspace:*",
+    "@ts-rest/core": "*",
+    "@ts-rest/fastify": "*",
+    "fastify": "4.28.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/node": "^20.16.0",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.0",
+    "typescript": "5.5.4"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "example-cloudflare-worker",
+  "private": true,
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "pnpm clean && tsc",
+    "start": "cross-env-shell \"wrangler dev src/index.ts --port ${PORT:-8787}\"",
+    "start:prod": "pnpm start",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "lint:fix:unsafe": "biome check --fix --unsafe"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20240821.1",
+    "@ts-rest/core": "*",
+    "@ts-rest-examples/contracts": "workspace:*",
+    "@ts-rest/serverless": "*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "rimraf": "^6.0.1",
+    "typescript": "5.5.4",
+    "wrangler": "^3.72.3"
+  }
+}

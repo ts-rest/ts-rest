@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "rootDir": "${configDir}/src",
+    "outDir": "${configDir}/dist",
+    "lib": ["es2023"],
+    "target": "es2022",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+  },
+  "include": ["${configDir}/src/**/*.ts", "${configDir}/*.d.ts"],
+  "exclude": ["${configDir}/node_modules", "${configDir}/src/**/*.spec.ts"]
+}
