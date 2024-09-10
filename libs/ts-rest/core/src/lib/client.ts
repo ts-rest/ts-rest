@@ -1,3 +1,4 @@
+import { TsRestClientResponseError } from './client-response-error';
 import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
 import { insertParamsIntoPath } from './paths';
 import { convertQueryParamsToUrlString } from './query';
@@ -5,11 +6,14 @@ import { AreAllPropertiesOptional, Prettify } from './type-utils';
 import { UnknownStatusError } from './unknown-status-error';
 import {
   ClientInferRequest,
+  ClientInferResponseBody,
   ClientInferResponses,
   PartialClientInferRequest,
 } from './infer-types';
 import { isZodType } from './zod-utils';
+import { HTTPStatusCode, SuccessfulHttpStatusCode } from './status-codes';
 import { Equal, Expect } from './test-helpers';
+import { isErrorResponse } from './type-guards';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -38,9 +42,27 @@ export type AppRouteFunction<
   TRoute extends AppRoute,
   TClientArgs extends ClientArgs,
   TArgs = PartialClientInferRequest<TRoute, TClientArgs>,
-> = AreAllPropertiesOptional<TArgs> extends true
-  ? (args?: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>
-  : (args: Prettify<TArgs>) => Promise<Prettify<ClientInferResponses<TRoute>>>;
+> = (
+  ...args: AreAllPropertiesOptional<TArgs> extends true
+    ? [args?: Prettify<TArgs>]
+    : [args: Prettify<TArgs>]
+) => Promise<
+  Prettify<
+    TClientArgs['simpleResponse'] extends true
+      ? ClientInferResponseBody<
+          TRoute,
+          TClientArgs['throwOnErrorStatus'] extends true
+            ? Extract<keyof TRoute['responses'], SuccessfulHttpStatusCode>
+            : keyof TRoute['responses']
+        >
+      : ClientInferResponses<
+          TRoute,
+          TClientArgs['throwOnErrorStatus'] extends true
+            ? Extract<keyof TRoute['responses'], SuccessfulHttpStatusCode>
+            : HTTPStatusCode
+        >
+  >
+>;
 
 export type FetchOptions = typeof globalThis extends {
   Request: infer T extends typeof Request;
@@ -59,6 +81,8 @@ export interface OverrideableClientArgs {
 }
 
 export interface ClientArgs extends OverrideableClientArgs {
+  simpleResponse?: boolean;
+  throwOnErrorStatus?: boolean;
   baseHeaders?: Record<string, string | ((options: FetchApiOptions) => string)>;
   api?: ApiFetcher;
 }
@@ -398,12 +422,24 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
     const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, inputArgs);
     const response = await fetchApi(fetchApiArgs);
 
+    if (clientArgs.throwOnErrorStatus) {
+      if (isErrorResponse(response)) {
+        throw new TsRestClientResponseError(route, response, clientArgs);
+      }
+    }
+
     // TODO: in next major version, throw by default if `strictStatusCode` is enabled
     if (!clientArgs.throwOnUnknownStatus) {
+      if (clientArgs.simpleResponse === true) {
+        return response.body;
+      }
       return response;
     }
 
     if (knownResponseStatuses.includes(response.status.toString())) {
+      if (clientArgs.simpleResponse === true) {
+        return response.body;
+      }
       return response;
     }
 

@@ -8,6 +8,7 @@ import {
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
 import { z, ZodError } from 'zod';
+import { TsRestClientResponseError } from './client-response-error';
 
 const c = initContract();
 
@@ -1069,5 +1070,64 @@ describe('custom api', () => {
     await expect(
       client.posts.getPost({ params: { id: '1' } }),
     ).rejects.toThrowError(ZodError);
+  });
+
+  it('throw an error when throwOnErrorStatus is configured and response is invalid', async () => {
+    const client = initClient(router, {
+      baseUrl: 'https://isolated.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      throwOnErrorStatus: true,
+    });
+    fetchMock.getOnce(
+      { url: 'https://isolated.com/posts/NaN' },
+      { status: 500, body: { error: 'Internal Server Error' } },
+    );
+
+    const result = await client.posts.getPost({ params: { id: 'NaN' } });
+
+    await expect(result).rejects.toThrowError(TsRestClientResponseError);
+
+    type ClientThrowOnErrorStatusType = Expect<
+      Equal<
+        typeof result,
+        {
+          status: 200;
+          body: z.infer<typeof postSchema> | null;
+          headers: Headers;
+        }
+      >
+    >;
+  });
+
+  it('returns the body when simpleResponse is configured', async () => {
+    const value = {
+      id: 'id',
+      title: 'title',
+      description: 'description',
+      content: 'content',
+      published: true,
+      authorId: 'authorId',
+    };
+    const client = initClient(router, {
+      baseUrl: 'https://isolated.com',
+      baseHeaders: {
+        'X-Api-Key': 'foo',
+      },
+      simpleResponse: true,
+    });
+    fetchMock.getOnce(
+      { url: 'https://isolated.com/posts/1' },
+      { status: 200, body: value },
+    );
+
+    const result = await client.posts.getPost({ params: { id: 'NaN' } });
+
+    await expect(result).toStrictEqual(value);
+
+    type ClientSimpleResponseType = Expect<
+      Equal<typeof result, z.infer<typeof postSchema> | null>
+    >;
   });
 });
