@@ -4,8 +4,6 @@ import '@koa/bodyparser';
 import * as Router from '@koa/router';
 import {
   AppRoute,
-  AppRouteMutation,
-  AppRouteQuery,
   AppRouter,
   checkZodSchema,
   HTTPStatusCode,
@@ -159,7 +157,7 @@ const initializeKoaRoute = ({
     : implementationOrOptions.handler;
 
   const mainReqHandler: TsRestMiddleware<AppRoute> = async (ctx) => {
-    const validationResults = validateRequest(ctx as any, schema, options);
+    const validationResults = validateRequest(ctx, schema, options);
 
     let result: { status: HTTPStatusCode; body: any };
     try {
@@ -222,8 +220,6 @@ const initializeKoaRoute = ({
 
     ctx.status = statusCode;
     ctx.body = validatedResponseBody;
-
-    return;
   };
 
   const handlers: TsRestMiddleware<AppRoute>[] = [

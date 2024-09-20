@@ -84,7 +84,10 @@ export type TsRestMiddleware<
   T extends AppRouter | AppRoute,
   TState = Koa.DefaultState,
   TCtx = Koa.DefaultContext,
-> = (ctx: TsRestContext<T, TState, TCtx>, next: Koa.Next) => void;
+> = (
+  ctx: TsRestContext<T, TState, TCtx>,
+  next: Koa.Next,
+) => Promise<void> | void;
 
 export type AppRouteOptions<
   TRoute extends AppRoute,

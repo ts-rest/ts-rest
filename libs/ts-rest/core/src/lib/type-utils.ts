@@ -141,7 +141,7 @@ export type DefinedOrEmpty<
 declare const tag: unique symbol;
 
 declare type Tagged<Token> = {
-  readonly [x: symbol]: Token;
+  readonly [tag]: Token;
 };
 
 export type Opaque<Type, Token = unknown> = Type & Tagged<Token>;
