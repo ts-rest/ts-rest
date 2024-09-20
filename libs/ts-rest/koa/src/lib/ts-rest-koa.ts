@@ -95,7 +95,7 @@ const recursivelyApplyKoaRouter = ({
 
 const validateRequest = (
   ctx: Koa.Context,
-  schema: AppRouteQuery | AppRouteMutation,
+  schema: AppRoute,
   options: TsRestKoaOptions<AppRouter>,
 ) => {
   const paramsResult = checkZodSchema(ctx['params'], schema.pathParams, {
