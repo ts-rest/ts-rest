@@ -17,7 +17,9 @@ import {
 } from 'express-serve-static-core';
 import { RequestValidationError } from './request-validation-error';
 
-export type AppRouteQueryImplementation<T extends AppRouteQuery | AppRouteDeleteNoBody> = (
+export type AppRouteQueryImplementation<
+  T extends AppRouteQuery | AppRouteDeleteNoBody,
+> = (
   input: ServerInferRequest<T, Express['request']['headers']> & {
     req: TsRestRequest<T>;
     res: Response;
