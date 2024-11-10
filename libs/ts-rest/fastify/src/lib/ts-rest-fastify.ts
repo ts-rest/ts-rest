@@ -38,7 +38,7 @@ type FastifyContextConfig<T extends AppRouter | AppRoute> = {
   tsRestRoute: T extends AppRoute ? T : FlattenAppRouter<T>;
 };
 
-type AppRouteImplementation<T extends AppRoute> = (
+export type AppRouteImplementation<T extends AppRoute> = (
   input: ServerInferRequest<T, fastify.FastifyRequest['headers']> & {
     request: fastify.FastifyRequest<
       fastify.RouteGenericInterface,
