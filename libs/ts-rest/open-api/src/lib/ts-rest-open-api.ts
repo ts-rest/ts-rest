@@ -393,7 +393,7 @@ export const generateOpenApi = (
 
   if (Object.keys(referenceSchemas).length) {
     apiDoc['components'] = {
-      schema: {
+      schemas: {
         ...referenceSchemas,
       },
       ...apiDoc['components'],

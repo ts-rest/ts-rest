@@ -1123,7 +1123,7 @@ describe('ts-rest-open-api', () => {
 
       expect(schema).toEqual({
         components: {
-          schema: {
+          schemas: {
             Body: {
               properties: {
                 file: {
@@ -1208,7 +1208,7 @@ describe('ts-rest-open-api', () => {
 
       expect(schema).toEqual({
         components: {
-          schema: {
+          schemas: {
             Child: {
               properties: {
                 file: {
