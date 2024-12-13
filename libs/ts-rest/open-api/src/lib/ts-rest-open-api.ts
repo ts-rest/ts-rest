@@ -235,6 +235,8 @@ const extractReferenceSchemas = (
   }
 
   if (schema.title) {
+    const nullable = schema.nullable;
+    schema.nullable = undefined;
     if (schema.title in referenceSchemas) {
       if (
         JSON.stringify(referenceSchemas[schema.title]) !==
@@ -247,13 +249,24 @@ const extractReferenceSchemas = (
     } else {
       referenceSchemas[schema.title] = schema;
     }
-    schema = {
-      $ref: `#/components/schemas/${schema.title}`,
-    };
+
+    if (nullable) {
+      schema = {
+        nullable: true,
+        allOf: [
+          {
+            $ref: `#/components/schemas/${schema.title}`,
+          },
+        ],
+      };
+    } else {
+      schema = {
+        $ref: `#/components/schemas/${schema.title}`,
+      };
+    }
   }
   return schema;
 };
-
 /**
  *
  * @param options.jsonQuery - Enable JSON query parameters, [see](/docs/open-api#json-query-params)
