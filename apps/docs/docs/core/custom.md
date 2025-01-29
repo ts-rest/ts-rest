@@ -194,7 +194,7 @@ export class SampleAPI {
         'Content-Type': 'application/json',
       },
       api: async ({ path, method, headers, body }) => {
-        const token = await this.authInstance.currentUser.getIdToken();
+        const idToken = await this.authInstance.currentUser.getIdToken();
         try {
           const result = await axios.request({
             method: method as Method,
@@ -210,7 +210,7 @@ export class SampleAPI {
           if (isAxiosError(e)) {
             const error = e as AxiosError;
             const response = error.response as AxiosResponse;
-            return { status: response.status, body: response.data, headers: result.headers };
+            return { status: response.status, body: response.data, headers: response.headers };
           }
           throw e;
         }
