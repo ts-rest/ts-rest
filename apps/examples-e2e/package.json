@@ -1,0 +1,30 @@
+{
+  "name": "examples-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install-deps": "pnpm install --frozen-lockfile",
+    "build": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "lint:fix:unsafe": "biome check --fix --unsafe"
+  },
+  "dependencies": {
+    "@ts-rest-examples/contracts": "file:../../examples/contracts",
+    "@ts-rest/core": "file:../../dist/packages/core",
+    "@types/wait-on": "^5.3.4",
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.4.5",
+    "get-port": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "wait-on": "^8.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/jsonwebtoken": "^9.0.6",
+    "typescript": "5.5.4",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5"
+  }
+}

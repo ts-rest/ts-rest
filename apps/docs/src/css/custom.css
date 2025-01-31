@@ -11,7 +11,6 @@
 .header-code-blocks > div {
   display: flex;
   flex-direction: column;
-  background-color: ;
 }
 
 .header-code-blocks > div > div:nth-child(2) {

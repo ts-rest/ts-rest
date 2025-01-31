@@ -3,7 +3,7 @@ import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
 import React from 'react';
 
-export const InstallTabs = ({ packageName }: { packageName: string }) => {
+export function InstallTabs({ packageName }: { packageName: string }) {
   return (
     <Tabs groupId="packageManager">
       <TabItem value="pnpm" label="pnpm">
@@ -17,4 +17,4 @@ export const InstallTabs = ({ packageName }: { packageName: string }) => {
       </TabItem>
     </Tabs>
   );
-};
+}

@@ -1,0 +1,30 @@
+{
+  "swcrc": false,
+  "jsc": {
+    "target": "es2017",
+    "parser": {
+      "syntax": "typescript",
+      "decorators": true,
+      "dynamicImport": true
+    },
+    "transform": {
+      "react": {
+        "runtime": "automatic"
+      },
+      "decoratorMetadata": true,
+      "legacyDecorator": true
+    },
+    "keepClassNames": true,
+    "externalHelpers": true,
+    "loose": true,
+    "experimental": {
+      "plugins": [["swc_mut_cjs_exports", {}]]
+    }
+  },
+  "module": {
+    "type": "commonjs",
+    "strict": true,
+    "noInterop": true
+  },
+  "sourceMaps": false
+}

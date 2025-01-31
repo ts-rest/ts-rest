@@ -1,0 +1,38 @@
+{
+  "name": "@ts-rest/nest",
+  "version": "3.51.0",
+  "private": false,
+  "description": "Nest server integration for @ts-rest",
+  "keywords": [
+    "rpc",
+    "rest",
+    "typescript",
+    "typescript-rest",
+    "nestjs",
+    "http",
+    "api",
+    "type safe"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "packages/nest"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@nestjs/platform-express": "^9.0.0 || ^10.0.0",
+    "@nestjs/platform-fastify": "^9.0.0 || ^10.0.0",
+    "fastify": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^9.0.0 || ^10.0.0",
+    "@nestjs/core": "^9.0.0 || ^10.0.0",
+    "rxjs": "^7.1.0",
+    "zod": "^3.22.3"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  }
+}

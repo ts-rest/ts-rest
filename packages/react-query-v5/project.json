@@ -1,0 +1,29 @@
+{
+  "name": "ts-rest-react-query-v5",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "{projectRoot}/src",
+  "projectType": "library",
+  "implicitDependencies": ["ts-rest-react-query"],
+  "targets": {
+    "build": {
+      "outputs": ["{workspaceRoot}/dist/packages/react-query"],
+      "options": {
+        "deleteOutputPath": false,
+        "main": "{projectRoot}/src/v5.ts",
+        "rollupConfig": "{projectRoot}/rollup.config.js",
+        "additionalEntryPoints": [
+          "{projectRoot}/src/v5.ts"
+        ]
+      }
+    },
+    "lint": {},
+    "test": {},
+    "type-check": {},
+    "package-import-check": {
+      "options": {
+        "command": "attw --pack dist/packages/react-query"
+      }
+    }
+  },
+  "tags": ["package"]
+}

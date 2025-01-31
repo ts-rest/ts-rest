@@ -1,87 +1,28 @@
-name: Build Test
+name: Build & Test
 on:
   pull_request:
   push:
     branches:
       - main
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   main:
-    name: Nx Cloud - Main Job
-    uses: nrwl/ci/.github/workflows/nx-cloud-main.yml@v0.14.0
-    with:
-      main-branch-name: main
-      number-of-agents: 3
-      init-commands: |
-        pnpm exec nx-cloud start-ci-run --stop-agents-after="build" --agent-count=3
-      parallel-commands-on-agents: |
-        pnpm exec nx affected --target=lint --parallel=3
-        pnpm exec nx affected --target=test --parallel=3 --ci --code-coverage
-        pnpm exec nx affected --target=build --parallel=3
-
-  agents:
-    name: Nx Cloud - Agents
-    uses: nrwl/ci/.github/workflows/nx-cloud-agents.yml@v0.14.0
-    with:
-      number-of-agents: 3
-
-  nest-10:
-    name: 'E2E > Nest 10'
+    name: NX Cloud - Build & Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
         with:
-          node-version: 20
-      - uses: pnpm/action-setup@v3
-        name: Install pnpm
-
-      - name: 'Install dependencies'
-        run: pnpm install --frozen-lockfile
-
-      - name: 'Build ts-rest libs'
-        run: 'pnpm exec nx run-many --target=build --projects="ts-rest*"'
-
-      - name: 'Install dependencies in example-nest-10'
-        working-directory: ./test-projects/nest-10
-        run: pnpm install
-
-      - name: 'Tests 🧪'
-        working-directory: ./test-projects/nest-10
-        run: pnpm run test
-
-      - name: 'Build 🏗'
-        working-directory: ./test-projects/nest-10
-        run: pnpm run build
-
-  nest-9:
-    name: 'E2E > Nest 9'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Node.js
-        uses: actions/setup-node@v3
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - run: pnpm dlx nx-cloud start-ci-run --distribute-on="8 linux-medium-js" --stop-agents-after="test"
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - uses: pnpm/action-setup@v3
-        name: Install pnpm
-
-      - name: 'Install dependencies'
-        run: pnpm install --frozen-lockfile
-
-      - name: 'Build ts-rest libs'
-        run: 'pnpm exec nx run-many --target=build --projects="ts-rest*"'
-
-      - name: 'Install dependencies in example-nest-9'
-        working-directory: ./test-projects/nest-9
-        run: pnpm install
-
-      - name: 'Tests 🧪'
-        working-directory: ./test-projects/nest-9
-        run: pnpm run test
-
-      - name: 'Build 🏗'
-        working-directory: ./test-projects/nest-9
-        run: pnpm run build
+          node-version-file: 'package.json'
+          cache: 'pnpm'
+      - run: pnpm install
+      - uses: nrwl/nx-set-shas@v4
+      - run: pnpm exec nx affected -t lint type-check test build package-import-check

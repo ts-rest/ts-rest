@@ -5,7 +5,28 @@ on:
       - main
 
 jobs:
-  build:
+  get-next-version:
+    if: ${{ hashFiles('.changeset/[!.*][!README]*.md') != '' }}
+    runs-on: ubuntu-latest
+    outputs:
+      new-version: ${{ steps.new-version.outputs.current-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm version-packages
+      - uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
+        id: new-version
+        with:
+          path: packages/core/package.json
+
+  build-and-release:
+    needs: get-next-version
+    if: ${{ !failure() && !canceled() }}
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -15,57 +36,41 @@ jobs:
       pull-requests: write
       issues: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: "${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}"
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version-file: 'package.json'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Get release version
         id: release-version
         uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
         with:
-          path: libs/ts-rest/core
-
-      - name: Evaluate next release version
-        run: pnpm version-packages
-
-      - name: Get next release version
-        id: next-release-version
-        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b
-        with:
-          path: libs/ts-rest/core
-
-      - name: Reset changes
-        run: git checkout .
+          path: packages/core
 
       - name: Modify "workspaces" value in package.json
-        run: sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
+        run: sed -i -e "s;packages/\*;dist/packages/*;g" package.json
 
       - name: Create Release Pull Request or Publish to npm
         uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e
         with:
-          title: "release: v${{ steps.next-release-version.outputs.current-version }}"
-          commit: "release: v${{ steps.next-release-version.outputs.current-version }}"
+          title: |
+            ${{ needs.get-next-version.outputs.new-version && format('release: v{0}', needs.get-next-version.outputs.new-version) || null }}
+          commit: |
+            ${{ needs.get-next-version.outputs.new-version && format('release: v{0}', needs.get-next-version.outputs.new-version) || null }}
           # this expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: pnpm release
-          version: pnpm version-packages-update-lockfile
+          version: pnpm version-packages
           createGithubReleases: aggregate
           githubReleaseName: v${{ steps.release-version.outputs.current-version }}
           githubTagName: v${{ steps.release-version.outputs.current-version }}

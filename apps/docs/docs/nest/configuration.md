@@ -35,7 +35,7 @@ You can disable the validation of these components if you wish to perform the va
 #### Default values: `true`
 
 ```typescript
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest-10';
 
 @Controller()
 export class MyController {
@@ -65,7 +65,7 @@ To make it easier, you can set global options that will be used by all controlle
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { TsRestModule } from '@ts-rest/nest';
+import { TsRestModule } from '@ts-rest/nest-10';
 
 @Module({
   imports: [
