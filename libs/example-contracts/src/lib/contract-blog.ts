@@ -63,7 +63,6 @@ export const apiBlog = c.router(
         200: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },
-      body: null,
       summary: 'Delete a post',
       metadata: {
         roles: ['user'],
