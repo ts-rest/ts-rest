@@ -1096,5 +1096,210 @@ describe('ts-rest-open-api', () => {
         },
       });
     });
+
+    it('should extract references by title', () => {
+      const entity = extendApi(
+        z.object({
+          file: z.string(),
+        }),
+        {
+          title: 'Body',
+        },
+      );
+      const routerWithTransform = c.router({
+        formEndpoint: {
+          method: 'PUT',
+          path: '/title',
+          body: entity,
+          responses: {
+            200: entity,
+          },
+        },
+      });
+
+      const schema = generateOpenApi(routerWithTransform, {
+        info: { title: 'Title API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        components: {
+          schemas: {
+            Body: {
+              properties: {
+                file: {
+                  type: 'string',
+                },
+              },
+              required: ['file'],
+              title: 'Body',
+              type: 'object',
+            },
+          },
+        },
+        info: {
+          title: 'Title API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/title': {
+            put: {
+              parameters: [],
+              requestBody: {
+                content: {
+                  'application/json': {
+                    schema: {
+                      $ref: '#/components/schemas/Body',
+                    },
+                  },
+                },
+                description: 'Body',
+              },
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/Body',
+                      },
+                    },
+                  },
+                  description: '200',
+                },
+              },
+              tags: [],
+            },
+          },
+        },
+      });
+    });
+
+    it('should extract nested references by title', () => {
+      const child = extendApi(
+        z.object({
+          file: z.string(),
+        }),
+        {
+          title: 'Child',
+        },
+      );
+      const parent = extendApi(
+        z.object({
+          child: child,
+        }),
+        {
+          title: 'Parent',
+        },
+      );
+      const routerWithTransform = c.router({
+        formEndpoint: {
+          method: 'PUT',
+          path: '/title',
+          body: child,
+          responses: {
+            200: parent,
+          },
+        },
+      });
+
+      const schema = generateOpenApi(routerWithTransform, {
+        info: { title: 'Title API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        components: {
+          schemas: {
+            Child: {
+              properties: {
+                file: {
+                  type: 'string',
+                },
+              },
+              required: ['file'],
+              title: 'Child',
+              type: 'object',
+            },
+            Parent: {
+              properties: {
+                child: {
+                  $ref: '#/components/schemas/Child',
+                },
+              },
+              required: ['child'],
+              title: 'Parent',
+              type: 'object',
+            },
+          },
+        },
+        info: {
+          title: 'Title API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/title': {
+            put: {
+              parameters: [],
+              requestBody: {
+                content: {
+                  'application/json': {
+                    schema: {
+                      $ref: '#/components/schemas/Child',
+                    },
+                  },
+                },
+                description: 'Body',
+              },
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/Parent',
+                      },
+                    },
+                  },
+                  description: '200',
+                },
+              },
+              tags: [],
+            },
+          },
+        },
+      });
+    });
+
+    it('should throw if duplicated title', () => {
+      const routerWithTransform = c.router({
+        formEndpoint: {
+          method: 'PUT',
+          path: '/title',
+          body: extendApi(
+            z.object({
+              file: z.string(),
+            }),
+            {
+              title: 'Body',
+            },
+          ),
+          responses: {
+            200: extendApi(
+              z.object({
+                otherFile: z.string(),
+              }),
+              {
+                title: 'Body',
+              },
+            ),
+          },
+        },
+      });
+
+      expect(() =>
+        generateOpenApi(routerWithTransform, {
+          info: { title: 'Title API', version: '0.1' },
+        }),
+      ).toThrowError(/already exists with a different schema/);
+    });
   });
 });
