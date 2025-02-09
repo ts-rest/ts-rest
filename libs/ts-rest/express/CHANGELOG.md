@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.51.1
+
+### Patch Changes
+
+- 6c987f6: Fix route handler type for DELETE endpoints with no body
+
 ## 3.51.0
 
 ## 3.50.0
