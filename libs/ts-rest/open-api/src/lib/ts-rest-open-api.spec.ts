@@ -1,6 +1,6 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
-import { generateOpenApi } from '@ts-rest/open-api';
+import { generateOpenApi } from './ts-rest-open-api';
 import { extendApi } from '@anatine/zod-openapi';
 import { SecurityRequirementObject } from 'openapi3-ts';
 
