@@ -137,12 +137,6 @@ const completedRouter = s.router(apiBlog, {
       };
     },
   },
-  deleteNoBody: async () => {
-    return {
-      status: 200,
-      body: { message: 'deleted' },
-    };
-  },
   testPathParams: async ({ params }) => {
     return {
       status: 200,

@@ -66,7 +66,7 @@ export type TsRestRequestHandler<T extends AppRouter | AppRoute> = (
 
 export interface AppRouteOptions<TRoute extends AppRoute> {
   middleware?: TsRestRequestHandler<TRoute>[];
-  handler: TRoute extends AppRouteQuery
+  handler: TRoute extends AppRouteQuery | AppRouteDeleteNoBody
     ? AppRouteQueryImplementation<TRoute>
     : TRoute extends AppRouteMutation
     ? AppRouteMutationImplementation<TRoute>
