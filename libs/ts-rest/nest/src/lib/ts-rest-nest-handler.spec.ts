@@ -672,6 +672,99 @@ describe('ts-rest-nest-handler', () => {
           expect(res.header.location).toBe('/redirected');
         });
     });
+
+    it('should be able to upload files and other multipart/form-data', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        multi: {
+          method: 'POST',
+          path: '/multi',
+          body: z.object({
+            messageAsField: z.string(),
+            file: z.custom<File>((v) => true),
+          }),
+          contentType: 'multipart/form-data',
+          responses: {
+            200: z.object({
+              messageAsField: z.string(),
+              fileSize: z.number(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract)
+        @UseInterceptors(FileInterceptor('file'))
+        async postRequest(@UploadedFile() file: File) {
+          return tsRestHandler(contract, {
+            multi: async (args) => {
+              return {
+                status: 200,
+                body: {
+                  messageAsField: args.body.messageAsField,
+                  fileSize: file.size,
+                },
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer())
+        .post('/multi')
+        .field('messageAsField', 'hello from ts-rest')
+        .attach('file', path.join(__dirname, './nest.png'));
+
+      expect({
+        status: response.status,
+        body: response.body,
+      }).toEqual({
+        status: 200,
+        body: {
+          messageAsField: 'hello from ts-rest',
+          fileSize: 11338,
+        },
+      });
+
+      const errorsForBadField = await supertest(app.getHttpServer())
+        .post('/multi')
+        .attach('file', path.join(__dirname, './nest.png'));
+
+      expect({
+        status: errorsForBadField.status,
+        body: errorsForBadField.body,
+      }).toEqual({
+        status: 400,
+        body: {
+          bodyResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+
+                path: ['messageAsField'],
+                message: 'Required',
+              },
+            ],
+            name: 'ZodError',
+          },
+          headersResult: null,
+          paramsResult: null,
+          queryResult: null,
+        },
+      });
+    });
   });
 
   describe('single-handler api', () => {
