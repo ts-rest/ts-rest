@@ -13,6 +13,7 @@ import {
   OpenAPIObject,
   OperationObject,
   PathsObject,
+  ReferenceObject,
   SchemaObject,
 } from 'openapi3-ts';
 import { generateSchema } from '@anatine/zod-openapi';
@@ -187,6 +188,85 @@ const convertSchemaObjectToMediaTypeObject = (
   };
 };
 
+const extractReferenceSchemas = (
+  schema: SchemaObject,
+  referenceSchemas: { [id: string]: SchemaObject },
+): SchemaObject => {
+  if (schema.allOf) {
+    schema.allOf = schema.allOf?.map((subSchema) =>
+      extractReferenceSchemas(subSchema, referenceSchemas),
+    );
+  }
+
+  if (schema.anyOf) {
+    schema.anyOf = schema.anyOf?.map((subSchema) =>
+      extractReferenceSchemas(subSchema, referenceSchemas),
+    );
+  }
+
+  if (schema.oneOf) {
+    schema.oneOf = schema.oneOf?.map((subSchema) =>
+      extractReferenceSchemas(subSchema, referenceSchemas),
+    );
+  }
+
+  if (schema.not) {
+    schema.not = extractReferenceSchemas(schema.not, referenceSchemas);
+  }
+
+  if (schema.items) {
+    schema.items = extractReferenceSchemas(schema.items, referenceSchemas);
+  }
+
+  if (schema.properties) {
+    schema.properties = Object.entries(schema.properties).reduce<{
+      [p: string]: SchemaObject | ReferenceObject;
+    }>((prev, [propertyName, schema]) => {
+      prev[propertyName] = extractReferenceSchemas(schema, referenceSchemas);
+      return prev;
+    }, {});
+  }
+
+  if (schema.additionalProperties) {
+    schema.additionalProperties =
+      typeof schema.additionalProperties != 'boolean'
+        ? extractReferenceSchemas(schema.additionalProperties, referenceSchemas)
+        : schema.additionalProperties;
+  }
+
+  if (schema.title) {
+    const nullable = schema.nullable;
+    schema.nullable = undefined;
+    if (schema.title in referenceSchemas) {
+      if (
+        JSON.stringify(referenceSchemas[schema.title]) !==
+        JSON.stringify(schema)
+      ) {
+        throw new Error(
+          `Schema title '${schema.title}' already exists with a different schema`,
+        );
+      }
+    } else {
+      referenceSchemas[schema.title] = schema;
+    }
+
+    if (nullable) {
+      schema = {
+        nullable: true,
+        allOf: [
+          {
+            $ref: `#/components/schemas/${schema.title}`,
+          },
+        ],
+      };
+    } else {
+      schema = {
+        $ref: `#/components/schemas/${schema.title}`,
+      };
+    }
+  }
+  return schema;
+};
 /**
  *
  * @param options.jsonQuery - Enable JSON query parameters, [see](/docs/open-api#json-query-params)
@@ -216,6 +296,8 @@ export const generateOpenApi = (
 
   const operationIds = new Map<string, string[]>();
 
+  const referenceSchemas: { [id: string]: SchemaObject } = {};
+
   const pathObject = paths.reduce((acc, path) => {
     if (options.setOperationId === true) {
       const existingOp = operationIds.get(path.id);
@@ -235,18 +317,29 @@ export const generateOpenApi = (
       !!options.jsonQuery,
     );
 
-    const bodySchema =
+    let bodySchema =
       path.route?.method !== 'GET' && 'body' in path.route
         ? getOpenApiSchemaFromZod(path.route.body)
         : null;
 
+    if (bodySchema?.title) {
+      bodySchema = extractReferenceSchemas(bodySchema, referenceSchemas);
+    }
+
     const responses = Object.entries(path.route.responses).reduce(
       (acc, [statusCode, response]) => {
-        const responseSchema = getOpenApiSchemaFromZod(response, true);
+        let responseSchema = getOpenApiSchemaFromZod(response, true);
         const description =
           isZodType(response) && response.description
             ? response.description
             : statusCode;
+
+        if (responseSchema) {
+          responseSchema = extractReferenceSchemas(
+            responseSchema,
+            referenceSchemas,
+          );
+        }
 
         return {
           ...acc,
@@ -310,6 +403,15 @@ export const generateOpenApi = (
 
     return acc;
   }, {} as PathsObject);
+
+  if (Object.keys(referenceSchemas).length) {
+    apiDoc['components'] = {
+      schemas: {
+        ...referenceSchemas,
+      },
+      ...apiDoc['components'],
+    };
+  }
 
   return {
     openapi: '3.0.2',

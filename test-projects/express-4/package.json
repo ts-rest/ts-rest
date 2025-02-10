@@ -1,0 +1,21 @@
+{
+  "name": "express-4",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/body-parser": "1.19.5",
+    "@types/bun": "latest",
+    "@types/express": "4.17.21",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^7.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@ts-rest/core": "../../dist/libs/ts-rest/core",
+    "@ts-rest/express": "../../dist/libs/ts-rest/express",
+    "express": "4.21.2",
+    "zod": "3.24.1"
+  }
+}

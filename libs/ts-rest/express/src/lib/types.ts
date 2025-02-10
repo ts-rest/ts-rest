@@ -1,5 +1,6 @@
 import {
   AppRoute,
+  AppRouteDeleteNoBody,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
@@ -16,7 +17,9 @@ import {
 } from 'express-serve-static-core';
 import { RequestValidationError } from './request-validation-error';
 
-export type AppRouteQueryImplementation<T extends AppRouteQuery> = (
+export type AppRouteQueryImplementation<
+  T extends AppRouteQuery | AppRouteDeleteNoBody,
+> = (
   input: ServerInferRequest<T, Express['request']['headers']> & {
     req: TsRestRequest<T>;
     res: Response;
@@ -35,7 +38,7 @@ export type AppRouteMutationImplementation<T extends AppRouteMutation> = (
 export type AppRouteImplementation<T extends AppRoute> =
   T extends AppRouteMutation
     ? AppRouteMutationImplementation<T>
-    : T extends AppRouteQuery
+    : T extends AppRouteQuery | AppRouteDeleteNoBody
     ? AppRouteQueryImplementation<T>
     : never;
 
@@ -63,7 +66,7 @@ export type TsRestRequestHandler<T extends AppRouter | AppRoute> = (
 
 export interface AppRouteOptions<TRoute extends AppRoute> {
   middleware?: TsRestRequestHandler<TRoute>[];
-  handler: TRoute extends AppRouteQuery
+  handler: TRoute extends AppRouteQuery | AppRouteDeleteNoBody
     ? AppRouteQueryImplementation<TRoute>
     : TRoute extends AppRouteMutation
     ? AppRouteMutationImplementation<TRoute>

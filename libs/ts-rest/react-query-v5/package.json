@@ -1,11 +1,11 @@
 {
   "name": "@ts-rest/react-query-v5",
-  "version": "3.51.0",
+  "version": "3.51.1",
   "private": true,
   "license": "MIT",
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "zod": "^3.22.3"
   }
 }

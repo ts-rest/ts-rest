@@ -57,7 +57,7 @@ export const tsr = initTsrReactQuery(contract, {
 
 :::info
 
-`initTsrReactQuery` uses our the fetch client under the hood, so you can configure it just as you would the fetch client, including passing a custom API fetcher.
+`initTsrReactQuery` uses our fetch client under the hood, so you can configure it just as you would the fetch client, including passing a custom API fetcher.
 For more information, see the [fetch client documentation](/docs/core/fetch).
 
 :::
@@ -117,7 +117,7 @@ const Posts = () => {
       tsrQueryClient.posts.get.setQueryData(['posts'], context.lastGoodKnown);
     },
     onSettled: () => {
-      // trigger a refetch regardless of it the mutation was successful or not
+      // trigger a refetch regardless if the mutation was successful or not
       tsrQueryClient.invalidateQueries({ queryKey: ['posts'] });
       //                 ^ QueryClient functions that do not consume or provide typed data are not wrapped by ts-rest
       // and are provided at the root level only

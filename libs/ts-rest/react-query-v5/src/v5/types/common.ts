@@ -1,5 +1,6 @@
 import {
   AppRoute,
+  AppRouteDeleteNoBody,
   AppRouteMutation,
   AppRouteQuery,
   AppRouter,
@@ -36,7 +37,7 @@ export type TsRestReactQueryHooksContainer<
   [TKey in keyof T]: T[TKey] extends AppRoute
     ? T[TKey] extends AppRouteQuery
       ? QueryHooks<T[TKey], TClientArgs>
-      : T[TKey] extends AppRouteMutation
+      : T[TKey] extends AppRouteMutation | AppRouteDeleteNoBody
       ? MutationHooks<T[TKey], TClientArgs>
       : never
     : T[TKey] extends AppRouter
