@@ -44,6 +44,7 @@ import {
   MaybeTsRestOptions,
   TsRestOptions,
 } from './ts-rest-options';
+import { PATH_METADATA } from '@nestjs/common/constants';
 
 type TsRestAppRouteMetadata = {
   appRoute: AppRoute;
@@ -133,12 +134,18 @@ export const TsRestHandler = (
     if (isMultiHandler) {
       const originalMethod = descriptor.value;
 
+      const paramTypes =
+        Reflect.getMetadata('design:paramtypes', target, propertyKey) || [];
+
+      console.log({ paramTypes }); // Logs { paramTypes: [ [Function: Object] ] } for a @Headers() param
+
       Object.entries(appRouterOrRoute).forEach(([routeKey, route]) => {
         if (isAppRoute(route)) {
           const methodName = `${String(propertyKey)}_${routeKey}`;
 
           // Create new method that calls original
           target[methodName] = async function (...args: any[]) {
+            console.log('args', args);
             return originalMethod.apply(this, args);
           };
 

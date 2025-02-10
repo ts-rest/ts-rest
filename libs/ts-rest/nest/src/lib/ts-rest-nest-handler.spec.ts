@@ -16,6 +16,7 @@ import {
   ExceptionFilter,
   ExecutionContext,
   Get,
+  Headers,
   HttpException,
   Injectable,
   NestInterceptor,
@@ -524,6 +525,60 @@ describe('ts-rest-nest-handler', () => {
         message: 'intercepted',
         oldMessage: 'ok',
       });
+    });
+
+    it('should be able to utilise nest parameter decorators', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler(@Headers('x-api-key') apiKey: string | undefined) {
+          console.log(apiKey);
+          return tsRestHandler(contract, {
+            getRequest: async () => ({
+              status: 200,
+              body: { message: apiKey || 'no header' },
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      // await supertest(app.getHttpServer())
+      //   .get('/test')
+      //   .send()
+      //   .expect(200)
+      //   .expect((res) => {
+      //     expect(res.body).toEqual({ message: 'no header' });
+      //   });
+
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .set('x-api-key', 'foo')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'foo' });
+        });
     });
   });
 
@@ -1247,6 +1302,58 @@ describe('ts-rest-nest-handler', () => {
         message: 'intercepted',
         oldMessage: 'ok',
       });
+    });
+
+    it('should be able to utilise nest parameter decorators', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract.getRequest)
+        async handler(@Headers('x-api-key') apiKey: string | undefined) {
+          console.log(apiKey);
+          return tsRestHandler(contract.getRequest, async () => ({
+            status: 200,
+            body: { message: apiKey || 'no header' },
+          }));
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'no header' });
+        });
+
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .set('x-api-key', 'foo')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'foo' });
+        });
     });
   });
 
