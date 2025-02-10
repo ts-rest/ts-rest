@@ -4,6 +4,8 @@
     "": {
       "name": "express-4",
       "dependencies": {
+        "@ts-rest/core": "../../dist/libs/ts-rest/core",
+        "@ts-rest/express": "../../dist/libs/ts-rest/express",
         "express": "4.21.2",
         "zod": "3.24.1",
       },
@@ -20,6 +22,10 @@
     },
   },
   "packages": {
+    "@ts-rest/core": ["@ts-rest/core@file:../../dist/libs/ts-rest/core", { "peerDependencies": { "@types/node": "^18.18.7 || >=20.8.4", "zod": "^3.22.3" }, "optionalPeers": ["@types/node", "zod"] }],
+
+    "@ts-rest/express": ["@ts-rest/express@file:../../dist/libs/ts-rest/express", { "peerDependencies": { "@ts-rest/core": "~3.51.0", "express": "^4.0.0", "zod": "^3.22.3" }, "optionalPeers": ["zod"] }],
+
     "@types/body-parser": ["@types/body-parser@1.19.5", "", { "dependencies": { "@types/connect": "*", "@types/node": "*" } }, "sha512-fB3Zu92ucau0iQ0JMCFQE7b/dv8Ot07NI3KaZIkIUNXq82k4eBAqUaneXfleGY9JWskeS9y+u0nXMyspcuQrCg=="],
 
     "@types/bun": ["@types/bun@1.2.2", "", { "dependencies": { "bun-types": "1.2.2" } }, "sha512-tr74gdku+AEDN5ergNiBnplr7hpDp3V1h7fqI2GcR/rsUaM39jpSeKH0TFibRvU0KwniRx5POgaYnaXbk0hU+w=="],
