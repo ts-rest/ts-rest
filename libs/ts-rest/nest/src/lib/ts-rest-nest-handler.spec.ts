@@ -497,7 +497,7 @@ describe('ts-rest-nest-handler', () => {
       }
 
       @Controller()
-      class SingleHandlerTestController {
+      class MultiHandlerTestController {
         @TsRestHandler(contract)
         @UseInterceptors(TestInterceptor)
         async postRequest() {
@@ -511,7 +511,7 @@ describe('ts-rest-nest-handler', () => {
       }
 
       const moduleRef = await Test.createTestingModule({
-        controllers: [SingleHandlerTestController],
+        controllers: [MultiHandlerTestController],
       }).compile();
 
       const app = moduleRef.createNestApplication();
