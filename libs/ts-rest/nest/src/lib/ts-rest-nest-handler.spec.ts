@@ -466,7 +466,7 @@ describe('ts-rest-nest-handler', () => {
       });
     });
 
-    it('should be able to intercept', async () => {
+    it('should be able to intercept with multi handler', async () => {
       const c = initContract();
 
       const contract = c.router({
@@ -1188,6 +1188,64 @@ describe('ts-rest-nest-handler', () => {
         options: {
           cause: expect.any(TsRestException),
         },
+      });
+    });
+
+    it('should be able to have custom nest interceptors', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Injectable()
+      class TestInterceptor implements NestInterceptor {
+        intercept(
+          context: ExecutionContext,
+          next: CallHandler,
+        ): Observable<any> {
+          return next.handle().pipe(
+            map((data) => ({
+              message: 'intercepted',
+              oldMessage: data.message,
+            })),
+          );
+        }
+      }
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract)
+        @UseInterceptors(TestInterceptor)
+        async postRequest() {
+          return tsRestHandler(contract.getRequest, async () => ({
+            status: 200,
+            body: { message: 'ok' },
+          }));
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer()).get('/').send();
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: 'intercepted',
+        oldMessage: 'ok',
       });
     });
   });

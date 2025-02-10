@@ -124,15 +124,31 @@ export const TsRestHandler = (
             }
           })();
 
-          // Apply decorators to new method
+          // Get all metadata keys from the original method
+          const reflector = new Reflector();
+          const metadataKeys = Reflect.getMetadataKeys(descriptor.value);
+
+          // Apply the route method decorator first
           apiDecorator(
             target,
             methodName,
             Object.getOwnPropertyDescriptor(target, methodName)!,
           );
 
+          // Copy all original method's metadata to the new method
+          metadataKeys.forEach((key) => {
+            const metadata = reflector.get(key, descriptor.value);
+            if (metadata) {
+              SetMetadata(key, metadata)(
+                target,
+                methodName,
+                Object.getOwnPropertyDescriptor(target, methodName)!,
+              );
+            }
+          });
+
+          // Apply our ts-rest specific metadata
           if (options) {
-            console.log('Setting options', options);
             SetMetadata(TsRestOptionsMetadataKey, options)(
               target,
               methodName,
