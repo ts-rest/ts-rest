@@ -26,7 +26,7 @@ describe('example-cloudflare-worker', () => {
   });
 
   afterAll(() => {
-    proc.commands[0].kill();
+    proc.commands.map((command) => command.kill());
   });
 
   it('GET /posts should return an array of posts', async () => {
