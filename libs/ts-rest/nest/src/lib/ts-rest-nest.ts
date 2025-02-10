@@ -34,7 +34,7 @@ type AppRouterResponseShapes<T extends AppRouter> = Without<
 >;
 
 /**
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export const initNestServer = <T extends AppRouter>(router: T) => {
   return {
@@ -46,7 +46,7 @@ export const initNestServer = <T extends AppRouter>(router: T) => {
 };
 
 /**
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export type NestControllerContract<T extends AppRouter> = Pick<
   T,
@@ -55,16 +55,16 @@ export type NestControllerContract<T extends AppRouter> = Pick<
   }[keyof T]
 >;
 /**
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export type NestControllerInterface<T extends AppRouter> =
   AppRouterControllerShape<T>;
 /**
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export type NestRequestShapes<T extends AppRouter> = AppRouterRequestShapes<T>;
 /**
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export type NestResponseShapes<T extends AppRouter> =
   AppRouterResponseShapes<T>;
@@ -72,7 +72,7 @@ export type NestResponseShapes<T extends AppRouter> =
 /**
  * Returns the contract containing only non-nested routes required by a NestJS controller
  *
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export const nestControllerContract = <T extends AppRouter>(router: T) => {
   // it's not worth actually filtering the contract at runtime

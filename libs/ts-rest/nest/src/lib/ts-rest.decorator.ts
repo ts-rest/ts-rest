@@ -26,7 +26,7 @@ type TsRestType = {
  * @param appRouteOrOptions For a method decorator, this is the route. For a class decorator, this is the options
  * @param options For a method decorator, this is the options
  *
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export const TsRest: TsRestType = (
   appRouteOrOptions: AppRoute | TsRestOptions,
@@ -70,7 +70,7 @@ const getMethodDecorator = (appRoute: AppRoute) => {
 };
 
 /**
- * @deprecated Please use `TsRestHandle` instead - will be removed in v4
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export const Api = (appRoute: AppRoute): MethodDecorator => {
   return TsRest(appRoute) as MethodDecorator;
