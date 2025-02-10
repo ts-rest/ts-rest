@@ -1,6 +1,5 @@
 import { initContract } from '@ts-rest/core';
 import {
-  doesUrlMatchContractPath,
   RequestValidationErrorSchema,
   TsRestException,
   tsRestHandler,
@@ -21,13 +20,14 @@ import {
   Injectable,
   NestInterceptor,
   Post,
+  Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
-import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   FastifyAdapter,
@@ -36,6 +36,7 @@ import {
 import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import { TsRestModule } from './ts-rest.module';
+import path = require('path');
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T,
@@ -546,7 +547,6 @@ describe('ts-rest-nest-handler', () => {
       class TestController {
         @TsRestHandler(contract)
         async handler(@Headers('x-api-key') apiKey: string | undefined) {
-          console.log(apiKey);
           return tsRestHandler(contract, {
             getRequest: async () => ({
               status: 200,
@@ -563,13 +563,13 @@ describe('ts-rest-nest-handler', () => {
       const app = moduleRef.createNestApplication();
       await app.init();
 
-      // await supertest(app.getHttpServer())
-      //   .get('/test')
-      //   .send()
-      //   .expect(200)
-      //   .expect((res) => {
-      //     expect(res.body).toEqual({ message: 'no header' });
-      //   });
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'no header' });
+        });
 
       await supertest(app.getHttpServer())
         .get('/test')
@@ -578,6 +578,98 @@ describe('ts-rest-nest-handler', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body).toEqual({ message: 'foo' });
+        });
+    });
+
+    it('should be able to have logic outside the return tsRestHandler', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              number: z.number(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler(@Query('number') numberQuery: string) {
+          const number = parseInt(numberQuery);
+
+          return tsRestHandler(contract, {
+            getRequest: async () => ({
+              status: 200,
+              body: { number },
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/test?number=123')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ number: 123 });
+        });
+    });
+
+    it('should be able to do custom nest things like a redirect', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRedirect: {
+          path: '/redirect',
+          method: 'GET',
+          responses: {
+            302: c.noBody(),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler(@Res() res: any) {
+          return tsRestHandler(contract, {
+            getRedirect: async () => {
+              res.status(302).redirect('/redirected');
+
+              return {
+                status: 302,
+                body: undefined,
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/redirect')
+        .send()
+        .expect(302)
+        .expect((res) => {
+          expect(res.header.location).toBe('/redirected');
         });
     });
   });
@@ -1353,6 +1445,50 @@ describe('ts-rest-nest-handler', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body).toEqual({ message: 'foo' });
+        });
+    });
+
+    it('should be able to do custom nest things like a redirect', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRedirect: {
+          path: '/redirect',
+          method: 'GET',
+          responses: {
+            302: c.noBody(),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract.getRedirect)
+        async handler(@Res() res: any) {
+          return tsRestHandler(contract.getRedirect, async () => {
+            res.status(302).redirect('/redirected');
+
+            return {
+              status: 302,
+              body: undefined,
+            };
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/redirect')
+        .send()
+        .expect(302)
+        .expect((res) => {
+          expect(res.header.location).toBe('/redirected');
         });
     });
   });

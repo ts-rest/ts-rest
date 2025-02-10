@@ -134,10 +134,13 @@ export const TsRestHandler = (
     if (isMultiHandler) {
       const originalMethod = descriptor.value;
 
-      const paramTypes =
-        Reflect.getMetadata('design:paramtypes', target, propertyKey) || [];
-
-      console.log({ paramTypes }); // Logs { paramTypes: [ [Function: Object] ] } for a @Headers() param
+      // Get parameter metadata using Nest's internal key
+      const ROUTE_ARGS_METADATA = '__routeArguments__';
+      const originalParamMetadata = Reflect.getMetadata(
+        ROUTE_ARGS_METADATA,
+        target.constructor,
+        propertyKey,
+      );
 
       Object.entries(appRouterOrRoute).forEach(([routeKey, route]) => {
         if (isAppRoute(route)) {
@@ -145,20 +148,44 @@ export const TsRestHandler = (
 
           // Create new method that calls original
           target[methodName] = async function (...args: any[]) {
-            console.log('args', args);
             return originalMethod.apply(this, args);
           };
 
-          // Get all metadata keys from the original method
-          const reflector = new Reflector();
-          const metadataKeys = Reflect.getMetadataKeys(descriptor.value);
+          // Copy the route arguments metadata to the new method
+          if (originalParamMetadata) {
+            Reflect.defineMetadata(
+              ROUTE_ARGS_METADATA,
+              originalParamMetadata,
+              target.constructor,
+              methodName,
+            );
+          }
 
+          // Get parameter types
+          const paramTypes = Reflect.getMetadata(
+            'design:paramtypes',
+            target,
+            propertyKey,
+          );
+          if (paramTypes) {
+            Reflect.defineMetadata(
+              'design:paramtypes',
+              paramTypes,
+              target,
+              methodName,
+            );
+          }
+
+          // Rest of your existing code...
           const HttpVerbDecorator = getHttpVerbDecorator(route);
           HttpVerbDecorator(
             target,
             methodName,
             Object.getOwnPropertyDescriptor(target, methodName)!,
           );
+          // Rest of your existing metadata copying...
+          const reflector = new Reflector();
+          const metadataKeys = Reflect.getMetadataKeys(descriptor.value);
 
           // Copy all original method's metadata to the new method
           metadataKeys.forEach((key) => {
