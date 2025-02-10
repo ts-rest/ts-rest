@@ -82,6 +82,21 @@ export class ResponseValidationError extends InternalServerErrorException {
   }
 }
 
+const getHttpVerbDecorator = (route: AppRoute) => {
+  switch (route.method) {
+    case 'GET':
+      return Get(route.path);
+    case 'POST':
+      return Post(route.path);
+    case 'PUT':
+      return Put(route.path);
+    case 'PATCH':
+      return Patch(route.path);
+    case 'DELETE':
+      return Delete(route.path);
+  }
+};
+
 export const TsRestHandler = (
   appRouterOrRoute: AppRouter | AppRoute,
   options?: TsRestOptions,
@@ -108,28 +123,14 @@ export const TsRestHandler = (
             return originalMethod.apply(this, args);
           };
 
-          // Apply appropriate HTTP method decorator
-          const apiDecorator = (() => {
-            switch (route.method) {
-              case 'GET':
-                return Get(route.path);
-              case 'POST':
-                return Post(route.path);
-              case 'PUT':
-                return Put(route.path);
-              case 'PATCH':
-                return Patch(route.path);
-              case 'DELETE':
-                return Delete(route.path);
-            }
-          })();
-
           // Get all metadata keys from the original method
           const reflector = new Reflector();
           const metadataKeys = Reflect.getMetadataKeys(descriptor.value);
 
+          const HttpVerbDecorator = getHttpVerbDecorator(route);
+
           // Apply the route method decorator first
-          apiDecorator(
+          HttpVerbDecorator(
             target,
             methodName,
             Object.getOwnPropertyDescriptor(target, methodName)!,
@@ -174,23 +175,9 @@ export const TsRestHandler = (
         throw new Error('Expected app route but received app router');
       }
 
-      // Single handler case remains the same
-      const apiDecorator = (() => {
-        switch (appRouterOrRoute.method) {
-          case 'GET':
-            return Get(appRouterOrRoute.path);
-          case 'POST':
-            return Post(appRouterOrRoute.path);
-          case 'PUT':
-            return Put(appRouterOrRoute.path);
-          case 'PATCH':
-            return Patch(appRouterOrRoute.path);
-          case 'DELETE':
-            return Delete(appRouterOrRoute.path);
-        }
-      })();
+      const HttpVerbDecorator = getHttpVerbDecorator(appRouterOrRoute);
 
-      apiDecorator(target, propertyKey, descriptor);
+      HttpVerbDecorator(target, propertyKey, descriptor);
       if (options) {
         SetMetadata(TsRestOptionsMetadataKey, options)(
           target,
