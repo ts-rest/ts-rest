@@ -1223,7 +1223,7 @@ describe('ts-rest-nest-handler', () => {
 
       @Controller()
       class SingleHandlerTestController {
-        @TsRestHandler(contract)
+        @TsRestHandler(contract.getRequest)
         @UseInterceptors(TestInterceptor)
         async postRequest() {
           return tsRestHandler(contract.getRequest, async () => ({

@@ -3,8 +3,6 @@ import { mergeMap, Observable } from 'rxjs';
 import type { Request, Response } from 'express-serve-static-core';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  All,
-  applyDecorators,
   BadRequestException,
   CallHandler,
   Delete,
@@ -16,7 +14,6 @@ import {
   Injectable,
   InternalServerErrorException,
   NestInterceptor,
-  NotFoundException,
   Optional,
   Patch,
   Post,
@@ -47,6 +44,17 @@ import {
   MaybeTsRestOptions,
   TsRestOptions,
 } from './ts-rest-options';
+
+type TsRestAppRouteMetadata = {
+  appRoute: AppRoute;
+  /**
+   * if we're in a multi handler, this is the key of the route e.g. `getHello`
+   * inside a contract with multiple handlers
+   *
+   * Otherwise, it's null, i.e. single handler
+   */
+  routeKey: string | null;
+};
 
 export class RequestValidationError extends BadRequestException {
   constructor(
@@ -108,14 +116,26 @@ export const TsRestHandler = (
   ) => {
     const isMultiHandler = !isAppRoute(appRouterOrRoute);
 
+    /**
+     * To make multi handler work we've got to do a trick with virtual methods in the class:
+     *
+     * Originally we used the @All decorator on the original method, but this has issues with different controllers conflicting
+     *
+     * Now, we make a new method for each route in the router, and apply the appropriate decorator to it.
+     *
+     * e.g. say there is a contract with two methods, `getPost` and `updatePost`
+     *
+     * we create two new methods in the class, `handler_getPost` and `handler_updatePost`
+     * and decorate @Get on the first and @Put on the second
+     *
+     * Then, we call the original method from the new method
+     */
     if (isMultiHandler) {
-      // Store original method
       const originalMethod = descriptor.value;
 
-      // For each route in the router, create a new method with appropriate decorator
-      Object.entries(appRouterOrRoute).forEach(([key, route]) => {
+      Object.entries(appRouterOrRoute).forEach(([routeKey, route]) => {
         if (isAppRoute(route)) {
-          const methodName = `${String(propertyKey)}_${key}`;
+          const methodName = `${String(propertyKey)}_${routeKey}`;
 
           // Create new method that calls original
           target[methodName] = async function (...args: any[]) {
@@ -128,8 +148,6 @@ export const TsRestHandler = (
           const metadataKeys = Reflect.getMetadataKeys(descriptor.value);
 
           const HttpVerbDecorator = getHttpVerbDecorator(route);
-
-          // Apply the route method decorator first
           HttpVerbDecorator(
             target,
             methodName,
@@ -148,7 +166,6 @@ export const TsRestHandler = (
             }
           });
 
-          // Apply our ts-rest specific metadata
           if (options) {
             SetMetadata(TsRestOptionsMetadataKey, options)(
               target,
@@ -156,11 +173,16 @@ export const TsRestHandler = (
               Object.getOwnPropertyDescriptor(target, methodName)!,
             );
           }
-          SetMetadata(TsRestAppRouteMetadataKey, { appRoute: route, key })(
+
+          SetMetadata(TsRestAppRouteMetadataKey, {
+            appRoute: route,
+            routeKey,
+          } satisfies TsRestAppRouteMetadata)(
             target,
             methodName,
             Object.getOwnPropertyDescriptor(target, methodName)!,
           );
+
           UseInterceptors(TsRestHandlerInterceptor)(
             target,
             methodName,
@@ -171,13 +193,16 @@ export const TsRestHandler = (
 
       return descriptor;
     } else {
+      /**
+       * On the single handler we can just apply the HttpVerb decorator to the original method
+       */
       if (!isAppRoute(appRouterOrRoute)) {
         throw new Error('Expected app route but received app router');
       }
 
       const HttpVerbDecorator = getHttpVerbDecorator(appRouterOrRoute);
-
       HttpVerbDecorator(target, propertyKey, descriptor);
+
       if (options) {
         SetMetadata(TsRestOptionsMetadataKey, options)(
           target,
@@ -185,10 +210,11 @@ export const TsRestHandler = (
           descriptor,
         );
       }
+
       SetMetadata(TsRestAppRouteMetadataKey, {
         appRoute: appRouterOrRoute,
-        key: String(propertyKey), // TODO: what key here?
-      })(target, propertyKey, descriptor);
+        routeKey: null,
+      } satisfies TsRestAppRouteMetadata)(target, propertyKey, descriptor);
       UseInterceptors(TsRestHandlerInterceptor)(
         target,
         propertyKey,
@@ -247,18 +273,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
   /**
    * We use metadata to store the route, and the key of the route in a router on a given method
    */
-  private getAppRouteFromContext(ctx: ExecutionContext): {
-    /**
-     * E.g. { method: "GET", path: "/posts", ... }
-     */
-    appRoute: AppRoute;
-    /**
-     * e.g. getPosts
-     */
-    key: string;
-  } {
+  private getAppRouteFromContext(
+    ctx: ExecutionContext,
+  ): TsRestAppRouteMetadata {
     const appRouteMetadata = this.reflector.get<
-      { appRoute: AppRoute; key: string } | undefined
+      TsRestAppRouteMetadata | undefined
     >(TsRestAppRouteMetadataKey, ctx.getHandler());
 
     if (!appRouteMetadata) {
@@ -278,19 +297,15 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     const res: Response | FastifyReply = ctx.switchToHttp().getResponse();
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
-    const { appRoute: route, key } = this.getAppRouteFromContext(ctx);
-
-    console.log('intercept -> route key', key);
+    const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
 
     const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
-    console.log('intercept -> options', options);
-
-    const paramsResult = checkZodSchema(req.params, route.pathParams, {
+    const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = checkZodSchema(req.headers, route.headers, {
+    const headersResult = checkZodSchema(req.headers, appRoute.headers, {
       passThroughExtraKeys: true,
     });
 
@@ -298,11 +313,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
 
-    const queryResult = checkZodSchema(query, route.query);
+    const queryResult = checkZodSchema(query, appRoute.query);
 
     const bodyResult = checkZodSchema(
       req.body,
-      'body' in route ? route.body : null,
+      'body' in appRoute ? appRoute.body : null,
     );
 
     const isHeadersInvalid =
@@ -337,13 +352,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
             headers: headersResult.success ? headersResult.data : req.headers,
           };
 
-          if (typeof impl === 'function') {
-            result = await impl(res);
-          } else {
-            const implFunc = impl[key];
-
-            result = await implFunc(res);
-          }
+          /**
+           * If we have a routeKey that means we're in a multi handler, and therefore we
+           * need to call the appropriate method WITHIN the implementation object
+           */
+          result = routeKey ? await impl[routeKey](res) : await impl(res);
         } catch (e) {
           if (e instanceof TsRestException) {
             result = {
@@ -362,10 +375,10 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         }
 
         const responseAfterValidation = options.validateResponses
-          ? validateResponse(route, result)
+          ? validateResponse(appRoute, result)
           : result;
 
-        const responseType = route.responses[result.status];
+        const responseType = appRoute.responses[result.status];
 
         if (result.error) {
           throw new HttpException(
