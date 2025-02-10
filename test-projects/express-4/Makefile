@@ -10,6 +10,8 @@ setup:
 	mkdir -p node_modules/@ts-rest
 	cp -r ../../dist/libs/ts-rest/* node_modules/@ts-rest/
 
-test:
+e2e:
 	make setup
 	bun test
+	bun build index.ts --target bun --outdir ./dist
+	bun tsc
