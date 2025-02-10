@@ -151,7 +151,6 @@ export const TsRestHandler = (
             return originalMethod.apply(this, args);
           };
 
-          // Copy the route arguments metadata to the new method
           if (originalParamMetadata) {
             Reflect.defineMetadata(
               ROUTE_ARGS_METADATA,
@@ -161,7 +160,6 @@ export const TsRestHandler = (
             );
           }
 
-          // Get parameter types
           const paramTypes = Reflect.getMetadata(
             'design:paramtypes',
             target,
@@ -176,18 +174,16 @@ export const TsRestHandler = (
             );
           }
 
-          // Rest of your existing code...
           const HttpVerbDecorator = getHttpVerbDecorator(route);
           HttpVerbDecorator(
             target,
             methodName,
             Object.getOwnPropertyDescriptor(target, methodName)!,
           );
-          // Rest of your existing metadata copying...
+
           const reflector = new Reflector();
           const metadataKeys = Reflect.getMetadataKeys(descriptor.value);
 
-          // Copy all original method's metadata to the new method
           metadataKeys.forEach((key) => {
             const metadata = reflector.get(key, descriptor.value);
             if (metadata) {
