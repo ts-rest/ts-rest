@@ -46,26 +46,6 @@ export type Expect<a extends true> = a;
 
 jest.setTimeout(10000);
 
-describe('doesUrlMatchContractPath', () => {
-  it.each`
-    contractPath    | url           | expected
-    ${'/'}          | ${'/'}        | ${true}
-    ${'/'}          | ${'/api'}     | ${false}
-    ${'/api'}       | ${'/api'}     | ${true}
-    ${'/api/'}      | ${'/api'}     | ${true}
-    ${'/api'}       | ${'/api/'}    | ${true}
-    ${'/api/'}      | ${'/api/'}    | ${true}
-    ${'/posts/:id'} | ${'/posts/1'} | ${true}
-    ${'/posts/:id'} | ${'/posts/1'} | ${true}
-    ${'/posts/:id'} | ${'/posts'}   | ${false}
-  `(
-    'should return $expected when contractPath is $contractPath and url is $url',
-    ({ contractPath, url, expected }) => {
-      expect(doesUrlMatchContractPath(contractPath, url)).toBe(expected);
-    },
-  );
-});
-
 describe('ts-rest-nest-handler', () => {
   describe('multi-handler api', () => {
     it('should be able to implement a whole contract', async () => {
@@ -258,8 +238,13 @@ describe('ts-rest-nest-handler', () => {
           .post('/test')
           .send({ message: 123 });
 
-        expect(responsePost.status).toBe(200);
-        expect(responsePost.body).toEqual({ message: 123 });
+        expect({
+          status: responsePost.status,
+          body: responsePost.body,
+        }).toStrictEqual({
+          status: 200,
+          body: { message: 123 },
+        });
       });
     });
 

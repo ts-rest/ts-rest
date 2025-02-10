@@ -86,54 +86,115 @@ export const TsRestHandler = (
   appRouterOrRoute: AppRouter | AppRoute,
   options?: TsRestOptions,
 ): MethodDecorator => {
-  const decorators = [];
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor,
+  ) => {
+    const isMultiHandler = !isAppRoute(appRouterOrRoute);
 
-  if (options) {
-    decorators.push(SetMetadata(TsRestOptionsMetadataKey, options));
-  }
+    if (isMultiHandler) {
+      // Store original method
+      const originalMethod = descriptor.value;
 
-  const isMultiHandler = !isAppRoute(appRouterOrRoute);
+      // For each route in the router, create a new method with appropriate decorator
+      Object.entries(appRouterOrRoute).forEach(([key, route]) => {
+        if (isAppRoute(route)) {
+          const methodName = `${String(propertyKey)}_${key}`;
 
-  if (isMultiHandler) {
-    const routerPaths: Set<string> = new Set();
+          // Create new method that calls original
+          target[methodName] = async function (...args: any[]) {
+            console.log('Hitting the new method', methodName, args);
+            return originalMethod.apply(this, args);
+          };
 
-    Object.values(appRouterOrRoute).forEach((value) => {
-      if (isAppRoute(value)) {
-        routerPaths.add(value.path);
+          // Apply appropriate HTTP method decorator
+          const apiDecorator = (() => {
+            switch (route.method) {
+              case 'GET':
+                return Get(route.path);
+              case 'POST':
+                return Post(route.path);
+              case 'PUT':
+                return Put(route.path);
+              case 'PATCH':
+                return Patch(route.path);
+              case 'DELETE':
+                return Delete(route.path);
+            }
+          })();
+
+          // Apply decorators to new method
+          apiDecorator(
+            target,
+            methodName,
+            Object.getOwnPropertyDescriptor(target, methodName)!,
+          );
+
+          if (options) {
+            console.log('Setting options', options);
+            SetMetadata(TsRestOptionsMetadataKey, options)(
+              target,
+              methodName,
+              Object.getOwnPropertyDescriptor(target, methodName)!,
+            );
+          }
+          SetMetadata(TsRestAppRouteMetadataKey, { appRoute: route, key })(
+            target,
+            methodName,
+            Object.getOwnPropertyDescriptor(target, methodName)!,
+          );
+          UseInterceptors(TsRestHandlerInterceptor)(
+            target,
+            methodName,
+            Object.getOwnPropertyDescriptor(target, methodName)!,
+          );
+        }
+      });
+
+      return descriptor;
+    } else {
+      if (!isAppRoute(appRouterOrRoute)) {
+        throw new Error('Expected app route but received app router');
       }
-    });
 
-    const routerPathsArray = Array.from(routerPaths);
+      // Single handler case remains the same
+      const apiDecorator = (() => {
+        switch (appRouterOrRoute.method) {
+          case 'GET':
+            return Get(appRouterOrRoute.path);
+          case 'POST':
+            return Post(appRouterOrRoute.path);
+          case 'PUT':
+            return Put(appRouterOrRoute.path);
+          case 'PATCH':
+            return Patch(appRouterOrRoute.path);
+          case 'DELETE':
+            return Delete(appRouterOrRoute.path);
+        }
+      })();
 
-    decorators.push(
-      All(routerPathsArray),
-      SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
-      UseInterceptors(TsRestHandlerInterceptor),
-    );
-  } else {
-    const apiDecorator = (() => {
-      switch (appRouterOrRoute.method) {
-        case 'GET':
-          return Get(appRouterOrRoute.path);
-        case 'POST':
-          return Post(appRouterOrRoute.path);
-        case 'PUT':
-          return Put(appRouterOrRoute.path);
-        case 'PATCH':
-          return Patch(appRouterOrRoute.path);
-        case 'DELETE':
-          return Delete(appRouterOrRoute.path);
+      apiDecorator(target, propertyKey, descriptor);
+      if (options) {
+        SetMetadata(TsRestOptionsMetadataKey, options)(
+          target,
+          propertyKey,
+          descriptor,
+        );
       }
-    })();
+      SetMetadata(TsRestAppRouteMetadataKey, {
+        appRoute: appRouterOrRoute,
+        key: String(propertyKey), // TODO: what key here?
+      })(target, propertyKey, descriptor);
+      UseInterceptors(TsRestHandlerInterceptor)(
+        target,
+        propertyKey,
+        descriptor,
+      );
 
-    decorators.push(
-      apiDecorator,
-      SetMetadata(TsRestAppRouteMetadataKey, appRouterOrRoute),
-      UseInterceptors(TsRestHandlerInterceptor),
-    );
-  }
-
-  return applyDecorators(...decorators);
+      return descriptor;
+    }
+  };
 };
 
 type NestHandlerImplementation<T extends AppRouter | AppRoute> =
@@ -171,49 +232,6 @@ export class TsRestException<T extends AppRoute> extends HttpException {
   }
 }
 
-export const doesUrlMatchContractPath = (
-  /**
-   * @example '/posts/:id'
-   */
-  contractPath: string,
-  /**
-   * @example '/posts/1'
-   */
-  url: string,
-): boolean => {
-  // strip trailing slash
-  if (contractPath !== '/' && contractPath.endsWith('/')) {
-    contractPath = contractPath.slice(0, -1);
-  }
-
-  if (url !== '/' && url.endsWith('/')) {
-    url = url.slice(0, -1);
-  }
-
-  const contractPathParts = contractPath.split('/');
-
-  const urlParts = url.split('/');
-
-  if (contractPathParts.length !== urlParts.length) {
-    return false;
-  }
-
-  for (let i = 0; i < contractPathParts.length; i++) {
-    const contractPathPart = contractPathParts[i];
-    const urlPart = urlParts[i];
-
-    if (contractPathPart.startsWith(':')) {
-      continue;
-    }
-
-    if (contractPathPart !== urlPart) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
 @Injectable()
 export class TsRestHandlerInterceptor implements NestInterceptor {
   constructor(
@@ -223,65 +241,53 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     private globalOptions: MaybeTsRestOptions,
   ) {}
 
-  private getAppRouteFromContext(ctx: ExecutionContext) {
-    const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
+  /**
+   * We use metadata to store the route, and the key of the route in a router on a given method
+   */
+  private getAppRouteFromContext(ctx: ExecutionContext): {
+    /**
+     * E.g. { method: "GET", path: "/posts", ... }
+     */
+    appRoute: AppRoute;
+    /**
+     * e.g. getPosts
+     */
+    key: string;
+  } {
+    const appRouteMetadata = this.reflector.get<
+      { appRoute: AppRoute; key: string } | undefined
+    >(TsRestAppRouteMetadataKey, ctx.getHandler());
 
-    const appRoute = this.reflector.get<AppRoute | AppRouter | undefined>(
-      TsRestAppRouteMetadataKey,
-      ctx.getHandler(),
-    );
-
-    if (!appRoute) {
+    if (!appRouteMetadata) {
       throw new Error(
         'Could not find app router or app route, ensure you are using the @TsRestHandler decorator on your method',
       );
     }
 
-    if (isAppRoute(appRoute)) {
-      return {
-        appRoute,
-        routeAlias: undefined,
-      };
+    if (!isAppRoute(appRouteMetadata.appRoute)) {
+      throw new Error('Expected app route but received app router');
     }
 
-    const appRouter = appRoute;
-
-    const foundAppRoute = Object.entries(appRouter).find(([, value]) => {
-      if (isAppRoute(value)) {
-        return (
-          doesUrlMatchContractPath(
-            value.path,
-            'path' in req ? req.path : req.routeOptions.url!,
-          ) && req.method === value.method
-        );
-      }
-
-      return null;
-    }) as [string, AppRoute] | undefined;
-
-    if (!foundAppRoute) {
-      throw new NotFoundException("Couldn't find route handler for this path");
-    }
-
-    return {
-      appRoute: foundAppRoute[1],
-      routeKey: foundAppRoute[0],
-    };
+    return appRouteMetadata;
   }
 
   intercept(ctx: ExecutionContext, next: CallHandler<any>): Observable<any> {
     const res: Response | FastifyReply = ctx.switchToHttp().getResponse();
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
 
-    const { appRoute, routeKey } = this.getAppRouteFromContext(ctx);
+    const { appRoute: route, key } = this.getAppRouteFromContext(ctx);
+
+    console.log('intercept -> route key', key);
 
     const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
-    const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {
+    console.log('intercept -> options', options);
+
+    const paramsResult = checkZodSchema(req.params, route.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = checkZodSchema(req.headers, appRoute.headers, {
+    const headersResult = checkZodSchema(req.headers, route.headers, {
       passThroughExtraKeys: true,
     });
 
@@ -289,11 +295,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
 
-    const queryResult = checkZodSchema(query, appRoute.query);
+    const queryResult = checkZodSchema(query, route.query);
 
     const bodyResult = checkZodSchema(
       req.body,
-      'body' in appRoute ? appRoute.body : null,
+      'body' in route ? route.body : null,
     );
 
     const isHeadersInvalid =
@@ -328,7 +334,13 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
             headers: headersResult.success ? headersResult.data : req.headers,
           };
 
-          result = routeKey ? await impl[routeKey](res) : await impl(res);
+          if (typeof impl === 'function') {
+            result = await impl(res);
+          } else {
+            const implFunc = impl[key];
+
+            result = await implFunc(res);
+          }
         } catch (e) {
           if (e instanceof TsRestException) {
             result = {
@@ -347,10 +359,10 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         }
 
         const responseAfterValidation = options.validateResponses
-          ? validateResponse(appRoute, result)
+          ? validateResponse(route, result)
           : result;
 
-        const responseType = appRoute.responses[result.status];
+        const responseType = route.responses[result.status];
 
         if (result.error) {
           throw new HttpException(
