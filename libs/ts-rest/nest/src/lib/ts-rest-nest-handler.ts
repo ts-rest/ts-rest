@@ -139,7 +139,6 @@ export const TsRestHandler = (
 
           // Create new method that calls original
           target[methodName] = async function (...args: any[]) {
-            console.log('Hitting the new method', methodName, args);
             return originalMethod.apply(this, args);
           };
 

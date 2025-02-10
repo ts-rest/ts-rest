@@ -29,14 +29,10 @@ export const evaluateTsRestOptions = (
     context.getHandler(),
   ) as MaybeTsRestOptions;
 
-  console.log('handlerOptions', handlerOptions);
-
   const classOptions = Reflect.getMetadata(
     TsRestOptionsMetadataKey,
     context.getClass(),
   ) as MaybeTsRestOptions;
-
-  console.log('classOptions', classOptions);
 
   return {
     ...defaultOptions,
