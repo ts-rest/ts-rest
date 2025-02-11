@@ -1,5 +1,13 @@
 # @ts-rest/nest
 
+## 3.52.0
+
+### Minor Changes
+
+- 23567fa: Change multi-handler to not use @All decorator, now creates dummy methods for each route within a multi handler at runtime. This means we no longer need our own route matching alogirithm (we can utilise nest entirely) and we now don't have collisions with other controllers with the same path but different methods
+- 964f7c6: Support optional path params in the type system, and ensure multiple levels of query params are dealt with in nest
+- 9a444c5: Added NestJS v11 to dependencies
+
 ## 3.51.1
 
 ## 3.51.0
