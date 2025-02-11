@@ -25,10 +25,17 @@ describe('example-cloudflare-worker', () => {
     });
   });
 
-  afterAll(() => {
-    proc.commands.map((command) => command.kill());
+  afterAll(async () => {
+    if (proc) {
+      proc.commands.forEach((command) => {
+        try {
+          command.kill('SIGTERM');
+        } catch (error) {
+          console.warn('Error killing process:', error);
+        }
+      });
+    }
   });
-
   it('GET /posts should return an array of posts', async () => {
     const response = await fetch('http://127.0.0.1:8787/posts?skip=0&take=10', {
       headers: {
