@@ -48,6 +48,10 @@ export type ParamsFromUrl<T extends string> = RecursivelyExtractPathParams<
     }
   : never;
 
+const PARAM_REGEX = /:([^/?]+)\??/g;
+const DOUBLE_SLASH_REGEX = /\/\//g;
+const TRAILING_SLASH_REGEX = /\/+$/;
+
 /**
  * @param path - The URL e.g. /posts/:id
  * @param params - The params e.g. `{ id: string }`
@@ -61,8 +65,7 @@ export const insertParamsIntoPath = <T extends string>({
   params: ParamsFromUrl<T>;
 }) => {
   return path
-    .replace(/:([^/?]+)\??/g, (_, p) => {
-      return (params as any)[p] || '';
-    })
-    .replace(/\/\//g, '/');
+    .replace(PARAM_REGEX, (_, p) => (params as Record<string, string>)[p] || '')
+    .replace(DOUBLE_SLASH_REGEX, '/')
+    .replace(TRAILING_SLASH_REGEX, '');
 };
