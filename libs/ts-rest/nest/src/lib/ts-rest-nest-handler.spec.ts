@@ -765,6 +765,72 @@ describe('ts-rest-nest-handler', () => {
         },
       });
     });
+
+    it('should route correctly for optional params', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getPosts: {
+          path: '/posts/:year?/:month?',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              rangeSearched: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getPosts: async ({ params }) => ({
+              status: 200,
+              body: { rangeSearched: `${params.year}-${params.month}` },
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/posts')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'undefined-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy/mm')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-mm',
+          }),
+        );
+    });
   });
 
   describe('single-handler api', () => {
@@ -1583,6 +1649,70 @@ describe('ts-rest-nest-handler', () => {
         .expect((res) => {
           expect(res.header.location).toBe('/redirected');
         });
+    });
+
+    it('should route correctly for optional params', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getPosts: {
+          path: '/posts/:year?/:month?',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              rangeSearched: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract.getPosts)
+        async handler() {
+          return tsRestHandler(contract.getPosts, async ({ params }) => ({
+            status: 200,
+            body: { rangeSearched: `${params.year}-${params.month}` },
+          }));
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/posts')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'undefined-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy/mm')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-mm',
+          }),
+        );
     });
   });
 
