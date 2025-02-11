@@ -1,12 +1,6 @@
 import { InstallTabs } from '@site/src/components/InstallTabs';
 
-# Nest 🆕
-
-:::info
-As part of `@ts-rest/nest` 3.26.0 we introduced the `single-handler` and `multi-handler` approach to Nest with ts-rest, for the legacy approach please see [here](/docs/nest/legacy/).
-
-The old API will likely be deprecated in 4.0.0, so we recommend using the new API although there is no rush to migrate.
-:::
+# Nest
 
 ## Installation
 
@@ -100,12 +94,6 @@ export class MyController {
 
 The key difference here is you pass the entire contract (or a subset of a contract by defining a new contract or spreading multiple contracts) to the `@TsRestHandler` decorator and the `tsRestHandler` function.
 
-:::caution
-
-As of right now, for each route in a multi handler approach we instantiate the `@All` decorator for each route, this is _potentially_ problematic if you have the same route in multiple contracts (with different methods), as it will cause a conflict.
-
-We're looking into ways to solve this, but right now this may be a Nest limitation.
-:::
 
 #### Benefits
 
@@ -196,4 +184,14 @@ Currently any existing Nest global prefix, versioning, or controller prefixes wi
 If this feature is highly requested, we can investigate a solution.
 
 We have added the ability to [prefix paths](/docs/core/#path-prefix), allowing more flexibility in defining your API endpoints. This can be used as a workaround for this functionality.
+:::
+
+
+:::info
+
+Fixed from 3.52.0 onwards https://github.com/ts-rest/ts-rest/pull/750.
+
+As of right now, for each route in a multi handler approach we instantiate the `@All` decorator for each route, this is _potentially_ problematic if you have the same route in multiple contracts (with different methods), as it will cause a conflict.
+
+We're looking into ways to solve this, but right now this may be a Nest limitation.
 :::
