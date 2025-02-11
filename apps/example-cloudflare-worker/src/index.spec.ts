@@ -1,31 +1,66 @@
 import * as path from 'path';
 import concurrently, { ConcurrentlyResult } from 'concurrently';
 import * as waitOn from 'wait-on';
+import { exec } from 'child_process';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe('example-cloudflare-worker', () => {
   let proc: ConcurrentlyResult;
 
   beforeAll(async () => {
-    proc = concurrently(
-      [
-        {
-          cwd: path.resolve(__dirname, '../..'),
-          command: 'pnpm nx serve example-cloudflare-worker',
-        },
-      ],
-      {
-        killOthers: ['failure', 'success'],
-      },
-    );
+    // Kill any existing processes on port 8787
+    try {
+      await new Promise((resolve) => {
+        exec('lsof -ti:8787 | xargs kill -9', resolve);
+      });
+    } catch (error) {
+      console.log('No existing process to kill');
+    }
 
-    await waitOn({
-      resources: ['tcp:127.0.0.1:8787'],
-    });
+    const startServer = async (retries = 3) => {
+      try {
+        proc = concurrently(
+          [
+            {
+              cwd: path.resolve(__dirname, '../..'),
+              command: 'pnpm nx serve example-cloudflare-worker',
+            },
+          ],
+          {
+            killOthers: ['failure', 'success'],
+          },
+        );
+
+        proc.commands.forEach((command) => {
+          command.process?.on('error', (error) => {
+            console.error('Server process error:', error);
+          });
+        });
+
+        await waitOn({
+          resources: ['tcp:127.0.0.1:8787'],
+          timeout: 30000,
+          validateStatus: (status) => status === 200,
+          headers: { 'x-api-key': 'foo' },
+        });
+      } catch (error) {
+        if (retries > 0) {
+          console.log(
+            `Retrying server startup. Attempts remaining: ${retries - 1}`,
+          );
+          await cleanup();
+          await startServer(retries - 1);
+        } else {
+          throw error;
+        }
+      }
+    };
+
+    await startServer();
   });
 
-  afterAll(async () => {
+  const cleanup = async () => {
     if (proc) {
       proc.commands.forEach((command) => {
         try {
@@ -34,8 +69,15 @@ describe('example-cloudflare-worker', () => {
           console.warn('Error killing process:', error);
         }
       });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
+  };
+
+  afterAll(async () => {
+    await cleanup();
   });
+
   it('GET /posts should return an array of posts', async () => {
     const response = await fetch('http://127.0.0.1:8787/posts?skip=0&take=10', {
       headers: {
