@@ -41,6 +41,7 @@
       }
     },
     "test": {
+      "dependsOn": ["build"],
       "executor": "@nrwl/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {

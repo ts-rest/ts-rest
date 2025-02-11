@@ -48,10 +48,10 @@ importers:
         version: 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)
       '@nestjs/platform-fastify':
         specifier: 10.3.10
-        version: 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)
+        version: 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))
       '@nestjs/swagger':
         specifier: 7.1.4
-        version: 7.1.4(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)(reflect-metadata@0.1.13)
+        version: 7.1.4(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(reflect-metadata@0.1.13)
       '@prisma/client':
         specifier: 6.3.1
         version: 6.3.1(prisma@6.3.1(typescript@5.2.2))(typescript@5.2.2)
@@ -99,7 +99,7 @@ importers:
         version: 4.2.3(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vue@3.3.4)
       '@vitest/coverage-v8':
         specifier: 0.34.1
-        version: 0.34.1(vitest@0.32.4)
+        version: 0.34.1(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))
       autoprefixer:
         specifier: 10.4.13
         version: 10.4.13(postcss@8.4.40)
@@ -112,9 +112,6 @@ importers:
       clsx:
         specifier: ^1.1.1
         version: 1.2.1
-      concurrently:
-        specifier: ^8.2.2
-        version: 8.2.2
       core-js:
         specifier: ^3.25.0
         version: 3.25.1
@@ -232,7 +229,7 @@ importers:
         version: 10.0.1(chokidar@3.5.3)(typescript@5.2.2)
       '@nestjs/testing':
         specifier: 10.1.2
-        version: 10.1.2(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)(@nestjs/platform-express@10.3.10)
+        version: 10.1.2(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10))
       '@nx-plus/docusaurus':
         specifier: 14.1.0
         version: 14.1.0(@nrwl/workspace@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)
@@ -274,7 +271,7 @@ importers:
         version: 17.1.1(patch_hash=srgoyw37bnhowwxu725en4tk2y)(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/babel__core@7.1.19)(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2))(typescript@5.2.2)
       '@nx/vite':
         specifier: 17.1.1
-        version: 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4)
+        version: 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))
       '@nx/web':
         specifier: 17.1.1
         version: 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)
@@ -301,7 +298,7 @@ importers:
         version: 0.2.29(@swc/core@1.3.96(@swc/helpers@0.5.3))
       '@testing-library/jest-dom':
         specifier: 6.4.6
-        version: 6.4.6(@jest/globals@29.5.0)(@types/jest@29.4.4)(jest@29.4.3(@types/node@20.16.1)(ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2)))(vitest@0.32.4)
+        version: 6.4.6(@jest/globals@29.5.0)(@types/jest@29.4.4)(jest@29.4.3(@types/node@20.16.1)(ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2)))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))
       '@testing-library/react':
         specifier: ^16.0.0
         version: 16.0.0(@testing-library/dom@10.4.0)(@types/react-dom@18.3.0)(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -367,7 +364,7 @@ importers:
         version: 0.32.4(vitest@0.32.4)
       '@wanews/nx-vite':
         specifier: ^0.11.0
-        version: 0.11.0(@nrwl/devkit@17.1.1(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3))))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(vite-tsconfig-paths@4.2.0(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3)))(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4)
+        version: 0.11.0(@nrwl/devkit@17.1.1(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3))))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(vite-tsconfig-paths@4.2.0(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3)))(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))
       azure-functions-core-tools:
         specifier: ^4.0.5858
         version: 4.0.5858
@@ -575,7 +572,7 @@ importers:
         version: 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)
       '@nestjs/platform-fastify':
         specifier: ^9.0.0 || ^10.0.0 || ^11.0.0
-        version: 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)
+        version: 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))
       fastify:
         specifier: ^4.0.0
         version: 4.28.0
@@ -4558,11 +4555,6 @@ packages:
   concat-with-sourcemaps@1.1.0:
     resolution: {integrity: sha512-4gEjHJFT9e+2W/77h/DS5SGUgwDaOwprX8L/gl5+3ixnzkVJJsZWDSelmN3Oilw3LNDZjZV0yqH1hLG3k6nghg==}
 
-  concurrently@8.2.2:
-    resolution: {integrity: sha512-1dP4gpXFhei8IOtlXRE/T/4H88ElHgTiUzh71YUmtjTEHMSRS2Z/fgOxHSxxusGHogsRfxNq1vyAwxSC+EVyDg==}
-    engines: {node: ^14.13.0 || >=16.0.0}
-    hasBin: true
-
   config-chain@1.1.13:
     resolution: {integrity: sha512-qj+f8APARXHrM0hraqXYb2/bOVSV4PvJQlNZ/DVj0QrmNM2q2euizkeuVckQ57J+W0mRH6Hvi+k50M4Jul2VRQ==}
 
@@ -4874,10 +4866,6 @@ packages:
   data-urls@4.0.0:
     resolution: {integrity: sha512-/mMTei/JXPqvFqQtfyTowxmJVwr2PVAeCcDxyFf6LhoOu/09TX2OX3kb2wzi4DMXcfj4OItwDOnhl5oziPnT6g==}
     engines: {node: '>=14'}
-
-  date-fns@2.30.0:
-    resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
-    engines: {node: '>=0.11'}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -9344,9 +9332,6 @@ packages:
   space-separated-tokens@1.1.5:
     resolution: {integrity: sha512-q/JSVd1Lptzhf5bkYm4ob4iWPjx0KiRe3sRFBNrVqbJkFaBm5vbbowy1mymoPNLRa52+oadOhJ+K49wsSeSjTA==}
 
-  spawn-command@0.0.2:
-    resolution: {integrity: sha512-zC8zGoGkmc8J9ndvml8Xksr1Amk9qBujgbF0JAIWO7kXr43w0h/0GJNM/Vustixu+YE8N/MTrQ7N31FvHUACxQ==}
-
   spawndamnit@2.0.0:
     resolution: {integrity: sha512-j4JKEcncSjFlqIwU5L/rp2N5SIPsdxaRsIv678+TZxZ0SRDJTm8JrxJMjE/XuiEZNEir3S8l0Fa3Ke339WI4qA==}
 
@@ -9787,10 +9772,6 @@ packages:
   trace-event-lib@1.3.1:
     resolution: {integrity: sha512-RO/TD5E9RNqU6MhOfi/njFWKYhrzOJCpRXlEQHgXwM+6boLSrQnOZ9xbHwOXzC+Luyixc7LNNSiTsqTVeF7I1g==}
     engines: {node: '>=12.0.0'}
-
-  tree-kill@1.2.2:
-    resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
-    hasBin: true
 
   trim-newlines@3.0.1:
     resolution: {integrity: sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==}
@@ -13205,7 +13186,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@nestjs/platform-fastify@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)':
+  '@nestjs/platform-fastify@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))':
     dependencies:
       '@fastify/cors': 9.0.1
       '@fastify/formbody': 7.4.0
@@ -13238,7 +13219,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@nestjs/swagger@7.1.4(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)(reflect-metadata@0.1.13)':
+  '@nestjs/swagger@7.1.4(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(reflect-metadata@0.1.13)':
     dependencies:
       '@nestjs/common': 10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1)
       '@nestjs/core': 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1)
@@ -13249,7 +13230,7 @@ snapshots:
       reflect-metadata: 0.1.13
       swagger-ui-dist: 5.1.0
 
-  '@nestjs/testing@10.1.2(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10)(@nestjs/platform-express@10.3.10)':
+  '@nestjs/testing@10.1.2(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10))':
     dependencies:
       '@nestjs/common': 10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1)
       '@nestjs/core': 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1)
@@ -13508,9 +13489,9 @@ snapshots:
       - '@swc/core'
       - debug
 
-  '@nrwl/vite@17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4)':
+  '@nrwl/vite@17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))':
     dependencies:
-      '@nx/vite': 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4)
+      '@nx/vite': 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -13968,9 +13949,9 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nx/vite@17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4)':
+  '@nx/vite@17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))':
     dependencies:
-      '@nrwl/vite': 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4)
+      '@nrwl/vite': 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))
       '@nx/devkit': 17.1.1(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))
       '@nx/js': 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)
       '@phenomnomnominal/tsquery': 5.0.1(typescript@5.2.2)
@@ -14614,7 +14595,7 @@ snapshots:
       lz-string: 1.5.0
       pretty-format: 27.5.1
 
-  '@testing-library/jest-dom@6.4.6(@jest/globals@29.5.0)(@types/jest@29.4.4)(jest@29.4.3(@types/node@20.16.1)(ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2)))(vitest@0.32.4)':
+  '@testing-library/jest-dom@6.4.6(@jest/globals@29.5.0)(@types/jest@29.4.4)(jest@29.4.3(@types/node@20.16.1)(ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2)))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))':
     dependencies:
       '@adobe/css-tools': 4.4.0
       '@babel/runtime': 7.23.2
@@ -15137,7 +15118,7 @@ snapshots:
       vite: 4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3)
       vue: 3.3.4
 
-  '@vitest/coverage-v8@0.34.1(vitest@0.32.4)':
+  '@vitest/coverage-v8@0.34.1(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))':
     dependencies:
       '@ampproject/remapping': 2.2.1
       '@bcoe/v8-coverage': 0.2.3
@@ -15264,7 +15245,7 @@ snapshots:
     optionalDependencies:
       '@vue/server-renderer': 3.3.4(vue@3.3.4)
 
-  '@wanews/nx-vite@0.11.0(@nrwl/devkit@17.1.1(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3))))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(vite-tsconfig-paths@4.2.0(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3)))(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4)':
+  '@wanews/nx-vite@0.11.0(@nrwl/devkit@17.1.1(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3))))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(vite-tsconfig-paths@4.2.0(typescript@5.2.2)(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3)))(vite@4.5.3(@types/node@20.16.1)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))(vitest@0.32.4(@vitest/ui@0.32.4)(jsdom@22.1.0)(less@4.1.3)(sass@1.55.0)(stylus@0.59.0)(terser@5.17.3))':
     dependencies:
       '@nrwl/devkit': 17.1.1(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))
       execa: 5.1.1
@@ -16309,18 +16290,6 @@ snapshots:
     dependencies:
       source-map: 0.6.1
 
-  concurrently@8.2.2:
-    dependencies:
-      chalk: 4.1.2
-      date-fns: 2.30.0
-      lodash: 4.17.21
-      rxjs: 7.8.1
-      shell-quote: 1.8.1
-      spawn-command: 0.0.2
-      supports-color: 8.1.1
-      tree-kill: 1.2.2
-      yargs: 17.7.2
-
   config-chain@1.1.13:
     dependencies:
       ini: 1.3.8
@@ -16697,10 +16666,6 @@ snapshots:
       abab: 2.0.6
       whatwg-mimetype: 3.0.0
       whatwg-url: 12.0.1
-
-  date-fns@2.30.0:
-    dependencies:
-      '@babel/runtime': 7.23.2
 
   debug@2.6.9:
     dependencies:
@@ -17274,8 +17239,8 @@ snapshots:
       debug: 4.3.4
       enhanced-resolve: 5.14.0
       eslint: 8.53.0
-      eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.5.5)(eslint@8.53.0)
-      eslint-plugin-import: 2.29.0(@typescript-eslint/parser@6.10.0(eslint@8.53.0)(typescript@5.2.2))(eslint@8.53.0)
+      eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.5.5(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.0)(eslint@8.53.0))(eslint@8.53.0)
+      eslint-plugin-import: 2.29.0(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.5.5)(eslint@8.53.0)
       get-tsconfig: 4.5.0
       globby: 13.1.4
       is-core-module: 2.13.1
@@ -17287,7 +17252,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.5.5)(eslint@8.53.0):
+  eslint-module-utils@2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.5.5(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.0)(eslint@8.53.0))(eslint@8.53.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -17318,7 +17283,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.53.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.5.5)(eslint@8.53.0)
+      eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.5.5(@typescript-eslint/parser@5.62.0(eslint@8.53.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.0)(eslint@8.53.0))(eslint@8.53.0)
       hasown: 2.0.0
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -22076,8 +22041,6 @@ snapshots:
 
   space-separated-tokens@1.1.5: {}
 
-  spawn-command@0.0.2: {}
-
   spawndamnit@2.0.0:
     dependencies:
       cross-spawn: 5.1.0
@@ -22550,8 +22513,6 @@ snapshots:
     dependencies:
       browser-process-hrtime: 1.0.0
       lodash: 4.17.21
-
-  tree-kill@1.2.2: {}
 
   trim-newlines@3.0.1: {}
 

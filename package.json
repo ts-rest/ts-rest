@@ -61,7 +61,6 @@
     "body-parser": "^1.20.0",
     "classnames": "^2.3.1",
     "clsx": "^1.1.1",
-    "concurrently": "^8.2.2",
     "core-js": "^3.25.0",
     "cors": "^2.8.5",
     "daisyui": "^2.24.0",
