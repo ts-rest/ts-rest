@@ -115,6 +115,14 @@ describe('insertParamsIntoPath', () => {
     expect(result).toBe('/post/comments');
   });
 
+  it('should insert not have trailing slashes', () => {
+    const path = '/post/:id?/comments/:commentId?/:commentId2?/:commentId3?';
+
+    const result = insertParamsIntoPath({ path, params: {} });
+
+    expect(result).toBe('/post/comments');
+  });
+
   it('should insert optional params into paths with only one param', () => {
     const path = '/:id?';
 
