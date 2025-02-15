@@ -141,7 +141,7 @@ export const tsRestFetchApi: ApiFetcher = async ({
     ) {
       return {
         ...response,
-        body: parseStandardSchema(route, response.body, responseSchema),
+        body: parseStandardSchema(response.body, responseSchema),
       };
     }
 

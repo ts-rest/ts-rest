@@ -1,6 +1,6 @@
-import { AppRoute, ContractAnyType } from './dsl';
-import { ResponseValidationError } from './response-validation-error';
+import { ContractAnyType } from './dsl';
 import { StandardSchemaV1 } from './standard-schema';
+import { ValidationError } from './validation-error';
 
 export const isStandardSchema = (
   schema: unknown,
@@ -37,7 +37,7 @@ export const checkStandardSchema = (
 
   if (result.issues) {
     return {
-      issues: result.issues,
+      error: new ValidationError(result.issues),
     };
   }
 
@@ -53,15 +53,14 @@ export const checkStandardSchema = (
 };
 
 export const parseStandardSchema = (
-  appRoute: AppRoute,
   data: unknown,
   schema: unknown,
   { passThroughExtraKeys = false } = {},
 ) => {
   const result = checkStandardSchema(data, schema, { passThroughExtraKeys });
 
-  if (result.issues) {
-    throw new ResponseValidationError(appRoute, result.issues);
+  if (result.error) {
+    throw result.error;
   }
 
   return result.value;

@@ -9,6 +9,7 @@ import {
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
 import { z } from 'zod';
+import { ValidationError } from './validation-error';
 
 const c = initContract();
 
@@ -1081,6 +1082,6 @@ describe('custom api', () => {
 
     await expect(
       client.posts.getPost({ params: { id: '1' } }),
-    ).rejects.toThrowError(ResponseValidationError);
+    ).rejects.toThrowError(ValidationError);
   });
 });

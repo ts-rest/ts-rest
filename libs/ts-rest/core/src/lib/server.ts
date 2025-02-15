@@ -7,10 +7,8 @@ import {
   ContractNoBodyType,
   ContractOtherResponse,
 } from './dsl';
-import {
-  checkStandardSchema,
-  parseStandardSchema,
-} from './standard-schema-utils';
+import { checkStandardSchema } from './standard-schema-utils';
+import { ValidationError } from './validation-error';
 
 export const isAppRouteResponse = (
   value: unknown,
@@ -59,9 +57,18 @@ export const validateResponse = ({
       ? responseType.body
       : responseType;
 
+    const responseValidation = checkStandardSchema(
+      response.body,
+      responseSchema,
+    );
+
+    if (responseValidation.error) {
+      throw new ResponseValidationError(appRoute, responseValidation.error);
+    }
+
     return {
       status: response.status,
-      body: parseStandardSchema(appRoute, response.body, responseSchema),
+      body: responseValidation.value,
     };
   }
 
