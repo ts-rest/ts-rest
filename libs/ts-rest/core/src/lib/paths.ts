@@ -14,18 +14,28 @@ type ResolveOptionalPathParam<T extends string> =
 type RecursivelyExtractPathParams<
   T extends string,
   TAcc extends null | Record<string, string>,
-> = T extends `/:${infer PathParam}/${infer Right}`
+> = T extends `/:${infer PathParam}(${string})/${infer Right}`
   ? ResolveOptionalPathParam<PathParam> &
       RecursivelyExtractPathParams<Right, TAcc>
+  : T extends `/:${infer PathParam}/${infer Right}`
+  ? ResolveOptionalPathParam<PathParam> &
+      RecursivelyExtractPathParams<Right, TAcc>
+  : T extends `/:${infer PathParam}(${string})`
+  ? ResolveOptionalPathParam<PathParam>
   : T extends `/:${infer PathParam}`
   ? ResolveOptionalPathParam<PathParam>
   : T extends `/${string}/${infer Right}`
   ? RecursivelyExtractPathParams<Right, TAcc>
   : T extends `/${string}`
   ? TAcc
+  : T extends `:${infer PathParam}(${string})/${infer Right}`
+  ? ResolveOptionalPathParam<PathParam> &
+      RecursivelyExtractPathParams<Right, TAcc>
   : T extends `:${infer PathParam}/${infer Right}`
   ? ResolveOptionalPathParam<PathParam> &
       RecursivelyExtractPathParams<Right, TAcc>
+  : T extends `:${infer PathParam}(${string})`
+  ? TAcc & ResolveOptionalPathParam<PathParam>
   : T extends `:${infer PathParam}`
   ? TAcc & ResolveOptionalPathParam<PathParam>
   : T extends `${string}/${infer Right}`
@@ -64,7 +74,11 @@ export const insertParamsIntoPath = <T extends string>({
   params: ParamsFromUrl<T>;
 }) => {
   let result = path
-    .replace(PARAM_REGEX, (_, p) => (params as Record<string, string>)[p] || '')
+    .replace(PARAM_REGEX, (_, p) => {
+      const paramName = p.includes('(') ? p.substring(0, p.indexOf('(')) : p;
+
+      return (params as Record<string, string>)[paramName] || '';
+    })
     .replace(DOUBLE_SLASH_REGEX, '/');
 
   while (result.length > 1 && result.endsWith('/')) {

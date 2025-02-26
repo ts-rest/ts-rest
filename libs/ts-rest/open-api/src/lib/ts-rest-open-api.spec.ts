@@ -1301,5 +1301,87 @@ describe('ts-rest-open-api', () => {
         }),
       ).toThrowError(/already exists with a different schema/);
     });
+
+    it('should strip regex patterns in path parameters', () => {
+      const routerWithRegexPaths = c.router({
+        getWithSimpleParam: {
+          method: 'GET',
+          path: '/users/:id',
+          responses: {
+            200: c.type<{ id: string }>(),
+          },
+        },
+        getWithRegexParam: {
+          method: 'GET',
+          path: '/users/:id([0-9]+)',
+          responses: {
+            200: c.type<{ id: string }>(),
+          },
+        },
+        getWithMultipleRegexParams: {
+          method: 'GET',
+          path: '/users/:userId([0-9]+)/posts/:postId([a-z0-9]+)',
+          responses: {
+            200: c.type<{ userId: string; postId: string }>(),
+          },
+        },
+        getWithComplexRegex: {
+          method: 'GET',
+          path: '/files/:filename(^[a-zA-Z0-9_-]+\\.(jpg|png|pdf)$)',
+          responses: {
+            200: c.type<{ filename: string }>(),
+          },
+        },
+      });
+
+      const apiDoc = generateOpenApi(routerWithRegexPaths, {
+        info: { title: 'Regex Path API', version: '0.1' },
+      });
+
+      // Check that the regex patterns are properly stripped and converted to OpenAPI path parameters
+      expect(apiDoc.paths).toHaveProperty('/users/{id}');
+      expect(apiDoc.paths).toHaveProperty('/users/{userId}/posts/{postId}');
+      expect(apiDoc.paths).toHaveProperty('/files/{filename}');
+
+      // Verify that the parameters are correctly defined
+      const userIdRoute = apiDoc.paths['/users/{id}'].get;
+      expect(userIdRoute.parameters).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'id',
+            in: 'path',
+            required: true,
+          }),
+        ]),
+      );
+
+      const complexPathRoute =
+        apiDoc.paths['/users/{userId}/posts/{postId}'].get;
+      expect(complexPathRoute.parameters).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'userId',
+            in: 'path',
+            required: true,
+          }),
+          expect.objectContaining({
+            name: 'postId',
+            in: 'path',
+            required: true,
+          }),
+        ]),
+      );
+
+      const fileRoute = apiDoc.paths['/files/{filename}'].get;
+      expect(fileRoute.parameters).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'filename',
+            in: 'path',
+            required: true,
+          }),
+        ]),
+      );
+    });
   });
 });

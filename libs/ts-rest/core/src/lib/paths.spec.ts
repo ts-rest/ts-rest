@@ -45,6 +45,19 @@ expectType<{
   commentId: string;
 }>(type<ParamsFromUrl<typeof urlMixedOptional2>>());
 
+const urlRegexp = '/post/:id(.*)';
+expectType<{ id: string }>(type<ParamsFromUrl<typeof urlRegexp>>());
+
+const urlMixedRegexp = '/post/:id(.*)/comments/:commentId';
+expectType<{ id: string; commentId: string }>(
+  type<ParamsFromUrl<typeof urlMixedRegexp>>(),
+);
+
+const urlManyRegexp = '/post/:id(.*)/comments/:commentId(.*)';
+expectType<{ id: string; commentId: string }>(
+  type<ParamsFromUrl<typeof urlManyRegexp>>(),
+);
+
 describe('insertParamsIntoPath', () => {
   it('should insert params into path', () => {
     const path = '/post/:id/comments/:commentId';
@@ -133,5 +146,44 @@ describe('insertParamsIntoPath', () => {
     const result = insertParamsIntoPath({ path, params });
 
     expect(result).toBe('/1');
+  });
+
+  it('should insert params into path with regex', () => {
+    const path = '/post/:id(\\d+)/comments/:commentId';
+
+    const params = {
+      commentId: '2',
+      id: '1',
+    };
+
+    const result = insertParamsIntoPath({ path, params });
+
+    expect(result).toBe('/post/1/comments/2');
+  });
+
+  it('should insert params into path with many regex', () => {
+    const path = '/post/:id(.*)/comments/:commentId(.*)';
+
+    const params = {
+      commentId: '2',
+      id: '1',
+    };
+
+    const result = insertParamsIntoPath({ path, params });
+
+    expect(result).toBe('/post/1/comments/2');
+  });
+
+  it('should insert params into path with mixed regex', () => {
+    const path = '/post/:id(.*)/comments/:commentId';
+
+    const params = {
+      commentId: '2',
+      id: '1',
+    };
+
+    const result = insertParamsIntoPath({ path, params });
+
+    expect(result).toBe('/post/1/comments/2');
   });
 });
