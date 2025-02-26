@@ -36,7 +36,7 @@ const getPathsFromRouter = (
     const value = router[key];
 
     if (isAppRoute(value)) {
-      const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
+      const pathWithPathParams = value.path.replace(/\/:(\w+)[^/?]*/g, '/{$1}');
 
       paths.push({
         id: key,
