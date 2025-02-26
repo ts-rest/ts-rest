@@ -75,7 +75,7 @@ export const insertParamsIntoPath = <T extends string>({
 }) => {
   let result = path
     .replace(PARAM_REGEX, (_, p) => {
-      const paramName = p.replace(/\(.*\)$/, '');
+      const paramName = p.includes('(') ? p.substring(0, p.indexOf('(')) : p;
 
       return (params as Record<string, string>)[paramName] || '';
     })
