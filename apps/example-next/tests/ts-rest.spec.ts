@@ -67,7 +67,6 @@ describe('/posts', () => {
     await tsRestEndpoint(req, res);
 
     expect(res._getStatusCode()).toBe(400);
-    console.log(res._getData());
     expect(res._getJSONData()).toEqual([
       {
         code: 'invalid_type',

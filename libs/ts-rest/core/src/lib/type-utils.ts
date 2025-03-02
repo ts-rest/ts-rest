@@ -61,6 +61,7 @@ export type SchemaOutputOrType<T> = T extends ContractNullType
   ? StandardSchemaV1.InferOutput<T>
   : T;
 
+// TODO: remove in next major version
 /** @deprecated use SchemaOutputOrType */
 export type ZodInferOrType<T> = SchemaOutputOrType<T>;
 
@@ -74,6 +75,7 @@ export type SchemaInputOrType<T> = T extends ContractNullType
   ? StandardSchemaV1.InferInput<T>
   : T;
 
+// TODO: remove in next major version
 /** @deprecated use SchemaInputOrType */
 export type ZodInputOrType<T> = SchemaInputOrType<T>;
 

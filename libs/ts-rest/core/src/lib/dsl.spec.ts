@@ -8,7 +8,7 @@ import {
   ContractNoBodyType,
 } from './dsl';
 import type { Equal, Expect } from './test-helpers';
-import { Prettify } from './type-utils';
+import { Merge, Prettify } from './type-utils';
 import { StandardSchemaV1 } from './standard-schema';
 
 const c = initContract();
@@ -385,16 +385,22 @@ describe('contract', () => {
                 >;
               };
               headers: StandardSchemaV1<
-                {
-                  'x-foo': string;
-                } & {
-                  'x-foo'?: string | undefined;
-                },
-                {
-                  'x-foo': string;
-                } & {
-                  'x-foo'?: string | undefined;
-                }
+                Merge<
+                  {
+                    'x-foo': string;
+                  },
+                  {
+                    'x-foo'?: string | undefined;
+                  }
+                >,
+                Merge<
+                  {
+                    'x-foo': string;
+                  },
+                  {
+                    'x-foo'?: string | undefined;
+                  }
+                >
               >;
             };
           };

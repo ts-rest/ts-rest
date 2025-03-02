@@ -121,8 +121,8 @@ type RecursivelyApplyOptions<
 type UniversalMerge<A, B> = A extends StandardSchemaV1
   ? B extends StandardSchemaV1
     ? StandardSchemaV1<
-        StandardSchemaV1.InferInput<A> & StandardSchemaV1.InferInput<B>,
-        StandardSchemaV1.InferOutput<A> & StandardSchemaV1.InferOutput<B>
+        Merge<StandardSchemaV1.InferInput<A>, StandardSchemaV1.InferInput<B>>,
+        Merge<StandardSchemaV1.InferOutput<A>, StandardSchemaV1.InferOutput<B>>
       >
     : unknown extends B
     ? A
