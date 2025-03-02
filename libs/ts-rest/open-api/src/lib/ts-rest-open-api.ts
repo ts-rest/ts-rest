@@ -1,12 +1,5 @@
-import {
-  AppRoute,
-  AppRouter,
-  extractZodObjectShape,
-  isAppRoute,
-  isZodObject,
-  isZodType,
-} from '@ts-rest/core';
-import {
+import { type AppRoute, type AppRouter, isAppRoute } from '@ts-rest/core';
+import type {
   ExamplesObject,
   InfoObject,
   MediaTypeObject,
@@ -16,8 +9,12 @@ import {
   ReferenceObject,
   SchemaObject,
 } from 'openapi3-ts';
-import { generateSchema } from '@anatine/zod-openapi';
-import { z } from 'zod';
+import {
+  getHeaderParametersFromZod,
+  getOpenApiSchemaFromZod,
+  getPathParametersFromZod,
+  getQueryParametersFromZod,
+} from './zod-utils';
 
 type RouterPath = {
   id: string;
@@ -50,125 +47,6 @@ const getPathsFromRouter = (
   });
 
   return paths;
-};
-
-const getOpenApiSchemaFromZod = (zodType: unknown, useOutput = false) => {
-  if (!isZodType(zodType)) {
-    return null;
-  }
-
-  return generateSchema(zodType, useOutput);
-};
-
-const getPathParameters = (path: string, zodObject?: unknown) => {
-  const isZodObj = isZodObject(zodObject);
-  const zodShape = isZodObj ? extractZodObjectShape(zodObject) : {};
-
-  const paramsFromPath = path
-    .match(/{[^}]+}/g)
-    ?.map((param) => param.slice(1, -1))
-    .filter((param) => {
-      return zodShape[param] === undefined;
-    });
-
-  const params: any[] =
-    paramsFromPath?.map((param) => ({
-      name: param,
-      in: 'path' as const,
-      required: true,
-      schema: {
-        type: 'string',
-      },
-    })) || [];
-
-  if (isZodObj) {
-    const paramsFromZod = Object.entries(zodShape).map(([key, value]) => {
-      const { description, ...schema } = getOpenApiSchemaFromZod(value)!;
-      return {
-        name: key,
-        in: 'path' as const,
-        required: true,
-        schema,
-        ...(description && { description }),
-      };
-    });
-
-    params.push(...paramsFromZod);
-  }
-
-  return params;
-};
-
-const getHeaderParameters = (zodObject?: unknown) => {
-  const isZodObj = isZodObject(zodObject);
-
-  if (!isZodObj) {
-    return [];
-  }
-
-  const zodShape = extractZodObjectShape(zodObject);
-
-  return Object.entries(zodShape).map(([key, value]) => {
-    const schema = getOpenApiSchemaFromZod(value)!;
-    const isRequired = !(value as z.ZodTypeAny).isOptional();
-
-    return {
-      name: key,
-      in: 'header' as const,
-      ...(isRequired && { required: true }),
-      ...{
-        schema: schema,
-      },
-    };
-  });
-};
-
-const getQueryParametersFromZod = (zodObject: unknown, jsonQuery = false) => {
-  const isZodObj = isZodObject(zodObject);
-
-  if (!isZodObj) {
-    return [];
-  }
-
-  const zodShape = extractZodObjectShape(zodObject);
-
-  return Object.entries(zodShape).map(([key, value]) => {
-    const {
-      description,
-      mediaExamples: examples,
-      ...schema
-    } = getOpenApiSchemaFromZod(value)!;
-    const isObject = (obj: z.ZodTypeAny) => {
-      while (obj._def.innerType) {
-        obj = obj._def.innerType;
-      }
-
-      return obj._def.typeName === 'ZodObject';
-    };
-    const isRequired = !(value as z.ZodTypeAny).isOptional();
-
-    return {
-      name: key,
-      in: 'query' as const,
-      ...(description && { description }),
-      ...(isRequired && { required: true }),
-      ...(jsonQuery
-        ? {
-            content: {
-              'application/json': {
-                schema: schema,
-                ...(examples && { examples }),
-              },
-            },
-          }
-        : {
-            ...(isObject(value as z.ZodTypeAny) && {
-              style: 'deepObject' as const,
-            }),
-            schema: schema,
-          }),
-    };
-  });
 };
 
 declare module 'openapi3-ts' {
@@ -309,8 +187,11 @@ export const generateOpenApi = (
       operationIds.set(path.id, path.paths);
     }
 
-    const pathParams = getPathParameters(path.path, path.route.pathParams);
-    const headerParams = getHeaderParameters(path.route.headers);
+    const pathParams = getPathParametersFromZod(
+      path.path,
+      path.route.pathParams,
+    );
+    const headerParams = getHeaderParametersFromZod(path.route.headers);
 
     const querySchema = getQueryParametersFromZod(
       path.route.query,
@@ -330,7 +211,10 @@ export const generateOpenApi = (
       (acc, [statusCode, response]) => {
         let responseSchema = getOpenApiSchemaFromZod(response, true);
         const description =
-          isZodType(response) && response.description
+          response &&
+          typeof response === 'object' &&
+          'description' in response &&
+          response.description
             ? response.description
             : statusCode;
 

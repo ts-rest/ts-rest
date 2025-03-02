@@ -22,12 +22,6 @@
   "license": "MIT",
   "peerDependencies": {
     "@tanstack/react-query": "^4.0.0",
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
-    "zod": "^3.24.0"
-  },
-  "peerDependenciesMeta": {
-    "zod": {
-      "optional": true
-    }
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
   }
 }

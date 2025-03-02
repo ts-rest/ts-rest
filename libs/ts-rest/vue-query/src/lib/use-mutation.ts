@@ -9,7 +9,7 @@ import {
   ClientArgs,
   ClientInferRequest,
   PartialClientInferRequest,
-  ZodInferOrType,
+  SchemaOutputOrType,
 } from '@ts-rest/core';
 import { DataResponse, ErrorResponse, queryFn } from './common';
 
@@ -47,7 +47,7 @@ export const getRouteUseMutation =
 
     return useMutation({
       mutationFn: mutationFunction as () => Promise<
-        ZodInferOrType<TAppRoute['responses']>
+        SchemaOutputOrType<TAppRoute['responses']>
       >,
       ...options,
     });

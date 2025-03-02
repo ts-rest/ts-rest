@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-// TODO: move to @ts-rest/open-api in next major version
-/** @deprecated */
+// TODO: remove in next major version
+/** @deprecated use isStandardSchema */
 export const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
   return typeof (obj as z.ZodTypeAny)?.safeParse === 'function';
 };
 
-// TODO: move to @ts-rest/open-api in next major version
+// TODO: remove in next major version
 /** @deprecated */
 export const isZodObject = (
   obj: unknown,
