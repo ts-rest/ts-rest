@@ -12,10 +12,8 @@ import {
   TsRestResponseError,
   validateResponse,
   ValidationError,
-  ValidationErrorSchema,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
-import { z } from 'zod';
 
 export class RequestValidationError extends Error {
   constructor(
@@ -28,12 +26,7 @@ export class RequestValidationError extends Error {
   }
 }
 
-export const RequestValidationErrorSchema = z.object({
-  pathParameterErrors: ValidationErrorSchema.nullable(),
-  headerErrors: ValidationErrorSchema.nullable(),
-  queryParameterErrors: ValidationErrorSchema.nullable(),
-  bodyErrors: ValidationErrorSchema.nullable(),
-});
+export { RequestValidationErrorSchema } from '@ts-rest/core';
 
 type FastifyContextConfig<T extends AppRouter | AppRoute> = {
   tsRestRoute: T extends AppRoute ? T : FlattenAppRouter<T>;

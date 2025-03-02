@@ -30,7 +30,6 @@ import {
   parseJsonQueryObject,
   ServerInferResponses,
   TsRestResponseError,
-  ValidationErrorSchema,
   ValidationError,
 } from '@ts-rest/core';
 import {
@@ -38,14 +37,12 @@ import {
   TsRestOptionsMetadataKey,
 } from './constants';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
-import { z } from 'zod';
 import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
 import {
   evaluateTsRestOptions,
   MaybeTsRestOptions,
   TsRestOptions,
 } from './ts-rest-options';
-import { PATH_METADATA } from '@nestjs/common/constants';
 
 type TsRestAppRouteMetadata = {
   appRoute: AppRoute;
@@ -74,12 +71,7 @@ export class RequestValidationError extends BadRequestException {
   }
 }
 
-export const RequestValidationErrorSchema = z.object({
-  paramsResult: ValidationErrorSchema.nullable(),
-  headersResult: ValidationErrorSchema.nullable(),
-  queryResult: ValidationErrorSchema.nullable(),
-  bodyResult: ValidationErrorSchema.nullable(),
-});
+export { RequestValidationErrorSchemaForNest as RequestValidationErrorSchema } from '@ts-rest/core';
 
 export class ResponseValidationError extends InternalServerErrorException {
   constructor(

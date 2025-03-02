@@ -206,9 +206,9 @@ describe('ts-rest-fastify', () => {
       pathParameterErrors: null,
       queryParameterErrors: null,
     });
-    expect(() =>
-      RequestValidationErrorSchema.parse(response.body),
-    ).not.toThrowError();
+    expect(
+      RequestValidationErrorSchema['~standard'].validate(response.body),
+    ).toEqual({ value: expect.any(Object) });
   });
 
   it('should handle no content response', async () => {

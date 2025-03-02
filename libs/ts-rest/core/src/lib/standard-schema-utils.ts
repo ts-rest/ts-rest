@@ -1,6 +1,7 @@
 import { ContractAnyType } from './dsl';
 import { StandardSchemaV1 } from './standard-schema';
 import { ValidationError } from './validation-error';
+import { zodMerge } from './zod-utils';
 
 export const isStandardSchema = (
   schema: unknown,
@@ -66,6 +67,22 @@ export const parseStandardSchema = (
   return result.value;
 };
 
+const STANDARD_SCHEMA_MERGERS: Record<string, TsRestStandardSchemaMerger> = {
+  zod: zodMerge as TsRestStandardSchemaMerger,
+};
+
+export type TsRestStandardSchemaMerger = (
+  a: StandardSchemaV1,
+  b: StandardSchemaV1,
+) => StandardSchemaV1;
+
+export const configureStandardSchemaMerger = (
+  vendor: string,
+  merger: TsRestStandardSchemaMerger,
+) => {
+  STANDARD_SCHEMA_MERGERS[vendor] = merger;
+};
+
 export const mergeStandardSchema = (
   a?: ContractAnyType,
   b?: ContractAnyType,
@@ -85,6 +102,13 @@ export const mergeStandardSchema = (
 
   if (!a || !b) {
     return a || b;
+  }
+
+  if (
+    a['~standard'].vendor === b['~standard'].vendor &&
+    STANDARD_SCHEMA_MERGERS[a['~standard'].vendor]
+  ) {
+    return STANDARD_SCHEMA_MERGERS[a['~standard'].vendor](a, b);
   }
 
   return {

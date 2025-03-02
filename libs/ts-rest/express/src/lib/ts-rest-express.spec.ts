@@ -562,9 +562,9 @@ describe('ts-rest-express', () => {
       .post('/posts')
       .expect((res) => {
         expect(res.status).toEqual(400);
-        expect(() =>
-          DefaultRequestValidationErrorSchema.parse(res.body),
-        ).not.toThrowError();
+        expect(
+          DefaultRequestValidationErrorSchema['~standard'].validate(res.body),
+        ).toEqual({ value: expect.any(Object) });
       });
   });
 
@@ -604,9 +604,9 @@ describe('ts-rest-express', () => {
       .post('/posts')
       .expect((res) => {
         expect(res.status).toEqual(400);
-        expect(() =>
-          CombinedRequestValidationErrorSchema.parse(res.body),
-        ).not.toThrowError();
+        expect(
+          CombinedRequestValidationErrorSchema['~standard'].validate(res.body),
+        ).toEqual({ value: expect.any(Object) });
       });
   });
 });

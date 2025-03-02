@@ -4,14 +4,12 @@ import {
   ServerInferRequest,
   ServerInferResponses,
   ValidationError,
-  ValidationErrorSchema,
 } from '@ts-rest/core';
 import { TsRestRequest } from './request';
 import { TsRestHttpError } from './http-error';
 import { TsRestResponse } from './response';
 import { CorsOptions, RequestHandler } from 'itty-router';
 import { CompleteRouter, RouterBuilder } from './router-builder';
-import { z } from 'zod';
 
 export class RequestValidationError extends TsRestHttpError {
   constructor(
@@ -30,13 +28,7 @@ export class RequestValidationError extends TsRestHttpError {
   }
 }
 
-export const RequestValidationErrorSchema = z.object({
-  message: z.literal('Request validation failed'),
-  pathParameterErrors: ValidationErrorSchema.nullable(),
-  headerErrors: ValidationErrorSchema.nullable(),
-  queryParameterErrors: ValidationErrorSchema.nullable(),
-  bodyErrors: ValidationErrorSchema.nullable(),
-});
+export { RequestValidationErrorSchema } from '@ts-rest/core';
 
 export class ResponseValidationError extends TsRestHttpError {
   constructor(

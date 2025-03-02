@@ -1,5 +1,8 @@
-import { ValidationError, ValidationErrorSchema } from '@ts-rest/core';
-import { z } from 'zod';
+import {
+  RequestValidationErrorSchema,
+  ValidationError,
+  ValidationErrorSchema,
+} from '@ts-rest/core';
 
 export class RequestValidationError extends Error {
   constructor(
@@ -14,9 +17,5 @@ export class RequestValidationError extends Error {
 
 export const DefaultRequestValidationErrorSchema = ValidationErrorSchema;
 
-export const CombinedRequestValidationErrorSchema = z.object({
-  pathParameterErrors: ValidationErrorSchema.nullable(),
-  headerErrors: ValidationErrorSchema.nullable(),
-  queryParameterErrors: ValidationErrorSchema.nullable(),
-  bodyErrors: ValidationErrorSchema.nullable(),
-});
+export const CombinedRequestValidationErrorSchema =
+  RequestValidationErrorSchema;

@@ -1,9 +1,6 @@
-import { StandardSchemaV1 } from './standard-schema';
 import { z } from 'zod';
+import { StandardSchemaV1 } from './standard-schema';
 
-/*
-  Should this be replaced with `SchemaError` from `@standard-schema/utils`?
-*/
 export class ValidationError
   extends Error
   implements StandardSchemaV1.FailureResult
@@ -49,7 +46,7 @@ export const validationErrorResponse = (
   };
 };
 
-export const ValidationErrorSchema = z.object({
+const ValidationErrorSchemaInternal = z.object({
   name: z.literal('ValidationError'),
   issues: z
     .array(
@@ -71,4 +68,45 @@ export const ValidationErrorSchema = z.object({
       }),
     )
     .readonly(),
+});
+type ValidationErrorInternal = {
+  readonly name: 'ValidationError';
+  readonly issues: readonly StandardSchemaV1.Issue[];
+};
+export const ValidationErrorSchema: StandardSchemaV1<
+  unknown,
+  ValidationErrorInternal
+> = ValidationErrorSchemaInternal;
+
+export const RequestValidationErrorSchema: StandardSchemaV1<
+  unknown,
+  {
+    message?: 'Request validation failed';
+    pathParameterErrors: ValidationErrorInternal | null;
+    headerErrors: ValidationErrorInternal | null;
+    queryParameterErrors: ValidationErrorInternal | null;
+    bodyErrors: ValidationErrorInternal | null;
+  }
+> = z.object({
+  message: z.literal('Request validation failed').optional(),
+  pathParameterErrors: ValidationErrorSchemaInternal.nullable(),
+  headerErrors: ValidationErrorSchemaInternal.nullable(),
+  queryParameterErrors: ValidationErrorSchemaInternal.nullable(),
+  bodyErrors: ValidationErrorSchemaInternal.nullable(),
+});
+
+/** @deprecated prefer RequestValidationErrorSchema from @ts-rest/core */
+export const RequestValidationErrorSchemaForNest: StandardSchemaV1<
+  unknown,
+  {
+    paramsResult: ValidationErrorInternal | null;
+    headersResult: ValidationErrorInternal | null;
+    queryResult: ValidationErrorInternal | null;
+    bodyResult: ValidationErrorInternal | null;
+  }
+> = z.object({
+  paramsResult: ValidationErrorSchemaInternal.nullable(),
+  headersResult: ValidationErrorSchemaInternal.nullable(),
+  queryResult: ValidationErrorSchemaInternal.nullable(),
+  bodyResult: ValidationErrorSchemaInternal.nullable(),
 });

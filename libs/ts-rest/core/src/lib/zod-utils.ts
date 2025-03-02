@@ -1,9 +1,13 @@
 import { z } from 'zod';
 
+// TODO: move to @ts-rest/open-api in next major version
+/** @deprecated */
 export const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
   return typeof (obj as z.ZodTypeAny)?.safeParse === 'function';
 };
 
+// TODO: move to @ts-rest/open-api in next major version
+/** @deprecated */
 export const isZodObject = (
   obj: unknown,
 ): obj is z.AnyZodObject | z.ZodEffects<z.AnyZodObject> => {
@@ -18,10 +22,14 @@ export const isZodObject = (
   return false;
 };
 
+// TODO: remove in next major version
+/** @deprecated */
 export const isZodObjectStrict = (obj: unknown): obj is z.AnyZodObject => {
   return typeof (obj as z.AnyZodObject)?.passthrough === 'function';
 };
 
+// TODO: remove in next major version
+/** @deprecated */
 export const extractZodObjectShape = <
   T extends z.AnyZodObject | z.ZodEffects<z.ZodTypeAny>,
 >(
@@ -38,6 +46,8 @@ export const extractZodObjectShape = <
   return obj.shape;
 };
 
+// TODO: remove in next major version
+/** @deprecated use mergeStandardSchema */
 export const zodMerge = (objectA: unknown, objectB: unknown) => {
   if (isZodObjectStrict(objectA)) {
     if (isZodObjectStrict(objectB)) {
@@ -54,6 +64,7 @@ export const zodMerge = (objectA: unknown, objectB: unknown) => {
   return Object.assign({}, objectA, objectB);
 };
 
+// TODO: remove in next major version
 /** @deprecated use checkStandardSchema */
 export const checkZodSchema = (
   data: unknown,
@@ -94,6 +105,8 @@ export const checkZodSchema = (
 };
 
 // Convert a ZodError to a plain object because ZodError extends Error and causes problems with NestJS
+// TODO: remove in next major version
+/** @deprecated use validationErrorResponse */
 export const zodErrorResponse = (
   error: z.ZodError,
 ): Pick<z.ZodError, 'name' | 'issues'> => {
@@ -103,6 +116,8 @@ export const zodErrorResponse = (
   };
 };
 
+// TODO: remove in next major version
+/** @deprecated use ValidationErrorSchema */
 export const ZodErrorSchema = z.object({
   name: z.literal('ZodError'),
   issues: z.array(

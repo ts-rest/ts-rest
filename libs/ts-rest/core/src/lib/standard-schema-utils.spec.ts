@@ -17,14 +17,8 @@ describe('mergeStandardSchema', () => {
       issues: [
         {
           code: 'unrecognized_keys',
-          keys: ['bar', 'baz'],
-          message: "Unrecognized key(s) in object: 'bar', 'baz'",
-          path: [],
-        },
-        {
-          code: 'unrecognized_keys',
-          keys: ['foo', 'baz'],
-          message: "Unrecognized key(s) in object: 'foo', 'baz'",
+          keys: ['baz'],
+          message: "Unrecognized key(s) in object: 'baz'",
           path: [],
         },
       ],
@@ -42,14 +36,10 @@ describe('mergeStandardSchema', () => {
     expect(
       headers['~standard'].validate({ foo: 'foo', bar: 'bar', baz: 'baz' }),
     ).toEqual({
-      issues: [
-        {
-          code: 'unrecognized_keys',
-          keys: ['bar', 'baz'],
-          message: "Unrecognized key(s) in object: 'bar', 'baz'",
-          path: [],
-        },
-      ],
+      value: {
+        foo: 'foo',
+        bar: 'bar',
+      },
     });
   });
 
@@ -67,8 +57,8 @@ describe('mergeStandardSchema', () => {
       issues: [
         {
           code: 'unrecognized_keys',
-          keys: ['foo', 'baz'],
-          message: "Unrecognized key(s) in object: 'foo', 'baz'",
+          keys: ['baz'],
+          message: "Unrecognized key(s) in object: 'baz'",
           path: [],
         },
       ],
