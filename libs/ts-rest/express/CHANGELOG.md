@@ -1,5 +1,7 @@
 # @ts-rest/express
 
+## 3.52.1
+
 ## 3.52.0
 
 ### Minor Changes
