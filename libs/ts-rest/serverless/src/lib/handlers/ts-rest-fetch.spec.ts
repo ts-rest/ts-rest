@@ -338,7 +338,7 @@ describe('fetchRequestHandler', () => {
 
     const response = await testFetchRequestHandler(request);
     const expectedResponse = new Response(
-      '{"message":"Request validation failed","pathParameterErrors":null,"headerErrors":null,"queryParameterErrors":{"issues":[{"code":"invalid_type","expected":"string","received":"undefined","path":["foo"],"message":"Required"}],"name":"ZodError"},"bodyErrors":null}',
+      '{"message":"Request validation failed","pathParameterErrors":null,"headerErrors":null,"queryParameterErrors":{"name":"ValidationError","issues":[{"code":"invalid_type","expected":"string","received":"undefined","path":["foo"],"message":"Required"}]},"bodyErrors":null}',
       {
         status: 400,
         headers: {
@@ -354,9 +354,9 @@ describe('fetchRequestHandler', () => {
     expect(response.headers).toEqual(expectedResponse.headers);
     const body = await response.json();
     expect(body).toEqual(await expectedResponse.json());
-    expect(() => {
-      RequestValidationErrorSchema.parse(body);
-    }).not.toThrowError();
+    expect(RequestValidationErrorSchema['~standard'].validate(body)).toEqual({
+      value: expect.any(Object),
+    });
   });
 
   it('should handle 500 response', async () => {

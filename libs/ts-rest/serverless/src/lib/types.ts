@@ -1,10 +1,9 @@
-import { z } from 'zod';
 import {
   AppRoute,
   AppRouter,
   ServerInferRequest,
   ServerInferResponses,
-  ZodErrorSchema,
+  ValidationError,
 } from '@ts-rest/core';
 import { TsRestRequest } from './request';
 import { TsRestHttpError } from './http-error';
@@ -14,10 +13,10 @@ import { CompleteRouter, RouterBuilder } from './router-builder';
 
 export class RequestValidationError extends TsRestHttpError {
   constructor(
-    public pathParamsError: z.ZodError | null,
-    public headersError: z.ZodError | null,
-    public queryError: z.ZodError | null,
-    public bodyError: z.ZodError | null,
+    public pathParamsError: ValidationError | null,
+    public headersError: ValidationError | null,
+    public queryError: ValidationError | null,
+    public bodyError: ValidationError | null,
   ) {
     super(400, {
       message: 'Request validation failed',
@@ -29,18 +28,12 @@ export class RequestValidationError extends TsRestHttpError {
   }
 }
 
-export const RequestValidationErrorSchema = z.object({
-  message: z.literal('Request validation failed'),
-  pathParameterErrors: ZodErrorSchema.nullable(),
-  headerErrors: ZodErrorSchema.nullable(),
-  queryParameterErrors: ZodErrorSchema.nullable(),
-  bodyErrors: ZodErrorSchema.nullable(),
-});
+export { RequestValidationErrorSchema } from '@ts-rest/core';
 
 export class ResponseValidationError extends TsRestHttpError {
   constructor(
     public appRoute: AppRoute,
-    public error: z.ZodError,
+    public error: ValidationError,
   ) {
     super(500, {
       message: 'Server Error',

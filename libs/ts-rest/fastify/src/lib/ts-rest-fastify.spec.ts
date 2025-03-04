@@ -191,6 +191,7 @@ describe('ts-rest-fastify', () => {
     expect(response.statusCode).toEqual(400);
     expect(response.body).toEqual({
       bodyErrors: {
+        name: 'ValidationError',
         issues: [
           {
             code: 'invalid_type',
@@ -200,15 +201,14 @@ describe('ts-rest-fastify', () => {
             received: 'undefined',
           },
         ],
-        name: 'ZodError',
       },
       headerErrors: null,
       pathParameterErrors: null,
       queryParameterErrors: null,
     });
-    expect(() =>
-      RequestValidationErrorSchema.parse(response.body),
-    ).not.toThrowError();
+    expect(
+      RequestValidationErrorSchema['~standard'].validate(response.body),
+    ).toEqual({ value: expect.any(Object) });
   });
 
   it('should handle no content response', async () => {

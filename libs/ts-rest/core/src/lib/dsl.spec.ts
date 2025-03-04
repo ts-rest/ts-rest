@@ -8,7 +8,8 @@ import {
   ContractNoBodyType,
 } from './dsl';
 import type { Equal, Expect } from './test-helpers';
-import { Prettify } from './type-utils';
+import { Merge, Prettify } from './type-utils';
+import { StandardSchemaV1 } from './standard-schema';
 
 const c = initContract();
 
@@ -261,15 +262,17 @@ describe('contract', () => {
                   }
                 >;
               };
-              headers: z.ZodObject<
-                z.objectUtil.MergeShapes<
-                  { 'x-foo': z.ZodString },
-                  { 'x-bar': z.ZodString }
-                >,
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo': string; 'x-bar': string },
-                { 'x-foo': string; 'x-bar': string }
+              headers: StandardSchemaV1<
+                {
+                  'x-foo': string;
+                } & {
+                  'x-bar': string;
+                },
+                {
+                  'x-foo': string;
+                } & {
+                  'x-bar': string;
+                }
               >;
             };
           };
@@ -381,15 +384,23 @@ describe('contract', () => {
                   }
                 >;
               };
-              headers: z.ZodObject<
-                z.objectUtil.MergeShapes<
-                  { 'x-foo': z.ZodString },
-                  { 'x-foo': z.ZodOptional<z.ZodString> }
+              headers: StandardSchemaV1<
+                Merge<
+                  {
+                    'x-foo': string;
+                  },
+                  {
+                    'x-foo'?: string | undefined;
+                  }
                 >,
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo'?: string },
-                { 'x-foo'?: string }
+                Merge<
+                  {
+                    'x-foo': string;
+                  },
+                  {
+                    'x-foo'?: string | undefined;
+                  }
+                >
               >;
             };
           };

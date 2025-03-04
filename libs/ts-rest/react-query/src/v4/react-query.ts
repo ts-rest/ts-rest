@@ -25,7 +25,7 @@ import {
   isAppRoute,
   isErrorResponse,
   Without,
-  ZodInferOrType,
+  SchemaOutputOrType,
 } from '@ts-rest/core';
 import { useMemo } from 'react';
 import {
@@ -146,7 +146,7 @@ const getRouteUseMutation = <
 
     return useMutation({
       mutationFn: mutationFunction as () => Promise<
-        ZodInferOrType<TAppRoute['responses']>
+        SchemaOutputOrType<TAppRoute['responses']>
       >,
       ...options,
     });

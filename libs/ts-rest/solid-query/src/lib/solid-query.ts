@@ -30,7 +30,7 @@ import {
   PartialClientInferRequest,
   SuccessfulHttpStatusCode,
   Without,
-  ZodInferOrType,
+  SchemaOutputOrType,
 } from '@ts-rest/core';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
@@ -229,7 +229,9 @@ const getRouteUseMutation = <
     };
 
     return createMutation(
-      mutationFunction as () => Promise<ZodInferOrType<TAppRoute['responses']>>,
+      mutationFunction as () => Promise<
+        SchemaOutputOrType<TAppRoute['responses']>
+      >,
       options,
     );
   };

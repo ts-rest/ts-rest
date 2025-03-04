@@ -4,10 +4,11 @@ import {
   HTTPStatusCode,
   initContract,
   OverrideableClientArgs,
+  ValidationError,
 } from '..';
 import { ApiFetcherArgs, initClient } from './client';
 import { Equal, Expect } from './test-helpers';
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 
 const c = initContract();
 
@@ -1068,6 +1069,6 @@ describe('custom api', () => {
 
     await expect(
       client.posts.getPost({ params: { id: '1' } }),
-    ).rejects.toThrowError(ZodError);
+    ).rejects.toThrowError(ValidationError);
   });
 });

@@ -120,6 +120,7 @@ describe('/posts', () => {
 
     expect(res._getStatusCode()).toBe(400);
     expect(res._getJSONData()).toEqual({
+      name: 'ValidationError',
       issues: [
         {
           code: 'invalid_type',
@@ -129,7 +130,6 @@ describe('/posts', () => {
           received: 'undefined',
         },
       ],
-      name: 'ZodError',
     });
   });
 });

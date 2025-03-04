@@ -419,9 +419,11 @@ describe('createNextRouter', () => {
 
       expect(errorHandler).not.toHaveBeenCalled();
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(() =>
-        RequestValidationErrorSchema.parse(jsonMock.mock.calls[0][0]),
-      ).not.toThrowError();
+      expect(
+        RequestValidationErrorSchema['~standard'].validate(
+          jsonMock.mock.calls[0][0],
+        ),
+      ).toEqual({ value: expect.any(Object) });
     });
   });
 
