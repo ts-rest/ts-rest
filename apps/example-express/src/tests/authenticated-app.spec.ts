@@ -105,7 +105,6 @@ describe('Authenticated App Endpoints', () => {
     expect(res.body).toStrictEqual({
       bodyErrors: null,
       headerErrors: {
-        name: 'ValidationError',
         issues: [
           {
             code: 'invalid_type',
@@ -115,6 +114,7 @@ describe('Authenticated App Endpoints', () => {
             received: 'nan',
           },
         ],
+        name: 'ZodError',
       },
       pathParameterErrors: null,
       queryParameterErrors: null,

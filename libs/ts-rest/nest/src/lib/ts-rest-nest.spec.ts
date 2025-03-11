@@ -675,7 +675,6 @@ describe('ts-rest-nest', () => {
           headersResult: null,
           paramsResult: null,
           queryResult: {
-            name: 'ValidationError',
             issues: [
               {
                 code: 'invalid_type',
@@ -685,6 +684,7 @@ describe('ts-rest-nest', () => {
                 received: 'string',
               },
             ],
+            name: 'ZodError',
           },
         });
       });
@@ -718,7 +718,6 @@ describe('ts-rest-nest', () => {
           headersResult: null,
           paramsResult: null,
           queryResult: {
-            name: 'ValidationError',
             issues: [
               {
                 code: 'invalid_type',
@@ -728,6 +727,7 @@ describe('ts-rest-nest', () => {
                 received: 'string',
               },
             ],
+            name: 'ZodError',
           },
         });
       });

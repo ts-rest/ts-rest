@@ -1,7 +1,8 @@
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
+import { ZodErrorSchema } from './zod-utils';
 
-export class ValidationError
+export class StandardSchemaError
   extends Error
   implements StandardSchemaV1.FailureResult
 {
@@ -33,6 +34,8 @@ export class ValidationError
   }
 }
 
+export type ValidationError = ZodError | StandardSchemaError;
+
 /*
   Convert a ValidationError to a plain object because ValidationError extends
   Error and causes problems with NestJS.
@@ -46,39 +49,51 @@ export const validationErrorResponse = (
   };
 };
 
-const ValidationErrorSchemaInternal = z.object({
-  name: z.literal('ValidationError'),
-  issues: z
-    .array(
-      z.object({
-        message: z.string(),
-        path: z
-          .array(
-            z.union([
-              z.union([z.string(), z.number(), z.symbol()]),
-              z
-                .object({
-                  key: z.union([z.string(), z.number(), z.symbol()]),
-                })
-                .readonly(),
-            ]),
-          )
-          .readonly()
-          .optional(),
-      }),
-    )
-    .readonly(),
-});
-type ValidationErrorInternal = {
-  readonly name: 'ValidationError';
-  readonly issues: readonly StandardSchemaV1.Issue[];
-};
-export const ValidationErrorSchema: StandardSchemaV1<
-  unknown,
-  ValidationErrorInternal
-> = ValidationErrorSchemaInternal;
+const ValidationErrorSchemaInternal = z.union([
+  ZodErrorSchema,
+  z.object({
+    name: z.literal('ValidationError'),
+    issues: z
+      .array(
+        z.object({
+          message: z.string(),
+          path: z
+            .array(
+              z.union([
+                z.union([z.string(), z.number(), z.symbol()]),
+                z
+                  .object({
+                    key: z.union([z.string(), z.number(), z.symbol()]),
+                  })
+                  .readonly(),
+              ]),
+            )
+            .readonly()
+            .optional(),
+        }),
+      )
+      .readonly(),
+  }),
+]);
+type ValidationErrorInternal =
+  | ZodError
+  | {
+      readonly name: 'ValidationError';
+      readonly issues: readonly StandardSchemaV1.Issue[];
+    };
+export const ValidationErrorSchema =
+  ValidationErrorSchemaInternal as StandardSchemaV1<
+    unknown,
+    ValidationErrorInternal
+  >;
 
-export const RequestValidationErrorSchema: StandardSchemaV1<
+export const RequestValidationErrorSchema = z.object({
+  message: z.literal('Request validation failed').optional(),
+  pathParameterErrors: ValidationErrorSchemaInternal.nullable(),
+  headerErrors: ValidationErrorSchemaInternal.nullable(),
+  queryParameterErrors: ValidationErrorSchemaInternal.nullable(),
+  bodyErrors: ValidationErrorSchemaInternal.nullable(),
+}) as StandardSchemaV1<
   unknown,
   {
     message?: 'Request validation failed';
@@ -87,16 +102,15 @@ export const RequestValidationErrorSchema: StandardSchemaV1<
     queryParameterErrors: ValidationErrorInternal | null;
     bodyErrors: ValidationErrorInternal | null;
   }
-> = z.object({
-  message: z.literal('Request validation failed').optional(),
-  pathParameterErrors: ValidationErrorSchemaInternal.nullable(),
-  headerErrors: ValidationErrorSchemaInternal.nullable(),
-  queryParameterErrors: ValidationErrorSchemaInternal.nullable(),
-  bodyErrors: ValidationErrorSchemaInternal.nullable(),
-});
+>;
 
 /** @deprecated prefer RequestValidationErrorSchema from @ts-rest/core */
-export const RequestValidationErrorSchemaForNest: StandardSchemaV1<
+export const RequestValidationErrorSchemaForNest = z.object({
+  paramsResult: ValidationErrorSchemaInternal.nullable(),
+  headersResult: ValidationErrorSchemaInternal.nullable(),
+  queryResult: ValidationErrorSchemaInternal.nullable(),
+  bodyResult: ValidationErrorSchemaInternal.nullable(),
+}) as StandardSchemaV1<
   unknown,
   {
     paramsResult: ValidationErrorInternal | null;
@@ -104,9 +118,4 @@ export const RequestValidationErrorSchemaForNest: StandardSchemaV1<
     queryResult: ValidationErrorInternal | null;
     bodyResult: ValidationErrorInternal | null;
   }
-> = z.object({
-  paramsResult: ValidationErrorSchemaInternal.nullable(),
-  headersResult: ValidationErrorSchemaInternal.nullable(),
-  queryResult: ValidationErrorSchemaInternal.nullable(),
-  bodyResult: ValidationErrorSchemaInternal.nullable(),
-});
+>;

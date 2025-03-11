@@ -76,7 +76,6 @@ describe('PostController', () => {
         .query('skip=0')
         .expect(400)
         .expect({
-          name: 'ValidationError',
           issues: [
             {
               code: 'invalid_type',
@@ -86,6 +85,7 @@ describe('PostController', () => {
               received: 'undefined',
             },
           ],
+          name: 'ZodError',
         });
     });
   });
@@ -101,7 +101,6 @@ describe('PostController', () => {
         })
         .expect(400)
         .expect({
-          name: 'ValidationError',
           issues: [
             {
               code: 'invalid_type',
@@ -111,6 +110,7 @@ describe('PostController', () => {
               received: 'number',
             },
           ],
+          name: 'ZodError',
         });
     });
 

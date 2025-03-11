@@ -1,6 +1,7 @@
+import { ZodSchema } from 'zod';
 import { ContractAnyType } from './dsl';
 import { StandardSchemaV1 } from './standard-schema';
-import { ValidationError } from './validation-error';
+import { StandardSchemaError } from './validation-error';
 import { zodMerge } from './zod-utils';
 
 export const isStandardSchema = (
@@ -30,6 +31,25 @@ export const checkStandardSchema = (
     };
   }
 
+  if (
+    schema['~standard'].vendor === 'zod' &&
+    'safeParse' in schema &&
+    typeof schema.safeParse === 'function'
+  ) {
+    const result = (schema as ZodSchema).safeParse(data);
+
+    if (!result.success) {
+      return { error: result.error };
+    }
+
+    return {
+      value:
+        passThroughExtraKeys && typeof data === 'object'
+          ? { ...data, ...result.data }
+          : result.data,
+    };
+  }
+
   const result = schema['~standard'].validate(data);
 
   if (result instanceof Promise) {
@@ -38,7 +58,7 @@ export const checkStandardSchema = (
 
   if (result.issues) {
     return {
-      error: new ValidationError(result.issues),
+      error: new StandardSchemaError(result.issues),
     };
   }
 
