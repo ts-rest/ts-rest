@@ -19,6 +19,32 @@ type RouterPath = {
   paths: string[];
 };
 
+const getPathsFromRouter = (
+  router: AppRouter,
+  pathHistory?: string[],
+): RouterPath[] => {
+  const paths: RouterPath[] = [];
+
+  Object.keys(router).forEach((key) => {
+    const value = router[key];
+
+    if (isAppRoute(value)) {
+      const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
+
+      paths.push({
+        id: key,
+        path: pathWithPathParams,
+        route: value,
+        paths: pathHistory ?? [],
+      });
+    } else {
+      paths.push(...getPathsFromRouter(value, [...(pathHistory ?? []), key]));
+    }
+  });
+
+  return paths;
+};
+
 /*
   TODO: move to new file zod-utils.ts in next refactor
 */
@@ -185,32 +211,6 @@ export const getQueryParametersFromZod = (
 /*
   TODO: end zod-utils.ts
 */
-
-const getPathsFromRouter = (
-  router: AppRouter,
-  pathHistory?: string[],
-): RouterPath[] => {
-  const paths: RouterPath[] = [];
-
-  Object.keys(router).forEach((key) => {
-    const value = router[key];
-
-    if (isAppRoute(value)) {
-      const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
-
-      paths.push({
-        id: key,
-        path: pathWithPathParams,
-        route: value,
-        paths: pathHistory ?? [],
-      });
-    } else {
-      paths.push(...getPathsFromRouter(value, [...(pathHistory ?? []), key]));
-    }
-  });
-
-  return paths;
-};
 
 declare module 'openapi3-ts' {
   interface SchemaObject {
