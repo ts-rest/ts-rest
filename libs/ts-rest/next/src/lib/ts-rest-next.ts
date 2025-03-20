@@ -242,7 +242,8 @@ export function createSingleRouteHandler<T extends AppRoute>(
 ) {
   return handlerFactory((req) => {
     const route = { ...appRoute, implementation: implementationHandler };
-    const urlChunks = req.url!.split('/').slice(1);
+    // Split the URL by path and query, then split the path into chunks
+    const urlChunks = req.url!.split('?')[0].split('/').slice(1);
     const pathParams = getPathParamsFromArray(urlChunks, route);
     const query = req.query
       ? Object.fromEntries(
