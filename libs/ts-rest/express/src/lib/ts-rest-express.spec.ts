@@ -471,6 +471,94 @@ describe('ts-rest-express', () => {
     expect(responseImage.headers['content-type']).toEqual('image/png');
   });
 
+  it('create eventsource connection', async () => {
+    const contract = c.router({
+      getEvents: {
+        method: 'GET',
+        path: `/events`,
+        headers: z.object({
+          contentType: z.string().default('text/event-stream'), // 'text/event-stream' is mandatory
+        }),
+        responses: {
+          200: z.any(),
+          500: z.any(),
+        },
+        summary: 'Create eventsource connection',
+      },
+    });
+
+    const messages = ['init', 'hello world', 'close'];
+
+    const router = s.router(contract, {
+      // NOTE: For eventsource, connection must be opened until the response is closed programmatically
+      // You cannot send a reponse immediately or the connection will be lost
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      getEvents: async ({ res }): Promise<void> => {
+        setTimeout(() => {
+          messages.forEach((message, index) => {
+            res.write(
+              `id: ${index}\nevent: notification\ndata: ${JSON.stringify({
+                data: message,
+              })}\n\n`,
+            );
+          });
+
+          setTimeout(() => res.end(), 500); // Let supertest handle messages
+        }, 1000);
+      },
+    });
+
+    const app = express();
+
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+
+    createExpressEndpoints(contract, router, app, {
+      responseValidation: true,
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      supertest(app)
+        .get('/events')
+        .set('contentType', 'text/event-stream')
+        .buffer(true)
+        .parse((res: any) => {
+          let data = '';
+          res.on('data', (chunk: string) => {
+            data += chunk.toString();
+          });
+
+          res.on('end', () => {
+            try {
+              const expectedResponse = messages
+                .map(
+                  (msg, i) =>
+                    `id: ${i}\nevent: notification\ndata: ${JSON.stringify({
+                      data: msg,
+                    })}\n\n`,
+                )
+                .join('');
+
+              expect(data).toBe(`\n${expectedResponse}`);
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          });
+        })
+        .expect(200)
+        .catch(reject);
+    });
+
+    const responseEvents = await supertest(app)
+      .get('/events')
+      .set('contentType', 'text/event-stream');
+
+    expect(responseEvents.headers['content-type']).toEqual('text/event-stream');
+    expect(responseEvents.headers['cache-control']).toEqual('no-cache');
+  });
+
   it('should handle thrown TsRestResponseError', async () => {
     const contract = c.router({
       getPost: {

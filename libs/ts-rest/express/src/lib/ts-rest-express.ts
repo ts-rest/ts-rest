@@ -180,6 +180,18 @@ const initializeExpressRoute = ({
         }
       }
 
+      if (
+        !result &&
+        (validationResults.headersResult.data as any)['contentType'] ===
+          'text/event-stream'
+      ) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.write('\n');
+        return;
+      }
+
       const statusCode = Number(result.status);
 
       if (result.body instanceof Stream) {
