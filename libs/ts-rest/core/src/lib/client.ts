@@ -126,11 +126,14 @@ export const tsRestFetchApi: ApiFetcher = async ({
   });
 
   const contentType = result.headers.get('content-type');
-
+  
   if (contentType?.includes('application/') && contentType?.includes('json')) {
+    const contentLength = result.headers.get('content-length');
+    const hasEmptyContent = contentLength && parseInt(contentLength) === 0;
+
     const response = {
       status: result.status,
-      body: await result.json(),
+      body: hasEmptyContent  ? undefined : await result.json(),
       headers: result.headers,
     };
 
