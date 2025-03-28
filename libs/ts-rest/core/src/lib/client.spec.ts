@@ -133,6 +133,14 @@ const postsRouter = c.router({
       204: c.noBody(),
     },
   },
+  mutationWithZeroContentLength: {
+    method: 'POST',
+    path: `/posts/zeroContentLength`,
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+    },
+  },
 });
 
 // Three endpoints, two for posts, and one for health
@@ -788,6 +796,30 @@ describe('client', () => {
         'text/plain;charset=UTF-8',
       );
       expect(result.body).toBe('foo=foo&bar=bar');
+    });
+  });
+
+  describe('zero content length', () => {
+    it('w/ undefined body', async () => {
+      fetchMock.postOnce(
+        {
+          url: 'https://api.com/posts/zeroContentLength',
+        },
+        {
+          status: 204,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': '0',
+          },
+        },
+      );
+
+      const result = await client.posts.mutationWithZeroContentLength({});
+
+      expect(result.body).toBeUndefined();
+      expect(result.status).toBe(204);
+      expect(result.headers.has('Content-Length')).toBe(true);
+      expect(result.headers.has('Content-Type')).toBe(true);
     });
   });
 
