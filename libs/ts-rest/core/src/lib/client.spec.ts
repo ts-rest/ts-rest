@@ -140,7 +140,7 @@ const postsRouter = c.router({
     responses: {
       204: c.noBody(),
     },
-  }
+  },
 });
 
 // Three endpoints, two for posts, and one for health
@@ -805,12 +805,18 @@ describe('client', () => {
         {
           url: 'https://api.com/posts/zeroContentLength',
         },
-        { status: 204, headers: { 'Content-Type': "application/json", 'Content-Length': '0' } },
+        {
+          status: 204,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': '0',
+          },
+        },
       );
 
       const result = await client.posts.mutationWithZeroContentLength({});
 
-      expect(result.body).toBeUndefined()
+      expect(result.body).toBeUndefined();
       expect(result.status).toBe(204);
       expect(result.headers.has('Content-Length')).toBe(true);
       expect(result.headers.has('Content-Type')).toBe(true);
