@@ -1,4 +1,4 @@
-import type { ALBEvent, Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import type { AppRouter } from '@ts-rest/core';
 import type {
   ApiGatewayEvent,
