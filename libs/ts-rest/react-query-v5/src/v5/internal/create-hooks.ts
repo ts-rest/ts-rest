@@ -259,7 +259,15 @@ export const initQueryClient = <
                 getQueryData: (queryKey) => {
                   return queryClient.getQueryData(queryKey);
                 },
+                getInfiniteQueryData: (queryKey) => {
+                  return queryClient.getQueryData(queryKey);
+                },
                 ensureQueryData: (options) => {
+                  return queryClient.ensureQueryData(
+                    createBaseQueryOptions(subRouter, clientOptions, options),
+                  );
+                },
+                ensureInfiniteQueryData: (options) => {
                   return queryClient.ensureQueryData(
                     createBaseQueryOptions(subRouter, clientOptions, options),
                   );
@@ -270,10 +278,16 @@ export const initQueryClient = <
                 setQueryData: (queryKey, updater, options) => {
                   return queryClient.setQueryData(queryKey, updater, options);
                 },
+                setInfiniteQueryData: (queryKey, updater, options) => {
+                  return queryClient.setQueryData(queryKey, updater, options);
+                },
                 setQueriesData: (filters, updater, options) => {
                   return queryClient.setQueriesData(filters, updater, options);
                 },
                 getQueryState: (queryKey) => {
+                  return queryClient.getQueryState(queryKey);
+                },
+                getInfiniteQueryState: (queryKey) => {
                   return queryClient.getQueryState(queryKey);
                 },
                 fetchQuery: (options) => {
