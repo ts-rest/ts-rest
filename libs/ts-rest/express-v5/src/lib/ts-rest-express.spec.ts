@@ -247,7 +247,7 @@ describe('ts-rest-express', () => {
     const contract = c.router({
       getPosts: {
         method: 'GET',
-        path: '/posts/{:id}',
+        path: '/posts{/:id}',
         pathParams: z.object({
           id: z.string().optional(),
         }),
@@ -294,62 +294,62 @@ describe('ts-rest-express', () => {
   //  * In Express v5, the optional parameter syntax with ? in the path is not supported.
   //  * Instead use braces.
   //  */
-  // it('should handle two levels of optional url params', async () => {
-  //   const contract = c.router({
-  //     getPosts: {
-  //       method: 'GET',
-  //       path: '/posts/{:year}/{:month}',
-  //       pathParams: z.object({
-  //         year: z.string().optional(),
-  //         month: z.string().optional(),
-  //       }),
-  //       responses: {
-  //         200: z.object({
-  //           id: z.string().optional(),
-  //         }),
-  //       },
-  //     },
-  //   });
+  it('should handle two levels of optional url params', async () => {
+    const contract = c.router({
+      getPosts: {
+        method: 'GET',
+        path: '/posts{/:year}{/:month}',
+        pathParams: z.object({
+          year: z.string().optional(),
+          month: z.string().optional(),
+        }),
+        responses: {
+          200: z.object({
+            id: z.string().optional(),
+          }),
+        },
+      },
+    });
 
-  //   const router = s.router(contract, {
-  //     getPosts: async ({ params }) => {
-  //       return {
-  //         status: 200,
-  //         body: {
-  //           id: `${params.year}-${params.month}`,
-  //         },
-  //       };
-  //     },
-  //   });
+    const router = s.router(contract, {
+      getPosts: async ({ params }) => {
+        return {
+          status: 200,
+          body: {
+            id: `${params.year}-${params.month}`,
+          },
+        };
+      },
+    });
 
-  //   const app = express();
-  //   app.use(express.json());
-  //   app.use(express.urlencoded({ extended: true }));
-  //   createExpressEndpoints(contract, router, app);
+    const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    createExpressEndpoints(contract, router, app);
 
-  //   await supertest(app)
-  //     .get('/posts')
-  //     .expect((res) => {
-  //       expect(res.status).toEqual(200);
-  //       expect(res.body).toEqual({
-  //         id: `undefined-undefined`,
-  //       });
-  //     });
+    await supertest(app)
+      .get('/posts')
+      .expect((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toEqual({
+          id: `undefined-undefined`,
+        });
+      });
 
-  //   await supertest(app)
-  //     .get('/posts/2025')
-  //     .expect((res) => {
-  //       expect(res.status).toEqual(200);
-  //       expect(res.body).toEqual({ id: '2025-undefined' });
-  //     });
+    await supertest(app)
+      .get('/posts/2025')
+      .expect((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toEqual({ id: '2025-undefined' });
+      });
 
-  //   await supertest(app)
-  //     .get('/posts/2025/01')
-  //     .expect((res) => {
-  //       expect(res.status).toEqual(200);
-  //       expect(res.body).toEqual({ id: '2025-01' });
-  //     });
-  // });
+    await supertest(app)
+      .get('/posts/2025/01')
+      .expect((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toEqual({ id: '2025-01' });
+      });
+  });
 
   it('should handle multipart/form-data', async () => {
     const contract = c.router({
