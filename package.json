@@ -130,7 +130,7 @@
     "@types/aws-lambda": "^8.10.115",
     "@types/cors": "^2.8.12",
     "@types/express": "5.0.1",
-    "@types/express-serve-static-core": "^5.0.0",
+    "@types/express-serve-static-core": "^4.17.33",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "29.4.4",
     "@types/jsonwebtoken": "^9.0.2",
