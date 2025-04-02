@@ -21,6 +21,7 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../../coverage/libs/ts-rest/express-v5',
-  // Use Node.js test environment instead of jsdom for Express v5 compatibility
+  // Use Node.js test environment instead of jsdom because
+  // Express v5 needs setImmediate to be defined, which is not available in jsdom
   testEnvironment: 'node',
 };
