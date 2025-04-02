@@ -15,5 +15,10 @@
     "zod": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "express": "^4.0.0",
+    "@types/express": "^4.17.21",
+    "@types/express-serve-static-core": "^4.17.33"
   }
 }

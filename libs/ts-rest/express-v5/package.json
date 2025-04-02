@@ -11,6 +11,10 @@
     "express": "^5.0.0",
     "zod": "^3.22.3"
   },
+  "devDependencies": {
+    "express": "^5.0.0",
+    "@types/express": "^5.0.1"
+  },
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
