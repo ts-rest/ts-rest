@@ -1,0 +1,19 @@
+{
+  "name": "@ts-rest/express-v5",
+  "version": "3.52.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-rest/ts-rest.git",
+    "directory": "libs/ts-rest/express-v5"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "express": "^5.0.0",
+    "zod": "^3.22.3"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  }
+}

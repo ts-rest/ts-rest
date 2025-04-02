@@ -65,7 +65,7 @@
     "cors": "^2.8.5",
     "daisyui": "^2.24.0",
     "docusaurus-plugin-typedoc": "^0.20.0",
-    "express": "4.19.2",
+    "express": "5.1.0",
     "fastify": "4.28.0",
     "itty-router": "^5.0.18",
     "jsonwebtoken": "^9.0.0",
