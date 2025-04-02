@@ -183,7 +183,8 @@ const initializeExpressRoute = ({
       const statusCode = Number(result.status);
 
       if (result.body instanceof Stream) {
-        return result.body.pipe(res.status(result.status));
+        result.body.pipe(res.status(result.status));
+        return;
       }
 
       let validatedResponseBody = result.body;
@@ -203,17 +204,21 @@ const initializeExpressRoute = ({
       const responseType = schema.responses[statusCode];
 
       if (isAppRouteNoBody(responseType)) {
-        return res.status(statusCode).end();
+        res.status(statusCode).end();
+        return;
       }
 
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
-        return res.status(statusCode).send(validatedResponseBody);
+        res.status(statusCode).send(validatedResponseBody);
+        return;
       }
 
-      return res.status(statusCode).json(validatedResponseBody);
+      res.status(statusCode).json(validatedResponseBody);
+      return;
     } catch (e) {
-      return next(e);
+      next(e);
+      return;
     }
   };
 
@@ -264,26 +269,33 @@ const requestValidationErrorHandler = (
       // old-style error handling, kept for backwards compatibility
       if (handler === 'default') {
         if (err.pathParams) {
-          return res.status(400).json(err.pathParams);
+          res.status(400).json(err.pathParams);
+          return;
         }
         if (err.headers) {
-          return res.status(400).json(err.headers);
+          res.status(400).json(err.headers);
+          return;
         }
         if (err.query) {
-          return res.status(400).json(err.query);
+          res.status(400).json(err.query);
+          return;
         }
         if (err.body) {
-          return res.status(400).json(err.body);
+          res.status(400).json(err.body);
+          return;
         }
       } else if (handler === 'combined') {
-        return res.status(400).json({
+        res.status(400).json({
           pathParameterErrors: err.pathParams,
           headerErrors: err.headers,
           queryParameterErrors: err.query,
           bodyErrors: err.body,
         });
-      } else {
-        return handler(err, req as any, res, next);
+        return;
+      } else if (typeof handler === 'function') {
+        // Call the custom handler but don't return its result
+        handler(err, req as any, res, next);
+        return;
       }
     }
 
