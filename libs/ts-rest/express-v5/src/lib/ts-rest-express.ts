@@ -251,14 +251,14 @@ const initializeExpressRoute = ({
       break;
     case 'POST':
       app.post(schema.path, ...(handlers as RequestHandler[]));
-      break;
-    case 'PUT':
+        break;
+      case 'PUT':
       app.put(schema.path, ...(handlers as RequestHandler[]));
-      break;
-    case 'PATCH':
+        break;
+      case 'PATCH':
       app.patch(schema.path, ...(handlers as RequestHandler[]));
-      break;
-  }
+        break;
+    }
 };
 
 const requestValidationErrorHandler = (

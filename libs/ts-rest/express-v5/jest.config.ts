@@ -14,11 +14,13 @@ if (swcJestConfig.swcrc === undefined) {
 }
 
 export default {
-  displayName: 'ts-rest-express',
+  displayName: 'ts-rest-express-v5',
   preset: '../../../jest.preset.js',
   transform: {
     '^.+\\.[tj]s$': ['@swc/jest', swcJestConfig],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../../coverage/libs/ts-rest/express',
+  coverageDirectory: '../../../coverage/libs/ts-rest/express-v5',
+  // Use Node.js test environment instead of jsdom for Express v5 compatibility
+  testEnvironment: 'node',
 };
