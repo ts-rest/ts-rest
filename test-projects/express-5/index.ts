@@ -1,4 +1,4 @@
-import { createExpressEndpoints, initServer } from '@ts-rest/express';
+import { createExpressEndpoints, initServer } from '@ts-rest/express-v5';
 import express from 'express';
 import * as bodyParser from 'body-parser';
 import { initContract } from '@ts-rest/core';

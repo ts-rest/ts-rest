@@ -1,11 +1,11 @@
 {
-  "name": "express-4",
+  "name": "express-5",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
     "@types/body-parser": "1.19.5",
     "@types/bun": "latest",
-    "@types/express": "4.17.21",
+    "@types/express": "5.0.1",
     "@types/supertest": "^6.0.2",
     "supertest": "^7.0.0"
   },
@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@ts-rest/core": "../../dist/libs/ts-rest/core",
-    "@ts-rest/express": "../../dist/libs/ts-rest/express",
-    "express": "5.0.1",
+    "@ts-rest/express-v5": "../../dist/libs/ts-rest/express-v5",
+    "express": "5.1.0",
     "zod": "3.24.1"
   }
 }

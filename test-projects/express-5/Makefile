@@ -5,13 +5,13 @@
 #
 # It's as if we've published the package, then import it into a fresh bun project
 setup:
-	bun i
+	npx bun i
 	rm -rf node_modules/@ts-rest/*
 	mkdir -p node_modules/@ts-rest
 	cp -r ../../dist/libs/ts-rest/* node_modules/@ts-rest/
 
 e2e:
 	make setup
-	bun test
-	bun build index.ts --target bun --outdir ./dist
-	bun tsc
+	npx bun test
+	npx bun build index.ts --target bun --outdir ./dist
+	npx bun tsc
