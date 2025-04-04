@@ -137,7 +137,7 @@ const getExpressPath: (path: string) => string =
     ? // Express v4 accepts ts-rest paths without modification
       (path) => path
     : // Express v5 requires {/:param} instead of /:param? for optional params
-      (path) => path.replace(/\/?(:[^/?]+)\?/g, '{/$1}');
+      (path) => path.replace(/(?:^|\/)(:[^/?]+)\?/g, '{/$1}');
 
 const initializeExpressRoute = ({
   implementationOrOptions,
