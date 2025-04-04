@@ -86,7 +86,7 @@ apiDocs.get('/', setup(openapi));
 app.use('/api-docs', apiDocs);
 
 app.get('/test', (req, res) => {
-  return res.json(req.query);
+  res.json(req.query);
 });
 
 createExpressEndpoints(apiBlog, completedRouter, app);

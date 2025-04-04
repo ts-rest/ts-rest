@@ -159,9 +159,10 @@ createExpressEndpoints(apiBlog, completedRouter, app, {
         });
 
         if (resource.ownerId !== req.user?.id) {
-          return res.status(403).json({
+          res.status(403).json({
             message: 'Forbidden... You are not the owner of this resource',
           });
+          return;
         }
       }
 
