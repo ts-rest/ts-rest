@@ -3,7 +3,7 @@ import {
   VueQueryPlugin,
   VueQueryPluginOptions,
 } from '@tanstack/vue-query';
-import { inject, InjectionKey, Ref, ref, watch } from 'vue-demi';
+import { inject, InjectionKey, MaybeRef, Ref, ref, watch } from 'vue-demi';
 import { initHooksContainer, initQueryClient } from './internal/create-hooks';
 import type { AppRouter, ClientArgs } from '@ts-rest/core';
 
@@ -16,7 +16,7 @@ export const createTsRestPlugin = <
   TClientArgs extends ClientArgs,
 >(
   contract: TContract,
-  clientOptions: TClientArgs,
+  clientOptions: MaybeRef<TClientArgs>,
 ) => {
   const _clientOptions = ref(clientOptions) as Ref<TClientArgs>;
 

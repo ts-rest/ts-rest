@@ -24,11 +24,24 @@ import { Ref } from 'vue-demi';
 export type TsRestQueryOptions<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
+  TQueryKey extends QueryKey = QueryKey,
   TQueryData = RequestData<TAppRoute, TClientArgs>,
 > = IfAllPropertiesOptional<
   TQueryData,
-  { queryData?: MaybeRefDeepOrGetter<TQueryData | SkipToken> },
-  { queryData: MaybeRefDeepOrGetter<TQueryData | SkipToken> }
+  {
+    queryData?:
+      | ((
+          context: QueryFunctionContext<TQueryKey>,
+        ) => MaybeRefDeepOrGetter<TQueryData | SkipToken>)
+      | MaybeRefDeepOrGetter<TQueryData | SkipToken>;
+  },
+  {
+    queryData:
+      | ((
+          context: QueryFunctionContext<TQueryKey>,
+        ) => MaybeRefDeepOrGetter<TQueryData | SkipToken>)
+      | MaybeRefDeepOrGetter<TQueryData | SkipToken>;
+  }
 >;
 
 export type TsRestInfiniteQueryOptions<
@@ -60,7 +73,7 @@ export type UseQueryOptions<
   >,
   'queryFn'
 > &
-  TsRestQueryOptions<TAppRoute, TClientArgs>;
+  TsRestQueryOptions<TAppRoute, TClientArgs, TQueryKey>;
 
 export type UseQueryOptionsWithInitialData<
   TAppRoute extends AppRoute,

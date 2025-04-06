@@ -50,12 +50,12 @@ export interface TsRestQueryClientFunctions<
 
   fetchQuery<TData = TQueryFnData>(
     options: FetchQueryOptions<TQueryFnData, TError, TData> &
-      TsRestQueryOptions<TAppRoute, TClientArgs>,
+      TsRestQueryOptions<TAppRoute, TClientArgs, TQueryKey>,
   ): Promise<TData>;
 
   prefetchQuery<TData = TQueryFnData>(
-    options: FetchQueryOptions<TQueryFnData, TError, TData, QueryKey> &
-      TsRestQueryOptions<TAppRoute, TClientArgs>,
+    options: FetchQueryOptions<TQueryFnData, TError, TData, TQueryKey> &
+      TsRestQueryOptions<TAppRoute, TClientArgs, TQueryKey>,
   ): Promise<void>;
 
   fetchInfiniteQuery<TData = TQueryFnData, TPageParam = unknown>(
@@ -66,7 +66,7 @@ export interface TsRestQueryClientFunctions<
       TQueryKey,
       TPageParam
     > &
-      TsRestQueryOptions<TAppRoute, TClientArgs>,
+      TsRestQueryOptions<TAppRoute, TClientArgs, TQueryKey>,
   ): Promise<InfiniteData<TData, TPageParam>>;
 
   prefetchInfiniteQuery<TData = TQueryFnData, TPageParam = unknown>(
