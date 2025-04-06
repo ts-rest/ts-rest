@@ -2,10 +2,10 @@ import { computed } from 'vue';
 import { useClient } from '../api/client';
 
 export const useInfinitePosts = () => {
-  const PAGE_SIZE = 5;
+  const PAGE_SIZE = 3;
 
   const { data, ...rest } = useClient().getPosts.useInfiniteQuery({
-    queryKey: ['infinite-posts'],
+    queryKey: ['infinite-posts'] as const,
     queryData: ({ pageParam }) => ({
       query: {
         skip: pageParam.skip.toString(),

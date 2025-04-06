@@ -79,6 +79,9 @@ importers:
       '@tanstack/vue-query':
         specifier: ^5.51.9
         version: 5.59.13(@vue/composition-api@1.7.2(vue@3.3.4))(vue@3.3.4)
+      '@tanstack/vue-query-devtools':
+        specifier: ^5.71.10
+        version: 5.71.10(@tanstack/vue-query@5.59.13(@vue/composition-api@1.7.2(vue@3.3.4))(vue@3.3.4))(vue@3.3.4)
       '@types/body-parser':
         specifier: ^1.19.2
         version: 1.19.2
@@ -205,6 +208,9 @@ importers:
       vue:
         specifier: ^3.3.4
         version: 3.3.4
+      vue-router:
+        specifier: ^4.5.0
+        version: 4.5.0(vue@3.3.4)
       zod:
         specifier: ^3.22.3
         version: 3.22.3
@@ -3743,6 +3749,9 @@ packages:
   '@tanstack/query-devtools@5.51.9':
     resolution: {integrity: sha512-FQqJynaEDuwQxoFLP3/i10HQwNYh4wxgs0NeSoL24BLWvpUdstgHqUm2zgwRov8Tmh5kjndPIWaXenwl0D47EA==}
 
+  '@tanstack/query-devtools@5.71.5':
+    resolution: {integrity: sha512-Fq1JeAp+I52Md/KnyeFxzG7G0RpdHgeOfDNhSPkZQs/JqqXuAfpUf+wFHDz+vP0GZbSnla2JmcLSQebOkIb1yA==}
+
   '@tanstack/react-query-devtools@5.51.11':
     resolution: {integrity: sha512-8nQRbhdtvl/J9bO+bk/kPQesCOtDgk+oI4AmZJDnkf5OfKTJL3J4tTe+fhuXph7KP4DUOS+ge9o9TGt0OgWFHw==}
     peerDependencies:
@@ -3770,6 +3779,12 @@ packages:
     resolution: {integrity: sha512-+AB28zc30XE+NvRf5nJmOGcMEqYNpKcr+C7GUfs1VlHn/pXZ/xLEoD4rnBPFpZ8tVLCFmIzNwIMd9mrn8IinEg==}
     peerDependencies:
       solid-js: ^1.5.7
+
+  '@tanstack/vue-query-devtools@5.71.10':
+    resolution: {integrity: sha512-i5cSjeHLYyxMvQ4ZFdUQPE+q/MljapgAiGjm8uotgwdSh/uE5QCQa1AhgGIQCV7Tz5q7y4r9ikCCwER+P7nB+g==}
+    peerDependencies:
+      '@tanstack/vue-query': ^5.71.10
+      vue: ^3.3.0
 
   '@tanstack/vue-query@4.37.1':
     resolution: {integrity: sha512-QzCQ94g2oZQcEfI4nfqa6Qr3aFXtXiEH17Jho+QFl73c7epqsWNcyP3ovF1fgJz5jEOE5OYtwgkoaRKIRaSigg==}
@@ -4404,6 +4419,7 @@ packages:
 
   acorn-import-assertions@1.8.0:
     resolution: {integrity: sha512-m7VZ3jwz4eK6A4Vtt8Ew1/mNbP24u0FhdyfA7fSvnJR6LMdfOYnmuIrrJAgrYfYJ10F/otaHTtrtrtmHdMNzEw==}
+    deprecated: package has been renamed to acorn-import-attributes
     peerDependencies:
       acorn: ^8
 
@@ -6293,6 +6309,7 @@ packages:
   fetch-mock-jest@1.5.1:
     resolution: {integrity: sha512-+utwzP8C+Pax1GSka3nFXILWMY3Er2L+s090FOgqVNrNCPp0fDqgXnAHAJf12PLHi0z4PhcTaZNTz8e7K3fjqQ==}
     engines: {node: '>=8.0.0'}
+    deprecated: 'Use https://www.npmjs.com/package/@fetch-mock/jest instead. The underlying version of fetch-mock will also need upgrading: see https://www.wheresrhys.co.uk/fetch-mock/docs/Usage/upgrade-guide'
     peerDependencies:
       node-fetch: '*'
     peerDependenciesMeta:
@@ -7785,9 +7802,11 @@ packages:
 
   lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
+    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
 
   lodash.isequal@4.5.0:
     resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+    deprecated: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
 
   lodash.isplainobject@4.0.6:
     resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==}
@@ -11101,6 +11120,11 @@ packages:
     peerDependenciesMeta:
       '@vue/composition-api':
         optional: true
+
+  vue-router@4.5.0:
+    resolution: {integrity: sha512-HDuk+PuH5monfNuY+ct49mNmkCRK4xJAV9Ts4z9UFc4rzdDnxQLyCMGGc8pKhZhHTVzfanpNwB/lwqevcBwI4w==}
+    peerDependencies:
+      vue: ^3.2.0
 
   vue@3.3.4:
     resolution: {integrity: sha512-VTyEYn3yvIeY1Py0WaYGZsXnz3y5UnGi62GjVEqvEGPl6nxbOrCXbVOTQWBEJUqAyTUk2uJ5JLVnYJ6ZzGbrSw==}
@@ -16415,6 +16439,8 @@ snapshots:
 
   '@tanstack/query-devtools@5.51.9': {}
 
+  '@tanstack/query-devtools@5.71.5': {}
+
   '@tanstack/react-query-devtools@5.51.11(@tanstack/react-query@5.51.11(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@tanstack/query-devtools': 5.51.9
@@ -16438,6 +16464,12 @@ snapshots:
     dependencies:
       '@tanstack/query-core': 4.33.0
       solid-js: 1.6.11
+
+  '@tanstack/vue-query-devtools@5.71.10(@tanstack/vue-query@5.59.13(@vue/composition-api@1.7.2(vue@3.3.4))(vue@3.3.4))(vue@3.3.4)':
+    dependencies:
+      '@tanstack/query-devtools': 5.71.5
+      '@tanstack/vue-query': 5.59.13(@vue/composition-api@1.7.2(vue@3.3.4))(vue@3.3.4)
+      vue: 3.3.4
 
   '@tanstack/vue-query@4.37.1(@vue/composition-api@1.7.2(vue@3.3.4))(vue@3.3.4)':
     dependencies:
@@ -25157,6 +25189,11 @@ snapshots:
       vue: 3.3.4
     optionalDependencies:
       '@vue/composition-api': 1.7.2(vue@3.3.4)
+
+  vue-router@4.5.0(vue@3.3.4):
+    dependencies:
+      '@vue/devtools-api': 6.6.4
+      vue: 3.3.4
 
   vue@3.3.4:
     dependencies:
