@@ -20,3 +20,13 @@ If you cannot use `strict` entirely, you'll need to at least enable `strictNullC
 
 This is required as part of [Zod](https://github.com/colinhacks/zod#requirements). See why [here](https://github.com/colinhacks/zod/issues/1750).
 
+Additionally, if you're using a monorepo, make sure the contract's package exports the built files and not the Typescript files:
+
+```
+  "exports": {
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  }
+```
