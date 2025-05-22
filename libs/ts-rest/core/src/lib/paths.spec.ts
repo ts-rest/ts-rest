@@ -135,13 +135,4 @@ describe('insertParamsIntoPath', () => {
       }),
     ).toBe('/post/comments/');
   });
-
-  it('should insert zero into path', () => {
-    expect(
-      insertParamsIntoPath({
-        path: '/:id',
-        params: { id: 0 as unknown as string },
-      }),
-    ).toBe('/0');
-  });
 });

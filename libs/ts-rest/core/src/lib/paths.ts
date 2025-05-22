@@ -51,10 +51,10 @@ export const insertParamsIntoPath = <T extends string>({
   path: T;
   params: ParamsFromUrl<T>;
 }) => {
-  const pathParams = params as Record<string, string>;
+  const pathParams: Record<string, string> = params;
 
   return path.replace(/\/?:([^/?]+)\??/g, (matched, p) =>
-    pathParams[p] !== undefined && pathParams[p] !== null
+    pathParams[p]
       ? `${matched.startsWith('/') ? '/' : ''}${pathParams[p]}`
       : '',
   );
