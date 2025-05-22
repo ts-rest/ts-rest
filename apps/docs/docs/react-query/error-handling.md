@@ -56,7 +56,7 @@ In order to ensure that your code is handling all possible error cases, there ar
 We also return the `contractEndpoint` property from all hooks, so you can easily pass it to the types guards without having import the contract.
 
 ```tsx
-import { isFetchError, isUndefinedErrorResponse, exhaustiveGuard } from '@ts-rest/react-query/v5';
+import { isFetchError, isUnknownErrorResponse, exhaustiveGuard } from '@ts-rest/react-query/v5';
 import { tsr } from './tsr';
 
 const Post = ({ id }: { id: string }) => {
@@ -76,7 +76,7 @@ const Post = ({ id }: { id: string }) => {
       return <div>We could not retrieve this post. Please check your internet connection.</div>;
     }
     
-    if (isUndefinedErrorResponse(error, contractEndpoint)) {
+    if (isUnknownErrorResponse(error, contractEndpoint)) {
       return <div>Unexpected error occurred</div>;
     }
 
