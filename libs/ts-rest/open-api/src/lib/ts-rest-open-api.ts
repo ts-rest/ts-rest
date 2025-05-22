@@ -281,6 +281,7 @@ export const generateOpenApi = (
     operationMapper?: (
       operation: OperationObject,
       appRoute: AppRoute,
+      id: string,
     ) => OperationObject;
   } = {},
 ): OpenAPIObject => {
@@ -397,7 +398,7 @@ export const generateOpenApi = (
     acc[path.path] = {
       ...acc[path.path],
       [mapMethod[path.route.method]]: options.operationMapper
-        ? options.operationMapper(pathOperation, path.route)
+        ? options.operationMapper(pathOperation, path.route, path.id)
         : pathOperation,
     };
 
