@@ -857,6 +857,52 @@ describe('ts-rest-open-api', () => {
       });
     });
 
+    it('should pass operation id to operationMapper', async () => {
+      const operationIds: string[] = [];
+
+      const apiDoc = generateOpenApi(
+        router,
+        {
+          info: { title: 'Blog API', version: '0.1' },
+        },
+        {
+          operationMapper: (operation, appRoute, id) => {
+            operationIds.push(id);
+            return {
+              ...operation,
+              'x-operation-id': id, // Add the id as a custom field for verification
+            };
+          },
+        },
+      );
+
+      // Verify that operation IDs were collected
+      expect(operationIds).toContain('health');
+      expect(operationIds).toContain('mediaExamples');
+      expect(operationIds).toContain('findPosts');
+      expect(operationIds).toContain('createPost');
+      expect(operationIds).toContain('getPost');
+      expect(operationIds).toContain('getPostComments');
+      expect(operationIds).toContain('getPostComment');
+      expect(operationIds).toContain('auth');
+
+      // Verify that the custom field was added with the correct id
+      expect(apiDoc.paths['/health'].get['x-operation-id']).toBe('health');
+      expect(apiDoc.paths['/posts'].get['x-operation-id']).toBe('findPosts');
+      expect(apiDoc.paths['/posts'].post['x-operation-id']).toBe('createPost');
+      expect(apiDoc.paths['/posts/{id}'].get['x-operation-id']).toBe('getPost');
+      expect(apiDoc.paths['/posts/{id}/comments'].get['x-operation-id']).toBe(
+        'getPostComments',
+      );
+      expect(
+        apiDoc.paths['/posts/{id}/comments/{commentId}'].get['x-operation-id'],
+      ).toBe('getPostComment');
+      expect(apiDoc.paths['/auth'].post['x-operation-id']).toBe('auth');
+      expect(apiDoc.paths['/media-examples'].post['x-operation-id']).toBe(
+        'mediaExamples',
+      );
+    });
+
     it('works with zod refine', () => {
       const routerWithRefine = c.router({
         endpointWithZodRefine: {
