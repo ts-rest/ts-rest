@@ -268,9 +268,15 @@ const extractReferenceSchemas = (
   return schema;
 };
 /**
+ * Generate OpenAPI specification from ts-rest router
  *
+ * @param router - The ts-rest router to generate OpenAPI from
+ * @param apiDoc - Base OpenAPI document configuration
+ * @param options - Generation options
+ * @param options.setOperationId - Whether to set operation IDs (true, false, or 'concatenated-path')
  * @param options.jsonQuery - Enable JSON query parameters, [see](/docs/open-api#json-query-params)
- * @returns
+ * @param options.operationMapper - Function to customize OpenAPI operations. Receives the operation object, app route, and operation ID
+ * @returns OpenAPI specification object
  */
 export const generateOpenApi = (
   router: AppRouter,
