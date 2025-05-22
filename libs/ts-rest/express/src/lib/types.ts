@@ -9,12 +9,7 @@ import {
   ServerInferResponseBody,
   ServerInferResponses,
 } from '@ts-rest/core';
-import {
-  Express,
-  NextFunction,
-  Response,
-  Request,
-} from 'express-serve-static-core';
+import { Express, NextFunction, Response, Request } from 'express';
 import { RequestValidationError } from './request-validation-error';
 
 export type AppRouteQueryImplementation<

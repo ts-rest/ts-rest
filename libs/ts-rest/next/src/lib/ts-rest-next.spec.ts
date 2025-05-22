@@ -490,9 +490,10 @@ describe('createNextRouter', () => {
         responseValidation: true,
         errorHandler: (err: any, req, res) => {
           if (err instanceof ResponseValidationError) {
-            return res.status(500).send('Response validation failed');
+            res.status(500).send('Response validation failed');
+            return;
           }
-          return res.status(500).send('Server Error');
+          res.status(500).send('Server Error');
         },
       },
     );

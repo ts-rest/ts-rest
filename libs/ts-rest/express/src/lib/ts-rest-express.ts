@@ -10,13 +10,14 @@ import {
   TsRestResponseError,
   validateResponse,
 } from '@ts-rest/core';
-import type {
+import {
   IRouter,
   NextFunction,
   Request,
   RequestHandler,
   Response,
-} from 'express-serve-static-core';
+  application,
+} from 'express';
 import {
   AppRouteImplementationOrOptions,
   TsRestExpressOptions,
@@ -130,6 +131,14 @@ const validateRequest = (
   };
 };
 
+const getExpressPath: (path: string) => string =
+  // The app.del() method exists in Express v4 but was removed in v5
+  'del' in application
+    ? // Express v4 accepts ts-rest paths without modification
+      (path) => path
+    : // Express v5 requires {/:param} instead of /:param? for optional params
+      (path) => path.replace(/(?:^|\/)(:[^/?]+)\?/g, '{/$1}');
+
 const initializeExpressRoute = ({
   implementationOrOptions,
   schema,
@@ -183,7 +192,8 @@ const initializeExpressRoute = ({
       const statusCode = Number(result.status);
 
       if (result.body instanceof Stream) {
-        return result.body.pipe(res.status(result.status));
+        result.body.pipe(res.status(result.status));
+        return;
       }
 
       let validatedResponseBody = result.body;
@@ -203,15 +213,18 @@ const initializeExpressRoute = ({
       const responseType = schema.responses[statusCode];
 
       if (isAppRouteNoBody(responseType)) {
-        return res.status(statusCode).end();
+        res.status(statusCode).end();
+        return;
       }
 
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
-        return res.status(statusCode).send(validatedResponseBody);
+        res.status(statusCode).send(validatedResponseBody);
+        return;
       }
 
-      return res.status(statusCode).json(validatedResponseBody);
+      res.status(statusCode).json(validatedResponseBody);
+      return;
     } catch (e) {
       return next(e);
     }
@@ -237,21 +250,23 @@ const initializeExpressRoute = ({
 
   handlers.push(mainReqHandler);
 
+  const expressPath = getExpressPath(schema.path);
+
   switch (schema.method) {
     case 'GET':
-      app.get(schema.path, ...(handlers as RequestHandler[]));
+      app.get(expressPath, ...(handlers as RequestHandler[]));
       break;
     case 'DELETE':
-      app.delete(schema.path, ...(handlers as RequestHandler[]));
+      app.delete(expressPath, ...(handlers as RequestHandler[]));
       break;
     case 'POST':
-      app.post(schema.path, ...(handlers as RequestHandler[]));
+      app.post(expressPath, ...(handlers as RequestHandler[]));
       break;
     case 'PUT':
-      app.put(schema.path, ...(handlers as RequestHandler[]));
+      app.put(expressPath, ...(handlers as RequestHandler[]));
       break;
     case 'PATCH':
-      app.patch(schema.path, ...(handlers as RequestHandler[]));
+      app.patch(expressPath, ...(handlers as RequestHandler[]));
       break;
   }
 };
@@ -264,26 +279,32 @@ const requestValidationErrorHandler = (
       // old-style error handling, kept for backwards compatibility
       if (handler === 'default') {
         if (err.pathParams) {
-          return res.status(400).json(err.pathParams);
+          res.status(400).json(err.pathParams);
+          return;
         }
         if (err.headers) {
-          return res.status(400).json(err.headers);
+          res.status(400).json(err.headers);
+          return;
         }
         if (err.query) {
-          return res.status(400).json(err.query);
+          res.status(400).json(err.query);
+          return;
         }
         if (err.body) {
-          return res.status(400).json(err.body);
+          res.status(400).json(err.body);
+          return;
         }
       } else if (handler === 'combined') {
-        return res.status(400).json({
+        res.status(400).json({
           pathParameterErrors: err.pathParams,
           headerErrors: err.headers,
           queryParameterErrors: err.query,
           bodyErrors: err.body,
         });
+        return;
       } else {
-        return handler(err, req as any, res, next);
+        handler(err, req as any, res, next);
+        return;
       }
     }
 

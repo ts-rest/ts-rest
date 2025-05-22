@@ -15,7 +15,7 @@ import {
   ServerInferRequest,
   zodErrorResponse,
 } from '@ts-rest/core';
-import type { Request } from 'express-serve-static-core';
+import type { Request } from 'express';
 import type { FastifyRequest } from 'fastify';
 import { TsRestAppRouteMetadataKey } from './constants';
 import { evaluateTsRestOptions, MaybeTsRestOptions } from './ts-rest-options';

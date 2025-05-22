@@ -1,6 +1,6 @@
 import { Reflector } from '@nestjs/core';
 import { mergeMap, Observable } from 'rxjs';
-import type { Request, Response } from 'express-serve-static-core';
+import type { Request, Response } from 'express';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
   BadRequestException,
