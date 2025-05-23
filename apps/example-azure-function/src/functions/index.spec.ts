@@ -1,32 +1,41 @@
-import * as path from 'path';
-import concurrently, { ConcurrentlyResult } from 'concurrently';
+import { spawn } from 'child_process';
 import * as waitOn from 'wait-on';
+import * as path from 'path';
 
 jest.setTimeout(30000);
 
 describe('example-azure-function', () => {
-  let proc: ConcurrentlyResult;
+  let serverProcess: any;
 
   beforeAll(async () => {
-    proc = concurrently(
-      [
-        {
-          cwd: path.resolve(__dirname, '../..'),
-          command: 'pnpm nx serve example-azure-function',
-        },
-      ],
-      {
-        killOthers: ['failure', 'success'],
-      },
-    );
+    // Start the Azure Functions server in the background
+    serverProcess = spawn('pnpm', ['exec', 'func', 'start', '--javascript'], {
+      cwd: path.join(__dirname, '../../'),
+      stdio: 'pipe',
+      shell: true,
+    });
 
+    // Optional: Log server output for debugging
+    serverProcess.stdout.on('data', (data: any) => {
+      console.log(`Azure Function output: ${data}`);
+    });
+
+    serverProcess.stderr.on('data', (data: any) => {
+      console.error(`Azure Function error: ${data}`);
+    });
+
+    // Wait for the server to be ready
     await waitOn({
       resources: ['tcp:127.0.0.1:7071'],
+      timeout: 30000,
     });
   });
 
-  afterAll(() => {
-    proc.commands[0].kill();
+  afterAll(async () => {
+    // Cleanup: Kill the server process
+    if (serverProcess) {
+      serverProcess.kill();
+    }
   });
 
   it('GET /posts should return an array of posts', async () => {

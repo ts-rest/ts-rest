@@ -1,5 +1,17 @@
 # @ts-rest/core
 
+## 3.52.1
+
+### Patch Changes
+
+- 5005793: Fix trailing slashes not being preserved by the client
+
+## 3.52.0
+
+### Minor Changes
+
+- 964f7c6: Support optional path params in the type system, and ensure multiple levels of query params are dealt with in nest
+
 ## 3.51.1
 
 ## 3.51.0

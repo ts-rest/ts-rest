@@ -1,6 +1,5 @@
 import { initContract } from '@ts-rest/core';
 import {
-  doesUrlMatchContractPath,
   RequestValidationErrorSchema,
   TsRestException,
   tsRestHandler,
@@ -16,17 +15,19 @@ import {
   ExceptionFilter,
   ExecutionContext,
   Get,
+  Headers,
   HttpException,
   Injectable,
   NestInterceptor,
   Post,
+  Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
 import { TsRest } from './ts-rest.decorator';
-import path = require('path');
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   FastifyAdapter,
@@ -35,6 +36,7 @@ import {
 import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import { TsRestModule } from './ts-rest.module';
+import path = require('path');
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T,
@@ -45,26 +47,6 @@ export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
 export type Expect<a extends true> = a;
 
 jest.setTimeout(10000);
-
-describe('doesUrlMatchContractPath', () => {
-  it.each`
-    contractPath    | url           | expected
-    ${'/'}          | ${'/'}        | ${true}
-    ${'/'}          | ${'/api'}     | ${false}
-    ${'/api'}       | ${'/api'}     | ${true}
-    ${'/api/'}      | ${'/api'}     | ${true}
-    ${'/api'}       | ${'/api/'}    | ${true}
-    ${'/api/'}      | ${'/api/'}    | ${true}
-    ${'/posts/:id'} | ${'/posts/1'} | ${true}
-    ${'/posts/:id'} | ${'/posts/1'} | ${true}
-    ${'/posts/:id'} | ${'/posts'}   | ${false}
-  `(
-    'should return $expected when contractPath is $contractPath and url is $url',
-    ({ contractPath, url, expected }) => {
-      expect(doesUrlMatchContractPath(contractPath, url)).toBe(expected);
-    },
-  );
-});
 
 describe('ts-rest-nest-handler', () => {
   describe('multi-handler api', () => {
@@ -258,8 +240,13 @@ describe('ts-rest-nest-handler', () => {
           .post('/test')
           .send({ message: 123 });
 
-        expect(responsePost.status).toBe(200);
-        expect(responsePost.body).toEqual({ message: 123 });
+        expect({
+          status: responsePost.status,
+          body: responsePost.body,
+        }).toStrictEqual({
+          status: 200,
+          body: { message: 123 },
+        });
       });
     });
 
@@ -481,7 +468,7 @@ describe('ts-rest-nest-handler', () => {
       });
     });
 
-    it('should be able to intercept', async () => {
+    it('should be able to intercept with multi handler', async () => {
       const c = initContract();
 
       const contract = c.router({
@@ -512,7 +499,7 @@ describe('ts-rest-nest-handler', () => {
       }
 
       @Controller()
-      class SingleHandlerTestController {
+      class MultiHandlerTestController {
         @TsRestHandler(contract)
         @UseInterceptors(TestInterceptor)
         async postRequest() {
@@ -526,7 +513,7 @@ describe('ts-rest-nest-handler', () => {
       }
 
       const moduleRef = await Test.createTestingModule({
-        controllers: [SingleHandlerTestController],
+        controllers: [MultiHandlerTestController],
       }).compile();
 
       const app = moduleRef.createNestApplication();
@@ -539,6 +526,310 @@ describe('ts-rest-nest-handler', () => {
         message: 'intercepted',
         oldMessage: 'ok',
       });
+    });
+
+    it('should be able to utilise nest parameter decorators', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler(@Headers('x-api-key') apiKey: string | undefined) {
+          return tsRestHandler(contract, {
+            getRequest: async () => ({
+              status: 200,
+              body: { message: apiKey || 'no header' },
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'no header' });
+        });
+
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .set('x-api-key', 'foo')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'foo' });
+        });
+    });
+
+    it('should be able to have logic outside the return tsRestHandler', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              number: z.number(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler(@Query('number') numberQuery: string) {
+          const number = parseInt(numberQuery);
+
+          return tsRestHandler(contract, {
+            getRequest: async () => ({
+              status: 200,
+              body: { number },
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/test?number=123')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ number: 123 });
+        });
+    });
+
+    it('should be able to do custom nest things like a redirect', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRedirect: {
+          path: '/redirect',
+          method: 'GET',
+          responses: {
+            302: c.noBody(),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler(@Res() res: any) {
+          return tsRestHandler(contract, {
+            getRedirect: async () => {
+              res.status(302).redirect('/redirected');
+
+              return {
+                status: 302,
+                body: undefined,
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/redirect')
+        .send()
+        .expect(302)
+        .expect((res) => {
+          expect(res.header.location).toBe('/redirected');
+        });
+    });
+
+    it('should be able to upload files and other multipart/form-data', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        multi: {
+          method: 'POST',
+          path: '/multi',
+          body: z.object({
+            messageAsField: z.string(),
+            file: z.custom<File>((v) => true),
+          }),
+          contentType: 'multipart/form-data',
+          responses: {
+            200: z.object({
+              messageAsField: z.string(),
+              fileSize: z.number(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract)
+        @UseInterceptors(FileInterceptor('file'))
+        async postRequest(@UploadedFile() file: File) {
+          return tsRestHandler(contract, {
+            multi: async (args) => {
+              return {
+                status: 200,
+                body: {
+                  messageAsField: args.body.messageAsField,
+                  fileSize: file.size,
+                },
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer())
+        .post('/multi')
+        .field('messageAsField', 'hello from ts-rest')
+        .attach('file', path.join(__dirname, './nest.png'));
+
+      expect({
+        status: response.status,
+        body: response.body,
+      }).toEqual({
+        status: 200,
+        body: {
+          messageAsField: 'hello from ts-rest',
+          fileSize: 11338,
+        },
+      });
+
+      const errorsForBadField = await supertest(app.getHttpServer())
+        .post('/multi')
+        .attach('file', path.join(__dirname, './nest.png'));
+
+      expect({
+        status: errorsForBadField.status,
+        body: errorsForBadField.body,
+      }).toEqual({
+        status: 400,
+        body: {
+          bodyResult: {
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+
+                path: ['messageAsField'],
+                message: 'Required',
+              },
+            ],
+            name: 'ZodError',
+          },
+          headersResult: null,
+          paramsResult: null,
+          queryResult: null,
+        },
+      });
+    });
+
+    it('should route correctly for optional params', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getPosts: {
+          path: '/posts/:year?/:month?',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              rangeSearched: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getPosts: async ({ params }) => ({
+              status: 200,
+              body: { rangeSearched: `${params.year}-${params.month}` },
+            }),
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/posts')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'undefined-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy/mm')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-mm',
+          }),
+        );
     });
   });
 
@@ -1204,6 +1495,224 @@ describe('ts-rest-nest-handler', () => {
           cause: expect.any(TsRestException),
         },
       });
+    });
+
+    it('should be able to have custom nest interceptors', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Injectable()
+      class TestInterceptor implements NestInterceptor {
+        intercept(
+          context: ExecutionContext,
+          next: CallHandler,
+        ): Observable<any> {
+          return next.handle().pipe(
+            map((data) => ({
+              message: 'intercepted',
+              oldMessage: data.message,
+            })),
+          );
+        }
+      }
+
+      @Controller()
+      class SingleHandlerTestController {
+        @TsRestHandler(contract.getRequest)
+        @UseInterceptors(TestInterceptor)
+        async postRequest() {
+          return tsRestHandler(contract.getRequest, async () => ({
+            status: 200,
+            body: { message: 'ok' },
+          }));
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [SingleHandlerTestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const response = await supertest(app.getHttpServer()).get('/').send();
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: 'intercepted',
+        oldMessage: 'ok',
+      });
+    });
+
+    it('should be able to utilise nest parameter decorators', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRequest: {
+          path: '/test',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              message: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract.getRequest)
+        async handler(@Headers('x-api-key') apiKey: string | undefined) {
+          console.log(apiKey);
+          return tsRestHandler(contract.getRequest, async () => ({
+            status: 200,
+            body: { message: apiKey || 'no header' },
+          }));
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'no header' });
+        });
+
+      await supertest(app.getHttpServer())
+        .get('/test')
+        .set('x-api-key', 'foo')
+        .send()
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual({ message: 'foo' });
+        });
+    });
+
+    it('should be able to do custom nest things like a redirect', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getRedirect: {
+          path: '/redirect',
+          method: 'GET',
+          responses: {
+            302: c.noBody(),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract.getRedirect)
+        async handler(@Res() res: any) {
+          return tsRestHandler(contract.getRedirect, async () => {
+            res.status(302).redirect('/redirected');
+
+            return {
+              status: 302,
+              body: undefined,
+            };
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/redirect')
+        .send()
+        .expect(302)
+        .expect((res) => {
+          expect(res.header.location).toBe('/redirected');
+        });
+    });
+
+    it('should route correctly for optional params', async () => {
+      const c = initContract();
+
+      const contract = c.router({
+        getPosts: {
+          path: '/posts/:year?/:month?',
+          method: 'GET',
+          responses: {
+            200: z.object({
+              rangeSearched: z.string(),
+            }),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract.getPosts)
+        async handler() {
+          return tsRestHandler(contract.getPosts, async ({ params }) => ({
+            status: 200,
+            body: { rangeSearched: `${params.year}-${params.month}` },
+          }));
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      await supertest(app.getHttpServer())
+        .get('/posts')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'undefined-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-undefined',
+          }),
+        );
+
+      await supertest(app.getHttpServer())
+        .get('/posts/yyyy/mm')
+        .send()
+        .expect(200)
+        .then((res) =>
+          expect(res.body).toStrictEqual({
+            rangeSearched: 'yyyy-mm',
+          }),
+        );
     });
   });
 

@@ -47,49 +47,92 @@ expectType<{
 
 describe('insertParamsIntoPath', () => {
   it('should insert params into path', () => {
-    const path = '/post/:id/comments/:commentId';
-
-    const params = {
-      commentId: '2',
-      id: '1',
-    };
-
-    const result = insertParamsIntoPath({ path, params });
-
-    expect(result).toBe('/post/1/comments/2');
+    expect(
+      insertParamsIntoPath({
+        path: '/post/:id/comments/:commentId',
+        params: { commentId: '2', id: '1' },
+      }),
+    ).toBe('/post/1/comments/2');
   });
 
   it('should insert params into path with no params', () => {
-    const path = '/posts';
-
-    const result = insertParamsIntoPath({ path, params: {} });
-
-    expect(result).toBe('/posts');
+    expect(
+      insertParamsIntoPath({
+        path: '/posts',
+        params: { a: '1' },
+      }),
+    ).toBe('/posts');
   });
 
   it('should insert params into path with many params', () => {
-    const path = '/post/:id/comments/:commentId/:commentId2';
-
-    const params = {
-      commentId: '2',
-      commentId2: '3',
-      id: '1',
-    };
-
-    const result = insertParamsIntoPath({ path, params });
-
-    expect(result).toBe('/post/1/comments/2/3');
+    expect(
+      insertParamsIntoPath({
+        path: '/post/:id/comments/:commentId/:commentId2',
+        params: { commentId: '2', commentId2: '3', id: '1' },
+      }),
+    ).toBe('/post/1/comments/2/3');
   });
 
   it('should insert into paths with only one param', () => {
-    const path = '/:id';
+    expect(
+      insertParamsIntoPath({
+        path: '/:id',
+        params: { id: '1' },
+      }),
+    ).toBe('/1');
+  });
 
-    const params = {
-      id: '1',
-    };
+  it('should insert optional params into path with many params', () => {
+    expect(
+      insertParamsIntoPath({
+        path: '/post/:id?/comments/:commentId?/:commentId2?',
+        params: { commentId: '2', commentId2: '3', id: '1' },
+      }),
+    ).toBe('/post/1/comments/2/3');
+  });
 
-    const result = insertParamsIntoPath({ path, params });
+  it('should insert optional params into path with no params', () => {
+    expect(
+      insertParamsIntoPath({
+        path: '/post/:id?/comments/:commentId?/:commentId2?',
+        params: {},
+      }),
+    ).toBe('/post/comments');
+  });
 
-    expect(result).toBe('/1');
+  it('should insert not have trailing slashes', () => {
+    expect(
+      insertParamsIntoPath({
+        path: '/post/:id?/comments/:commentId?/:commentId2?/:commentId3?',
+        params: {},
+      }),
+    ).toBe('/post/comments');
+  });
+
+  it('should insert optional params into paths with only one param', () => {
+    expect(
+      insertParamsIntoPath({
+        path: '/:id?',
+        params: { id: '1' },
+      }),
+    ).toBe('/1');
+  });
+
+  it('should preserve trailing slashes in path', () => {
+    expect(
+      insertParamsIntoPath({
+        path: '/:id/',
+        params: { id: '1' },
+      }),
+    ).toBe('/1/');
+  });
+
+  it('should preserve trailing slashes in path with optional params', () => {
+    expect(
+      insertParamsIntoPath({
+        path: '/post/:id?/comments/:commentId?/:commentId2?/:commentId3?/',
+        params: {},
+      }),
+    ).toBe('/post/comments/');
   });
 });

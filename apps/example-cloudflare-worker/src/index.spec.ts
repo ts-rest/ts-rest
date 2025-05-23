@@ -1,32 +1,44 @@
-import * as path from 'path';
-import concurrently, { ConcurrentlyResult } from 'concurrently';
 import * as waitOn from 'wait-on';
+import { spawn } from 'child_process';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe('example-cloudflare-worker', () => {
-  let proc: ConcurrentlyResult;
+  let serverProcess: any;
 
   beforeAll(async () => {
-    proc = concurrently(
-      [
-        {
-          cwd: path.resolve(__dirname, '../..'),
-          command: 'pnpm nx serve example-cloudflare-worker',
-        },
-      ],
+    // Start the server in the background
+    serverProcess = spawn(
+      'pnpm',
+      ['wrangler', 'dev', 'apps/example-cloudflare-worker/src/index.ts'],
       {
-        killOthers: ['failure', 'success'],
+        stdio: 'pipe',
+        shell: true,
       },
     );
 
+    // Optional: Log server output for debugging
+    serverProcess.stdout.on('data', (data: any) => {
+      console.log(`Server output: ${data}`);
+    });
+
+    serverProcess.stderr.on('data', (data: any) => {
+      console.error(`Server error: ${data}`);
+    });
+
+    // Wait for the server to be ready
     await waitOn({
       resources: ['tcp:127.0.0.1:8787'],
+      timeout: 30000,
+      validateStatus: (status) => status === 200,
+      headers: { 'x-api-key': 'foo' },
     });
   });
 
-  afterAll(() => {
-    proc.commands.map((command) => command.kill());
+  afterAll(async () => {
+    if (serverProcess) {
+      serverProcess.kill();
+    }
   });
 
   it('GET /posts should return an array of posts', async () => {

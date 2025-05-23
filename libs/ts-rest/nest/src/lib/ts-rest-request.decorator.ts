@@ -15,7 +15,7 @@ import {
   ServerInferRequest,
   zodErrorResponse,
 } from '@ts-rest/core';
-import type { Request } from 'express-serve-static-core';
+import type { Request } from 'express';
 import type { FastifyRequest } from 'fastify';
 import { TsRestAppRouteMetadataKey } from './constants';
 import { evaluateTsRestOptions, MaybeTsRestOptions } from './ts-rest-options';
@@ -95,6 +95,8 @@ class TsRestValidatorPipe implements PipeTransform {
 
 /**
  * Parameter decorator used to parse, validate and return the typed request object
+ *
+ * @deprecated Please use `TsRestHandler` instead - will be removed in v4
  */
 export const TsRestRequest = () =>
   createParamDecorator((_: unknown, ctx: ExecutionContext) => {

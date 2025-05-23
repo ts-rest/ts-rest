@@ -87,7 +87,8 @@ export default createNextRouter(contract, router, {
   errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
     if (error instanceof ResponseValidationError) {
       console.log(error.cause);
-      return res.status(500).json({ message: 'Internal Server Error' });
+      res.status(500).json({ message: 'Internal Server Error' });
+      return;
     }
   },
 });
@@ -105,12 +106,14 @@ export default createNextRouter(contract, router, {
   errorHandler: (error: unknown, req: NextApiRequest, res: NextApiResponse) => {
     if (error instanceof RequestValidationError) {
       if (error.body !== null) {
-        return res
+        res
           .status(400)
           .json({ message: 'Malformed Body', errors: error.body.flatten() });
+        return;
       }
 
-      return res.status(400).json({ message: 'Bad Request' });
+      res.status(400).json({ message: 'Bad Request' });
+      return;
     }
   },
 });

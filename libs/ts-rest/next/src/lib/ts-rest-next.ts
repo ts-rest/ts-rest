@@ -324,16 +324,20 @@ const handlerFactory = (
         }
 
         if (!pathParamsResult.success) {
-          return res.status(400).json(pathParamsResult.error);
+          res.status(400).json(pathParamsResult.error);
+          return;
         }
         if (!headersResult.success) {
-          return res.status(400).send(headersResult.error);
+          res.status(400).send(headersResult.error);
+          return;
         }
         if (!queryResult.success) {
-          return res.status(400).json(queryResult.error);
+          res.status(400).json(queryResult.error);
+          return;
         }
         if (!bodyResult.success) {
-          return res.status(400).json(bodyResult.error);
+          res.status(400).json(bodyResult.error);
+          return;
         }
       }
 
@@ -377,15 +381,18 @@ const handlerFactory = (
       const responseType = route.responses[statusCode];
 
       if (isAppRouteNoBody(responseType)) {
-        return res.status(statusCode).end();
+        res.status(statusCode).end();
+        return;
       }
 
       if (isAppRouteOtherResponse(responseType)) {
         res.setHeader('content-type', responseType.contentType);
-        return res.status(statusCode).send(validatedResponseBody);
+        res.status(statusCode).send(validatedResponseBody);
+        return;
       }
 
-      return res.status(statusCode).json(validatedResponseBody);
+      res.status(statusCode).json(validatedResponseBody);
+      return;
     } catch (e) {
       if (options?.errorHandler) {
         options.errorHandler(e, req, res);
