@@ -179,7 +179,7 @@ const routerStrict = c.router(router, {
 });
 
 const client = initClient(router, {
-  baseUrl: 'https://api.com',
+  baseUrl: 'https://api.com/',
   baseHeaders: {
     'X-Api-Key': 'foo',
   },

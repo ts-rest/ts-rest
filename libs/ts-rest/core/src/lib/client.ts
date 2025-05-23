@@ -391,6 +391,11 @@ export const getCompleteUrl = (
     params: params as any,
   });
   const queryComponent = convertQueryParamsToUrlString(query, jsonQuery);
+
+  if (baseUrl.endsWith('/') && path.startsWith('/')) {
+    return `${baseUrl}${path.substring(1)}${queryComponent}`;
+  }
+
   return `${baseUrl}${path}${queryComponent}`;
 };
 
