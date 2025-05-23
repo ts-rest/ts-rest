@@ -38,6 +38,16 @@ const postsRouter = c.router({
       200: postSchema.nullable(),
     },
   },
+  getPostWithCoercedParams: {
+    method: 'GET',
+    path: `/posts/:id`,
+    pathParams: z.object({
+      id: z.coerce.number().optional(),
+    }),
+    responses: {
+      200: postSchema.nullable(),
+    },
+  },
   getPosts: {
     method: 'GET',
     path: '/posts',
@@ -441,6 +451,62 @@ describe('client', () => {
       expect(result.body).toStrictEqual(value);
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Length')).toBe('15');
+    });
+
+    describe('coerced params', () => {
+      it('w/ sub path with non zero', async () => {
+        const value = { key: 'value' };
+        fetchMock.getOnce(
+          {
+            url: 'https://api.com/posts/1',
+          },
+          { body: value, status: 200 },
+        );
+
+        const result = await client.posts.getPostWithCoercedParams({
+          params: { id: 1 },
+        });
+
+        expect(result.body).toStrictEqual(value);
+        expect(result.status).toBe(200);
+        expect(result.headers.get('Content-Length')).toBe('15');
+      });
+
+      it('w/ sub path with zero', async () => {
+        const value = { key: 'value' };
+        fetchMock.getOnce(
+          {
+            url: 'https://api.com/posts/0',
+          },
+          { body: value, status: 200 },
+        );
+
+        const result = await client.posts.getPostWithCoercedParams({
+          params: { id: 0 },
+        });
+
+        expect(result.body).toStrictEqual(value);
+        expect(result.status).toBe(200);
+        expect(result.headers.get('Content-Length')).toBe('15');
+      });
+
+      it('w/ sub path with undefined', async () => {
+        const value = { key: 'value' };
+        fetchMock.getOnce(
+          {
+            url: 'https://api.com/posts/undefined',
+          },
+          { body: value, status: 200 },
+        );
+
+        const result = await client.posts.getPostWithCoercedParams({
+          params: { id: undefined },
+        });
+
+        expect(result.body).toStrictEqual(value);
+        expect(result.status).toBe(200);
+        expect(result.headers.get('Content-Length')).toBe('15');
+      });
     });
 
     it('w/ a non json response (string, text/plain)', async () => {

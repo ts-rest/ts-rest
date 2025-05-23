@@ -349,10 +349,20 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
     ...overrideClientOptions,
   };
 
+  /**
+   * Coerce params to strings, allowing for numbers to be passed in (e.g. from using z.coerce.number())
+   */
+  const parsedParams =
+    typeof params === 'object'
+      ? Object.fromEntries(
+          Object.entries(params).map(([key, value]) => [key, String(value)]),
+        )
+      : {};
+
   const completeUrl = getCompleteUrl(
     query,
     overriddenClientArgs.baseUrl,
-    params,
+    parsedParams,
     route,
     !!overriddenClientArgs.jsonQuery,
   );
@@ -382,7 +392,7 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
 export const getCompleteUrl = (
   query: unknown,
   baseUrl: string,
-  params: unknown,
+  params: Record<string, string>,
   route: AppRoute,
   jsonQuery: boolean,
 ) => {
