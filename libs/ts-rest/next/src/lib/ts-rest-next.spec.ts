@@ -556,6 +556,24 @@ describe('createSingleUrlNextRouter', () => {
     });
   });
 
+  it('should send back a 200 when the query params are in the URL', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test/123?id=123', {
+      method: 'GET',
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '123',
+    });
+  });
+
   it('should send back a 404', async () => {
     const resultingRouter = createSingleRouteHandler(
       contract.getWithParams,
