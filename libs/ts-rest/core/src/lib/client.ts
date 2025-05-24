@@ -398,9 +398,14 @@ export const getCompleteUrl = (
 ) => {
   const path = insertParamsIntoPath({
     path: route.path,
-    params: params as any,
+    params: params,
   });
   const queryComponent = convertQueryParamsToUrlString(query, jsonQuery);
+
+  if (baseUrl.endsWith('/') && path.startsWith('/')) {
+    return `${baseUrl}${path.substring(1)}${queryComponent}`;
+  }
+
   return `${baseUrl}${path}${queryComponent}`;
 };
 
