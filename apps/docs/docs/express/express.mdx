@@ -86,7 +86,7 @@ You can also pass a custom error handler function to the `requestValidationError
 createExpressEndpoints(contract, router, app, {
   requestValidationErrorHandler: (err, req, res, next) => {
     //             err is typed as ^ RequestValidationError
-    return res.status(400).json({
+    res.status(400).json({
       message: 'Validation failed'
     });
   },

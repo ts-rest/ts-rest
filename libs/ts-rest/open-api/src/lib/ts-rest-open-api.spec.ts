@@ -857,6 +857,52 @@ describe('ts-rest-open-api', () => {
       });
     });
 
+    it('should pass operation id to operationMapper', async () => {
+      const operationIds: string[] = [];
+
+      const apiDoc = generateOpenApi(
+        router,
+        {
+          info: { title: 'Blog API', version: '0.1' },
+        },
+        {
+          operationMapper: (operation, appRoute, id) => {
+            operationIds.push(id);
+            return {
+              ...operation,
+              'x-operation-id': id, // Add the id as a custom field for verification
+            };
+          },
+        },
+      );
+
+      // Verify that operation IDs were collected
+      expect(operationIds).toContain('health');
+      expect(operationIds).toContain('mediaExamples');
+      expect(operationIds).toContain('findPosts');
+      expect(operationIds).toContain('createPost');
+      expect(operationIds).toContain('getPost');
+      expect(operationIds).toContain('getPostComments');
+      expect(operationIds).toContain('getPostComment');
+      expect(operationIds).toContain('auth');
+
+      // Verify that the custom field was added with the correct id
+      expect(apiDoc.paths['/health'].get['x-operation-id']).toBe('health');
+      expect(apiDoc.paths['/posts'].get['x-operation-id']).toBe('findPosts');
+      expect(apiDoc.paths['/posts'].post['x-operation-id']).toBe('createPost');
+      expect(apiDoc.paths['/posts/{id}'].get['x-operation-id']).toBe('getPost');
+      expect(apiDoc.paths['/posts/{id}/comments'].get['x-operation-id']).toBe(
+        'getPostComments',
+      );
+      expect(
+        apiDoc.paths['/posts/{id}/comments/{commentId}'].get['x-operation-id'],
+      ).toBe('getPostComment');
+      expect(apiDoc.paths['/auth'].post['x-operation-id']).toBe('auth');
+      expect(apiDoc.paths['/media-examples'].post['x-operation-id']).toBe(
+        'mediaExamples',
+      );
+    });
+
     it('works with zod refine', () => {
       const routerWithRefine = c.router({
         endpointWithZodRefine: {
@@ -1300,6 +1346,81 @@ describe('ts-rest-open-api', () => {
           info: { title: 'Title API', version: '0.1' },
         }),
       ).toThrowError(/already exists with a different schema/);
+    });
+
+    it('works with other responses', () => {
+      const routerWithOtherResponse = c.router({
+        getFile: {
+          method: 'GET',
+          path: '/file/:id',
+          pathParams: z.object({
+            id: z.string(),
+          }),
+          responses: {
+            200: c.otherResponse({
+              contentType: 'text/csv',
+              body: z.array(
+                z.object({
+                  name: z.string(),
+                }),
+              ),
+            }),
+          },
+        },
+      });
+
+      const schema = generateOpenApi(routerWithOtherResponse, {
+        info: { title: 'File API', version: '0.1' },
+      });
+
+      expect(schema).toEqual({
+        info: {
+          title: 'File API',
+          version: '0.1',
+        },
+        openapi: '3.0.2',
+        paths: {
+          '/file/{id}': {
+            get: {
+              deprecated: undefined,
+              description: undefined,
+              parameters: [
+                {
+                  in: 'path',
+                  name: 'id',
+                  required: true,
+                  schema: {
+                    type: 'string',
+                  },
+                },
+              ],
+              responses: {
+                '200': {
+                  content: {
+                    'text/csv': {
+                      schema: {
+                        items: {
+                          properties: {
+                            name: {
+                              type: 'string',
+                            },
+                          },
+                          required: ['name'],
+                          type: 'object',
+                        },
+                        type: 'array',
+                      },
+                    },
+                  },
+                  description: '200',
+                },
+              },
+              summary: undefined,
+              tags: [],
+            },
+          },
+        },
+      });
     });
   });
 });

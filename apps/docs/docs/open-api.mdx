@@ -97,7 +97,7 @@ You can see an example of its usage in the code snippet above.
 
 We do not provide first-party support to set all possible OpenAPI fields on the operations such as the `security` field. In addition, you may have some specific needs to modify the fields already set by `ts-rest` such as the `tags` field.
 
-Therefore, we have provided an `operationMapper` option to allow you to modify the OpenAPI fields of the operations. This is a callback function, that will receive the operation object and the contract endpoint, and must return a valid OpenAPI operation object.
+Therefore, we have provided an `operationMapper` option to allow you to modify the OpenAPI fields of the operations. This is a callback function, that will receive the operation object, the contract endpoint, and the operation ID, and must return a valid OpenAPI operation object.
 A common way to provide data to this function is to utilize the `metadata` field of the contract endpoint. However, feel free to come up with a different solution to doing this if you would not like to include this data in your contracts.
 
 ```typescript
@@ -105,9 +105,7 @@ const hasCustomTags = (
   metadata: unknown,
 ): metadata is { openApiTags: string[] } => {
   return (
-    !!metadata &&
-    typeof metadata === 'object' &&
-    'openApiTags' in metadata
+    !!metadata && typeof metadata === 'object' && 'openApiTags' in metadata
   );
 };
 
@@ -115,9 +113,7 @@ const hasSecurity = (
   metadata: unknown,
 ): metadata is { openApiSecurity: SecurityRequirementObject[] } => {
   return (
-    !!metadata &&
-    typeof metadata === 'object' &&
-    'openApiSecurity' in metadata
+    !!metadata && typeof metadata === 'object' && 'openApiSecurity' in metadata
   );
 };
 
@@ -135,7 +131,7 @@ const apiDoc = generateOpenApi(
     },
   },
   {
-    operationMapper: (operation, appRoute) => ({
+    operationMapper: (operation, appRoute, id) => ({
       ...operation,
       ...(hasCustomTags(appRoute.metadata)
         ? {
@@ -147,6 +143,8 @@ const apiDoc = generateOpenApi(
             security: appRoute.metadata.openApiSecurity,
           }
         : {}),
+      // You can also use the operation ID for custom logic
+      description: `${operation.description || ''} (Operation: ${id})`,
     }),
   },
 );
@@ -213,12 +211,13 @@ const openApiDocument = generateOpenApi(myContract, {
   },
 });
 
-app.register(fastifySwagger, {
-  transformObject: () => openApiDocument
-})
-.register(fastifySwaggerUI, {
-  routePrefix: '/api-docs',
-});
+app
+  .register(fastifySwagger, {
+    transformObject: () => openApiDocument,
+  })
+  .register(fastifySwaggerUI, {
+    routePrefix: '/api-docs',
+  });
 ```
 
 Don't worry if you don't use express or Nest, whatever library you want to use is OK our OpenAPI returns a plain JSON object which is fully compliant with the OpenAPI spec.

@@ -1,4 +1,10 @@
-import { AppRoute, AppRouteMutation, AppRouter, isAppRoute } from './dsl';
+import {
+  AppRoute,
+  AppRouteMutation,
+  AppRouter,
+  ContractNoBody,
+  isAppRoute,
+} from './dsl';
 import { insertParamsIntoPath } from './paths';
 import { convertQueryParamsToUrlString } from './query';
 import { AreAllPropertiesOptional, Prettify } from './type-utils';
@@ -128,13 +134,14 @@ export const tsRestFetchApi: ApiFetcher = async ({
   const contentType = result.headers.get('content-type');
 
   if (contentType?.includes('application/') && contentType?.includes('json')) {
+    const responseSchema = route.responses[result.status];
+
     const response = {
       status: result.status,
-      body: await result.json(),
+      body: responseSchema === ContractNoBody ? undefined : await result.json(),
       headers: result.headers,
     };
 
-    const responseSchema = route.responses[response.status];
     if (
       (validateResponse ?? route.validateResponseOnClient) &&
       isStandardSchema(responseSchema)
@@ -342,10 +349,20 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
     ...overrideClientOptions,
   };
 
+  /**
+   * Coerce params to strings, allowing for numbers to be passed in (e.g. from using z.coerce.number())
+   */
+  const parsedParams =
+    typeof params === 'object'
+      ? Object.fromEntries(
+          Object.entries(params).map(([key, value]) => [key, String(value)]),
+        )
+      : {};
+
   const completeUrl = getCompleteUrl(
     query,
     overriddenClientArgs.baseUrl,
-    params,
+    parsedParams,
     route,
     !!overriddenClientArgs.jsonQuery,
   );
@@ -375,15 +392,20 @@ export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
 export const getCompleteUrl = (
   query: unknown,
   baseUrl: string,
-  params: unknown,
+  params: Record<string, string>,
   route: AppRoute,
   jsonQuery: boolean,
 ) => {
   const path = insertParamsIntoPath({
     path: route.path,
-    params: params as any,
+    params: params,
   });
   const queryComponent = convertQueryParamsToUrlString(query, jsonQuery);
+
+  if (baseUrl.endsWith('/') && path.startsWith('/')) {
+    return `${baseUrl}${path.substring(1)}${queryComponent}`;
+  }
+
   return `${baseUrl}${path}${queryComponent}`;
 };
 

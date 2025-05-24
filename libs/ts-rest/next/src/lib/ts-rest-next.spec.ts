@@ -492,9 +492,10 @@ describe('createNextRouter', () => {
         responseValidation: true,
         errorHandler: (err: any, req, res) => {
           if (err instanceof ResponseValidationError) {
-            return res.status(500).send('Response validation failed');
+            res.status(500).send('Response validation failed');
+            return;
           }
-          return res.status(500).send('Server Error');
+          res.status(500).send('Server Error');
         },
       },
     );
@@ -547,6 +548,24 @@ describe('createSingleUrlNextRouter', () => {
     const req = mockSingleUrlReq('/test/123', {
       method: 'GET',
       query: { id: '123' },
+    });
+
+    await resultingRouter(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      id: '123',
+    });
+  });
+
+  it('should send back a 200 when the query params are in the URL', async () => {
+    const resultingRouter = createSingleRouteHandler(
+      contract.getWithParams,
+      nextEndpoint.getWithParams,
+    );
+
+    const req = mockSingleUrlReq('/test/123?id=123', {
+      method: 'GET',
     });
 
     await resultingRouter(req, mockRes);

@@ -86,7 +86,7 @@ apiDocs.get('/', setup(openapi));
 app.use('/api-docs', apiDocs);
 
 app.get('/test', (req, res) => {
-  return res.json(req.query);
+  res.json(req.query);
 });
 
 createExpressEndpoints(apiBlog, completedRouter, app);
@@ -116,7 +116,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   next(err);
 });
 
-const port = process.env.port || 3333;
+const port = process.env.port ?? 3333;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });

@@ -5,7 +5,7 @@ import {
   initContract,
   OverrideableClientArgs,
 } from '..';
-import { ApiFetcherArgs, initClient } from './client';
+import { ApiFetcherArgs, initClient, getCompleteUrl } from './client';
 import { Equal, Expect } from './test-helpers';
 import { z, ZodError } from 'zod';
 
@@ -33,6 +33,16 @@ const postsRouter = c.router({
     path: `/posts/:id`,
     headers: z.object({
       'x-api-key': z.string().optional(),
+    }),
+    responses: {
+      200: postSchema.nullable(),
+    },
+  },
+  getPostWithCoercedParams: {
+    method: 'GET',
+    path: `/posts/:id`,
+    pathParams: z.object({
+      id: z.coerce.number().optional(),
     }),
     responses: {
       200: postSchema.nullable(),
@@ -179,7 +189,7 @@ const routerStrict = c.router(router, {
 });
 
 const client = initClient(router, {
-  baseUrl: 'https://api.com',
+  baseUrl: 'https://api.com/',
   baseHeaders: {
     'X-Api-Key': 'foo',
   },
@@ -443,6 +453,62 @@ describe('client', () => {
       expect(result.headers.get('Content-Length')).toBe('15');
     });
 
+    describe('coerced params', () => {
+      it('w/ sub path with non zero', async () => {
+        const value = { key: 'value' };
+        fetchMock.getOnce(
+          {
+            url: 'https://api.com/posts/1',
+          },
+          { body: value, status: 200 },
+        );
+
+        const result = await client.posts.getPostWithCoercedParams({
+          params: { id: 1 },
+        });
+
+        expect(result.body).toStrictEqual(value);
+        expect(result.status).toBe(200);
+        expect(result.headers.get('Content-Length')).toBe('15');
+      });
+
+      it('w/ sub path with zero', async () => {
+        const value = { key: 'value' };
+        fetchMock.getOnce(
+          {
+            url: 'https://api.com/posts/0',
+          },
+          { body: value, status: 200 },
+        );
+
+        const result = await client.posts.getPostWithCoercedParams({
+          params: { id: 0 },
+        });
+
+        expect(result.body).toStrictEqual(value);
+        expect(result.status).toBe(200);
+        expect(result.headers.get('Content-Length')).toBe('15');
+      });
+
+      it('w/ sub path with undefined', async () => {
+        const value = { key: 'value' };
+        fetchMock.getOnce(
+          {
+            url: 'https://api.com/posts/undefined',
+          },
+          { body: value, status: 200 },
+        );
+
+        const result = await client.posts.getPostWithCoercedParams({
+          params: { id: undefined },
+        });
+
+        expect(result.body).toStrictEqual(value);
+        expect(result.status).toBe(200);
+        expect(result.headers.get('Content-Length')).toBe('15');
+      });
+    });
+
     it('w/ a non json response (string, text/plain)', async () => {
       fetchMock.getOnce(
         {
@@ -634,6 +700,31 @@ describe('client', () => {
       expect(result.status).toBe(204);
       expect(result.headers.has('Content-Length')).toBe(false);
       expect(result.headers.has('Content-Type')).toBe(false);
+    });
+
+    it('w/ undefined body and content-type json', async () => {
+      fetchMock.deleteOnce(
+        {
+          url: 'https://api.com/posts/2',
+        },
+        {
+          status: 204,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        },
+      );
+
+      const result = await client.posts.deletePostUndefinedBody({
+        params: { id: '2' },
+      });
+
+      expect(result.body).toBeUndefined();
+      expect(result.status).toBe(204);
+      expect(result.headers.has('Content-Length')).toBe(false);
+      expect(result.headers.get('Content-Type')).toBe(
+        'application/json; charset=utf-8',
+      );
     });
   });
 
@@ -1069,5 +1160,49 @@ describe('custom api', () => {
     await expect(
       client.posts.getPost({ params: { id: '1' } }),
     ).rejects.toThrowError(ZodError);
+  });
+});
+
+describe('getCompleteUrl', () => {
+  describe('should avoid double slashes if both path and baseUrl have trailing slashes', () => {
+    it.each([
+      {
+        baseUrl: 'https://api.com/',
+        path: '/posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+      {
+        baseUrl: 'https://api.com',
+        path: '/posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+      {
+        baseUrl: 'https://api.com',
+        path: '/posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+      {
+        baseUrl: 'https://api.com/',
+        path: 'posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+    ])(
+      'should avoid double slashes if both path and baseUrl have trailing slashes',
+      ({ baseUrl, path, expected }) => {
+        const result = getCompleteUrl(
+          null,
+          baseUrl,
+          { id: '123' },
+          {
+            method: 'GET' as const,
+            responses: { 200: z.string() },
+            path,
+          },
+          false,
+        );
+
+        expect(result).toBe(expected);
+      },
+    );
   });
 });

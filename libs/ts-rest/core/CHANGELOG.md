@@ -1,5 +1,11 @@
 # @ts-rest/core
 
+## 3.52.1
+
+### Patch Changes
+
+- 5005793: Fix trailing slashes not being preserved by the client
+
 ## 3.52.0
 
 ### Minor Changes
