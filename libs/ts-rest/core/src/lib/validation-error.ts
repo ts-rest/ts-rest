@@ -34,6 +34,9 @@ export class StandardSchemaError
   }
 }
 
+/**
+ * Remove ZodError in next major version
+ */
 export type ValidationError = ZodError | StandardSchemaError;
 
 /*

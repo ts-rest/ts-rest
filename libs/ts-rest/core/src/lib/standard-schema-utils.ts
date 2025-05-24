@@ -7,6 +7,10 @@ import { zodMerge } from './zod-utils';
 export const isStandardSchema = (
   schema: unknown,
 ): schema is StandardSchemaV1 => {
+  if (!schema) {
+    return false;
+  }
+
   const standard = (schema as StandardSchemaV1)?.['~standard'];
 
   if (!standard) {
@@ -21,16 +25,10 @@ export const checkStandardSchema = (
   schema: unknown,
   { passThroughExtraKeys = false } = {},
 ) => {
-  if (schema === null || schema === undefined) {
+  if (!isStandardSchema(schema)) {
     return {
       value: data,
     };
-  }
-
-  if (!isStandardSchema(schema)) {
-    throw new TypeError(
-      'Unable to check schema, does not conform to StandardSchemaV1',
-    );
   }
 
   /**
