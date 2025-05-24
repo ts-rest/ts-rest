@@ -1,4 +1,4 @@
-import { ZodSchema } from 'zod';
+import { ZodError, ZodSchema } from 'zod';
 import { ContractAnyType } from './dsl';
 import { StandardSchemaV1 } from './standard-schema';
 import { StandardSchemaError } from './validation-error';
@@ -7,17 +7,13 @@ import { zodMerge } from './zod-utils';
 export const isStandardSchema = (
   schema: unknown,
 ): schema is StandardSchemaV1 => {
-  return (
-    !!schema &&
-    typeof schema === 'object' &&
-    '~standard' in schema &&
-    !!schema['~standard'] &&
-    typeof schema['~standard'] === 'object' &&
-    'version' in schema['~standard'] &&
-    schema['~standard']['version'] === 1 &&
-    'validate' in schema['~standard'] &&
-    typeof schema['~standard'].validate === 'function'
-  );
+  const standard = (schema as StandardSchemaV1)?.['~standard'];
+
+  if (!standard) {
+    return false;
+  }
+
+  return standard.version === 1 && typeof standard.validate === 'function';
 };
 
 export const checkStandardSchema = (
@@ -25,21 +21,30 @@ export const checkStandardSchema = (
   schema: unknown,
   { passThroughExtraKeys = false } = {},
 ) => {
-  if (!isStandardSchema(schema)) {
+  if (schema === null || schema === undefined) {
     return {
       value: data,
     };
   }
 
-  if (
-    schema['~standard'].vendor === 'zod' &&
-    'safeParse' in schema &&
-    typeof schema.safeParse === 'function'
-  ) {
+  if (!isStandardSchema(schema)) {
+    throw new TypeError(
+      'Unable to check schema, does not conform to StandardSchemaV1',
+    );
+  }
+
+  /**
+   * To avoid breaking change, if someone using zod 3 (which they must be if they're pre-standard-schema) we return a ZodError.
+   * Otherwise, move onto our new StandardSchemaError.
+   */
+  const isZod3 = schema['~standard'].vendor === 'zod' && !('_zod' in schema);
+  if (isZod3) {
     const result = (schema as ZodSchema).safeParse(data);
 
     if (!result.success) {
-      return { error: result.error };
+      return {
+        error: new ZodError(result.error.issues),
+      };
     }
 
     return {

@@ -26,7 +26,18 @@ describe('arktype', () => {
       status: 400,
       body: {
         issues: [
-          // TODO: This is failing, its not validating at all
+          {
+            actual: 'NaN',
+            code: 'domain',
+            data: null,
+            description: 'a number',
+            domain: 'number',
+            expected: 'a number',
+            message: 'id must be a number (was NaN)',
+            meta: {},
+            path: ['id'],
+            problem: 'must be a number (was NaN)',
+          },
         ],
         name: 'ValidationError',
       },

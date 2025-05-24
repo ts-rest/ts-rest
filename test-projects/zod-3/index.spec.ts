@@ -6,7 +6,7 @@ const expectRes = (res: any) => {
   return expect({ body: res.body, status: res.status });
 };
 
-describe('express 5', () => {
+describe('zod 3', () => {
   it('should be able to get', async () => {
     const res = await request(app).get('/pokemon/1');
 

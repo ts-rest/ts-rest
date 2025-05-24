@@ -11,7 +11,7 @@ const PokemonSchema = type({
   name: 'string',
 });
 
-const StringToNumber = type('string.numeric')
+const StringToNumber = type('string')
   .pipe((s) => Number(s))
   .pipe(type('number.integer'));
 
