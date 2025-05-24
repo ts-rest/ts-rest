@@ -1365,7 +1365,9 @@ describe('ts-rest-open-api', () => {
                 }),
               ),
             }),
-          }}});
+          },
+        },
+      });
 
       const schema = generateOpenApi(routerWithOtherResponse, {
         info: { title: 'File API', version: '0.1' },
