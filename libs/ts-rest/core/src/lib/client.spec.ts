@@ -5,7 +5,7 @@ import {
   initContract,
   OverrideableClientArgs,
 } from '..';
-import { ApiFetcherArgs, initClient } from './client';
+import { ApiFetcherArgs, initClient, getCompleteUrl } from './client';
 import { Equal, Expect } from './test-helpers';
 import { z, ZodError } from 'zod';
 
@@ -1160,5 +1160,49 @@ describe('custom api', () => {
     await expect(
       client.posts.getPost({ params: { id: '1' } }),
     ).rejects.toThrowError(ZodError);
+  });
+});
+
+describe('getCompleteUrl', () => {
+  describe('should avoid double slashes if both path and baseUrl have trailing slashes', () => {
+    it.each([
+      {
+        baseUrl: 'https://api.com/',
+        path: '/posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+      {
+        baseUrl: 'https://api.com',
+        path: '/posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+      {
+        baseUrl: 'https://api.com',
+        path: '/posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+      {
+        baseUrl: 'https://api.com/',
+        path: 'posts/:id',
+        expected: 'https://api.com/posts/123',
+      },
+    ])(
+      'should avoid double slashes if both path and baseUrl have trailing slashes',
+      ({ baseUrl, path, expected }) => {
+        const result = getCompleteUrl(
+          null,
+          baseUrl,
+          { id: '123' },
+          {
+            method: 'GET' as const,
+            responses: { 200: z.string() },
+            path,
+          },
+          false,
+        );
+
+        expect(result).toBe(expected);
+      },
+    );
   });
 });

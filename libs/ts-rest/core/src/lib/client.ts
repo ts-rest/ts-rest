@@ -398,7 +398,7 @@ export const getCompleteUrl = (
 ) => {
   const path = insertParamsIntoPath({
     path: route.path,
-    params: params as any,
+    params: params,
   });
   const queryComponent = convertQueryParamsToUrlString(query, jsonQuery);
 
