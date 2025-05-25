@@ -3,6 +3,7 @@ import express from 'express';
 import * as bodyParser from 'body-parser';
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod/v4';
+import { generateOpenApi } from '@ts-rest/open-api';
 
 const c = initContract();
 
@@ -45,6 +46,15 @@ const contract = c.router({
       200: z.object({ message: z.string() }),
       403: z.object({ message: z.string() }),
     },
+  },
+});
+
+console.log(z.toJSONSchema(contract.updatePokemon.responses[200]));
+
+export const openApiSchema = generateOpenApi(contract, {
+  info: {
+    title: 'Pokemon API',
+    version: '1.0.0',
   },
 });
 

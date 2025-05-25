@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { app } from './index';
+import { app, openApiSchema } from './index';
 import request from 'supertest';
 import {
   RequestValidationErrorSchema,
@@ -12,53 +12,76 @@ const expectRes = (res: any) => {
 };
 
 describe('zod 3', () => {
-  /**
-   * This is only supported for zod3, other libs going forward will not support this
-   */
-  it('should still support RequestValidationErrorSchema', () => {
-    expect(RequestValidationErrorSchema).toBeDefined();
+  describe('open api', () => {
+    it('should generate open api schema', () => {
+      expect(openApiSchema).toBeDefined();
 
-    const parseResult = RequestValidationErrorSchema.safeParse({
-      message: 'Request validation failed',
-      pathParameterErrors: null,
-      headerErrors: null,
-      queryParameterErrors: null,
-      bodyErrors: null,
+      expect(
+        openApiSchema.paths['/pokemon/{id}'].get.responses['200'].content,
+      ).toStrictEqual({
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              name: { type: 'string' },
+            },
+            required: ['id', 'name'],
+          },
+        },
+      });
     });
-
-    expect(parseResult.success).toBe(true);
   });
 
-  /**
-   * This is only supported for zod3, other libs going forward will not support this
-   */
-  it('should still support RequestValidationErrorSchemaWithoutMessage', () => {
-    expect(RequestValidationErrorSchemaWithoutMessage).toBeDefined();
+  describe('legacy request validation', () => {
+    /**
+     * This is only supported for zod3, other libs going forward will not support this
+     */
+    it('should still support RequestValidationErrorSchema', () => {
+      expect(RequestValidationErrorSchema).toBeDefined();
 
-    const parseResult = RequestValidationErrorSchemaWithoutMessage.safeParse({
-      pathParameterErrors: null,
-      headerErrors: null,
-      queryParameterErrors: null,
-      bodyErrors: null,
+      const parseResult = RequestValidationErrorSchema.safeParse({
+        message: 'Request validation failed',
+        pathParameterErrors: null,
+        headerErrors: null,
+        queryParameterErrors: null,
+        bodyErrors: null,
+      });
+
+      expect(parseResult.success).toBe(true);
     });
 
-    expect(parseResult.success).toBe(true);
-  });
+    /**
+     * This is only supported for zod3, other libs going forward will not support this
+     */
+    it('should still support RequestValidationErrorSchemaWithoutMessage', () => {
+      expect(RequestValidationErrorSchemaWithoutMessage).toBeDefined();
 
-  /**
-   * This is only supported for zod3, other libs going forward will not support this
-   */
-  it('should still support RequestValidationErrorSchemaForNest', () => {
-    expect(RequestValidationErrorSchemaForNest).toBeDefined();
+      const parseResult = RequestValidationErrorSchemaWithoutMessage.safeParse({
+        pathParameterErrors: null,
+        headerErrors: null,
+        queryParameterErrors: null,
+        bodyErrors: null,
+      });
 
-    const parseResult = RequestValidationErrorSchemaForNest.safeParse({
-      paramsResult: null,
-      headersResult: null,
-      queryResult: null,
-      bodyResult: null,
+      expect(parseResult.success).toBe(true);
     });
 
-    expect(parseResult.success).toBe(true);
+    /**
+     * This is only supported for zod3, other libs going forward will not support this
+     */
+    it('should still support RequestValidationErrorSchemaForNest', () => {
+      expect(RequestValidationErrorSchemaForNest).toBeDefined();
+
+      const parseResult = RequestValidationErrorSchemaForNest.safeParse({
+        paramsResult: null,
+        headersResult: null,
+        queryResult: null,
+        bodyResult: null,
+      });
+
+      expect(parseResult.success).toBe(true);
+    });
   });
 
   it('should be able to get', async () => {

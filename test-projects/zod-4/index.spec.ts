@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { app } from './index';
+import { app, openApiSchema } from './index';
 import request from 'supertest';
 
 const expectRes = (res: any) => {
@@ -7,6 +7,21 @@ const expectRes = (res: any) => {
 };
 
 describe('zod 4', () => {
+  describe('open api', () => {
+    it('should generate open api schema', () => {
+      expect(openApiSchema).toBeDefined();
+
+      expect(
+        openApiSchema.paths['/pokemon/{id}'].get.responses['200'].content,
+      ).toStrictEqual({
+        'application/json': {
+          // TOOD: Zod4 OpenAPI is not supported yet, the result is empty as the downstream library doesnt support it yet.
+          schema: {},
+        },
+      });
+    });
+  });
+
   it('should be able to get', async () => {
     const res = await request(app).get('/pokemon/1');
 

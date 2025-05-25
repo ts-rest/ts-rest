@@ -2,6 +2,7 @@ import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import express from 'express';
 import * as bodyParser from 'body-parser';
 import { initContract } from '@ts-rest/core';
+import { generateOpenApi } from '@ts-rest/open-api';
 import { z } from 'zod';
 
 const c = initContract();
@@ -45,6 +46,13 @@ const contract = c.router({
       200: z.object({ message: z.string() }),
       403: z.object({ message: z.string() }),
     },
+  },
+});
+
+export const openApiSchema = generateOpenApi(contract, {
+  info: {
+    title: 'Pokemon API',
+    version: '1.0.0',
   },
 });
 
