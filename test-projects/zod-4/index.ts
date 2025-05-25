@@ -1,9 +1,8 @@
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import express from 'express';
 import * as bodyParser from 'body-parser';
-import { initContract } from '@ts-rest/core';
+import { initContract, isZodType } from '@ts-rest/core';
 import { z } from 'zod/v4';
-import { generateOpenApi } from '@ts-rest/open-api';
 
 const c = initContract();
 
@@ -12,7 +11,7 @@ const PokemonSchema = z.object({
   name: z.string(),
 });
 
-const contract = c.router({
+export const contract = c.router({
   getPokemon: {
     method: 'GET',
     path: '/pokemon/:id',
@@ -46,15 +45,6 @@ const contract = c.router({
       200: z.object({ message: z.string() }),
       403: z.object({ message: z.string() }),
     },
-  },
-});
-
-console.log(z.toJSONSchema(contract.updatePokemon.responses[200]));
-
-export const openApiSchema = generateOpenApi(contract, {
-  info: {
-    title: 'Pokemon API',
-    version: '1.0.0',
   },
 });
 

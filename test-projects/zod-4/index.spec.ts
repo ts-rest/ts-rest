@@ -1,22 +1,59 @@
 import { describe, it, expect } from 'bun:test';
-import { app, openApiSchema } from './index';
+import { app, contract } from './index';
+import {
+  generateOpenApiAsync,
+  type SchemaTransformerAsync,
+} from '@ts-rest/open-api';
 import request from 'supertest';
+import { isZodObject, isZodType } from '@ts-rest/core';
+import { z } from 'zod/v4';
+import { convert } from '@openapi-contrib/json-schema-to-openapi-schema';
 
 const expectRes = (res: any) => {
   return expect({ body: res.body, status: res.status });
 };
 
+const SCHEMA_TRANSFORMER: SchemaTransformerAsync = async (schema: unknown) => {
+  if (isZodObject(schema)) {
+    const jsonSchema = z.toJSONSchema(schema as any);
+
+    return await convert(jsonSchema);
+  }
+
+  return null;
+};
+
 describe('zod 4', () => {
   describe('open api', () => {
-    it('should generate open api schema', () => {
+    it('should generate open api schema', async () => {
+      const openApiSchema = await generateOpenApiAsync(
+        contract,
+        {
+          info: {
+            title: 'Pokemon API',
+            version: '1.0.0',
+          },
+        },
+        {
+          schemaTransformer: SCHEMA_TRANSFORMER,
+        },
+      );
+
       expect(openApiSchema).toBeDefined();
 
       expect(
         openApiSchema.paths['/pokemon/{id}'].get.responses['200'].content,
       ).toStrictEqual({
         'application/json': {
-          // TOOD: Zod4 OpenAPI is not supported yet, the result is empty as the downstream library doesnt support it yet.
-          schema: {},
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              id: { type: 'number' },
+              name: { type: 'string' },
+            },
+            required: ['id', 'name'],
+          },
         },
       });
     });

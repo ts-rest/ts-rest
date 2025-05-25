@@ -13,3 +13,4 @@ export * from './lib/response-error';
 export * from './lib/type-guards';
 export * from './lib/standard-schema-utils';
 export * from './lib/validation-error';
+export * from './lib/standard-schema';
