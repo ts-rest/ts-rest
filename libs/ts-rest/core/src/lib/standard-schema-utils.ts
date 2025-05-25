@@ -20,6 +20,21 @@ export const isStandardSchema = (
   return standard.version === 1 && typeof standard.validate === 'function';
 };
 
+/**
+ * @hidden
+ */
+export const isZod3 = (schema: StandardSchemaV1): boolean => {
+  const standard = schema['~standard'];
+  /**
+   * The offical way to check if a schema is zod 4 is to check if the _zod property exists.
+   *
+   * https://zod.dev/library-authors?id=how-to-support-zod-3-and-zod-4-simultaneously
+   */
+  const zodV4Property = (schema as any)?._zod;
+
+  return standard.vendor === 'zod' && !zodV4Property;
+};
+
 export const checkStandardSchema = (
   data: unknown,
   schema: unknown,
@@ -35,8 +50,7 @@ export const checkStandardSchema = (
    * To avoid breaking change, if someone using zod 3 (which they must be if they're pre-standard-schema) we return a ZodError.
    * Otherwise, move onto our new StandardSchemaError.
    */
-  const isZod3 = schema['~standard'].vendor === 'zod' && !('_zod' in schema);
-  if (isZod3) {
+  if (isZod3(schema)) {
     const result = (schema as ZodSchema).safeParse(data);
 
     if (!result.success) {
