@@ -1,7 +1,8 @@
 import {
   RequestValidationErrorSchema,
+  RequestValidationErrorSchemaWithoutMessage,
   ValidationError,
-  ValidationErrorSchema,
+  ZodErrorSchema,
 } from '@ts-rest/core';
 
 export class RequestValidationError extends Error {
@@ -15,7 +16,8 @@ export class RequestValidationError extends Error {
   }
 }
 
-export const DefaultRequestValidationErrorSchema = ValidationErrorSchema;
+export const DefaultRequestValidationErrorSchema: typeof ZodErrorSchema =
+  ZodErrorSchema;
 
-export const CombinedRequestValidationErrorSchema =
-  RequestValidationErrorSchema;
+export const CombinedRequestValidationErrorSchema: typeof RequestValidationErrorSchemaWithoutMessage =
+  RequestValidationErrorSchemaWithoutMessage;

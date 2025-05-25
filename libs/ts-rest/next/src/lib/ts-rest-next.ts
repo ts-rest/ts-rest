@@ -14,7 +14,7 @@ import {
   TsRestResponseError,
   validateResponse,
   ValidationError,
-  ValidationErrorSchema,
+  ZodErrorSchema,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 
@@ -29,8 +29,8 @@ export class RequestValidationError extends Error {
   }
 }
 
-export const RequestValidationErrorSchema: typeof ValidationErrorSchema =
-  ValidationErrorSchema;
+export const RequestValidationErrorSchema: typeof ZodErrorSchema =
+  ZodErrorSchema;
 
 type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {

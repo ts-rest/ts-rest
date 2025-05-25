@@ -26,7 +26,7 @@ export class RequestValidationError extends Error {
   }
 }
 
-export { RequestValidationErrorSchema } from '@ts-rest/core';
+export { RequestValidationErrorSchemaWithoutMessage as RequestValidationErrorSchema } from '@ts-rest/core';
 
 type FastifyContextConfig<T extends AppRouter | AppRoute> = {
   tsRestRoute: T extends AppRoute ? T : FlattenAppRouter<T>;

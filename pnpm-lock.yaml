@@ -527,9 +527,6 @@ importers:
       '@types/node':
         specifier: ^18.18.7 || >=20.8.4
         version: 18.18.7
-      zod:
-        specifier: ^3.24.0
-        version: 3.24.2
 
   libs/ts-rest/express:
     dependencies:

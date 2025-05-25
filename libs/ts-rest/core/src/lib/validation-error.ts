@@ -52,73 +52,40 @@ export const validationErrorResponse = (
   };
 };
 
-const ValidationErrorSchemaInternal = z.union([
-  ZodErrorSchema,
-  z.object({
-    name: z.literal('ValidationError'),
-    issues: z
-      .array(
-        z.object({
-          message: z.string(),
-          path: z
-            .array(
-              z.union([
-                z.union([z.string(), z.number(), z.symbol()]),
-                z
-                  .object({
-                    key: z.union([z.string(), z.number(), z.symbol()]),
-                  })
-                  .readonly(),
-              ]),
-            )
-            .readonly()
-            .optional(),
-        }),
-      )
-      .readonly(),
-  }),
-]);
-type ValidationErrorInternal =
-  | ZodError
-  | {
-      readonly name: 'ValidationError';
-      readonly issues: readonly StandardSchemaV1.Issue[];
-    };
-export const ValidationErrorSchema =
-  ValidationErrorSchemaInternal as StandardSchemaV1<
-    unknown,
-    ValidationErrorInternal
-  >;
-
+/**
+ * Schema was added in https://github.com/ts-rest/ts-rest/pull/601
+ *
+ * @deprecated supports zod 3, does not support other validators, you can bring your own schema, from next major version this will be removed
+ */
 export const RequestValidationErrorSchema = z.object({
-  message: z.literal('Request validation failed').optional(),
-  pathParameterErrors: ValidationErrorSchemaInternal.nullable(),
-  headerErrors: ValidationErrorSchemaInternal.nullable(),
-  queryParameterErrors: ValidationErrorSchemaInternal.nullable(),
-  bodyErrors: ValidationErrorSchemaInternal.nullable(),
-}) as StandardSchemaV1<
-  unknown,
-  {
-    message?: 'Request validation failed';
-    pathParameterErrors: ValidationErrorInternal | null;
-    headerErrors: ValidationErrorInternal | null;
-    queryParameterErrors: ValidationErrorInternal | null;
-    bodyErrors: ValidationErrorInternal | null;
-  }
->;
+  message: z.literal('Request validation failed'),
+  pathParameterErrors: ZodErrorSchema.nullable(),
+  headerErrors: ZodErrorSchema.nullable(),
+  queryParameterErrors: ZodErrorSchema.nullable(),
+  bodyErrors: ZodErrorSchema.nullable(),
+});
 
-/** @deprecated prefer RequestValidationErrorSchema from @ts-rest/core */
+/**
+ * Schema was added in https://github.com/ts-rest/ts-rest/pull/601
+ *
+ * @deprecated supports zod 3, does not support other validators, you can bring your own schema, from next major version this will be removed
+ */
+export const RequestValidationErrorSchemaWithoutMessage = z.object({
+  // No message, express never had this implemented
+  pathParameterErrors: ZodErrorSchema.nullable(),
+  headerErrors: ZodErrorSchema.nullable(),
+  queryParameterErrors: ZodErrorSchema.nullable(),
+  bodyErrors: ZodErrorSchema.nullable(),
+});
+
+/**
+ * Schema was added in https://github.com/ts-rest/ts-rest/pull/601
+ *
+ * @deprecated supports zod 3, does not support other validators, you can bring your own schema, from next major version this will be removed
+ */
 export const RequestValidationErrorSchemaForNest = z.object({
-  paramsResult: ValidationErrorSchemaInternal.nullable(),
-  headersResult: ValidationErrorSchemaInternal.nullable(),
-  queryResult: ValidationErrorSchemaInternal.nullable(),
-  bodyResult: ValidationErrorSchemaInternal.nullable(),
-}) as StandardSchemaV1<
-  unknown,
-  {
-    paramsResult: ValidationErrorInternal | null;
-    headersResult: ValidationErrorInternal | null;
-    queryResult: ValidationErrorInternal | null;
-    bodyResult: ValidationErrorInternal | null;
-  }
->;
+  paramsResult: ZodErrorSchema.nullable(),
+  headersResult: ZodErrorSchema.nullable(),
+  queryResult: ZodErrorSchema.nullable(),
+  bodyResult: ZodErrorSchema.nullable(),
+});

@@ -902,11 +902,8 @@ packages:
     resolution: {directory: ../../dist/libs/ts-rest/core, type: directory}
     peerDependencies:
       '@types/node': ^18.18.7 || >=20.8.4
-      zod: ^3.24.0
     peerDependenciesMeta:
       '@types/node':
-        optional: true
-      zod:
         optional: true
 
   '@ts-rest/nest@file:../../dist/libs/ts-rest/nest':
