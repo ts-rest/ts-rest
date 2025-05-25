@@ -46,8 +46,13 @@ export const extractZodObjectShape = <
   return obj.shape;
 };
 
-// TODO: remove in next major version
-/** @deprecated use mergeStandardSchema */
+/**
+ * @deprecated use mergeStandardSchema
+ *
+ * This exists so that on zod < v3.25.0 we dont have breaking changes
+ *
+ * Remove in next major version
+ */
 export const zodMerge = (objectA: unknown, objectB: unknown) => {
   if (isZodObjectStrict(objectA)) {
     if (isZodObjectStrict(objectB)) {
