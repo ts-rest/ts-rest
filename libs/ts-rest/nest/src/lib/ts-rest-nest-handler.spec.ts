@@ -37,6 +37,7 @@ import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import { TsRestModule } from './ts-rest.module';
 import path = require('path');
+import * as v from 'valibot';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T,
@@ -189,6 +190,87 @@ describe('ts-rest-nest-handler', () => {
         ).toStrictEqual({
           data: expect.any(Object),
           success: true,
+        });
+      });
+
+      it('should validate body with valibot', async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          postRequest: {
+            path: '/test',
+            method: 'POST',
+            body: v.object({
+              message: v.string(),
+            }),
+            responses: {
+              200: v.object({
+                message: v.string(),
+              }),
+            },
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract)
+          async postRequest() {
+            return tsRestHandler(contract, {
+              postRequest: async ({ body }) => ({
+                status: 200,
+                body: body,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 'hello' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'hello' });
+
+        const responsePost = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 123 });
+
+        expect(responsePost.status).toBe(400);
+        expect(responsePost.body).toEqual({
+          bodyResult: {
+            issues: [
+              {
+                expected: 'string',
+                input: 123,
+                kind: 'schema',
+                message: 'Invalid type: Expected string but received 123',
+                path: [
+                  {
+                    input: {
+                      message: 123,
+                    },
+                    key: 'message',
+                    origin: 'value',
+                    type: 'object',
+                    value: 123,
+                  },
+                ],
+                received: '123',
+                type: 'string',
+              },
+            ],
+            name: 'ValidationError',
+          },
+          headersResult: null,
+          queryResult: null,
+          paramsResult: null,
         });
       });
 
@@ -978,8 +1060,8 @@ describe('ts-rest-nest-handler', () => {
           path: '/test',
           method: 'GET',
           responses: {
-            200: z.object({
-              message: z.string(),
+            200: v.object({
+              message: v.string(),
             }),
           },
         },
