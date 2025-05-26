@@ -3,20 +3,41 @@ import {
   AppRouter,
   ServerInferRequest,
   ServerInferResponses,
-  ValidationError,
+  StandardSchemaError,
 } from '@ts-rest/core';
 import { TsRestRequest } from './request';
 import { TsRestHttpError } from './http-error';
 import { TsRestResponse } from './response';
 import { CorsOptions, RequestHandler } from 'itty-router';
 import { CompleteRouter, RouterBuilder } from './router-builder';
+import { type ZodError } from 'zod';
 
+export class TsRestRequestValidationError extends TsRestHttpError {
+  constructor(
+    public pathParamsError: StandardSchemaError | null,
+    public headersError: StandardSchemaError | null,
+    public queryError: StandardSchemaError | null,
+    public bodyError: StandardSchemaError | null,
+  ) {
+    super(400, {
+      message: 'Request validation failed',
+      pathParameterErrors: pathParamsError,
+      headerErrors: headersError,
+      queryParameterErrors: queryError,
+      bodyErrors: bodyError,
+    });
+  }
+}
+
+/**
+ * @deprecated use TsRestRequestValidationError instead, this will be removed in v4
+ */
 export class RequestValidationError extends TsRestHttpError {
   constructor(
-    public pathParamsError: ValidationError | null,
-    public headersError: ValidationError | null,
-    public queryError: ValidationError | null,
-    public bodyError: ValidationError | null,
+    public pathParamsError: ZodError | null,
+    public headersError: ZodError | null,
+    public queryError: ZodError | null,
+    public bodyError: ZodError | null,
   ) {
     super(400, {
       message: 'Request validation failed',
@@ -33,7 +54,7 @@ export { RequestValidationErrorSchema } from '@ts-rest/core';
 export class ResponseValidationError extends TsRestHttpError {
   constructor(
     public appRoute: AppRoute,
-    public error: ValidationError,
+    public error: StandardSchemaError,
   ) {
     super(500, {
       message: 'Server Error',

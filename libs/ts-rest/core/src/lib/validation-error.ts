@@ -1,4 +1,4 @@
-import { z, ZodError } from 'zod';
+import { z, type ZodError } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
 import { ZodErrorSchema } from './zod-utils';
 
@@ -34,18 +34,13 @@ export class StandardSchemaError
   }
 }
 
-/**
- * Remove ZodError in next major version
- */
-export type ValidationError = ZodError | StandardSchemaError;
-
 /*
   Convert a ValidationError to a plain object because ValidationError extends
   Error and causes problems with NestJS.
 */
 export const validationErrorResponse = (
-  error: ValidationError,
-): Pick<ValidationError, 'name' | 'issues'> => {
+  error: ZodError | StandardSchemaError,
+): Pick<ZodError | StandardSchemaError, 'name' | 'issues'> => {
   return {
     name: error.name,
     issues: error.issues,

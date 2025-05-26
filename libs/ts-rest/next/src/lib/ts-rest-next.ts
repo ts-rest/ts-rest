@@ -13,17 +13,34 @@ import {
   ServerInferResponses,
   TsRestResponseError,
   validateResponse,
-  ValidationError,
   ZodErrorSchema,
+  parseAsStandardSchema,
+  areAllSchemasLegacyZod,
+  StandardSchemaError,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
+import { type ZodError } from 'zod';
 
+export class TsRestRequestValidationError extends Error {
+  constructor(
+    public pathParams: StandardSchemaError | null,
+    public headers: StandardSchemaError | null,
+    public query: StandardSchemaError | null,
+    public body: StandardSchemaError | null,
+  ) {
+    super('[ts-rest] request validation failed');
+  }
+}
+
+/**
+ * @deprecated use TsRestRequestValidationError instead, this will be removed in v4
+ */
 export class RequestValidationError extends Error {
   constructor(
-    public pathParams: ValidationError | null,
-    public headers: ValidationError | null,
-    public query: ValidationError | null,
-    public body: ValidationError | null,
+    public pathParams: ZodError | null,
+    public headers: ZodError | null,
+    public query: ZodError | null,
+    public body: ZodError | null,
   ) {
     super('[ts-rest] request validation failed');
   }
@@ -293,11 +310,16 @@ const handlerFactory = (
       return;
     }
 
-    const pathParamsResult = validateIfSchema(pathParams, route.pathParams, {
+    const pathParamsSchema = parseAsStandardSchema(route.pathParams);
+    const headersSchema = parseAsStandardSchema(route.headers);
+    const querySchema = parseAsStandardSchema(route.query);
+    const bodySchema = parseAsStandardSchema(route.body);
+
+    const pathParamsResult = validateIfSchema(pathParams, pathParamsSchema, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = validateIfSchema(req.headers, route.headers, {
+    const headersResult = validateIfSchema(req.headers, headersSchema, {
       passThroughExtraKeys: true,
     });
 
@@ -305,9 +327,9 @@ const handlerFactory = (
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
 
-    const queryResult = validateIfSchema(query, route.query);
+    const queryResult = validateIfSchema(query, querySchema);
 
-    const bodyResult = validateIfSchema(req.body, route.body);
+    const bodyResult = validateIfSchema(req.body, bodySchema);
 
     try {
       if (
@@ -317,12 +339,28 @@ const handlerFactory = (
         bodyResult.error
       ) {
         if (throwRequestValidation) {
-          throw new RequestValidationError(
-            pathParamsResult.error || null,
-            headersResult.error || null,
-            queryResult.error || null,
-            bodyResult.error || null,
-          );
+          const useLegacyZod = areAllSchemasLegacyZod([
+            pathParamsSchema,
+            headersSchema,
+            querySchema,
+            bodySchema,
+          ]);
+
+          if (useLegacyZod) {
+            throw new RequestValidationError(
+              (pathParamsResult.error as ZodError) || null,
+              (headersResult.error as ZodError) || null,
+              (queryResult.error as ZodError) || null,
+              (bodyResult.error as ZodError) || null,
+            );
+          } else {
+            throw new TsRestRequestValidationError(
+              (pathParamsResult.error as StandardSchemaError) || null,
+              (headersResult.error as StandardSchemaError) || null,
+              (queryResult.error as StandardSchemaError) || null,
+              (bodyResult.error as StandardSchemaError) || null,
+            );
+          }
         }
 
         if (pathParamsResult.error) {

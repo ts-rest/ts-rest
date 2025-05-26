@@ -1,5 +1,8 @@
 import { HTTPStatusCode } from './status-codes';
-import { ResponseValidationError } from './response-validation-error';
+import {
+  ResponseValidationError,
+  TsRestResponseValidationError,
+} from './response-validation-error';
 import {
   AppRoute,
   ContractAnyType,
@@ -7,7 +10,13 @@ import {
   ContractNoBodyType,
   ContractOtherResponse,
 } from './dsl';
-import { validateIfSchema } from './standard-schema-utils';
+import {
+  areAllSchemasLegacyZod,
+  parseAsStandardSchema,
+  validateIfSchema,
+} from './standard-schema-utils';
+import { type ZodError } from 'zod';
+import { StandardSchemaError } from './validation-error';
 
 export const isAppRouteResponse = (
   value: unknown,
@@ -56,10 +65,26 @@ export const validateResponse = ({
       ? responseType.body
       : responseType;
 
-    const responseValidation = validateIfSchema(response.body, responseSchema);
+    const responseStandardSchema = parseAsStandardSchema(responseSchema);
+    const responseValidation = validateIfSchema(
+      response.body,
+      responseStandardSchema,
+    );
 
     if (responseValidation.error) {
-      throw new ResponseValidationError(appRoute, responseValidation.error);
+      const isZodSchema = areAllSchemasLegacyZod([responseStandardSchema]);
+
+      if (isZodSchema) {
+        throw new ResponseValidationError(
+          appRoute,
+          responseValidation.error as ZodError,
+        );
+      } else {
+        throw new TsRestResponseValidationError(
+          appRoute,
+          responseValidation.error as StandardSchemaError,
+        );
+      }
     }
 
     return {

@@ -10,6 +10,9 @@ import {
   HTTPStatusCode,
   TsRestResponseError,
   validateIfSchema,
+  parseAsStandardSchema,
+  areAllSchemasLegacyZod,
+  StandardSchemaError,
 } from '@ts-rest/core';
 import { Router, withParams, cors } from 'itty-router';
 import { TsRestRequest } from './request';
@@ -23,10 +26,12 @@ import {
   ResponseValidationError,
   ServerlessHandlerOptions,
   RouterImplementationOrFluentRouter,
+  TsRestRequestValidationError,
 } from './types';
 import { blobToArrayBuffer } from './utils';
 import { TsRestHttpError } from './http-error';
 import { RouterBuilder } from './router-builder';
+import { type ZodError } from 'zod';
 
 const recursivelyProcessContract = ({
   schema,
@@ -72,7 +77,14 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
   schema: AppRoute,
   options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension>,
 ) => {
-  const paramsResult = validateIfSchema(req.params, schema.pathParams, {
+  const pathParamsSchema = parseAsStandardSchema(schema.pathParams);
+  const headersSchema = parseAsStandardSchema(schema.headers);
+  const querySchema = parseAsStandardSchema(schema.query);
+  const bodySchema = parseAsStandardSchema(
+    'body' in schema ? schema.body : null,
+  );
+
+  const paramsResult = validateIfSchema(req.params, pathParamsSchema, {
     passThroughExtraKeys: true,
   });
 
@@ -81,7 +93,7 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
     headers[key] = value;
   });
 
-  const headersResult = validateIfSchema(headers, schema.headers, {
+  const headersResult = validateIfSchema(headers, headersSchema, {
     passThroughExtraKeys: true,
   });
 
@@ -89,13 +101,10 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
     options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query,
-    schema.query,
+    querySchema,
   );
 
-  const bodyResult = validateIfSchema(
-    req.content,
-    'body' in schema ? schema.body : null,
-  );
+  const bodyResult = validateIfSchema(req.content, bodySchema);
 
   if (
     paramsResult.error ||
@@ -103,12 +112,28 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
     queryResult.error ||
     bodyResult.error
   ) {
-    throw new RequestValidationError(
-      paramsResult.error || null,
-      headersResult.error || null,
-      queryResult.error || null,
-      bodyResult.error || null,
-    );
+    const useLegacyZod = areAllSchemasLegacyZod([
+      pathParamsSchema,
+      headersSchema,
+      querySchema,
+      bodySchema,
+    ]);
+
+    if (useLegacyZod) {
+      throw new RequestValidationError(
+        (paramsResult.error as ZodError) || null,
+        (headersResult.error as ZodError) || null,
+        (queryResult.error as ZodError) || null,
+        (bodyResult.error as ZodError) || null,
+      );
+    } else {
+      throw new TsRestRequestValidationError(
+        (paramsResult.error as StandardSchemaError) || null,
+        (headersResult.error as StandardSchemaError) || null,
+        (queryResult.error as StandardSchemaError) || null,
+        (bodyResult.error as StandardSchemaError) || null,
+      );
+    }
   }
 
   return {

@@ -161,6 +161,12 @@ export const combineStandardSchemas = (
   };
 };
 
+/**
+ * Similar to validateAgainstStandardSchema, but it takes an unknown schema, it will not validate if no schema provided and will check the schema is
+ * valid before validating the data.
+ *
+ * This is super handy for validating request bodies, headers, etc. as it passes through the data if no schema is provided.
+ */
 export const validateIfSchema = (
   data: unknown,
   schema: unknown,
@@ -222,4 +228,15 @@ export const validateAgainstStandardSchema = (
   return {
     value: result.value,
   };
+};
+
+/**
+ * Use this to decide whether to return the old-style ZodError or the new-style StandardSchemaError
+ */
+export const areAllSchemasLegacyZod = (
+  schemas: (StandardSchemaV1<unknown, unknown> | null | undefined)[],
+): boolean => {
+  return schemas
+    .filter(Boolean)
+    .every((schema) => schema?.['~standard'].vendor === VENDOR_LEGACY_ZOD);
 };

@@ -1,9 +1,11 @@
 import { StandardSchemaV1 } from './standard-schema';
 import {
+  areAllSchemasLegacyZod,
   combineStandardSchemas,
   isStandardSchema,
   parseAsStandardSchema,
   validateAgainstStandardSchema,
+  validateIfSchema,
 } from './standard-schema-utils';
 import { ZodError, z } from 'zod';
 import * as v from 'valibot';
@@ -226,6 +228,68 @@ describe('standard schema utils', () => {
       expect(result).toEqual({
         value: { foo: 'foo', bar: 'bar', extraKey: true },
       });
+    });
+  });
+
+  describe('validateIfSchema', () => {
+    it('should validate the data if a schema is provided', () => {
+      const data = { foo: 'bar' };
+      const schema = z.object({ foo: z.string() });
+
+      const result = validateIfSchema(data, schema);
+
+      expect(result).toEqual({
+        value: { foo: 'bar' },
+      });
+    });
+
+    it('should pass through the data if no schema is provided', () => {
+      const data = { foo: 'bar' };
+
+      const result = validateIfSchema(data, null);
+
+      expect(result).toEqual({ value: { foo: 'bar' } });
+    });
+
+    it('should throw an error if the schema is invalid', () => {
+      const data = { foo: 'bar' };
+      const schema = z.object({ foo: z.number() });
+
+      const result = validateIfSchema(data, schema);
+
+      expect(result).toStrictEqual({
+        error: new ZodError([
+          {
+            code: 'invalid_type',
+            expected: 'number',
+            received: 'string',
+            path: ['foo'],
+            message: 'Expected number, received string',
+          },
+        ]),
+      });
+    });
+  });
+
+  describe('areAllSchemasLegacyZod', () => {
+    it('should return true if all schemas are legacy zod', () => {
+      const zodSchema = z.object({ foo: z.string() });
+
+      const zodSchemaStandard = parseAsStandardSchema(zodSchema)!;
+
+      expect(areAllSchemasLegacyZod([zodSchemaStandard])).toBe(true);
+    });
+
+    it('should return false if any schema is not a legacy zod', () => {
+      const zodSchema = z.object({ foo: z.string() });
+      const valibotSchema = v.object({ foo: v.string() });
+
+      const zodSchemaStandard = parseAsStandardSchema(zodSchema)!;
+      const valibotSchemaStandard = parseAsStandardSchema(valibotSchema)!;
+
+      expect(
+        areAllSchemasLegacyZod([zodSchemaStandard, valibotSchemaStandard]),
+      ).toBe(false);
     });
   });
 });
