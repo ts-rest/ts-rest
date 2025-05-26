@@ -392,7 +392,6 @@ export function generateOpenApi(
  * @param options.jsonQuery - Enable JSON query parameters, [see](/docs/open-api#json-query-params)
  * @param options.operationMapper - Function to customize OpenAPI operations. Receives the operation object, app route, and operation ID
  * @param options.schemaTransformer - Custom schema transformer function. Defaults to ANATINE_ZOD_OPENAPI_SCHEMA_TRANSFORMER
- * @returns Promise<OpenAPIObject> when using custom schema transformer
  */
 export async function generateOpenApiAsync(
   router: AppRouter,
