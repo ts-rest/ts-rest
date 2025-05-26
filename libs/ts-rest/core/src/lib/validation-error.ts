@@ -2,6 +2,11 @@ import { z, type ZodError } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
 import { ZodErrorSchema } from './zod-utils';
 
+/**
+ * The error class for standard schema validation errors.
+ *
+ * @see {@link StandardSchemaV1.FailureResult}
+ */
 export class StandardSchemaError
   extends Error
   implements StandardSchemaV1.FailureResult
@@ -9,11 +14,9 @@ export class StandardSchemaError
   public readonly issues: readonly StandardSchemaV1.Issue[];
 
   constructor(issues: ReadonlyArray<StandardSchemaV1.Issue>) {
-    /*
-      Internally the ZodError message property serializes the issues to json
-      with a custom formatter that stringifies bigints. To keep the behavior
-      as similar as possible we can replicate that here.
-    */
+    /**
+     * Similar pattern to ZodError regarding bigints.
+     */
     const message = JSON.stringify(
       issues,
       (_, value) => (typeof value === 'bigint' ? value.toString() : value),
