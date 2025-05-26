@@ -9,10 +9,6 @@ jobs:
   main:
     name: 'Build & Test'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,13 +33,54 @@ jobs:
 
       - run: pnpm nx affected -t lint,test,build
 
-      - name: Publish PR Preview Packages
-        if: github.event_name == 'pull_request'
+  publish-preview:
+    name: 'Publish PR Preview'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all ts-rest packages
+        run: pnpm nx run-many --target=build --projects="ts-rest*"
+
+      - name: List built packages for debugging
         run: |
-          # Modify workspaces for publishing
+          echo "=== Built packages in dist/libs/ts-rest/ ==="
+          ls -la dist/libs/ts-rest/ || echo "dist/libs/ts-rest/ not found"
+          echo ""
+          echo "=== Package.json files found ==="
+          find dist/libs/ts-rest/ -name "package.json" -exec echo "Found: {}" \; -exec cat {} \; -exec echo "---" \; || echo "No package.json files found"
+
+      - name: Modify workspaces for publishing
+        run: |
+          echo "=== Original package.json workspaces ==="
+          grep -A 5 '"workspaces"' package.json || echo "No workspaces found"
+          echo ""
           sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
-          # Publish to pkg.pr.new
-          pnpm dlx pkg-pr-new publish --comment=update --packageManager=pnpm
+          echo "=== Modified package.json workspaces ==="
+          grep -A 5 '"workspaces"' package.json || echo "No workspaces found"
+
+      - name: Publish to pkg.pr.new
+        run: pnpm dlx pkg-pr-new publish --comment=update --packageManager=pnpm
 
   e2e:
     name: 'E2E Tests'
