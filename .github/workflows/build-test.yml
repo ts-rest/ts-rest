@@ -9,6 +9,10 @@ jobs:
   main:
     name: 'Build & Test'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,6 +36,14 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
 
       - run: pnpm nx affected -t lint,test,build
+
+      - name: Publish PR Preview Packages
+        if: github.event_name == 'pull_request'
+        run: |
+          # Modify workspaces for publishing
+          sed -e "s;libs/ts-rest/\*;dist/libs/ts-rest/*;g" package.json > package-new.json && mv package-new.json package.json
+          # Publish to pkg.pr.new
+          pnpm dlx pkg-pr-new publish --comment=update --packageManager=pnpm
 
   e2e:
     name: 'E2E Tests'
