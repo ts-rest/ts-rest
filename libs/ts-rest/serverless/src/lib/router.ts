@@ -9,7 +9,7 @@ import {
   validateResponse,
   HTTPStatusCode,
   TsRestResponseError,
-  checkStandardSchema,
+  validateIfSchema,
 } from '@ts-rest/core';
 import { Router, withParams, cors } from 'itty-router';
 import { TsRestRequest } from './request';
@@ -72,7 +72,7 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
   schema: AppRoute,
   options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension>,
 ) => {
-  const paramsResult = checkStandardSchema(req.params, schema.pathParams, {
+  const paramsResult = validateIfSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
   });
 
@@ -81,18 +81,18 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
     headers[key] = value;
   });
 
-  const headersResult = checkStandardSchema(headers, schema.headers, {
+  const headersResult = validateIfSchema(headers, schema.headers, {
     passThroughExtraKeys: true,
   });
 
-  const queryResult = checkStandardSchema(
+  const queryResult = validateIfSchema(
     options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query,
     schema.query,
   );
 
-  const bodyResult = checkStandardSchema(
+  const bodyResult = validateIfSchema(
     req.content,
     'body' in schema ? schema.body : null,
   );

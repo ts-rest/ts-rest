@@ -10,7 +10,7 @@ import {
 import {
   AppRoute,
   AppRouteMutation,
-  checkStandardSchema,
+  validateIfSchema,
   parseJsonQueryObject,
   ServerInferRequest,
   validationErrorResponse,
@@ -48,13 +48,9 @@ class TsRestValidatorPipe implements PipeTransform {
     const req: Request | FastifyRequest = ctx.switchToHttp().getRequest();
     const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
-    const pathParamsResult = checkStandardSchema(
-      req.params,
-      appRoute.pathParams,
-      {
-        passThroughExtraKeys: true,
-      },
-    );
+    const pathParamsResult = validateIfSchema(req.params, appRoute.pathParams, {
+      passThroughExtraKeys: true,
+    });
 
     if (pathParamsResult.error) {
       throw new BadRequestException(
@@ -62,7 +58,7 @@ class TsRestValidatorPipe implements PipeTransform {
       );
     }
 
-    const headersResult = checkStandardSchema(req.headers, appRoute.headers, {
+    const headersResult = validateIfSchema(req.headers, appRoute.headers, {
       passThroughExtraKeys: true,
     });
 
@@ -76,12 +72,12 @@ class TsRestValidatorPipe implements PipeTransform {
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
 
-    const queryResult = checkStandardSchema(query, appRoute.query);
+    const queryResult = validateIfSchema(query, appRoute.query);
     if (queryResult.error && options.validateRequestQuery) {
       throw new BadRequestException(validationErrorResponse(queryResult.error));
     }
 
-    const bodyResult = checkStandardSchema(
+    const bodyResult = validateIfSchema(
       req.body,
       (appRoute as AppRoute).method === 'GET' ? null : appRoute.body,
     );

@@ -354,8 +354,9 @@ describe('fetchRequestHandler', () => {
     expect(response.headers).toEqual(expectedResponse.headers);
     const body = await response.json();
     expect(body).toEqual(await expectedResponse.json());
-    expect(RequestValidationErrorSchema['~standard'].validate(body)).toEqual({
-      value: expect.any(Object),
+    expect(RequestValidationErrorSchema.safeParse(body)).toStrictEqual({
+      data: expect.any(Object),
+      success: true,
     });
   });
 

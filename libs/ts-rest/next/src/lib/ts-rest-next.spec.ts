@@ -420,10 +420,11 @@ describe('createNextRouter', () => {
       expect(errorHandler).not.toHaveBeenCalled();
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(
-        RequestValidationErrorSchema['~standard'].validate(
-          jsonMock.mock.calls[0][0],
-        ),
-      ).toEqual({ value: expect.any(Object) });
+        RequestValidationErrorSchema.safeParse(jsonMock.mock.calls[0][0]),
+      ).toStrictEqual({
+        data: expect.any(Object),
+        success: true,
+      });
     });
   });
 

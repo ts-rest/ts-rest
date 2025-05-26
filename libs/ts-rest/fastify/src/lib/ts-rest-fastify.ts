@@ -1,7 +1,7 @@
 import {
   AppRoute,
   AppRouter,
-  checkStandardSchema,
+  validateIfSchema,
   FlattenAppRouter,
   HTTPStatusCode,
   isAppRouteNoBody,
@@ -138,22 +138,22 @@ const validateRequest = (
   schema: AppRoute,
   options: BaseRegisterRouterOptions,
 ) => {
-  const paramsResult = checkStandardSchema(request.params, schema.pathParams, {
+  const paramsResult = validateIfSchema(request.params, schema.pathParams, {
     passThroughExtraKeys: true,
   });
 
-  const headersResult = checkStandardSchema(request.headers, schema.headers, {
+  const headersResult = validateIfSchema(request.headers, schema.headers, {
     passThroughExtraKeys: true,
   });
 
-  const queryResult = checkStandardSchema(
+  const queryResult = validateIfSchema(
     options.jsonQuery
       ? parseJsonQueryObject(request.query as Record<string, string>)
       : request.query,
     schema.query,
   );
 
-  const bodyResult = checkStandardSchema(
+  const bodyResult = validateIfSchema(
     request.body,
     'body' in schema ? schema.body : null,
   );

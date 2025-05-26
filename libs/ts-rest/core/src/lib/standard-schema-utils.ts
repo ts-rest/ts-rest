@@ -1,9 +1,17 @@
-import { ZodError, ZodSchema } from 'zod';
-import { ContractAnyType } from './dsl';
+import { ZodError, ZodIssue, ZodObject, ZodSchema, z } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
 import { StandardSchemaError } from './validation-error';
-import { zodMerge } from './zod-utils';
+import { isZodType, zodMerge } from './zod-utils';
 
+const VENDOR_LEGACY_ZOD = 'zod-ts-rest-polyfill';
+const VENDOR_STANDARD_SCHEMA = 'ts-rest-combined';
+
+/**
+ * Type guard to check if the schema is a standard schema.
+ *
+ * @param schema - unknown
+ * @returns boolean
+ */
 export const isStandardSchema = (
   schema: unknown,
 ): schema is StandardSchemaV1 => {
@@ -21,155 +29,197 @@ export const isStandardSchema = (
 };
 
 /**
- * @hidden
+ * Takes in an unknown object and returns either a standard schema or null, if it encounters
+ * a legacy zod (<3.24.0) schema it'll return a polyfill for it.
+ *
+ * @param schema - unknown
+ * @returns StandardSchemaV1<unknown, unknown> | null
  */
-export const isZod3 = (schema: StandardSchemaV1): boolean => {
-  const standard = schema['~standard'];
-  /**
-   * The offical way to check if a schema is zod 4 is to check if the _zod property exists.
-   *
-   * https://zod.dev/library-authors?id=how-to-support-zod-3-and-zod-4-simultaneously
-   */
-  const zodV4Property = (schema as any)?._zod;
+export const parseAsStandardSchema = (
+  schema: unknown,
+): StandardSchemaV1<unknown, unknown> | null => {
+  const isStandard = isStandardSchema(schema);
 
-  return standard.vendor === 'zod' && !zodV4Property;
+  if (isStandard) {
+    return schema;
+  }
+
+  /**
+   * Legacy support for zod pre 3.24.0
+   *
+   * @deprecated - remove in next major version when zod (standard schema) is required
+   */
+  if (isZodType(schema)) {
+    const standardSchema: StandardSchemaV1<unknown, unknown>['~standard'] = {
+      vendor: VENDOR_LEGACY_ZOD,
+      version: 1,
+      validate: (input) => {
+        const result = schema.safeParse(input);
+
+        if (result.success) {
+          return {
+            value: result.data,
+          };
+        }
+
+        return {
+          issues: result.error.issues,
+        };
+      },
+    };
+
+    // Assign to avoid mutating the original schema
+    Object.assign(schema, {
+      '~standard': standardSchema,
+    });
+
+    return schema as unknown as StandardSchemaV1<unknown, unknown>;
+  }
+
+  return null;
 };
 
-export const checkStandardSchema = (
-  data: unknown,
-  schema: unknown,
-  { passThroughExtraKeys = false } = {},
-) => {
-  if (!isStandardSchema(schema)) {
-    return {
-      value: data,
-    };
+/**
+ * Combines two standard schemas into a single standard schema.
+ *
+ * The combined schema will run the validation of both schemas and return the result of the first schema that
+ * succeeds.
+ *
+ * If either schema fails, the combined schema will return the issues from both schemas.
+ *
+ * @param a - StandardSchemaV1<unknown, unknown>
+ * @param b - StandardSchemaV1<unknown, unknown>
+ * @returns StandardSchemaV1<unknown, unknown>
+ */
+export const combineStandardSchemas = (
+  a: StandardSchemaV1<unknown, unknown>,
+  b: StandardSchemaV1<unknown, unknown>,
+): StandardSchemaV1<unknown, unknown> => {
+  const isAZodLegacy = a['~standard'].vendor === VENDOR_LEGACY_ZOD;
+  const isBZodLegacy = b['~standard'].vendor === VENDOR_LEGACY_ZOD;
+
+  const isJustOneZodLegacy = isAZodLegacy !== isBZodLegacy;
+
+  if (isJustOneZodLegacy) {
+    throw new Error(
+      'Cannot combine a zod < 3.24.0 schema with a standard schema, please use zod >= 3.24.0 or any other standard schema library',
+    );
   }
 
   /**
-   * To avoid breaking change, if someone using zod 3 (which they must be if they're pre-standard-schema) we return a ZodError.
-   * Otherwise, move onto our new StandardSchemaError.
+   * To maintain existing behavior, we do a zod level merge of the two schemas.
    */
-  if (isZod3(schema)) {
-    const result = (schema as ZodSchema).safeParse(data);
+  if (isAZodLegacy && isBZodLegacy) {
+    const merged = zodMerge(a, b);
 
-    if (!result.success) {
-      return {
-        error: new ZodError(result.error.issues),
-      };
+    /**
+     * Cleanup any residual ~standard key that may have been left over from before the merge,
+     * allowing parseAsStandardSchema to re-pollyfill the schema.
+     */
+    if ('~standard' in merged) {
+      delete merged['~standard'];
     }
 
-    return {
-      value:
-        passThroughExtraKeys && typeof data === 'object'
-          ? { ...data, ...result.data }
-          : result.data,
-    };
+    const schema = parseAsStandardSchema(merged);
+
+    if (!schema) {
+      throw new Error('Failed to merge zod legacy schemas');
+    }
+
+    return schema;
   }
 
+  const standardSchema: StandardSchemaV1<unknown, unknown>['~standard'] = {
+    vendor: VENDOR_STANDARD_SCHEMA,
+    version: 1,
+    validate: (input) => {
+      const result = a['~standard'].validate(input);
+      const result2 = b['~standard'].validate(input);
+
+      if (result instanceof Promise || result2 instanceof Promise) {
+        throw new Error('Schema validation must be synchronous');
+      }
+
+      // TODO: Agree on the behavior of this for standard schemas
+      if (result.issues || result2.issues) {
+        return {
+          issues: [...(result.issues || []), ...(result2.issues || [])],
+        };
+      }
+
+      return {
+        value: {
+          ...(result.value || {}),
+          ...(result2.value || {}),
+        },
+      };
+    },
+  };
+
+  return {
+    '~standard': standardSchema,
+  };
+};
+
+export const validateIfSchema = (
+  data: unknown,
+  schema: unknown,
+  {
+    passThroughExtraKeys = false,
+  }: {
+    passThroughExtraKeys?: boolean;
+  } = {},
+): { value?: unknown; error?: StandardSchemaError | ZodError } => {
+  const schemaStandard = parseAsStandardSchema(schema);
+
+  if (!schemaStandard) {
+    return { value: data };
+  }
+
+  return validateAgainstStandardSchema(data, schemaStandard, {
+    passThroughExtraKeys,
+  });
+};
+
+export const validateAgainstStandardSchema = (
+  data: unknown,
+  schema: StandardSchemaV1<unknown, unknown>,
+  {
+    passThroughExtraKeys = false,
+  }: {
+    passThroughExtraKeys?: boolean;
+  } = {},
+): { value?: unknown; error?: StandardSchemaError | ZodError } => {
   const result = schema['~standard'].validate(data);
 
   if (result instanceof Promise) {
-    throw new TypeError('Schema validation must be synchronous');
+    throw new Error('Schema validation must be synchronous');
   }
 
   if (result.issues) {
+    /**
+     * If the schema is a zod polyfill, we need to return a ZodError.
+     *
+     * @deprecated - remove in next major version when zod (standard schema) is required
+     */
+    if (schema['~standard'].vendor === VENDOR_LEGACY_ZOD) {
+      return {
+        error: new ZodError(result.issues as ZodIssue[]),
+      };
+    }
+
     return {
       error: new StandardSchemaError(result.issues),
     };
   }
 
-  return {
-    value:
-      passThroughExtraKeys &&
-      typeof data === 'object' &&
-      result.value &&
-      typeof result.value === 'object'
-        ? { ...data, ...result.value }
-        : result.value,
-  };
-};
-
-export const parseStandardSchema = (
-  data: unknown,
-  schema: unknown,
-  { passThroughExtraKeys = false } = {},
-) => {
-  const result = checkStandardSchema(data, schema, { passThroughExtraKeys });
-
-  if (result.error) {
-    throw result.error;
-  }
-
-  return result.value;
-};
-
-const STANDARD_SCHEMA_MERGERS: Record<string, TsRestStandardSchemaMerger> = {
-  zod: zodMerge as TsRestStandardSchemaMerger,
-};
-
-export type TsRestStandardSchemaMerger = (
-  a: StandardSchemaV1,
-  b: StandardSchemaV1,
-) => StandardSchemaV1;
-
-export const configureStandardSchemaMerger = (
-  vendor: string,
-  merger: TsRestStandardSchemaMerger,
-) => {
-  STANDARD_SCHEMA_MERGERS[vendor] = merger;
-};
-
-export const mergeStandardSchema = (
-  a?: ContractAnyType,
-  b?: ContractAnyType,
-): ContractAnyType | undefined => {
-  if (a === b) {
-    return a;
-  }
-
-  if (
-    (a !== undefined && !isStandardSchema(a)) ||
-    (b !== undefined && !isStandardSchema(b))
-  ) {
-    throw new Error(
-      'Cannot mix plain object types with StandardSchemaV1 objects',
-    );
-  }
-
-  if (!a || !b) {
-    return a || b;
-  }
-
-  if (
-    a['~standard'].vendor === b['~standard'].vendor &&
-    STANDARD_SCHEMA_MERGERS[a['~standard'].vendor]
-  ) {
-    return STANDARD_SCHEMA_MERGERS[a['~standard'].vendor](a, b);
+  if (passThroughExtraKeys && typeof data === 'object' && result.value) {
+    return {
+      value: { ...data, ...result.value },
+    };
   }
 
   return {
-    '~standard': {
-      version: 1,
-      vendor: 'ts-rest',
-      validate: (value) => {
-        const aResult = a['~standard'].validate(value);
-        const bResult = b['~standard'].validate(value);
-
-        if (aResult instanceof Promise || bResult instanceof Promise) {
-          throw new TypeError('Schema validation must be synchronous');
-        }
-
-        if (aResult.issues || bResult.issues) {
-          return {
-            issues: [...(aResult.issues || []), ...(bResult.issues || [])],
-          };
-        }
-
-        return {
-          value: Object.assign({}, aResult.value, bResult.value),
-        };
-      },
-    },
+    value: result.value,
   };
 };

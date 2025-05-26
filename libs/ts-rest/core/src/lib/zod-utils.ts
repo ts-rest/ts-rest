@@ -69,46 +69,6 @@ export const zodMerge = (objectA: unknown, objectB: unknown) => {
   return Object.assign({}, objectA, objectB);
 };
 
-// TODO: remove in next major version
-/** @deprecated use checkStandardSchema */
-export const checkZodSchema = (
-  data: unknown,
-  schema: unknown,
-  { passThroughExtraKeys = false } = {},
-):
-  | {
-      success: true;
-      data: unknown;
-    }
-  | {
-      success: false;
-      error: z.ZodError;
-    } => {
-  if (isZodType(schema)) {
-    const result = schema.safeParse(data);
-
-    if (result.success) {
-      return {
-        success: true,
-        data:
-          passThroughExtraKeys && typeof data === 'object'
-            ? { ...data, ...result.data }
-            : result.data,
-      };
-    }
-
-    return {
-      success: false,
-      error: result.error,
-    };
-  }
-
-  return {
-    success: true,
-    data: data,
-  };
-};
-
 // Convert a ZodError to a plain object because ZodError extends Error and causes problems with NestJS
 // TODO: remove in next major version
 /** @deprecated use validationErrorResponse */

@@ -1,6 +1,10 @@
+import { z } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
-import { mergeStandardSchema } from './standard-schema-utils';
 import { Merge, Opaque, Prettify, WithoutUnknown } from './type-utils';
+import {
+  combineStandardSchemas,
+  parseAsStandardSchema,
+} from './standard-schema-utils';
 
 type MixedSchemaError<A, B> = Opaque<{ a: A; b: B }, 'MixedSchemaError'>;
 
@@ -17,6 +21,7 @@ export type ContractPlainType<T> = Opaque<T, 'ContractPlainType'>;
 export type ContractNullType = Opaque<typeof NullSymbol, 'ContractNullType'>;
 export type ContractNoBodyType = typeof ContractNoBody;
 export type ContractAnyType =
+  | z.ZodSchema
   | StandardSchemaV1<any>
   | ContractPlainType<unknown>
   | ContractNullType
@@ -118,6 +123,17 @@ type RecursivelyApplyOptions<
     : TRouter[TRouterKey];
 };
 
+/**
+ * Temporary polyfill to convert zod schemas (pre 3.24.0) to standard schemas, this
+ * is the version before zod added standard schema typing, but would be a breaking change
+ * if we didnt support
+ *
+ * @deprecated - this will be removed in the next major version
+ */
+export type PolyfillZodToStandardSchema<T> = T extends z.ZodSchema
+  ? StandardSchemaV1<z.input<T>, z.output<T>>
+  : T;
+
 type UniversalMerge<A, B> = A extends StandardSchemaV1
   ? B extends StandardSchemaV1
     ? StandardSchemaV1<
@@ -148,7 +164,10 @@ type ApplyOptions<
     path: TOptions['pathPrefix'] extends string
       ? `${TOptions['pathPrefix']}${TRoute['path']}`
       : TRoute['path'];
-    headers: UniversalMerge<TOptions['baseHeaders'], TRoute['headers']>;
+    headers: UniversalMerge<
+      PolyfillZodToStandardSchema<TOptions['baseHeaders']>,
+      PolyfillZodToStandardSchema<TRoute['headers']>
+    >;
     strictStatusCodes: TRoute['strictStatusCodes'] extends boolean
       ? TRoute['strictStatusCodes']
       : TOptions['strictStatusCodes'] extends boolean
@@ -292,6 +311,14 @@ const recursivelyApplyOptions = <T extends AppRouter>(
 ): T => {
   return Object.fromEntries(
     Object.entries(router).map(([key, value]) => {
+      const baseHeadersSchema = parseAsStandardSchema(options?.baseHeaders);
+      const valueHeadersSchema = parseAsStandardSchema(value.headers);
+
+      const combinedHeadersSchema =
+        baseHeadersSchema && valueHeadersSchema
+          ? combineStandardSchemas(baseHeadersSchema, valueHeadersSchema)
+          : baseHeadersSchema || valueHeadersSchema;
+
       if (isAppRoute(value)) {
         return [
           key,
@@ -300,7 +327,7 @@ const recursivelyApplyOptions = <T extends AppRouter>(
             path: options?.pathPrefix
               ? options.pathPrefix + value.path
               : value.path,
-            headers: mergeStandardSchema(options?.baseHeaders, value.headers),
+            headers: combinedHeadersSchema,
             strictStatusCodes:
               value.strictStatusCodes ?? options?.strictStatusCodes,
             validateResponseOnClient:

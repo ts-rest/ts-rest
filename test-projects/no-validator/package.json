@@ -1,5 +1,5 @@
 {
-  "name": "express-4",
+  "name": "no-validator",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
@@ -15,7 +15,6 @@
   "dependencies": {
     "@ts-rest/core": "../../dist/libs/ts-rest/core",
     "@ts-rest/express": "../../dist/libs/ts-rest/express",
-    "express": "4.21.2",
-    "zod": "3.22.3"
+    "express": "5.0.1"
   }
 }

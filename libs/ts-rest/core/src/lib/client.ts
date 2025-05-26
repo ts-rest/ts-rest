@@ -15,7 +15,11 @@ import {
   PartialClientInferRequest,
 } from './infer-types';
 import { Equal, Expect } from './test-helpers';
-import { isStandardSchema, parseStandardSchema } from './standard-schema-utils';
+import {
+  isStandardSchema,
+  parseAsStandardSchema,
+  validateAgainstStandardSchema,
+} from './standard-schema-utils';
 
 type RecursiveProxyObj<T extends AppRouter, TClientArgs extends ClientArgs> = {
   [TKey in keyof T]: T[TKey] extends AppRoute
@@ -142,13 +146,24 @@ export const tsRestFetchApi: ApiFetcher = async ({
       headers: result.headers,
     };
 
+    const responseSchemaStandard = parseAsStandardSchema(responseSchema);
+
     if (
-      (validateResponse ?? route.validateResponseOnClient) &&
-      isStandardSchema(responseSchema)
+      responseSchemaStandard &&
+      (validateResponse ?? route.validateResponseOnClient)
     ) {
+      const result = validateAgainstStandardSchema(
+        response.body,
+        responseSchemaStandard,
+      );
+
+      if (result.error) {
+        throw result.error;
+      }
+
       return {
         ...response,
-        body: parseStandardSchema(response.body, responseSchema),
+        body: result.value,
       };
     }
 

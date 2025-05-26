@@ -24,12 +24,12 @@ import {
 import {
   AppRoute,
   AppRouter,
-  checkStandardSchema,
   isAppRoute,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
   ServerInferResponses,
   TsRestResponseError,
+  validateIfSchema,
   ValidationError,
 } from '@ts-rest/core';
 import {
@@ -323,11 +323,11 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
-    const paramsResult = checkStandardSchema(req.params, appRoute.pathParams, {
+    const paramsResult = validateIfSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = checkStandardSchema(req.headers, appRoute.headers, {
+    const headersResult = validateIfSchema(req.headers, appRoute.headers, {
       passThroughExtraKeys: true,
     });
 
@@ -335,9 +335,9 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
 
-    const queryResult = checkStandardSchema(query, appRoute.query);
+    const queryResult = validateIfSchema(query, appRoute.query);
 
-    const bodyResult = checkStandardSchema(
+    const bodyResult = validateIfSchema(
       req.body,
       'body' in appRoute ? appRoute.body : null,
     );
@@ -357,9 +357,9 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
     ) {
       throw new RequestValidationError(
         paramsResult.error || null,
-        isHeadersInvalid ? headersResult.error : null,
-        isQueryInvalid ? queryResult.error : null,
-        isBodyInvalid ? bodyResult.error : null,
+        isHeadersInvalid ? headersResult.error || null : null,
+        isQueryInvalid ? queryResult.error || null : null,
+        isBodyInvalid ? bodyResult.error || null : null,
       );
     }
 
@@ -444,7 +444,7 @@ const validateResponse = (
     );
   }
 
-  const responseValidation = checkStandardSchema(
+  const responseValidation = validateIfSchema(
     body,
     appRoute.responses[response.status],
   );

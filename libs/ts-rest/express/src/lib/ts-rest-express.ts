@@ -1,7 +1,7 @@
 import {
   AppRoute,
   AppRouter,
-  checkStandardSchema,
+  validateIfSchema,
   HTTPStatusCode,
   isAppRoute,
   isAppRouteNoBody,
@@ -90,11 +90,11 @@ const validateRequest = (
   schema: AppRoute,
   options: TsRestExpressOptions<AppRouter>,
 ) => {
-  const paramsResult = checkStandardSchema(req.params, schema.pathParams, {
+  const paramsResult = validateIfSchema(req.params, schema.pathParams, {
     passThroughExtraKeys: true,
   });
 
-  const headersResult = checkStandardSchema(req.headers, schema.headers, {
+  const headersResult = validateIfSchema(req.headers, schema.headers, {
     passThroughExtraKeys: true,
   });
 
@@ -102,9 +102,9 @@ const validateRequest = (
     ? parseJsonQueryObject(req.query as Record<string, string>)
     : req.query;
 
-  const queryResult = checkStandardSchema(query, schema.query);
+  const queryResult = validateIfSchema(query, schema.query);
 
-  const bodyResult = checkStandardSchema(
+  const bodyResult = validateIfSchema(
     req.body,
     'body' in schema ? schema.body : null,
   );

@@ -7,7 +7,6 @@ import {
   SchemaTransformerSync,
 } from '../types';
 import { ParameterObject } from 'openapi3-ts';
-import { z } from 'zod';
 import { schemaObjectToParameters } from './utils';
 
 type GetQueryParameterHelper = AsyncAndSyncHelper<

@@ -3,7 +3,7 @@ import {
   AppRoute,
   AppRouteQuery,
   AppRouter,
-  checkStandardSchema,
+  validateIfSchema,
   HTTPStatusCode,
   isAppRoute,
   isAppRouteNoBody,
@@ -293,11 +293,11 @@ const handlerFactory = (
       return;
     }
 
-    const pathParamsResult = checkStandardSchema(pathParams, route.pathParams, {
+    const pathParamsResult = validateIfSchema(pathParams, route.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = checkStandardSchema(req.headers, route.headers, {
+    const headersResult = validateIfSchema(req.headers, route.headers, {
       passThroughExtraKeys: true,
     });
 
@@ -305,9 +305,9 @@ const handlerFactory = (
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
 
-    const queryResult = checkStandardSchema(query, route.query);
+    const queryResult = validateIfSchema(query, route.query);
 
-    const bodyResult = checkStandardSchema(req.body, route.body);
+    const bodyResult = validateIfSchema(req.body, route.body);
 
     try {
       if (

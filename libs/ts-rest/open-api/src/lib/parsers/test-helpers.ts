@@ -15,7 +15,7 @@ export const ZOD_SYNC: SchemaTransformerSync = (
     return null;
   }
 
-  return generateSchema(schema, useOutput);
+  return generateSchema(schema as any, useOutput);
 };
 
 export const ZOD_ASYNC: SchemaTransformerAsync = async (

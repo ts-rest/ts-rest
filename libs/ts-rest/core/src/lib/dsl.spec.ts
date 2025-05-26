@@ -118,6 +118,8 @@ describe('contract', () => {
       },
     });
 
+    type x = typeof contract.posts.getPost;
+
     type ContractShape = Expect<
       Equal<
         typeof contract,
@@ -141,12 +143,13 @@ describe('contract', () => {
                   }
                 >;
               };
-              headers: z.ZodObject<
-                { 'x-foo': z.ZodString },
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo': string },
-                { 'x-foo': string }
+              headers: StandardSchemaV1<
+                {
+                  'x-foo': string;
+                },
+                {
+                  'x-foo': string;
+                }
               >;
             };
           };
@@ -200,12 +203,13 @@ describe('contract', () => {
                   }
                 >;
               };
-              headers: z.ZodObject<
-                { 'x-foo': z.ZodString },
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo': string },
-                { 'x-foo': string }
+              headers: StandardSchemaV1<
+                {
+                  'x-foo': string;
+                },
+                {
+                  'x-foo': string;
+                }
               >;
             };
           };

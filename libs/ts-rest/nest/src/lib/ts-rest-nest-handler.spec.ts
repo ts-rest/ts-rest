@@ -185,8 +185,11 @@ describe('ts-rest-nest-handler', () => {
           paramsResult: null,
         });
         expect(
-          RequestValidationErrorSchema['~standard'].validate(responsePost.body),
-        ).toEqual({ value: expect.any(Object) });
+          RequestValidationErrorSchema.safeParse(responsePost.body),
+        ).toStrictEqual({
+          data: expect.any(Object),
+          success: true,
+        });
       });
 
       it("shouldn't validate body", async () => {

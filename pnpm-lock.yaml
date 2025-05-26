@@ -18,7 +18,7 @@ importers:
         version: 1.10.0
       '@anatine/zod-openapi':
         specifier: ^2.0.1
-        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.24.2)
+        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.22.3)
       '@azure/functions':
         specifier: ^4.5.0
         version: 4.5.0
@@ -218,8 +218,8 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
       zod:
-        specifier: ^3.24.0
-        version: 3.24.2
+        specifier: 3.22.3
+        version: 3.22.3
       zustand:
         specifier: ^4.1.1
         version: 4.1.1(immer@9.0.15)(react@18.3.1)
@@ -584,13 +584,13 @@ importers:
     dependencies:
       '@anatine/zod-openapi':
         specifier: ^1.12.0
-        version: 1.12.0(openapi3-ts@2.0.2)(zod@3.24.2)
+        version: 1.12.0(openapi3-ts@2.0.2)(zod@3.22.3)
       openapi3-ts:
         specifier: ^2.0.2
         version: 2.0.2
       zod:
-        specifier: ^3.24.0
-        version: 3.24.2
+        specifier: ^3.22.3
+        version: 3.22.3
 
   libs/ts-rest/react-query:
     dependencies:
@@ -10999,8 +10999,8 @@ packages:
     engines: {node: '>=8.0.0'}
     hasBin: true
 
-  zod@3.24.2:
-    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
+  zod@3.22.3:
+    resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
   zustand@4.1.1:
     resolution: {integrity: sha512-h4F3WMqsZgvvaE0n3lThx4MM81Ls9xebjvrABNzf5+jb3/03YjNTSgZXeyrvXDArMeV9untvWXRw1tY+ntPYbA==}
@@ -11113,17 +11113,17 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.2
       '@jridgewell/trace-mapping': 0.3.18
 
-  '@anatine/zod-openapi@1.12.0(openapi3-ts@2.0.2)(zod@3.24.2)':
+  '@anatine/zod-openapi@1.12.0(openapi3-ts@2.0.2)(zod@3.22.3)':
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 4.0.0
-      zod: 3.24.2
+      zod: 3.22.3
 
-  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.24.2)':
+  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.22.3)':
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.0
-      zod: 3.24.2
+      zod: 3.22.3
 
   '@angular-devkit/core@15.2.4(chokidar@3.5.3)':
     dependencies:
@@ -20522,7 +20522,7 @@ snapshots:
       workerd: 1.20240304.0
       ws: 8.13.0
       youch: 3.3.3
-      zod: 3.24.2
+      zod: 3.22.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -24289,7 +24289,7 @@ snapshots:
     optionalDependencies:
       commander: 9.4.1
 
-  zod@3.24.2: {}
+  zod@3.22.3: {}
 
   zustand@4.1.1(immer@9.0.15)(react@18.3.1):
     dependencies:
