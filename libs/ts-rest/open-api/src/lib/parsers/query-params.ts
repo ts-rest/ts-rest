@@ -13,6 +13,7 @@ type GetQueryParameterHelper = AsyncAndSyncHelper<
   {
     appRoute: AppRoute;
     id: string;
+    concatenatedPath: string;
     jsonQuery?: boolean;
   },
   {
@@ -28,6 +29,7 @@ const syncFunc: GetSyncFunction<GetQueryParameterHelper> = ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
   jsonQuery = false,
 }) => {
   const schema = appRoute.query;
@@ -41,6 +43,7 @@ const syncFunc: GetSyncFunction<GetQueryParameterHelper> = ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'query',
   });
 
@@ -55,6 +58,7 @@ const asyncFunc: GetAsyncFunction<GetQueryParameterHelper> = async ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
   jsonQuery = false,
 }) => {
   const schema = appRoute.query;
@@ -68,6 +72,7 @@ const asyncFunc: GetAsyncFunction<GetQueryParameterHelper> = async ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'query',
   });
 

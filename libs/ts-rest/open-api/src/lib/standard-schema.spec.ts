@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { initContract } from '@ts-rest/core';
-import { generateOpenApiAsync } from './ts-rest-open-api';
+import { generateOpenApi, generateOpenApiAsync } from './ts-rest-open-api';
 import { VALIBOT_ASYNC } from './parsers/test-helpers';
 
 const c = initContract();
@@ -78,6 +78,102 @@ const contract = c.router({
 });
 
 describe('standard schema', () => {
+  it('should allow custom schema transformers', () => {
+    const schema = generateOpenApi(
+      c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          responses: {
+            200: c.type<{ message: string }>(),
+          },
+        },
+      }),
+      {
+        info: {
+          title: 'Blog API',
+          version: '0.1',
+        },
+      },
+      {
+        schemaTransformer: ({
+          schema,
+          appRoute,
+          id,
+          type,
+          concatenatedPath,
+        }) => {
+          if (type === 'path') {
+            return {
+              type: 'object',
+              properties: {
+                id: { type: 'string', pattern: '^[0-9]+$', pathTest: 'test' },
+              },
+            };
+          }
+
+          return {
+            topLevelReturn: true,
+            description: type,
+          };
+        },
+      },
+    );
+
+    expect(schema).toStrictEqual({
+      info: {
+        title: 'Blog API',
+        version: '0.1',
+      },
+      openapi: '3.0.2',
+      paths: {
+        '/posts/{id}': {
+          get: {
+            deprecated: undefined,
+            description: undefined,
+            parameters: [
+              {
+                in: 'path',
+                name: 'id',
+                schema: {
+                  type: 'string',
+                  pattern: '^[0-9]+$',
+                  pathTest: 'test',
+                },
+              },
+            ],
+            requestBody: {
+              content: {
+                'application/json': {
+                  schema: {
+                    description: 'body',
+                    topLevelReturn: true,
+                  },
+                },
+              },
+              description: 'Body',
+            },
+            responses: {
+              '200': {
+                content: {
+                  'application/json': {
+                    schema: {
+                      description: 'response',
+                      topLevelReturn: true,
+                    },
+                  },
+                },
+                description: '200',
+              },
+            },
+            summary: undefined,
+            tags: [],
+          },
+        },
+      },
+    });
+  });
+
   it('async valibot schema', async () => {
     const openApiSchema = await generateOpenApiAsync(
       contract,

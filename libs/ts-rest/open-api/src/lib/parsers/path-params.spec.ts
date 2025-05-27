@@ -3,7 +3,7 @@ import { ZOD_SYNC, ZOD_ASYNC, VALIBOT_ASYNC } from './test-helpers';
 import * as v from 'valibot';
 import { getParamsFromPathOnly, getPathParameterSchema } from './path-params';
 import { ParameterObject } from 'openapi3-ts';
-import { ContractAnyType, ContractNoBody } from '@ts-rest/core';
+import { ContractAnyType } from '@ts-rest/core';
 
 /**
  * Theres a few permutations to deal with, mainly sync and async, so we build up CASES then run them against both
@@ -224,6 +224,7 @@ describe('path-params', () => {
           },
         },
         id: 'testFunc',
+        concatenatedPath: 'testFunc',
       });
 
       expect(res).toEqual(expected);
@@ -246,6 +247,7 @@ describe('path-params', () => {
           },
         },
         id: 'testFunc',
+        concatenatedPath: 'testFunc',
       });
 
       expect(res).toEqual(expected);

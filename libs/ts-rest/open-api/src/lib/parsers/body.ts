@@ -12,6 +12,7 @@ type GetBodySchemaHelper = AsyncAndSyncHelper<
   {
     appRoute: AppRoute;
     id: string;
+    concatenatedPath: string;
   },
   {
     transformSchema: SchemaTransformerSync;
@@ -26,6 +27,7 @@ const syncFunc: GetSyncFunction<GetBodySchemaHelper> = ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
 }) => {
   const schema = 'body' in appRoute ? appRoute.body : undefined;
 
@@ -33,6 +35,7 @@ const syncFunc: GetSyncFunction<GetBodySchemaHelper> = ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'body',
   });
 
@@ -47,6 +50,7 @@ const asyncFunc: GetAsyncFunction<GetBodySchemaHelper> = async ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
 }) => {
   const schema = 'body' in appRoute ? appRoute.body : undefined;
 
@@ -54,6 +58,7 @@ const asyncFunc: GetAsyncFunction<GetBodySchemaHelper> = async ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'body',
   });
 

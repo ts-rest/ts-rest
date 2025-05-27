@@ -74,6 +74,7 @@ const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
 export const ZOD_3_SCHEMA_TRANSFORMER: SchemaTransformer = ({
   schema,
   type,
+  concatenatedPath,
 }) => {
   if (!isZodType(schema)) {
     return null;
@@ -81,7 +82,7 @@ export const ZOD_3_SCHEMA_TRANSFORMER: SchemaTransformer = ({
 
   const useOutput = type === 'response';
 
-  return generateSchema(schema, useOutput);
+  return generateSchema(schema, type === 'response');
 };
 
 /*
@@ -240,22 +241,27 @@ export function generateOpenApi(
       operationIds.set(path.id, path.paths);
     }
 
+    const concatenatedPath = [...path.paths, path.id].join('.');
+
     const pathParams = getPathParameterSchema.sync({
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
     });
 
     const headerParams = getHeaderParameterSchema.sync({
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
     });
 
     const querySchema = getQueryParameterSchema.sync({
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
       jsonQuery: !!opts.jsonQuery,
     });
 
@@ -263,6 +269,7 @@ export function generateOpenApi(
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
     });
 
     if (bodySchema?.title) {
@@ -283,6 +290,7 @@ export function generateOpenApi(
           schema: responseBody,
           appRoute: path.route,
           id: path.id,
+          concatenatedPath,
           type: 'response',
         });
 
@@ -436,22 +444,27 @@ export async function generateOpenApiAsync(
       operationIds.set(path.id, path.paths);
     }
 
+    const concatenatedPath = [...path.paths, path.id].join('.');
+
     const pathParams = await getPathParameterSchema.async({
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
     });
 
     const headerParams = await getHeaderParameterSchema.async({
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
     });
 
     const querySchema = await getQueryParameterSchema.async({
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
       jsonQuery: !!opts.jsonQuery,
     });
 
@@ -459,6 +472,7 @@ export async function generateOpenApiAsync(
       transformSchema,
       appRoute: path.route,
       id: path.id,
+      concatenatedPath,
     });
 
     if (bodySchema && typeof bodySchema === 'object' && 'title' in bodySchema) {
@@ -482,6 +496,7 @@ export async function generateOpenApiAsync(
         schema: responseBody,
         appRoute: path.route,
         id: path.id,
+        concatenatedPath,
         type: 'response',
       });
 

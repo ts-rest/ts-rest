@@ -13,6 +13,7 @@ type GetHeaderParameterHelper = AsyncAndSyncHelper<
   {
     appRoute: AppRoute;
     id: string;
+    concatenatedPath: string;
   },
   {
     transformSchema: SchemaTransformerSync;
@@ -27,6 +28,7 @@ const syncFunc: GetSyncFunction<GetHeaderParameterHelper> = ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
 }) => {
   const schema = appRoute.headers;
 
@@ -34,6 +36,7 @@ const syncFunc: GetSyncFunction<GetHeaderParameterHelper> = ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'header',
   });
 
@@ -48,6 +51,7 @@ const asyncFunc: GetAsyncFunction<GetHeaderParameterHelper> = async ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
 }) => {
   const schema = appRoute.headers;
 
@@ -55,6 +59,7 @@ const asyncFunc: GetAsyncFunction<GetHeaderParameterHelper> = async ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'header',
   });
 

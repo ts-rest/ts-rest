@@ -21,6 +21,7 @@ describe('query-params', () => {
           },
         },
         id: 'testFunc',
+        concatenatedPath: 'testFunc',
       });
 
       expect(res).toEqual([
@@ -51,6 +52,7 @@ describe('query-params', () => {
           },
         },
         id: 'testFunc',
+        concatenatedPath: 'testFunc',
       });
 
       expect(res).toEqual([
@@ -80,6 +82,7 @@ describe('query-params', () => {
           },
         },
         id: 'testFunc',
+        concatenatedPath: 'testFunc',
       });
 
       expect(res).toEqual([
@@ -110,6 +113,7 @@ describe('query-params', () => {
           },
         },
         id: 'testFunc',
+        concatenatedPath: 'testFunc',
       });
 
       expect(result).toEqual([
@@ -141,6 +145,7 @@ describe('query-params', () => {
           },
         },
         id: 'testFunc',
+        concatenatedPath: 'testFunc',
       });
 
       expect(res).toEqual([

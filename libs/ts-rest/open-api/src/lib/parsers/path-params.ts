@@ -13,6 +13,7 @@ type GetPathParameterHelper = AsyncAndSyncHelper<
   {
     appRoute: AppRoute;
     id: string;
+    concatenatedPath: string;
   },
   {
     transformSchema: SchemaTransformerSync;
@@ -75,6 +76,7 @@ const syncFunc: GetSyncFunction<GetPathParameterHelper> = ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
 }) => {
   const schema = appRoute.pathParams;
 
@@ -84,6 +86,7 @@ const syncFunc: GetSyncFunction<GetPathParameterHelper> = ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'path',
   });
 
@@ -104,6 +107,7 @@ const asyncFunc: GetAsyncFunction<GetPathParameterHelper> = async ({
   transformSchema,
   appRoute,
   id,
+  concatenatedPath,
 }) => {
   const schema = appRoute.pathParams;
 
@@ -113,6 +117,7 @@ const asyncFunc: GetAsyncFunction<GetPathParameterHelper> = async ({
     schema,
     appRoute,
     id,
+    concatenatedPath,
     type: 'path',
   });
 

@@ -15,13 +15,13 @@ type SchemaTransformerArgs = {
    */
   id: string;
   /**
+   * The concatenated path of the route. e.g. `pokemon.getPokemon` or `pokemon.createPokemon`.
+   */
+  concatenatedPath: string;
+  /**
    * Where the schema is used, can be used to conditionally transform the schema.
    */
   type: 'body' | 'response' | 'query' | 'header' | 'path';
-  /**
-   * Whether to use the output schema.
-   */
-  useOutput?: boolean;
 };
 
 /**
