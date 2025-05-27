@@ -55,7 +55,9 @@ const contract = c.router({
       id: IdPathParam,
       visibility: v.picklist(['public', 'private']),
     }),
-    body: null,
+    body: v.object({
+      bodyProperty: v.array(v.string()),
+    }),
     responses: {
       200: v.object({
         visibility: v.string(),
@@ -205,7 +207,18 @@ describe('standard schema', () => {
         requestBody: {
           content: {
             'application/json': {
-              schema: {},
+              schema: {
+                properties: {
+                  bodyProperty: {
+                    items: {
+                      type: 'string',
+                    },
+                    type: 'array',
+                  },
+                },
+                required: ['bodyProperty'],
+                type: 'object',
+              },
             },
           },
           description: 'Body',

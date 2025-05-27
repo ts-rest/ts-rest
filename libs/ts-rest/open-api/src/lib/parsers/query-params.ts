@@ -37,7 +37,12 @@ const syncFunc: GetSyncFunction<GetQueryParameterHelper> = ({
     return [];
   }
 
-  const transformedSchema = transformSchema(schema, appRoute, id, 'query');
+  const transformedSchema = transformSchema({
+    schema,
+    appRoute,
+    id,
+    type: 'query',
+  });
 
   if (!transformedSchema) {
     return [];
@@ -59,12 +64,12 @@ const asyncFunc: GetAsyncFunction<GetQueryParameterHelper> = async ({
     return [];
   }
 
-  const transformedSchema = await transformSchema(
+  const transformedSchema = await transformSchema({
     schema,
     appRoute,
     id,
-    'query',
-  );
+    type: 'query',
+  });
 
   if (!transformedSchema) {
     return [];

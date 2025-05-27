@@ -80,7 +80,12 @@ const syncFunc: GetSyncFunction<GetPathParameterHelper> = ({
 
   const paramsMap = getParamsFromPathOnly(appRoute.path);
 
-  const transformedSchema = transformSchema(schema, appRoute, id, 'path');
+  const transformedSchema = transformSchema({
+    schema,
+    appRoute,
+    id,
+    type: 'path',
+  });
 
   if (!transformedSchema) {
     return Array.from(paramsMap.values());
@@ -104,7 +109,12 @@ const asyncFunc: GetAsyncFunction<GetPathParameterHelper> = async ({
 
   const paramsMap = getParamsFromPathOnly(appRoute.path);
 
-  const transformedSchema = await transformSchema(schema, appRoute, id, 'path');
+  const transformedSchema = await transformSchema({
+    schema,
+    appRoute,
+    id,
+    type: 'path',
+  });
 
   if (!transformedSchema) {
     return Array.from(paramsMap.values());

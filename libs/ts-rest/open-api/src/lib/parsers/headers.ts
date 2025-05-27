@@ -30,7 +30,12 @@ const syncFunc: GetSyncFunction<GetHeaderParameterHelper> = ({
 }) => {
   const schema = appRoute.headers;
 
-  const transformedSchema = transformSchema(schema, appRoute, id, 'header');
+  const transformedSchema = transformSchema({
+    schema,
+    appRoute,
+    id,
+    type: 'header',
+  });
 
   if (!transformedSchema) {
     return [];
@@ -46,12 +51,12 @@ const asyncFunc: GetAsyncFunction<GetHeaderParameterHelper> = async ({
 }) => {
   const schema = appRoute.headers;
 
-  const transformedSchema = await transformSchema(
+  const transformedSchema = await transformSchema({
     schema,
     appRoute,
     id,
-    'header',
-  );
+    type: 'header',
+  });
 
   if (!transformedSchema) {
     return [];

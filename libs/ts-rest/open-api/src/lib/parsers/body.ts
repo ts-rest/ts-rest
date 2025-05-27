@@ -29,7 +29,12 @@ const syncFunc: GetSyncFunction<GetBodySchemaHelper> = ({
 }) => {
   const schema = 'body' in appRoute ? appRoute.body : undefined;
 
-  const transformedSchema = transformSchema(schema, appRoute, id, 'body');
+  const transformedSchema = transformSchema({
+    schema,
+    appRoute,
+    id,
+    type: 'body',
+  });
 
   if (!transformedSchema) {
     return null;
@@ -45,7 +50,12 @@ const asyncFunc: GetAsyncFunction<GetBodySchemaHelper> = async ({
 }) => {
   const schema = 'body' in appRoute ? appRoute.body : undefined;
 
-  const transformedSchema = await transformSchema(schema, appRoute, id, 'body');
+  const transformedSchema = await transformSchema({
+    schema,
+    appRoute,
+    id,
+    type: 'body',
+  });
 
   return transformedSchema;
 };

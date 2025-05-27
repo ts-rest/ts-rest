@@ -71,16 +71,15 @@ const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
  *
  * This should be removed from the library in the future, we could expose copy-pastable code instead
  */
-export const ZOD_3_SCHEMA_TRANSFORMER: SchemaTransformer = (
-  schema: unknown,
-  _appRoute: AppRoute,
-  _id: string,
-  _type: 'body' | 'response' | 'query' | 'header' | 'path',
-  useOutput = false,
-) => {
+export const ZOD_3_SCHEMA_TRANSFORMER: SchemaTransformer = ({
+  schema,
+  type,
+}) => {
   if (!isZodType(schema)) {
     return null;
   }
+
+  const useOutput = type === 'response';
 
   return generateSchema(schema, useOutput);
 };
@@ -280,13 +279,12 @@ export function generateOpenApi(
           responseBody = response.body;
         }
 
-        let responseSchema = transformSchema(
-          responseBody,
-          path.route,
-          path.id,
-          'response',
-          true,
-        );
+        let responseSchema = transformSchema({
+          schema: responseBody,
+          appRoute: path.route,
+          id: path.id,
+          type: 'response',
+        });
 
         const description =
           response &&
@@ -480,13 +478,13 @@ export async function generateOpenApiAsync(
         responseBody = response.body;
       }
 
-      let responseSchema = await transformSchema(
-        responseBody,
-        path.route,
-        path.id,
-        'response',
-        true,
-      );
+      let responseSchema = await transformSchema({
+        schema: responseBody,
+        appRoute: path.route,
+        id: path.id,
+        type: 'response',
+      });
+
       const description =
         response &&
         typeof response === 'object' &&
