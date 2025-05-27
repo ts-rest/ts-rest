@@ -3,6 +3,7 @@ import { initServer, RequestValidationErrorSchema } from './ts-rest-fastify';
 import { z } from 'zod';
 import fastify from 'fastify';
 import * as supertest from 'supertest';
+import * as v from 'valibot';
 
 declare module 'fastify' {
   interface FastifyReply {
@@ -1058,5 +1059,114 @@ describe('ts-rest-fastify', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.body).toBeTruthy();
     expect(calledTimes).toEqual(3);
+  });
+
+  describe('valibot', () => {
+    it('should handle default error handler', async () => {
+      const contract = c.router({
+        getMe: {
+          method: 'GET',
+          path: '/me',
+          query: v.object({
+            name: v.literal('expected'),
+          }),
+          responses: { 200: c.noBody() },
+        },
+      });
+
+      const router = s.router(contract, {
+        getMe: async () => {
+          return { status: 200, body: undefined };
+        },
+      });
+
+      const app = fastify();
+      app.register(s.plugin(router));
+
+      await app.ready();
+
+      const response = await supertest(app.server).get('/me?name=expected');
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({});
+
+      const response2 = await supertest(app.server).get('/me?name=unexpected');
+
+      expect(response2.statusCode).toEqual(400);
+      expect(response2.body).toEqual({
+        bodyErrors: null,
+        headerErrors: null,
+        pathParameterErrors: null,
+        queryParameterErrors: {
+          issues: [
+            {
+              expected: '"expected"',
+              input: 'unexpected',
+              kind: 'schema',
+              message:
+                'Invalid type: Expected "expected" but received "unexpected"',
+              path: [
+                {
+                  input: {
+                    name: 'unexpected',
+                  },
+                  key: 'name',
+                  origin: 'value',
+                  type: 'object',
+                  value: 'unexpected',
+                },
+              ],
+              received: '"unexpected"',
+              type: 'literal',
+            },
+          ],
+          name: 'ValidationError',
+        },
+      });
+    });
+
+    it('should handle custom error handler', async () => {
+      const contract = c.router({
+        getMe: {
+          method: 'GET',
+          path: '/me',
+          query: v.object({
+            name: v.literal('expected'),
+          }),
+          responses: { 200: c.noBody() },
+        },
+      });
+
+      const router = s.router(contract, {
+        getMe: async () => {
+          return { status: 200, body: undefined };
+        },
+      });
+
+      const app = fastify();
+      app.register(s.plugin(router), {
+        requestValidationErrorHandler: (err, _req, reply) => {
+          reply.status(400).send({
+            custom: 'error',
+            countOfQueryErrors: err.query?.issues.length,
+          });
+        },
+      });
+
+      await app.ready();
+
+      const response = await supertest(app.server).get('/me?name=expected');
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({});
+
+      const response2 = await supertest(app.server).get('/me?name=unexpected');
+
+      expect(response2.statusCode).toEqual(400);
+      expect(response2.body).toEqual({
+        custom: 'error',
+        countOfQueryErrors: 1,
+      });
+    });
   });
 });

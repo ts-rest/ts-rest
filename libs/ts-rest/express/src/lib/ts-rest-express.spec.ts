@@ -13,7 +13,9 @@ import * as multer from 'multer';
 import {
   CombinedRequestValidationErrorSchema,
   DefaultRequestValidationErrorSchema,
+  RequestValidationError,
 } from './request-validation-error';
+import * as v from 'valibot';
 
 const upload = multer();
 
@@ -608,5 +610,167 @@ describe('ts-rest-express', () => {
           CombinedRequestValidationErrorSchema.parse(res.body),
         ).not.toThrowError();
       });
+  });
+
+  describe('valibot', () => {
+    it('should handle default error handler', async () => {
+      const contract = c.router({
+        createPost: {
+          method: 'POST',
+          path: '/posts',
+          body: v.object({
+            id: v.string(),
+            content: v.string(),
+          }),
+          responses: {
+            200: c.noBody(),
+          },
+        },
+      });
+
+      const router = s.router(contract, {
+        createPost: async () => {
+          return {
+            status: 200,
+            body: undefined,
+          };
+        },
+      });
+
+      const app = express();
+      app.use(express.json());
+      app.use(express.urlencoded({ extended: true }));
+      createExpressEndpoints(contract, router, app, {});
+
+      await supertest(app)
+        .post('/posts')
+        .expect((res) => {
+          expect(res.status).toEqual(400);
+          expect(res.body).toStrictEqual({
+            name: 'ValidationError',
+            issues: [
+              {
+                expected: 'Object',
+                kind: 'schema',
+                message: 'Invalid type: Expected Object but received undefined',
+                received: 'undefined',
+                type: 'object',
+              },
+            ],
+          });
+        });
+    });
+
+    it('should work with combined error handler', async () => {
+      const contract = c.router({
+        createPost: {
+          method: 'POST',
+          path: '/posts',
+          body: v.object({
+            id: v.string(),
+            content: v.string(),
+          }),
+          responses: {
+            200: c.noBody(),
+          },
+        },
+      });
+
+      const router = s.router(contract, {
+        createPost: async () => {
+          return {
+            status: 200,
+            body: undefined,
+          };
+        },
+      });
+
+      const app = express();
+      app.use(express.json());
+      app.use(express.urlencoded({ extended: true }));
+      createExpressEndpoints(contract, router, app, {
+        requestValidationErrorHandler: 'combined',
+      });
+
+      await supertest(app)
+        .post('/posts')
+        .expect((res) => {
+          expect(res.status).toEqual(400);
+          expect(res.body).toStrictEqual({
+            bodyErrors: {
+              issues: [
+                {
+                  expected: 'Object',
+                  kind: 'schema',
+                  message:
+                    'Invalid type: Expected Object but received undefined',
+                  received: 'undefined',
+                  type: 'object',
+                },
+              ],
+              name: 'ValidationError',
+            },
+            headerErrors: null,
+            pathParameterErrors: null,
+            queryParameterErrors: null,
+          });
+        });
+    });
+
+    it('should work with custom error handler', async () => {
+      const contract = c.router({
+        createPost: {
+          method: 'POST',
+          path: '/posts',
+          body: v.object({
+            id: v.string(),
+            content: v.string(),
+          }),
+          responses: {
+            200: c.noBody(),
+          },
+        },
+      });
+
+      const router = s.router(contract, {
+        createPost: async () => {
+          return {
+            status: 200,
+            body: undefined,
+          };
+        },
+      });
+
+      const app = express();
+      app.use(express.json());
+      app.use(express.urlencoded({ extended: true }));
+      createExpressEndpoints(contract, router, app, {
+        requestValidationErrorHandler: (
+          err: RequestValidationError,
+          req: express.Request,
+          res: express.Response,
+          next: express.NextFunction,
+        ) => {
+          res.status(400).json({
+            custom: 'error',
+            countOfIssues:
+              (err.body?.issues?.length ?? 0) +
+              (err.query?.issues?.length ?? 0) +
+              (err.pathParams?.issues?.length ?? 0),
+          });
+          return;
+        },
+      });
+
+      await supertest(app)
+        .post('/posts')
+        .expect((res) => {
+          expect(res.status).toEqual(400);
+          expect(res.body).toStrictEqual({
+            custom: 'error',
+            countOfIssues: 1,
+          });
+        });
+    });
   });
 });

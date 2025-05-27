@@ -10,8 +10,6 @@ import {
   TsRestResponseError,
   validateResponse,
   parseAsStandardSchema,
-  areAllSchemasLegacyZod,
-  StandardSchemaError,
 } from '@ts-rest/core';
 import {
   IRouter,
@@ -28,12 +26,8 @@ import {
   TsRestRequestHandler,
   isAppRouteImplementation,
 } from './types';
-import {
-  RequestValidationError,
-  TsRestRequestValidationError,
-} from './request-validation-error';
+import { RequestValidationError } from './request-validation-error';
 import { Stream } from 'stream';
-import { type ZodError } from 'zod';
 
 export const initServer = () => {
   return {
@@ -126,28 +120,12 @@ const validateRequest = (
     queryResult.error ||
     bodyResult.error
   ) {
-    const useLegacyZod = areAllSchemasLegacyZod([
-      pathParamsSchema,
-      headersSchema,
-      querySchema,
-      bodySchema,
-    ]);
-
-    if (useLegacyZod) {
-      throw new RequestValidationError(
-        (paramsResult.error as ZodError) || null,
-        (headersResult.error as ZodError) || null,
-        (queryResult.error as ZodError) || null,
-        (bodyResult.error as ZodError) || null,
-      );
-    } else {
-      throw new TsRestRequestValidationError(
-        (paramsResult.error as StandardSchemaError) || null,
-        (headersResult.error as StandardSchemaError) || null,
-        (queryResult.error as StandardSchemaError) || null,
-        (bodyResult.error as StandardSchemaError) || null,
-      );
-    }
+    throw new RequestValidationError(
+      paramsResult.error || null,
+      headersResult.error || null,
+      queryResult.error || null,
+      bodyResult.error || null,
+    );
   }
 
   return {

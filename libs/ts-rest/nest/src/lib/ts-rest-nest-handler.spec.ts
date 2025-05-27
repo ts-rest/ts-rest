@@ -4,6 +4,7 @@ import {
   TsRestException,
   tsRestHandler,
   TsRestHandler,
+  TsRestRequestValidationError,
 } from './ts-rest-nest-handler';
 import { z } from 'zod';
 import {
@@ -38,6 +39,7 @@ import { map, Observable } from 'rxjs';
 import { TsRestModule } from './ts-rest.module';
 import path = require('path');
 import * as v from 'valibot';
+import { APP_FILTER } from '@nestjs/core';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T,
@@ -2389,6 +2391,84 @@ describe('ts-rest-nest-handler', () => {
       expect(response.text).toEqual('');
       expect(response.headers['content-length']).toBeUndefined();
       expect(response.headers['content-type']).toBeUndefined();
+    });
+  });
+
+  describe('valibot', () => {
+    it('should be able to intercept a TsRestRequestValidationError when using a standard schema validator', async () => {
+      const c = initContract();
+      const contract = c.router({
+        getIndex: {
+          method: 'POST',
+          path: '/',
+          body: v.object({
+            name: v.string(),
+          }),
+          responses: {
+            200: c.noBody(),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getIndex: async ({ body }) => ({
+              status: 200,
+              body: undefined,
+            }),
+          });
+        }
+      }
+
+      @Catch()
+      class TestErrorFilter implements ExceptionFilter {
+        catch(exception: unknown, host: ArgumentsHost) {
+          const ctx = host.switchToHttp();
+          const req = ctx.getRequest<Request>();
+          const res = ctx.getResponse<Response>();
+
+          if (exception instanceof TsRestRequestValidationError) {
+            return res.status(400).send({
+              custom: 'error filter caught it',
+              bodyErrors: exception.body?.issues?.length || 0,
+              headerErrors: exception.headers?.issues?.length || 0,
+              pathParameterErrors: exception.pathParams?.issues?.length || 0,
+              queryParameterErrors: exception.query?.issues?.length || 0,
+            });
+          }
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+        providers: [
+          {
+            provide: APP_FILTER,
+            useClass: TestErrorFilter,
+          },
+        ],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).post('/').send({
+        name: 123,
+      });
+
+      expect(response.status).toEqual(400);
+      expect(response.body).toEqual({
+        custom: 'error filter caught it',
+        bodyErrors: 1,
+        headerErrors: 0,
+        pathParameterErrors: 0,
+        queryParameterErrors: 0,
+      });
     });
   });
 });

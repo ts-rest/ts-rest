@@ -92,6 +92,11 @@ export class RequestValidationError extends BadRequestException {
 
 export { RequestValidationErrorSchemaForNest as RequestValidationErrorSchema } from '@ts-rest/core';
 
+/**
+ * Error emitted when response validation fails (when using a standard schema validator)
+ *
+ * This is the new standard
+ */
 export class TsRestResponseValidationError extends InternalServerErrorException {
   constructor(
     public appRoute: AppRoute,
