@@ -1,8 +1,15 @@
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import express from 'express';
 import * as bodyParser from 'body-parser';
-import { initContract } from '@ts-rest/core';
-import { generateOpenApi } from '@ts-rest/open-api';
+import { initClient, initContract } from '@ts-rest/core';
+
+export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
+  T,
+>() => T extends b ? 1 : 2
+  ? true
+  : false;
+
+export type Expect<a extends true> = a;
 
 const c = initContract();
 
@@ -39,6 +46,28 @@ const contract = c.router({
     },
   },
 });
+
+const client = initClient(contract, {
+  baseUrl: 'http://localhost:8000',
+});
+
+const testClient = async () => {
+  const res = await client.getPokemon({ params: { id: 1 } });
+  if (res.status === 200) {
+    return res;
+  } else {
+    throw new Error('Failed to get pokemon');
+  }
+};
+
+type ClientReturnType = Awaited<ReturnType<typeof testClient>>['body'];
+
+/**
+ * Little test to ensure our types still work without zod installed at all
+ */
+type TestClientReturnType = Expect<
+  Equal<ClientReturnType, { id: number; name: string }>
+>;
 
 export const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
