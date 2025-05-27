@@ -1,190 +1,35 @@
 import {
   type AppRoute,
   type AppRouter,
-  isAppRoute,
   isAppRouteOtherResponse,
 } from '@ts-rest/core';
 import type {
   ExamplesObject,
   InfoObject,
-  MediaTypeObject,
   OpenAPIObject,
   OperationObject,
   PathsObject,
-  ReferenceObject,
   SchemaObject,
 } from 'openapi3-ts';
-import { generateSchema } from '@anatine/zod-openapi';
-import { z } from 'zod';
 import {
+  PathSchemaResults,
+  RouterPath,
   SchemaTransformer,
   SchemaTransformerAsync,
   SchemaTransformerSync,
 } from './types';
+import { performContractTraversal } from './contract-traversal';
 import {
-  getPathParameterSchema,
-  getHeaderParameterSchema,
-  getQueryParameterSchema,
-  getBodySchema,
-} from './parsers';
-
-type RouterPath = {
-  id: string;
-  path: string;
-  route: AppRoute;
-  paths: string[];
-};
-
-const getPathsFromRouter = (
-  router: AppRouter,
-  pathHistory?: string[],
-): RouterPath[] => {
-  const paths: RouterPath[] = [];
-
-  Object.keys(router).forEach((key) => {
-    const value = router[key];
-
-    if (isAppRoute(value)) {
-      const pathWithPathParams = value.path.replace(/:(\w+)/g, '{$1}');
-
-      paths.push({
-        id: key,
-        path: pathWithPathParams,
-        route: value,
-        paths: pathHistory ?? [],
-      });
-    } else {
-      paths.push(...getPathsFromRouter(value, [...(pathHistory ?? []), key]));
-    }
-  });
-
-  return paths;
-};
-
-const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
-  return typeof (obj as z.ZodTypeAny)?.safeParse === 'function';
-};
-
-/**
- * Default schema transformer that uses @anatine/zod-openapi
- * Maintains backward compatibility with existing behavior
- *
- * This should be removed from the library in the future, we could expose copy-pastable code instead
- */
-export const ZOD_3_SCHEMA_TRANSFORMER: SchemaTransformer = ({
-  schema,
-  type,
-  concatenatedPath,
-}) => {
-  if (!isZodType(schema)) {
-    return null;
-  }
-
-  const useOutput = type === 'response';
-
-  return generateSchema(schema, type === 'response');
-};
-
-/*
-  TODO: end zod-utils.ts
-*/
+  convertSchemaObjectToMediaTypeObject,
+  extractReferenceSchemas,
+} from './utils';
+import { ZOD_3_SCHEMA_TRANSFORMER } from './transformers';
 
 declare module 'openapi3-ts' {
   interface SchemaObject {
     mediaExamples?: ExamplesObject;
   }
 }
-
-const convertSchemaObjectToMediaTypeObject = (
-  input: SchemaObject,
-): MediaTypeObject => {
-  const { mediaExamples: examples, ...schema } = input;
-
-  return {
-    schema,
-    ...(examples && { examples }),
-  };
-};
-
-const extractReferenceSchemas = (
-  schema: SchemaObject,
-  referenceSchemas: { [id: string]: SchemaObject },
-): SchemaObject => {
-  if (schema.allOf) {
-    schema.allOf = schema.allOf?.map((subSchema) =>
-      extractReferenceSchemas(subSchema, referenceSchemas),
-    );
-  }
-
-  if (schema.anyOf) {
-    schema.anyOf = schema.anyOf?.map((subSchema) =>
-      extractReferenceSchemas(subSchema, referenceSchemas),
-    );
-  }
-
-  if (schema.oneOf) {
-    schema.oneOf = schema.oneOf?.map((subSchema) =>
-      extractReferenceSchemas(subSchema, referenceSchemas),
-    );
-  }
-
-  if (schema.not) {
-    schema.not = extractReferenceSchemas(schema.not, referenceSchemas);
-  }
-
-  if (schema.items) {
-    schema.items = extractReferenceSchemas(schema.items, referenceSchemas);
-  }
-
-  if (schema.properties) {
-    schema.properties = Object.entries(schema.properties).reduce<{
-      [p: string]: SchemaObject | ReferenceObject;
-    }>((prev, [propertyName, schema]) => {
-      prev[propertyName] = extractReferenceSchemas(schema, referenceSchemas);
-      return prev;
-    }, {});
-  }
-
-  if (schema.additionalProperties) {
-    schema.additionalProperties =
-      typeof schema.additionalProperties != 'boolean'
-        ? extractReferenceSchemas(schema.additionalProperties, referenceSchemas)
-        : schema.additionalProperties;
-  }
-
-  if (schema.title) {
-    const nullable = schema.nullable;
-    schema.nullable = undefined;
-    if (schema.title in referenceSchemas) {
-      if (
-        JSON.stringify(referenceSchemas[schema.title]) !==
-        JSON.stringify(schema)
-      ) {
-        throw new Error(
-          `Schema title '${schema.title}' already exists with a different schema`,
-        );
-      }
-    } else {
-      referenceSchemas[schema.title] = schema;
-    }
-
-    if (nullable) {
-      schema = {
-        nullable: true,
-        allOf: [
-          {
-            $ref: `#/components/schemas/${schema.title}`,
-          },
-        ],
-      };
-    } else {
-      schema = {
-        $ref: `#/components/schemas/${schema.title}`,
-      };
-    }
-  }
-  return schema;
-};
 
 /**
  * Generate OpenAPI specification from ts-rest router
@@ -211,181 +56,23 @@ export function generateOpenApi(
     schemaTransformer?: SchemaTransformerSync;
   },
 ): OpenAPIObject {
-  const paths = getPathsFromRouter(router);
-  const opts = options || {};
-
-  const mapMethod = {
-    GET: 'get',
-    POST: 'post',
-    PUT: 'put',
-    DELETE: 'delete',
-    PATCH: 'patch',
-  };
-
-  const operationIds = new Map<string, string[]>();
-
-  const referenceSchemas: { [id: string]: SchemaObject } = {};
-
-  // Use provided transformer or default
+  /**
+   * Default to ZOD_3_SCHEMA_TRANSFORMER to avoid a breaking change in 3.53.0
+   */
   const transformSchema: SchemaTransformer =
-    opts.schemaTransformer || ZOD_3_SCHEMA_TRANSFORMER;
+    options?.schemaTransformer || ZOD_3_SCHEMA_TRANSFORMER;
 
-  const pathObject = paths.reduce((acc, path) => {
-    if (opts.setOperationId === true) {
-      const existingOp = operationIds.get(path.id);
-      if (existingOp) {
-        throw new Error(
-          `Route '${path.id}' already defined under ${existingOp.join('.')}`,
-        );
-      }
-      operationIds.set(path.id, path.paths);
-    }
+  const paths = performContractTraversal.sync({
+    contract: router,
+    transformSchema,
+    jsonQuery: !!options?.jsonQuery,
+  });
 
-    const concatenatedPath = [...path.paths, path.id].join('.');
-
-    const pathParams = getPathParameterSchema.sync({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-    });
-
-    const headerParams = getHeaderParameterSchema.sync({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-    });
-
-    const querySchema = getQueryParameterSchema.sync({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-      jsonQuery: !!opts.jsonQuery,
-    });
-
-    let bodySchema = getBodySchema.sync({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-    });
-
-    if (bodySchema?.title) {
-      bodySchema = extractReferenceSchemas(bodySchema, referenceSchemas);
-    }
-
-    const responses = Object.entries(path.route.responses).reduce(
-      (acc, [statusCode, response]) => {
-        let contentType = 'application/json';
-        let responseBody = response;
-
-        if (isAppRouteOtherResponse(response)) {
-          contentType = response.contentType;
-          responseBody = response.body;
-        }
-
-        let responseSchema = transformSchema({
-          schema: responseBody,
-          appRoute: path.route,
-          id: path.id,
-          concatenatedPath,
-          type: 'response',
-        });
-
-        const description =
-          response &&
-          typeof response === 'object' &&
-          'description' in response &&
-          response.description
-            ? response.description
-            : statusCode;
-
-        if (responseSchema) {
-          responseSchema = extractReferenceSchemas(
-            responseSchema,
-            referenceSchemas,
-          );
-        }
-
-        return {
-          ...acc,
-          [statusCode]: {
-            description,
-            ...(responseSchema
-              ? {
-                  content: {
-                    [contentType]: {
-                      ...convertSchemaObjectToMediaTypeObject(responseSchema),
-                    },
-                  },
-                }
-              : {}),
-          },
-        };
-      },
-      {},
-    );
-
-    const contentType =
-      path.route?.method !== 'GET' && 'contentType' in path.route
-        ? path.route?.contentType ?? 'application/json'
-        : 'application/json';
-
-    const pathOperation: OperationObject = {
-      description: path.route.description,
-      summary: path.route.summary,
-      deprecated: path.route.deprecated,
-      tags: path.paths,
-      parameters: [...pathParams, ...headerParams, ...querySchema],
-      ...(opts.setOperationId
-        ? {
-            operationId:
-              opts.setOperationId === 'concatenated-path'
-                ? [...path.paths, path.id].join('.')
-                : path.id,
-          }
-        : {}),
-      ...(bodySchema
-        ? {
-            requestBody: {
-              description: 'Body',
-              content: {
-                [contentType]: {
-                  ...convertSchemaObjectToMediaTypeObject(bodySchema),
-                },
-              },
-            },
-          }
-        : {}),
-      responses,
-    };
-
-    acc[path.path] = {
-      ...acc[path.path],
-      [mapMethod[path.route.method]]: opts.operationMapper
-        ? opts.operationMapper(pathOperation, path.route, path.id)
-        : pathOperation,
-    };
-
-    return acc;
-  }, {} as PathsObject);
-
-  if (Object.keys(referenceSchemas).length) {
-    apiDoc['components'] = {
-      schemas: {
-        ...referenceSchemas,
-      },
-      ...apiDoc['components'],
-    };
-  }
-
-  return {
-    openapi: '3.0.2',
-    paths: pathObject,
-    ...apiDoc,
-  };
+  return traversedPathsToOpenApi(paths, apiDoc, {
+    setOperationId: options?.setOperationId,
+    jsonQuery: options?.jsonQuery,
+    operationMapper: options?.operationMapper,
+  });
 }
 
 /**
@@ -413,9 +100,35 @@ export async function generateOpenApiAsync(
     schemaTransformer: SchemaTransformerAsync;
   },
 ): Promise<OpenAPIObject> {
-  const paths = getPathsFromRouter(router);
-  const opts = options || {};
+  const paths = await performContractTraversal.async({
+    contract: router,
+    transformSchema: options.schemaTransformer,
+    jsonQuery: !!options.jsonQuery,
+  });
 
+  return traversedPathsToOpenApi(paths, apiDoc, {
+    setOperationId: options.setOperationId,
+    jsonQuery: options.jsonQuery,
+    operationMapper: options.operationMapper,
+  });
+}
+
+/**
+ * Inner function to be reused by both sync and async functions
+ */
+const traversedPathsToOpenApi = (
+  paths: Array<RouterPath & { schemaResults: PathSchemaResults }>,
+  apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
+  options: {
+    setOperationId?: boolean | 'concatenated-path';
+    jsonQuery?: boolean;
+    operationMapper?: (
+      operation: OperationObject,
+      appRoute: AppRoute,
+      id: string,
+    ) => OperationObject;
+  },
+) => {
   const mapMethod = {
     GET: 'get',
     POST: 'post',
@@ -428,13 +141,10 @@ export async function generateOpenApiAsync(
 
   const referenceSchemas: { [id: string]: SchemaObject } = {};
 
-  // Use provided transformer or default
-  const transformSchema: SchemaTransformerAsync = opts.schemaTransformer;
-
   const pathObject: PathsObject = {};
 
   for (const path of paths) {
-    if (opts.setOperationId === true) {
+    if (options.setOperationId === true) {
       const existingOp = operationIds.get(path.id);
       if (existingOp) {
         throw new Error(
@@ -444,61 +154,26 @@ export async function generateOpenApiAsync(
       operationIds.set(path.id, path.paths);
     }
 
-    const concatenatedPath = [...path.paths, path.id].join('.');
+    const _bodySchema = path.schemaResults.body;
+    const bodySchema =
+      _bodySchema && typeof _bodySchema === 'object' && 'title' in _bodySchema
+        ? extractReferenceSchemas(
+            path.schemaResults.body as SchemaObject,
+            referenceSchemas,
+          )
+        : path.schemaResults.body;
 
-    const pathParams = await getPathParameterSchema.async({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-    });
+    const responses: Record<string, SchemaObject> = {};
 
-    const headerParams = await getHeaderParameterSchema.async({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-    });
-
-    const querySchema = await getQueryParameterSchema.async({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-      jsonQuery: !!opts.jsonQuery,
-    });
-
-    let bodySchema = await getBodySchema.async({
-      transformSchema,
-      appRoute: path.route,
-      id: path.id,
-      concatenatedPath,
-    });
-
-    if (bodySchema && typeof bodySchema === 'object' && 'title' in bodySchema) {
-      bodySchema = extractReferenceSchemas(
-        bodySchema as SchemaObject,
-        referenceSchemas,
-      );
-    }
-
-    const responses: any = {};
     for (const [statusCode, response] of Object.entries(path.route.responses)) {
-      let contentType = 'application/json';
-      let responseBody = response;
+      const contentType = isAppRouteOtherResponse(response)
+        ? response.contentType
+        : 'application/json';
 
-      if (isAppRouteOtherResponse(response)) {
-        contentType = response.contentType;
-        responseBody = response.body;
-      }
-
-      let responseSchema = await transformSchema({
-        schema: responseBody,
-        appRoute: path.route,
-        id: path.id,
-        concatenatedPath,
-        type: 'response',
-      });
+      const responseSchemaObject = path.schemaResults.responses[statusCode];
+      const responseSchemaObjectWithReferences = responseSchemaObject
+        ? extractReferenceSchemas(responseSchemaObject, referenceSchemas)
+        : null;
 
       const description =
         response &&
@@ -508,20 +183,15 @@ export async function generateOpenApiAsync(
           ? response.description
           : statusCode;
 
-      if (responseSchema) {
-        responseSchema = extractReferenceSchemas(
-          responseSchema,
-          referenceSchemas,
-        );
-      }
-
       responses[statusCode] = {
         description,
-        ...(responseSchema
+        ...(responseSchemaObjectWithReferences
           ? {
               content: {
                 [contentType]: {
-                  ...convertSchemaObjectToMediaTypeObject(responseSchema),
+                  ...convertSchemaObjectToMediaTypeObject(
+                    responseSchemaObjectWithReferences,
+                  ),
                 },
               },
             }
@@ -539,11 +209,15 @@ export async function generateOpenApiAsync(
       summary: path.route.summary,
       deprecated: path.route.deprecated,
       tags: path.paths,
-      parameters: [...pathParams, ...headerParams, ...querySchema],
-      ...(opts.setOperationId
+      parameters: [
+        ...path.schemaResults.path,
+        ...path.schemaResults.headers,
+        ...path.schemaResults.query,
+      ],
+      ...(options.setOperationId
         ? {
             operationId:
-              opts.setOperationId === 'concatenated-path'
+              options.setOperationId === 'concatenated-path'
                 ? [...path.paths, path.id].join('.')
                 : path.id,
           }
@@ -565,8 +239,8 @@ export async function generateOpenApiAsync(
 
     pathObject[path.path] = {
       ...pathObject[path.path],
-      [mapMethod[path.route.method]]: opts.operationMapper
-        ? opts.operationMapper(pathOperation, path.route, path.id)
+      [mapMethod[path.route.method]]: options.operationMapper
+        ? options.operationMapper(pathOperation, path.route, path.id)
         : pathOperation,
     };
   }
@@ -585,4 +259,4 @@ export async function generateOpenApiAsync(
     paths: pathObject,
     ...apiDoc,
   };
-}
+};

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
 import { Merge, Opaque, Prettify, WithoutUnknown } from './type-utils';
 import {

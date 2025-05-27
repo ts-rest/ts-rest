@@ -13,7 +13,7 @@ const expectRes = (res: any) => {
   return expect({ body: res.body, status: res.status });
 };
 
-const SCHEMA_TRANSFORMER: SchemaTransformerAsync = async (schema: unknown) => {
+const SCHEMA_TRANSFORMER: SchemaTransformerAsync = async ({ schema }) => {
   if (isZodObject(schema)) {
     const jsonSchema = z.toJSONSchema(schema as any);
 

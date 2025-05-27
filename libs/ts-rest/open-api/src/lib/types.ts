@@ -1,5 +1,5 @@
-import { AppRoute } from '@ts-rest/core';
-import { SchemaObject } from 'openapi3-ts';
+import { AppRoute, StandardSchemaV1 } from '@ts-rest/core';
+import { ParameterObject, ResponseObject, SchemaObject } from 'openapi3-ts';
 
 type SchemaTransformerArgs = {
   /**
@@ -83,3 +83,27 @@ export type GetAsyncFunction<THelper> = THelper extends AsyncAndSyncHelper<
 >
   ? THelper['async']
   : never;
+
+/**
+ * @hidden
+ */
+export type RouterPath = {
+  id: string;
+  path: string;
+  route: AppRoute;
+  paths: string[];
+};
+
+/**
+ * @hidden
+ */
+export type PathSchemaResults = {
+  path: ParameterObject[];
+  headers: ParameterObject[];
+  query: ParameterObject[];
+  body: SchemaObject | null;
+  /**
+   * Status code to response.
+   */
+  responses: Record<string, SchemaObject>;
+};

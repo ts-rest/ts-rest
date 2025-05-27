@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { ContractNoBodyType, ContractNullType, ContractPlainType } from './dsl';
 import { StandardSchemaV1 } from './standard-schema';
 
