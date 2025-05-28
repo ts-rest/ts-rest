@@ -198,14 +198,28 @@ export type ServerInferRequest<
   ? { [TKey in keyof T]: ServerInferRequest<T[TKey], TServerHeaders> }
   : never;
 
+/**
+ * Convert { foo: undefined } to { foo?: undefined }
+ */
+export type OptionalizeIfUndefined<T> = {
+  [K in keyof T as T[K] extends undefined ? K : never]?: T[K];
+} & {
+  [K in keyof T as T[K] extends undefined ? never : K]: T[K];
+};
+
 type ClientInferRequestBase<
   T extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {},
   THeaders = 'headers' extends keyof T
     ? Prettify<
-        PartialByLooseKeys<
-          LowercaseKeys<SchemaInputOrType<T['headers']>>,
-          keyof LowercaseKeys<TClientArgs['baseHeaders']>
+        /**
+         * Seems {@link OptionalizeIfUndefined} is necessary when using standard schema libs to convert { foo: undefined } to { foo?: undefined }
+         */
+        OptionalizeIfUndefined<
+          PartialByLooseKeys<
+            LowercaseKeys<SchemaInputOrType<T['headers']>>,
+            keyof LowercaseKeys<TClientArgs['baseHeaders']>
+          >
         >
       >
     : never,

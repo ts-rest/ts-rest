@@ -8,6 +8,7 @@ import {
 import { ApiFetcherArgs, initClient, getCompleteUrl } from './client';
 import { Equal, Expect } from './test-helpers';
 import { z, ZodError } from 'zod';
+import * as v from 'valibot';
 
 const c = initContract();
 
@@ -206,9 +207,17 @@ const clientStrict = initClient(routerStrict, {
   },
 });
 
-type ClientGetPostsType = Expect<
+/**
+ * @name ClientGetPostsWithBaseHeaders
+ * Expect the client.posts.getPosts parameters to be optional when base headers are provided,
+ * allowing all headers to be optional since they're merged with base headers
+ */
+type ClientGetPostsWithBaseHeaders = Parameters<
+  typeof client.posts.getPosts
+>[0];
+type TestClientGetPostsWithBaseHeaders = Expect<
   Equal<
-    Parameters<typeof client.posts.getPosts>[0],
+    ClientGetPostsWithBaseHeaders,
     | {
         query?: {
           take?: number;
@@ -235,9 +244,17 @@ type ClientGetPostsType = Expect<
   >
 >;
 
-type ClientWithoutBaseHeadersGetPostsType = Expect<
+/**
+ * @name ClientGetPostsWithoutBaseHeaders
+ * Expect the client.posts.getPosts parameters to require headers when no base headers are provided,
+ * forcing the user to provide required headers like x-api-key
+ */
+type ClientGetPostsWithoutBaseHeaders = Parameters<
+  typeof clientWithoutBaseHeaders.posts.getPosts
+>[0];
+type TestClientGetPostsWithoutBaseHeaders = Expect<
   Equal<
-    Parameters<typeof clientWithoutBaseHeaders.posts.getPosts>[0],
+    ClientGetPostsWithoutBaseHeaders,
     {
       query?: {
         take?: number;
@@ -263,9 +280,15 @@ type ClientWithoutBaseHeadersGetPostsType = Expect<
   >
 >;
 
-type ClientGetPostType = Expect<
+/**
+ * @name ClientGetPostWithParams
+ * Expect the client.posts.getPost parameters to require params for path parameters,
+ * while headers remain optional due to base headers being provided
+ */
+type ClientGetPostWithParams = Parameters<typeof client.posts.getPost>[0];
+type TestClientGetPostWithParams = Expect<
   Equal<
-    Parameters<typeof client.posts.getPost>[0],
+    ClientGetPostWithParams,
     {
       params: {
         id: string;
@@ -286,16 +309,40 @@ type ClientGetPostType = Expect<
     }
   >
 >;
-type RouterHealthStrict = Expect<
-  Equal<(typeof routerStrict.health)['strictStatusCodes'], true>
+
+/**
+ * @name RouterStrictStatusCodesHealth
+ * Expect the router with strict status codes to have strictStatusCodes property set to true
+ * for the health endpoint
+ */
+type RouterStrictStatusCodesHealth =
+  (typeof routerStrict.health)['strictStatusCodes'];
+type TestRouterStrictStatusCodesHealth = Expect<
+  Equal<RouterStrictStatusCodesHealth, true>
 >;
-type RouterGetPostStrict = Expect<
-  Equal<(typeof routerStrict.posts.getPost)['strictStatusCodes'], true>
+
+/**
+ * @name RouterStrictStatusCodesGetPost
+ * Expect the router with strict status codes to have strictStatusCodes property set to true
+ * for the nested posts.getPost endpoint
+ */
+type RouterStrictStatusCodesGetPost =
+  (typeof routerStrict.posts.getPost)['strictStatusCodes'];
+type TestRouterStrictStatusCodesGetPost = Expect<
+  Equal<RouterStrictStatusCodesGetPost, true>
 >;
-type HealthReturnType = Awaited<ReturnType<typeof clientStrict.health>>;
-type ClientGetPostResponseType = Expect<
+
+/**
+ * @name ClientStrictHealthResponse
+ * Expect the strict client health response to have exact status code type (200) instead of union,
+ * demonstrating strict status code enforcement
+ */
+type ClientStrictHealthResponse = Awaited<
+  ReturnType<typeof clientStrict.health>
+>;
+type TestClientStrictHealthResponse = Expect<
   Equal<
-    HealthReturnType,
+    ClientStrictHealthResponse,
     { status: 200; body: { message: string }; headers: Headers }
   >
 >;
@@ -959,9 +1006,17 @@ const customClient = initClient(router, {
   },
 });
 
-type CustomClientGetPostsType = Expect<
+/**
+ * @name CustomClientGetPostsWithUploadProgress
+ * Expect the custom client.posts.getPosts to include uploadProgress callback in parameters
+ * when using a custom API implementation that supports upload progress tracking
+ */
+type CustomClientGetPostsWithUploadProgress = Parameters<
+  typeof customClient.posts.getPosts
+>[0];
+type TestCustomClientGetPostsWithUploadProgress = Expect<
   Equal<
-    Parameters<typeof customClient.posts.getPosts>[0],
+    CustomClientGetPostsWithUploadProgress,
     {
       query?: {
         take?: number;
@@ -988,9 +1043,17 @@ type CustomClientGetPostsType = Expect<
   >
 >;
 
-type CustomClientGetPostType = Expect<
+/**
+ * @name CustomClientGetPostWithUploadProgress
+ * Expect the custom client.posts.getPost to include uploadProgress callback in parameters
+ * when using a custom API implementation that supports upload progress tracking
+ */
+type CustomClientGetPostWithUploadProgress = Parameters<
+  typeof customClient.posts.getPost
+>[0];
+type TestCustomClientGetPostWithUploadProgress = Expect<
   Equal<
-    Parameters<typeof customClient.posts.getPost>[0],
+    CustomClientGetPostWithUploadProgress,
     {
       params: {
         id: string;
@@ -1113,8 +1176,14 @@ describe('custom api', () => {
 
     const result = await client.posts.getPosts({});
 
-    type ClientGetPostsResponseStatusType = Expect<
-      Equal<typeof result.status, HTTPStatusCode>
+    /**
+     * @name ClientResponseStatusWithThrowOnUnknownStatus
+     * Expect the response status to be HTTPStatusCode union when throwOnUnknownStatus is enabled,
+     * allowing any valid HTTP status code but enabling runtime validation
+     */
+    type ClientResponseStatusWithThrowOnUnknownStatus = typeof result.status;
+    type TestClientResponseStatusWithThrowOnUnknownStatus = Expect<
+      Equal<ClientResponseStatusWithThrowOnUnknownStatus, HTTPStatusCode>
     >;
   });
 
@@ -1123,8 +1192,14 @@ describe('custom api', () => {
 
     const result = await clientStrict.posts.getPosts({});
 
-    type ClientGetPostsResponseStatusType = Expect<
-      Equal<typeof result.status, 200>
+    /**
+     * @name ClientResponseStatusWithStrictStatusCodes
+     * Expect the response status to be exact literal type (200) when strictStatusCodes is enabled,
+     * providing compile-time guarantees about response status codes
+     */
+    type ClientResponseStatusWithStrictStatusCodes = typeof result.status;
+    type TestClientResponseStatusWithStrictStatusCodes = Expect<
+      Equal<ClientResponseStatusWithStrictStatusCodes, 200>
     >;
   });
 
@@ -1205,4 +1280,104 @@ describe('getCompleteUrl', () => {
       },
     );
   });
+});
+
+describe('valibot tests ', () => {
+  const contractValibot = c.router(
+    {
+      routeBasic: {
+        method: 'GET',
+        path: '/route-basic',
+        responses: {
+          200: v.object({
+            message: v.string(),
+          }),
+        },
+      },
+      routeRemovedApiKey: {
+        method: 'GET',
+        path: '/route-removed-api-key',
+        responses: {
+          200: v.object({
+            message: v.string(),
+          }),
+        },
+        headers: v.object({
+          'x-api-key': v.undefined(), // removed this one
+        }),
+      },
+      routeWithModifiedHeaders: {
+        method: 'GET',
+        path: '/route-with-modified-headers',
+        responses: {
+          200: v.object({
+            message: v.string(),
+          }),
+        },
+        headers: v.object({
+          'x-api-key': v.undefined(), // removed this one
+          'x-test': v.string(), // added this one
+        }),
+      },
+    },
+    {
+      baseHeaders: v.object({
+        'x-api-key': v.string(),
+      }),
+    },
+  );
+  const clientValibot = initClient(contractValibot, {
+    baseUrl: 'https://api.com',
+  });
+
+  /**
+   * @name HeadersRequiredWhenBaseHeaders
+   * Expect the headers object is required, as the contract has base headers defined
+   */
+  type HeadersRequiredWhenBaseHeaders = Parameters<
+    typeof clientValibot.routeBasic
+  >[0];
+  type TestHeadersRequiredWhenBaseHeaders = Expect<
+    Equal<
+      HeadersRequiredWhenBaseHeaders['headers'],
+      {
+        'x-api-key': string;
+      } // <- Required
+    >
+  >;
+
+  /**
+   * @name HeadersOptionalWhenBaseHeadersNullified
+   * Expect the headers object is now entirely optional, as the AppRoute forced the `x-api-key`
+   * header to be undefined
+   */
+  type HeadersOptionalWhenBaseHeadersNullified = NonNullable<
+    Parameters<typeof clientValibot.routeRemovedApiKey>[0]
+  >['headers'];
+  type TestHeadersOptionalWhenBaseHeadersNullified = Expect<
+    Equal<
+      HeadersOptionalWhenBaseHeadersNullified,
+      | {
+          'x-api-key'?: undefined;
+        }
+      | undefined // <- Became optional
+    >
+  >;
+
+  /**
+   * @name HeadersWithModifiedHeaders
+   * Expect headers to have been changed, removing the `x-api-key` header and adding the `x-test` header
+   */
+  type HeadersWithModifiedHeaders = NonNullable<
+    Parameters<typeof clientValibot.routeWithModifiedHeaders>[0]
+  >['headers'];
+  type TestHeadersWithModifiedHeaders = Expect<
+    Equal<
+      HeadersWithModifiedHeaders,
+      {
+        'x-test': string;
+        'x-api-key'?: undefined; // <- Removed
+      } // <- Required
+    >
+  >;
 });
