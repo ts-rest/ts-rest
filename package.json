@@ -25,7 +25,8 @@
   "repository": "https://github.com/ts-rest/ts-rest",
   "private": true,
   "workspaces": [
-    "libs/ts-rest/*"
+    "libs/ts-rest/*",
+    "apps/docs"
   ],
   "dependencies": {
     "@actions/core": "^1.10.0",
