@@ -9,6 +9,7 @@ import { rehypeCodeDefaultOptions } from 'fumadocs-core/mdx-plugins';
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
+  transformerMetaHighlight,
 } from '@shikijs/transformers';
 
 // You can customise Zod schemas for frontmatter and `meta.json` here
@@ -33,6 +34,7 @@ export default defineConfig({
         ...(rehypeCodeDefaultOptions.transformers ?? []),
         transformerTwoslash({}),
         transformerNotationDiff({}),
+
         transformerNotationHighlight({}),
       ],
     },

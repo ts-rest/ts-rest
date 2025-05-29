@@ -1,0 +1,1052 @@
+---
+title: 'Contract'
+description: The contract is the core of ts-rest, it defines the API contract between your server and client.
+---
+
+The contract is the core of ts-rest - it defines the API specification that both your server and client adhere to. This ensures type-safety across your entire stack while keeping your API close to standard HTTP/REST principles.
+
+## Contract Location
+
+Many tweams who use `ts-rest` tent to put their contract in a shared place, whether that's a shared module in a monorepo, a shared folder in a single repo or a external package.
+
+<Files>
+  <Folder name="shared" defaultOpen>
+    <File name="contract.ts" />
+  </Folder>
+  <Folder name="server">
+    <File name="index.ts" />
+  </Folder>
+  <Folder name="client">
+    <File name="index.ts" />
+  </Folder>
+</Files>
+
+## Validation Libraries
+
+You can define your contract fields such as `body`, `query`, `pathParams`, and `headers` using either validation libraries or plain TypeScript types.
+
+<Callout type="note">
+  **Note:** We support any validation library which implements the [Standard
+  Schema](https://standardschema.dev/) interface, the main ones are:
+  [Zod](https://zod.dev/), [Valibot](https://valibot.dev/),
+  [Arktype](https://arktype.dev/) and [Effect
+  Schema](https://effect.website/docs/schema/introduction/).
+</Callout>
+
+<Tabs items={['Zod', 'Valibot', 'Arktype', 'Plain Types']}>
+  <Tab value="Zod">
+```typescript twoslash title="contract.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod'; // [!code highlight]
+
+const c = initContract();
+
+export const contract = c.router({
+  searchPokemon: {
+    method: 'GET',
+    path: '/pokemon',
+    query: z.object({ // [!code highlight]
+      name: z.string().optional(), // [!code highlight]
+      type: z.string().optional(), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: z.object({ // [!code highlight]
+        name: z.string(), // [!code highlight]
+        type: z.string(), // [!code highlight]
+      }), // [!code highlight]
+    },
+    summary: 'Search for a pokemon',
+  },
+});
+```
+  </Tab>
+  <Tab value="Valibot">
+```typescript title="contract.ts"
+import { initContract } from '@ts-rest/core';
+import * as v from 'valibot'; // [!code highlight]
+
+const c = initContract();
+
+export const contract = c.router({
+  searchPokemon: {
+    method: 'GET',
+    path: '/pokemon',
+    query: v.object({ // [!code highlight]
+      name: v.string().optional(), // [!code highlight]
+      type: v.string().optional(), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: v.object({ // [!code highlight]
+        name: v.string(), // [!code highlight]
+        type: v.string(), // [!code highlight]
+      }), // [!code highlight]
+    },
+    summary: 'Search for a pokemon',
+  },
+});
+```
+  </Tab>
+  <Tab value="Arktype">
+```typescript title="contract.ts"
+import { initContract } from '@ts-rest/core';
+import { type } from 'arktype'; // [!code highlight]
+
+const c = initContract();
+
+export const contract = c.router({
+  searchPokemon: {
+    method: 'GET',
+    path: '/pokemon',
+    query: type({ // [!code highlight]
+      name: 'string', // [!code highlight]
+      type: 'string', // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: type({ // [!code highlight]
+        name: 'string', // [!code highlight]
+        type: 'string', // [!code highlight]
+      }), // [!code highlight]
+    },
+    summary: 'Search for a pokemon',
+  },
+});
+```
+  </Tab>
+  <Tab value="Plain Types">
+```typescript title="contract.ts"
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+type Pokemon = {
+id: string;
+name: string;
+type: string;
+};
+
+export const contract = c.router({
+  searchPokemon: {
+    method: 'GET',
+    path: '/pokemon',
+    responses: {
+      200: c.type<Pokemon>(), // [!code highlight]
+    },
+    body: c.type<{ // [!code highlight]
+      name: string; // [!code highlight]
+      type: string; // [!code highlight]
+    }>(), // [!code highlight]
+    summary: 'Search for a pokemon',
+  },
+});
+```
+  </Tab>
+</Tabs>
+
+### What can be validated?
+
+If you can send it, we can probably validate it - `ts-rest` supports `body`, `query`, `pathParams` and `headers` validation,
+you can also pass a schema for the response types, allowing for bidirectional validation (no more oversharing data from an overzealous service method!).
+
+```typescript twoslash title="validated-path-params.ts"
+import { initContract, ClientInferRequest } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+const PokemonSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+});
+
+const ErrorSchema = z.object({
+  message: z.string(),
+});
+
+const PathParamsSchema = z.object({
+  id: z.number().transform((id) => Number(id)),
+});
+
+const HeadersSchema = z.object({
+  'x-api-key': z.string(),
+});
+
+// ---cut---
+export const contract = c.router({
+  updatePokemon: {
+    method: 'PUT',
+    path: '/pokemon/:id',
+    pathParams: PathParamsSchema, // [!code highlight]
+    body: PokemonSchema, // [!code highlight]
+    headers: HeadersSchema, // [!code highlight]
+    //          ^?
+    responses: {
+      200: PokemonSchema, // [!code highlight]
+      400: ErrorSchema, // [!code highlight]
+    },
+  },
+});
+```
+
+We'll cover more details about each possible validation type in the following sections.
+
+## Path Parameters
+
+Define path parameters by adding them to the `path` string with a colon `:` followed by the parameter name. The path parameters will be correctly inferred and included in the `params` object.
+
+We automatically infer the path parameters from this string, and treat them as `string` by default.
+
+```typescript twoslash title="path-params.ts"
+import { initContract, ClientInferRequest } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+const PokemonSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+});
+
+// ---cut---
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id', // [!code highlight]
+    responses: {
+      200: PokemonSchema,
+    },
+  },
+});
+
+type Contract = typeof contract;
+
+type ById = ClientInferRequest<Contract['getPokemon']>['params'];
+//   ^?
+```
+
+<Callout type="note">
+  **Note:** The `path` field should contain the full path on the server, not
+  just a sub-path of a route.
+</Callout>
+
+### Validating and Parsing Path Parameters
+
+If you need to run validations or transformations on path parameters, define a schema using the `pathParams` field. The parameter names **must** match those in the `path` string.
+
+This allows you to do any form of validation or **transformations** you want.
+
+```typescript twoslash title="validated-path-params.ts"
+import { initContract, ClientInferRequest } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+const PokemonSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+});
+
+// ---cut---
+export const contract = c.router({
+  getPokemonByType: {
+    method: 'GET',
+    path: '/pokemon/type/:type', // [!code highlight]
+    pathParams: z.object({
+      type: z.enum(['fire', 'water', 'grass', 'electric', 'psychic', 'normal']),
+    }),
+    responses: {
+      200: PokemonSchema,
+    },
+  },
+});
+
+type Contract = typeof contract;
+
+type ByType = ClientInferRequest<Contract['getPokemonByType']>['params'];
+//   ^?
+```
+
+### Transforming Path Parameters
+
+If you wish to accept a integer, you often find that path params are by default strings - you can use the `pathParams` field to transform them to the type you want.
+
+```typescript twoslash title="transformed-path-params.ts"
+import {
+  initContract,
+  ClientInferRequest,
+  ServerInferRequest,
+} from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+const PokemonSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+});
+
+// ---cut---
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id', // [!code highlight]
+    pathParams: z.object({
+      id: z.string().transform((id) => Number(id)),
+    }),
+    responses: {
+      200: PokemonSchema,
+    },
+  },
+});
+
+type Contract = typeof contract;
+
+type Input = ClientInferRequest<Contract['getPokemon']>['params'];
+//   ^?
+
+type Output = ServerInferRequest<Contract['getPokemon']>['params'];
+//   ^?
+```
+
+## Query Parameters
+
+Query parameters are always strings in their raw form, so they must be typed as such unless you use transforms or coercions to convert them to other types.
+
+<Tabs items={['Zod', 'Valibot', 'Arktype', 'Plain Types']}>
+  <Tab value="Zod">
+```typescript  title="query-params.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+// ---cut---
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    query: z.object({ // [!code highlight]
+      take: z.coerce.number().default(10), // [!code highlight]
+      skip: z.coerce.number().default(0), // [!code highlight]
+      search: z.string().optional(), // [!code highlight]
+      published: z.enum(['true', 'false']).optional(), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Valibot">
+```typescript  title="query-params.ts"
+import { initContract } from '@ts-rest/core';
+import * as v from 'valibot';
+const c = initContract();
+// ---cut---
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    query: v.object({ // [!code highlight]
+      take: v.pipe(v.string(), v.transform(Number), v.fallback(10)), // [!code highlight]
+      skip: v.pipe(v.string(), v.transform(Number), v.fallback(0)), // [!code highlight]
+      search: v.optional(v.string()), // [!code highlight]
+      published: v.optional(v.picklist(['true', 'false'])), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Arktype">
+```typescript  title="query-params.ts"
+import { initContract } from '@ts-rest/core';
+import { type } from 'arktype';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    query: type({ // [!code highlight]
+      'take?': 'string.numeric.parse', // [!code highlight]
+      'skip?': 'string.numeric.parse', // [!code highlight]
+      'search?': 'string', // [!code highlight]
+      'published?': "'true' | 'false'", // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Plain Types">
+```typescript  title="query-params.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    query: c.type<{ // [!code highlight]
+      take?: string; // [!code highlight]
+      skip?: string; // [!code highlight]
+      search?: string; // [!code highlight]
+      published?: 'true' | 'false'; // [!code highlight]
+    }>(), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+});
+```
+  </Tab>
+</Tabs>
+
+### JSON Query Parameters
+
+You can configure ts-rest to encode/decode query parameters as JSON using the `jsonQuery` option. This allows you to use complex typed objects without string coercions.
+
+<Tabs items={['Zod', 'Valibot', 'Arktype']}>
+  <Tab value="Zod">
+```typescript  title="json-query.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    query: z.object({ // [!code highlight]
+      take: z.number().default(10), // [!code highlight]
+      skip: z.number().default(0), // [!code highlight]
+      filter: z.object({ // [!code highlight]
+        by: z.enum(['title', 'author', 'content']), // [!code highlight]
+        search: z.string(), // [!code highlight]
+      }).optional(), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Valibot">
+```typescript  title="json-query.ts"
+import { initContract } from '@ts-rest/core';
+import * as v from 'valibot';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    query: v.object({ // [!code highlight]
+      take: v.fallback(v.number(), 10), // [!code highlight]
+      skip: v.fallback(v.number(), 0), // [!code highlight]
+      filter: v.optional(v.object({ // [!code highlight]
+        by: v.picklist(['title', 'author', 'content']), // [!code highlight]
+        search: v.string(), // [!code highlight]
+      })), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Arktype">
+```typescript  title="json-query.ts"
+import { initContract } from '@ts-rest/core';
+import { type } from 'arktype';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    query: type({ // [!code highlight]
+      take: 'number = 10', // [!code highlight]
+      skip: 'number = 0', // [!code highlight]
+      'filter?': { // [!code highlight]
+        by: "'title' | 'author' | 'content'", // [!code highlight]
+        search: 'string', // [!code highlight]
+      }, // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+});
+```
+  </Tab>
+</Tabs>
+
+<Callout type="note">
+  Check the relevant client and server sections to see how to enable `jsonQuery`
+  in your implementation.
+</Callout>
+
+## Headers
+
+Define headers in your contract with a string input type. You can use transforms or coercion to convert string values to different types if needed.
+
+<Tabs items={['Zod', 'Valibot', 'Arktype', 'Plain Types']}>
+  <Tab value="Zod">
+```typescript  title="headers.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    headers: z.object({ // [!code highlight]
+      authorization: z.string(), // [!code highlight]
+      'x-pagination-limit': z.coerce.number().optional(), // [!code highlight]
+      'x-api-version': z.string().default('v1'), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[] }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Valibot">
+```typescript  title="headers.ts"
+import { initContract } from '@ts-rest/core';
+import * as v from 'valibot';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    headers: v.object({ // [!code highlight]
+      authorization: v.string(), // [!code highlight]
+      'x-pagination-limit': v.optional(v.pipe(v.string(), v.transform(Number))), // [!code highlight]
+      'x-api-version': v.fallback(v.string(), 'v1'), // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[] }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Arktype">
+```typescript  title="headers.ts"
+import { initContract } from '@ts-rest/core';
+import { type } from 'arktype';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    headers: type({ // [!code highlight]
+      authorization: 'string', // [!code highlight]
+      'x-pagination-limit?': 'string.numeric.parse', // [!code highlight]
+      'x-api-version': 'string = "v1"', // [!code highlight]
+    }), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[] }>(),
+    },
+  },
+});
+```
+  </Tab>
+  <Tab value="Plain Types">
+```typescript  title="headers.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    headers: c.type<{ // [!code highlight]
+      authorization: string; // [!code highlight]
+      'x-pagination-limit'?: string; // [!code highlight]
+      'x-api-version'?: string; // [!code highlight]
+    }>(), // [!code highlight]
+    responses: {
+      200: c.type<{ posts: any[] }>(),
+    },
+  },
+});
+```
+  </Tab>
+</Tabs>
+
+### Base Headers
+
+You can define base headers for all routes in a contract, useful for things like authorization headers. This forces the client to always pass these headers unless also defined in the client's `baseHeaders`.
+
+```typescript twoslash title="base-headers.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+type Pokemon = {
+  id: string;
+  name: string;
+  type: string;
+};
+
+// ---cut---
+
+export const contract = c.router(
+  {
+    getPokemon: {
+      method: 'GET',
+      path: '/pokemon/:id',
+      responses: {
+        200: c.type<Pokemon>(),
+      },
+      // ---cut-start---
+      // prettier-ignore
+      // ---cut-end---
+      headers: z.object({ // [!code --]
+        'x-api-key': z.string(), // [!code --]
+      }), // [!code --]
+    },
+    updatePokemon: {
+      method: 'PUT',
+      path: '/pokemon/:id',
+      body: c.type<Pokemon>(),
+      responses: {
+        200: c.type<Pokemon>(),
+      },
+      // ---cut-start---
+      // prettier-ignore
+      // ---cut-end---
+      headers: z.object({ // [!code --]
+        'x-api-key': z.string(), // [!code --]
+      }), // [!code --]
+    },
+  },
+  {
+    // ---cut-start---
+    // prettier-ignore
+    // ---cut-end---
+    baseHeaders: z.object({ // [!code ++]
+      'x-api-key': z.string(), // [!code ++]
+    }), // [!code ++]
+  },
+);
+```
+
+It's also possible to "nullify" a base header within a specific route by setting it to `undefined`, for example if you're making one endpoint public, you can do:
+
+```typescript title="base-headers.ts"
+headers: z.object({
+  'x-api-key': z.undefined(),  // [!code ++]
+}),
+```
+
+Base headers are also inherited by nested contracts, so this is perfectly valid:
+
+```typescript title="base-headers.ts" twoslash
+import { initContract, ClientInferRequest } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+
+type Pokemon = {
+  id: string;
+  name: string;
+  type: string;
+};
+
+// ---cut---
+
+export const contract = c.router(
+  {
+    pokemon: c.router(
+      {
+        getPokemon: {
+          method: 'GET',
+          path: '/pokemon/:id',
+          responses: {
+            200: c.type<Pokemon>(),
+          },
+          headers: z.object({
+            'x-inner': z.string(), // [!code highlight]
+          }),
+        },
+      },
+      {
+        baseHeaders: z.object({
+          'x-sub-contract': z.string(), // [!code highlight]
+        }),
+      },
+    ),
+  },
+  {
+    baseHeaders: z.object({
+      'x-contact': z.string(), // [!code highlight]
+    }),
+  },
+);
+
+// ---cut-start---
+// prettier-ignore
+// ---cut-end---
+type Headers = ClientInferRequest<typeof contract.pokemon.getPokemon>['headers'];
+//    ^?
+```
+
+## Responses
+
+Define response types as a map of status codes to response schemas. Responses default to `application/json` content-type, but you can define other response types using `c.otherResponse`.
+
+```typescript title="responses.ts" twoslash
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+// ---cut---
+export const contract = c.router({
+  getPokemonCsv: {
+    method: 'GET',
+    path: '/pokemon/csv',
+    responses: {
+      // ---cut-start---
+      // prettier-ignore
+      // ---cut-end---
+      200: z.object({ // [!code highlight]
+        id: z.string(), // [!code highlight]
+        title: z.string(), // [!code highlight]
+        content: z.string(), // [!code highlight]
+      }), // [!code highlight]
+    },
+  },
+});
+```
+
+To define a non `application/json` response, you can use `c.otherResponse`:
+
+```typescript title="responses.ts" twoslash
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+// ---cut---
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      // ---cut-start---
+      // prettier-ignore
+      // ---cut-end---
+      200: c.otherResponse({ // [!code highlight]
+        contentType: 'text/csv', // [!code highlight]
+        body: z.string(), // [!code highlight]
+      }), // [!code highlight]
+    },
+  },
+});
+```
+
+## Combining Contracts
+
+Combine contracts to create modular, organized APIs. This is especially helpful for large applications where you want to split contracts by domain.
+
+```typescript title="combining-contracts.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+// ---cut---
+const postContract = c.router({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+  },
+  createPost: {
+    method: 'POST',
+    path: '/posts',
+    body: c.type<{ title: string; content: string }>(),
+    responses: {
+      201: c.type<{ id: string; title: string }>(),
+    },
+  },
+});
+
+const userContract = c.router({
+  getUsers: {
+    method: 'GET',
+    path: '/users',
+    responses: {
+      200: c.type<{ users: any[] }>(),
+    },
+  },
+});
+
+export const contract = c.router({
+  posts: postContract,
+  users: userContract,
+});
+```
+
+## Metadata
+
+Attach metadata to your contract routes that can be accessed throughout ts-rest. This is useful for things like role-based access control or OpenAPI documentation.
+
+```typescript title="metadata.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+// ---cut---
+export const contract = c.router({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    responses: {
+      200: c.type<{ posts: any[] }>(),
+    },
+    summary: 'Get all posts',
+    metadata: { role: 'guest', cache: true } as const,
+  },
+  createPost: {
+    method: 'POST',
+    path: '/posts',
+    body: c.type<{ title: string }>(),
+    responses: {
+      201: c.type<{ id: string }>(),
+    },
+    summary: 'Create a new post',
+    metadata: { role: 'admin', rateLimit: 10 } as const,
+  },
+});
+```
+
+<Callout type="warning">
+  **Important:** Since the contract is used on both server and client, metadata
+  will be included in your client-side bundle. Never put sensitive information
+  in metadata.
+</Callout>
+
+## Contract Options
+
+Configure how your contract behaves with these options.
+
+### Common Responses
+
+Define shared response schemas across all routes in your contract, typically for error responses.
+
+<Tabs items={['Zod', 'Valibot', 'Arktype']}>
+  <Tab value="Zod">
+```typescript  title="common-responses.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+// ---cut---
+export const contract = c.router(
+  {
+    getPosts: {
+      method: 'GET',
+      path: '/posts',
+      responses: {
+        200: c.type<{ posts: any[] }>(),
+      },
+    },
+  },
+  {
+    commonResponses: {
+      404: z.object({
+        message: z.literal('Not Found'),
+        reason: z.string(),
+      }),
+      500: c.otherResponse({
+        contentType: 'text/plain',
+        body: z.literal('Server Error'),
+      }),
+    },
+  }
+);
+```
+  </Tab>
+  <Tab value="Valibot">
+```typescript  title="common-responses.ts"
+import { initContract } from '@ts-rest/core';
+import * as v from 'valibot';
+const c = initContract();
+// ---cut---
+export const contract = c.router(
+  {
+    getPosts: {
+      method: 'GET',
+      path: '/posts',
+      responses: {
+        200: c.type<{ posts: any[] }>(),
+      },
+    },
+  },
+  {
+    commonResponses: {
+      404: v.object({
+        message: v.literal('Not Found'),
+        reason: v.string(),
+      }),
+      500: c.otherResponse({
+        contentType: 'text/plain',
+        body: v.literal('Server Error'),
+      }),
+    },
+  }
+);
+```
+  </Tab>
+  <Tab value="Arktype">
+```typescript  title="common-responses.ts"
+import { initContract } from '@ts-rest/core';
+import { type } from 'arktype';
+const c = initContract();
+// ---cut---
+export const contract = c.router(
+  {
+    getPosts: {
+      method: 'GET',
+      path: '/posts',
+      responses: {
+        200: c.type<{ posts: any[] }>(),
+      },
+    },
+  },
+  {
+    commonResponses: {
+      404: type({
+        message: "'Not Found'",
+        reason: 'string',
+      }),
+      500: c.otherResponse({
+        contentType: 'text/plain',
+        body: type("'Server Error'"),
+      }),
+    },
+  }
+);
+```
+  </Tab>
+</Tabs>
+
+### Strict Status Codes
+
+By default, ts-rest allows any response status code. Enable `strictStatusCodes` to only allow status codes defined in your contract.
+
+```typescript title="strict-status-codes.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+// ---cut---
+export const contract = c.router(
+  {
+    getPosts: {
+      method: 'GET',
+      path: '/posts',
+      responses: {
+        200: c.type<{ posts: any[] }>(),
+        404: c.type<{ message: string }>(),
+      },
+      strictStatusCodes: true,
+    },
+  },
+  {
+    strictStatusCodes: true,
+  },
+);
+```
+
+<Callout type="warning">
+  **Important:** When using `strictStatusCodes` with the fetch client, you must
+  also enable `throwOnUnknownStatus` in the client options to match runtime
+  behavior with TypeScript types.
+</Callout>
+
+### Path Prefix
+
+Add a prefix to all paths in your contract, useful for API versioning or modular routing.
+
+```typescript title="path-prefix.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+// ---cut---
+const postsContract = c.router(
+  {
+    getPosts: {
+      method: 'GET',
+      path: '/posts',
+      responses: {
+        200: c.type<{ posts: any[] }>(),
+      },
+    },
+  },
+  {
+    pathPrefix: '/api/v1',
+  },
+);
+
+// Nested contracts combine prefixes
+const apiContract = c.router(
+  {
+    posts: postsContract,
+  },
+  {
+    pathPrefix: '/v2',
+  },
+);
+```
+
+## Type Hints and Intellisense
+
+For better developer experience, you can add JSDoc comments to provide intellisense on your contract types.
+
+```typescript title="intellisense.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+const c = initContract();
+// ---cut---
+export const contract = c.router({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    responses: {
+      200: c.type<{ posts: any[]; total: number }>(),
+    },
+    query: z.object({
+      /**
+       * @description UTC timestamp in milliseconds
+       */
+      beginDate: z.string(),
+      /**
+       * @description UTC timestamp in milliseconds
+       */
+      endDate: z.string(),
+      /**
+       * @description Filter posts by search term
+       */
+      search: z.string().optional(),
+    }),
+    summary: 'Get posts within time-range',
+  },
+});
+```
+
+---
+
+## Ready to implement your contract?
+
+<Callout type="note">
+  🚀 **Next Steps:** - [Server implementation →](/docs/server) - Learn how to
+  fulfill your contract on the server - [Client usage →](/docs/client) - Use
+  your contract with the type-safe client - [OpenAPI generation
+  →](/docs/openapi) - Generate OpenAPI specs from your contract
+</Callout>

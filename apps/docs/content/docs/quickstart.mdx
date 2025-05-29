@@ -3,7 +3,17 @@ title: Quickstart
 description: Let's get started, making a basic contract, server, and client.
 ---
 
-`ts-rest` fundamentals are simple, you define your API contract, then you implement it on your server, and use it on your client.
+<Steps>
+  <Step>
+    <p>Create a contract with `@ts-rest/core`</p>
+  </Step>
+  <Step>
+    <p>Create a server implementation with one of our supported frameworks</p>
+  </Step>
+  <Step>
+    <p>Create a client implementation with one of our supported libraries</p>
+  </Step>
+</Steps>
 
 ## Installation
 
@@ -136,57 +146,53 @@ export const pokemonContract = c.router({
 
 ## Server Implementation
 
-<Tabs items={['nest', 'express', 'fastify', 'next']}>
-  <Tab value="nest">
+<Tabs items={['Nest', 'Express', 'Fastify', 'Next']}>
+  <Tab value="Nest">
   <InstallTabs packageName="@ts-rest/nest" />
 <p>ts-rest offers a unique way to create a fully type safe REST API server,
 normally Nest APIs are extremely powerful, but hard to make type safe.</p>
 
 Let's add `@ts-rest/nest` to a basic Nest controller:
 
-```typescript
-// post.controller.ts
-
-const c = nestControllerContract(contract);
-type RequestShapes = NestRequestShapes<typeof c>;
+```typescript title="pokemon.controller.ts"
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { Controller } from '@nestjs/common';
+import { pokemonContract } from './contract';
 
 @Controller()
-export class PostController implements NestControllerInterface<typeof c> {
-  constructor(private readonly postService: PostService) {}
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
 
-  @TsRest(c.getPost)
-  async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
-    const post = await this.postService.getPost(id);
+  @TsRestHandler(pokemonContract.getPokemon)
+  async getPokemon() {
+    return tsRestHandler(pokemonContract.getPokemon, async ({ params }) => {
+      const pokemon = await this.pokemonService.getPokemon(params.id);
 
-    return { status: 200 as const, body: post };
-  }
+      if (!pokemon) {
+        return { status: 404, body: null };
+      }
 
-  @TsRest(c.createPost)
-  async createPost(@TsRestRequest() { body }: RequestShapes['createPost']) {
-    const post = await this.postService.createPost({
-      title: body.title,
-      body: body.body,
+      return { status: 200, body: pokemon };
     });
-
-    return { status: 201 as const, body: post };
   }
 }
 ```
 
-You can see that we're using the _runtime_ object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route.
-We're also using the `RequestShapes` _TypeScript Types_ (which comes from the runtime object `c`) to ensure type safety of your contract _on_ the Nest controller.
-
-If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an _object_ in the contract above, not boolean!
+You can see that we're using the modern `@TsRestHandler` decorator with the `tsRestHandler` function to get full type safety. The `params` are automatically typed based on your contract, and the return type is enforced to match your contract's response schema.
 
   </Tab>
-  <Tab value="express">
+  <Tab value="Express">
   <InstallTabs packageName="@ts-rest/express" />
 <p>The express implementaton allows full type safety, offering; body parsing, query parsing, param parsing and full error handling</p>
 
-```typescript
-// main.ts
-
+```typescript title="main.ts"
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 import { initServer } from '@ts-rest/express';
+import { createExpressEndpoints } from '@ts-rest/express';
+import { pokemonContract } from './contract';
+
 const app = express();
 
 app.use(cors());
@@ -195,28 +201,26 @@ app.use(bodyParser.json());
 
 const s = initServer();
 
-const router = s.router(contract, {
-  getPost: async ({ params: { id } }) => {
-    const post = await prisma.post.findUnique({ where: { id } });
+const router = s.router(pokemonContract, {
+  getPokemon: async ({ params: { id } }) => {
+    // Mock pokemon data
+    const pokemon = { name: 'Pikachu' };
+
+    if (id !== '1') {
+      return {
+        status: 404,
+        body: null,
+      };
+    }
 
     return {
       status: 200,
-      body: post,
-    };
-  },
-  createPost: async ({ body }) => {
-    const post = await prisma.post.create({
-      data: body,
-    });
-
-    return {
-      status: 201,
-      body: post,
+      body: pokemon,
     };
   },
 });
 
-createExpressEndpoints(contract, router, app);
+createExpressEndpoints(pokemonContract, router, app);
 
 const port = process.env.port || 3333;
 const server = app.listen(port, () => {
@@ -225,35 +229,34 @@ const server = app.listen(port, () => {
 ```
 
   </Tab>
-   <Tab value="fastify">
+   <Tab value="Fastify">
   <InstallTabs packageName="@ts-rest/fastify" />
 <p>The fastify implementaton allows full type safety, offering; body parsing, query parsing, param parsing and full error handling</p>
 
-```typescript
-// main.ts
-
+```typescript title="main.ts"
+import fastify from 'fastify';
 import { initServer } from '@ts-rest/fastify';
+import { pokemonContract } from './contract';
+
 const app = fastify();
 
 const s = initServer();
 
-const router = s.router(contract, {
-  getPost: async ({ params: { id } }) => {
-    const post = await prisma.post.findUnique({ where: { id } });
+const router = s.router(pokemonContract, {
+  getPokemon: async ({ params: { id } }) => {
+    // Mock pokemon data
+    const pokemon = { name: 'Pikachu' };
+
+    if (id !== '1') {
+      return {
+        status: 404,
+        body: null,
+      };
+    }
 
     return {
       status: 200,
-      body: post,
-    };
-  },
-  createPost: async ({ body }) => {
-    const post = await prisma.post.create({
-      data: body,
-    });
-
-    return {
-      status: 201,
-      body: post,
+      body: pokemon,
     };
   },
 });
@@ -273,30 +276,34 @@ start();
 ```
 
   </Tab>
-  <Tab value="next">
+  <Tab value="Next">
   <InstallTabs packageName="@ts-rest/next" />
 
-```typescript
-// pages/api/[...ts-rest].tsx
+```typescript title="pages/api/[...ts-rest].tsx"
+import { createNextRoute, createNextRouter } from '@ts-rest/next';
+import { pokemonContract } from './contract';
 
-// `contract` is the AppRouter returned by `c.router`
-const postsRouter = createNextRoute(contract.posts, {
-  createPost: async (args) => {
-    const newPost = await posts.createPost(args.body);
+const router = createNextRoute(pokemonContract, {
+  getPokemon: async ({ params: { id } }) => {
+    // Mock pokemon data
+    const pokemon = { name: 'Pikachu' };
+
+    if (id !== '1') {
+      return {
+        status: 404,
+        body: null,
+      };
+    }
 
     return {
-      status: 201,
-      body: newPost,
+      status: 200,
+      body: pokemon,
     };
   },
 });
 
-const router = createNextRoute(contract, {
-  posts: postsRouter,
-});
-
 // Actually initiate the collective endpoints
-export default createNextRouter(contract, router);
+export default createNextRouter(pokemonContract, router);
 ```
 
   </Tab>
@@ -304,36 +311,51 @@ export default createNextRouter(contract, router);
 
 ## Client Implementation
 
-<Tabs items={['fetch', 'react-query']}>
-  <Tab value="fetch">
+<Tabs items={['Fetch', 'React Query']}>
+  <Tab value="Fetch">
     <p>
       This is the basic client, using fetch under the hood which is exported
       from <code>@ts-rest/core</code>.
     </p>
 
-```typescript
-// client.ts
+```typescript title="client.ts" twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+type Pokemon = {
+  name: string;
+};
+
+export const pokemonContract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<Pokemon>(),
+    },
+    summary: 'Get a pokemon by id',
+  },
+});
+
+// ---cut---
 import { initClient } from '@ts-rest/core';
 
-// `contract` is the AppRouter returned by `c.router`
-const client = initClient(contract, {
+const client = initClient(pokemonContract, {
   baseUrl: 'http://localhost:3000',
   baseHeaders: {},
 });
 
-const { body, status } = await client.createPost({
-  body: {
-    title: 'Post Title',
-    body: 'Post Body',
-  },
+const res = await client.getPokemon({
+  params: { id: '1' },
 });
 
-if (status === 201) {
-  // body is Post
-  console.log(body);
+if (res.status === 200) {
+  res.body.name;
+  //   ^?
 } else {
-  // body is unknown
-  console.log(body);
+  res;
+  // ^?
 }
 ```
 
@@ -341,62 +363,57 @@ if (status === 201) {
   <Tab value="react-query">
   <InstallTabs packageName="@ts-rest/react-query" />
 
-```tsx
-// client.ts
+The `@ts-rest/react-query` integration follows the same underlying pattern as the core `@tanstack/react-query` package so it should feel super familiar.
+
+```tsx title="pokemon-component.tsx" twoslash
+import React from 'react';
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+type Pokemon = {
+  name: string;
+};
+
+export const pokemonContract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<Pokemon>(),
+    },
+    summary: 'Get a pokemon by id',
+  },
+});
+
+// ---cut---
 import { initQueryClient } from '@ts-rest/react-query';
 
-// `contract` is the AppRouter returned by `c.router`
-export const client = initQueryClient(contract, {
+export const client = initQueryClient(pokemonContract, {
   baseUrl: 'http://localhost:3333',
   baseHeaders: {},
 });
 
-export const Index = () => {
-  const { data, isLoading, error } = client.getPost.useQuery(['posts/1'], {
-    params: { id: '1' },
-  });
+export const PokemonComponent = () => {
+  const { data, isLoading, error } = client.getPokemon.useQuery(
+    ['pokemon', '1'],
+    {
+      params: { id: '1' },
+    },
+  );
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (data.status !== 200 || error) {
-    return <div>Error</div>;
+  if (data?.status !== 200 || error) {
+    // ^?
+    return <div>Pokemon not found</div>;
   }
 
-  return <div>{data.body.title}</div>;
+  return <div>{data.body.name}</div>;
 };
 ```
-
-:::info
-
-The response from react-query is typed as follows:
-
-If status is 2XX, it's part of the "data" return. If it's any other status code it's part of the "error" return e.g.
-
-```typescript
-const data:
-  | {
-      status: 200;
-      body: Post | null;
-    }
-  | undefined;
-```
-
-```typescript
-const error:
-  | {
-      status: 404;
-      body: null
-    }
-  | {
-      status: 404 | 100 | 101 | 102 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308 | 400 | 401 | 402 | 403 | 405 | 406 | 407 | 408 | 409 | 410 | 411 | 412 | 413 | 414 | 415 | 416 | 417 | 418 | 419 | ... 16 more ... | 511;
-      body: unknown;
-    }
-  | null
-```
-
-:::
 
   </Tab>
 </Tabs>

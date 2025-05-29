@@ -18,7 +18,7 @@ importers:
         version: 1.10.0
       '@anatine/zod-openapi':
         specifier: ^2.0.1
-        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.22.3)
+        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.25.36)
       '@azure/functions':
         specifier: ^4.5.0
         version: 4.5.0
@@ -218,8 +218,8 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
       zod:
-        specifier: 3.22.3
-        version: 3.22.3
+        specifier: 3.25.36
+        version: 3.25.36
       zustand:
         specifier: ^4.1.1
         version: 4.1.1(immer@9.0.15)(react@18.3.1)
@@ -517,13 +517,13 @@ importers:
         version: 3.4.2
       '@ts-rest/core':
         specifier: ^3.52.1
-        version: 3.52.1(@types/node@22.15.21)(zod@3.25.32)
+        version: 3.52.1(@types/node@22.15.21)(zod@3.22.3)
       '@ts-rest/express':
         specifier: ^3.52.1
-        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(express@5.1.0)(zod@3.25.32)
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(express@5.1.0)(zod@3.22.3)
       '@ts-rest/react-query':
         specifier: ^3.52.1
-        version: 3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(react@19.1.0)(zod@3.25.32)
+        version: 3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(react@19.1.0)(zod@3.22.3)
       fumadocs-core:
         specifier: 15.4.2
         version: 15.4.2(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -536,6 +536,9 @@ importers:
       fumadocs-ui:
         specifier: 15.4.2
         version: 15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8)
+      lucide-react:
+        specifier: ^0.511.0
+        version: 0.511.0(react@19.1.0)
       next:
         specifier: 15.3.2
         version: 15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0)
@@ -548,6 +551,9 @@ importers:
       twoslash:
         specifier: ^0.3.1
         version: 0.3.1(typescript@5.8.3)
+      zod:
+        specifier: 3.22.3
+        version: 3.22.3
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.7
@@ -8631,6 +8637,11 @@ packages:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
 
+  lucide-react@0.511.0:
+    resolution: {integrity: sha512-VK5a2ydJ7xm8GvBeKLS9mu1pVK6ucef9780JVUjw6bAjJL/QXnd4Y0p7SPeOUMC27YhzNCZvm5d/QX0Tp3rc0w==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   lunr@2.3.9:
     resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
 
@@ -12735,8 +12746,8 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
-  zod@3.25.32:
-    resolution: {integrity: sha512-OSm2xTIRfW8CV5/QKgngwmQW/8aPfGdaQFlrGoErlgg/Epm7cjb6K6VEyExfe65a3VybUOnu381edLb0dfJl0g==}
+  zod@3.25.36:
+    resolution: {integrity: sha512-eRFS3i8T0IrpGdL8HQyqFAugGOn7jOjyGgGdtv5NY4Wkhi7lJDk732bNZ609YMIGFbLoaj6J69O1Mura23gfIw==}
 
   zustand@4.1.1:
     resolution: {integrity: sha512-h4F3WMqsZgvvaE0n3lThx4MM81Ls9xebjvrABNzf5+jb3/03YjNTSgZXeyrvXDArMeV9untvWXRw1tY+ntPYbA==}
@@ -12865,11 +12876,11 @@ snapshots:
       ts-deepmerge: 4.0.0
       zod: 3.22.3
 
-  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.22.3)':
+  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.25.36)':
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.0
-      zod: 3.22.3
+      zod: 3.25.36
 
   '@angular-devkit/core@15.2.4(chokidar@3.5.3)':
     dependencies:
@@ -17492,25 +17503,25 @@ snapshots:
       mkdirp: 2.1.6
       path-browserify: 1.0.1
 
-  '@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32)':
+  '@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3)':
     optionalDependencies:
       '@types/node': 22.15.21
-      zod: 3.25.32
+      zod: 3.22.3
 
-  '@ts-rest/express@3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(express@5.1.0)(zod@3.25.32)':
+  '@ts-rest/express@3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(express@5.1.0)(zod@3.22.3)':
     dependencies:
-      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.25.32)
+      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.22.3)
       express: 5.1.0
     optionalDependencies:
-      zod: 3.25.32
+      zod: 3.22.3
 
-  '@ts-rest/react-query@3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(react@19.1.0)(zod@3.25.32)':
+  '@ts-rest/react-query@3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(react@19.1.0)(zod@3.22.3)':
     dependencies:
       '@tanstack/react-query': 5.51.11(react@19.1.0)
-      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.25.32)
+      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.22.3)
       react: 19.1.0
     optionalDependencies:
-      zod: 3.25.32
+      zod: 3.22.3
 
   '@tsconfig/node10@1.0.9': {}
 
@@ -21335,7 +21346,7 @@ snapshots:
       tinyexec: 1.0.1
       tinyglobby: 0.2.14
       unist-util-visit: 5.0.0
-      zod: 3.25.32
+      zod: 3.25.36
     transitivePeerDependencies:
       - acorn
       - supports-color
@@ -23332,6 +23343,10 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
+  lucide-react@0.511.0(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+
   lunr@2.3.9: {}
 
   lz-string@1.5.0: {}
@@ -23975,7 +23990,7 @@ snapshots:
       workerd: 1.20240304.0
       ws: 8.13.0
       youch: 3.3.3
-      zod: 3.22.3
+      zod: 3.25.36
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -28321,7 +28336,7 @@ snapshots:
 
   zod@3.22.3: {}
 
-  zod@3.25.32: {}
+  zod@3.25.36: {}
 
   zustand@4.1.1(immer@9.0.15)(react@18.3.1):
     dependencies:
