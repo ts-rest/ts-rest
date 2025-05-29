@@ -32,7 +32,7 @@ This provides **runtime validation** of your contract, as opposed to just type s
 
 </Callout>
 
-<Tabs items={['Zod', 'None']}>
+<Tabs items={['Zod', 'Valibot', 'Arktype', 'None']}>
   <Tab value="Zod">
 
 ```typescript title="contract.ts"
@@ -43,6 +43,56 @@ const c = initContract();
 
 const Pokemon = z.object({
   name: z.string(),
+});
+
+export const pokemonContract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: Pokemon,
+    },
+    summary: 'Get a pokemon by id',
+  },
+});
+```
+
+  </Tab>
+  <Tab value="Valibot">
+
+```typescript title="contract.ts"
+import { initContract } from '@ts-rest/core';
+import * as v from 'valibot';
+
+const c = initContract();
+
+const Pokemon = v.object({
+  name: v.string(),
+});
+
+export const pokemonContract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: Pokemon,
+    },
+    summary: 'Get a pokemon by id',
+  },
+});
+```
+
+  </Tab>
+  <Tab value="Arktype">
+
+```typescript title="contract.ts"
+import { initContract } from '@ts-rest/core';
+import { type } from 'arktype';
+
+const c = initContract();
+
+const Pokemon = type({
+  name: 'string',
 });
 
 export const pokemonContract = c.router({

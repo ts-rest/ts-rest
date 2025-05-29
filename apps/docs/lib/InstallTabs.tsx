@@ -4,7 +4,7 @@ import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 
 export const InstallTabs = ({ packageName }: { packageName: string }) => {
   return (
-    <Tabs items={['pnpm', 'bun', 'npm']}>
+    <Tabs items={['pnpm', 'bun', 'npm']} groupId="install" persist>
       <Tab value="pnpm" title="pnpm">
         <DynamicCodeBlock lang="bash" code={`pnpm add ${packageName}`} />
       </Tab>
