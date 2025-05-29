@@ -1,0 +1,352 @@
+---
+title: Quickstart
+description: Let's get started, making a basic contract, server, and client.
+---
+
+`ts-rest` fundamentals are simple, you define your API contract, then you implement it on your server, and use it on your client.
+
+## Installation
+
+Install the `@ts-rest/core` package, this is the core package that provides the type-safe contract, and a basic fetch based client.
+
+<InstallTabs packageName="@ts-rest/core" />
+
+Enable `strict` in your `tsconfig.json`, this is required to work with some ts-rest functionality, and often downstream libraries like [Zod](https://github.com/colinhacks/zod#requirements)
+
+```json title="tsconfig.json"
+  "compilerOptions": {
+    "strict": false // [!code --]
+    "strict": true // [!code ++]
+  }
+```
+
+## Create a contract
+
+This should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package. Think of this as your HTTP Schema that both your client and backend can use.
+
+<Callout type="info" title="Shared contract">
+  We strongly reccomend using a validation library like Zod, Valibot, or Arktype
+  to define your contract.
+
+This provides **runtime validation** of your contract, as opposed to just type safety.
+
+</Callout>
+
+<Tabs items={['Zod', 'None']}>
+  <Tab value="Zod">
+
+```typescript title="contract.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+
+const Pokemon = z.object({
+  name: z.string(),
+});
+
+export const pokemonContract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: Pokemon,
+    },
+    summary: 'Get a pokemon by id',
+  },
+});
+```
+
+  </Tab>
+  <Tab value="None">
+
+```typescript title="contract.ts"
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+type Pokemon = {
+  name: string;
+};
+
+export const pokemonContract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<Pokemon>(),
+    },
+    summary: 'Get a pokemon by id',
+  },
+});
+```
+
+  </Tab>
+</Tabs>
+
+## Server Implementation
+
+<Tabs items={['nest', 'express', 'fastify', 'next']}>
+  <Tab value="nest">
+  <InstallTabs packageName="@ts-rest/nest" />
+<p>ts-rest offers a unique way to create a fully type safe REST API server,
+normally Nest APIs are extremely powerful, but hard to make type safe.</p>
+
+Let's add `@ts-rest/nest` to a basic Nest controller:
+
+```typescript
+// post.controller.ts
+
+const c = nestControllerContract(contract);
+type RequestShapes = NestRequestShapes<typeof c>;
+
+@Controller()
+export class PostController implements NestControllerInterface<typeof c> {
+  constructor(private readonly postService: PostService) {}
+
+  @TsRest(c.getPost)
+  async getPost(@TsRestRequest() { params: { id } }: RequestShapes['getPost']) {
+    const post = await this.postService.getPost(id);
+
+    return { status: 200 as const, body: post };
+  }
+
+  @TsRest(c.createPost)
+  async createPost(@TsRestRequest() { body }: RequestShapes['createPost']) {
+    const post = await this.postService.createPost({
+      title: body.title,
+      body: body.body,
+    });
+
+    return { status: 201 as const, body: post };
+  }
+}
+```
+
+You can see that we're using the _runtime_ object `c` in the `TsRest` decorator to automatically declare your path from the contract's `getPost` route.
+We're also using the `RequestShapes` _TypeScript Types_ (which comes from the runtime object `c`) to ensure type safety of your contract _on_ the Nest controller.
+
+If you were to change the `body` return type to `{ body: true }` for example, this will give you a typescript error: Your `body` is defined as an _object_ in the contract above, not boolean!
+
+  </Tab>
+  <Tab value="express">
+  <InstallTabs packageName="@ts-rest/express" />
+<p>The express implementaton allows full type safety, offering; body parsing, query parsing, param parsing and full error handling</p>
+
+```typescript
+// main.ts
+
+import { initServer } from '@ts-rest/express';
+const app = express();
+
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+const s = initServer();
+
+const router = s.router(contract, {
+  getPost: async ({ params: { id } }) => {
+    const post = await prisma.post.findUnique({ where: { id } });
+
+    return {
+      status: 200,
+      body: post,
+    };
+  },
+  createPost: async ({ body }) => {
+    const post = await prisma.post.create({
+      data: body,
+    });
+
+    return {
+      status: 201,
+      body: post,
+    };
+  },
+});
+
+createExpressEndpoints(contract, router, app);
+
+const port = process.env.port || 3333;
+const server = app.listen(port, () => {
+  console.log(`Listening at http://localhost:${port}`);
+});
+```
+
+  </Tab>
+   <Tab value="fastify">
+  <InstallTabs packageName="@ts-rest/fastify" />
+<p>The fastify implementaton allows full type safety, offering; body parsing, query parsing, param parsing and full error handling</p>
+
+```typescript
+// main.ts
+
+import { initServer } from '@ts-rest/fastify';
+const app = fastify();
+
+const s = initServer();
+
+const router = s.router(contract, {
+  getPost: async ({ params: { id } }) => {
+    const post = await prisma.post.findUnique({ where: { id } });
+
+    return {
+      status: 200,
+      body: post,
+    };
+  },
+  createPost: async ({ body }) => {
+    const post = await prisma.post.create({
+      data: body,
+    });
+
+    return {
+      status: 201,
+      body: post,
+    };
+  },
+});
+
+app.register(s.plugin(router));
+
+const start = async () => {
+  try {
+    await app.listen({ port: 3000 });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+};
+
+start();
+```
+
+  </Tab>
+  <Tab value="next">
+  <InstallTabs packageName="@ts-rest/next" />
+
+```typescript
+// pages/api/[...ts-rest].tsx
+
+// `contract` is the AppRouter returned by `c.router`
+const postsRouter = createNextRoute(contract.posts, {
+  createPost: async (args) => {
+    const newPost = await posts.createPost(args.body);
+
+    return {
+      status: 201,
+      body: newPost,
+    };
+  },
+});
+
+const router = createNextRoute(contract, {
+  posts: postsRouter,
+});
+
+// Actually initiate the collective endpoints
+export default createNextRouter(contract, router);
+```
+
+  </Tab>
+</Tabs>
+
+## Client Implementation
+
+<Tabs items={['fetch', 'react-query']}>
+  <Tab value="fetch">
+    <p>
+      This is the basic client, using fetch under the hood which is exported
+      from <code>@ts-rest/core</code>.
+    </p>
+
+```typescript
+// client.ts
+import { initClient } from '@ts-rest/core';
+
+// `contract` is the AppRouter returned by `c.router`
+const client = initClient(contract, {
+  baseUrl: 'http://localhost:3000',
+  baseHeaders: {},
+});
+
+const { body, status } = await client.createPost({
+  body: {
+    title: 'Post Title',
+    body: 'Post Body',
+  },
+});
+
+if (status === 201) {
+  // body is Post
+  console.log(body);
+} else {
+  // body is unknown
+  console.log(body);
+}
+```
+
+  </Tab>
+  <Tab value="react-query">
+  <InstallTabs packageName="@ts-rest/react-query" />
+
+```tsx
+// client.ts
+import { initQueryClient } from '@ts-rest/react-query';
+
+// `contract` is the AppRouter returned by `c.router`
+export const client = initQueryClient(contract, {
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {},
+});
+
+export const Index = () => {
+  const { data, isLoading, error } = client.getPost.useQuery(['posts/1'], {
+    params: { id: '1' },
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (data.status !== 200 || error) {
+    return <div>Error</div>;
+  }
+
+  return <div>{data.body.title}</div>;
+};
+```
+
+:::info
+
+The response from react-query is typed as follows:
+
+If status is 2XX, it's part of the "data" return. If it's any other status code it's part of the "error" return e.g.
+
+```typescript
+const data:
+  | {
+      status: 200;
+      body: Post | null;
+    }
+  | undefined;
+```
+
+```typescript
+const error:
+  | {
+      status: 404;
+      body: null
+    }
+  | {
+      status: 404 | 100 | 101 | 102 | 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308 | 400 | 401 | 402 | 403 | 405 | 406 | 407 | 408 | 409 | 410 | 411 | 412 | 413 | 414 | 415 | 416 | 417 | 418 | 419 | ... 16 more ... | 511;
+      body: unknown;
+    }
+  | null
+```
+
+:::
+
+  </Tab>
+</Tabs>

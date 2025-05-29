@@ -4,6 +4,7 @@ const withMDX = createMDX();
 
 /** @type {import('next').NextConfig} */
 const config = {
+  serverExternalPackages: ['typescript', 'twoslash'],
   reactStrictMode: true,
 };
 

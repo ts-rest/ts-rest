@@ -1,62 +1,228 @@
 ---
 title: Introduction
-description: Introduction
+description: A seriously tiny type-safe wrapper around existing, battle-tested, established tech.
 ---
 
-ts-rest offers a simple way to define a contract for your API, which can be both consumed and implemented by your application, giving you end to end type safety without the hassle or code generation.
+<div
+  style={{
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '1rem',
+    margin: '0',
+  }}
+>
+  <a href="https://github.com/ts-rest/ts-rest">
+    <img
+      alt="GitHub Repo stars"
+      src="https://img.shields.io/github/stars/ts-rest/ts-rest?style=for-the-badge"
+    />
+  </a>
+  <a href="https://www.npmjs.com/package/@ts-rest/core">
+    <img src="https://img.shields.io/npm/dm/%40ts-rest/core?style=for-the-badge" />
+  </a>
+  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
+    <img
+      alt="License"
+      src="https://img.shields.io/github/license/ts-rest/ts-rest?style=for-the-badge"
+    />
+  </a>
+  <a href="https://bundlephobia.com/package/@ts-rest/core">
+    <img
+      alt="Bundle Size"
+      src="https://img.shields.io/bundlephobia/minzip/%40ts-rest%2Fcore?style=for-the-badge"
+    />
+  </a>
+  <a href="https://www.npmjs.com/package/@ts-rest/core">
+    <img
+      alt="NPM Version"
+      src="https://img.shields.io/npm/v/%40ts-rest%2Fcore?style=for-the-badge"
+    />
+  </a>
+</div>
 
-### Features
+ts-rest offers a simple way to get cross-stack type-safety for your API, without too much magic ✨
 
-- End to end type safety 🛟
-- RPC-like client side interface 📡
-- [Tiny bundle size 🌟](https://bundlephobia.com/package/@ts-rest/core) (1kb!)
-- Well-tested and production ready ✅
-- No Code Generation 🏃‍♀️
-- Zod support for runtime type checks 👮‍♀️
-- Full optional OpenAPI integration 📝
+- 🛟 Contract-First API
+- 🌈 It's just HTTP/REST
+- 🔒 Supports all Standard Schema validation libraries
+- 🔧 Many backend frameworks supported
+- 📦 OpenAPI generation
 
-### Super Simple Example
+### Define your API contract
 
-Easily define your API contract somewhere shared
+Define an API contact, allowing you to share your API contract between client and server, or even publish it for a third party to consume.
 
-```typescript
-const contract = c.router({
-  getPosts: {
+We support any Typescript validation library that supports [Standard Schema](https://standardschema.dev), or if you want you can use plain TS types and get no runtime validation.
+
+<Tabs items={['Zod', 'Valibot', 'Arktype', 'None']}>
+  <Tab value="Zod">
+```typescript title="contract.ts"
+    import { initContract } from '@ts-rest/core';
+    import { z } from 'zod'; // [!code highlight]
+
+    const c = initContract();
+
+    export const contract = c.router({
+      getPokemon: {
+        method: 'GET',
+        path: '/pokemon/:id',
+        responses: {
+          200: z.object({ // [!code highlight]
+            name: z.string(), // [!code highlight]
+          }), // [!code highlight]
+        },
+      },
+    });
+    ```
+
+  </Tab>
+  <Tab value="Valibot">
+    ```typescript title="contract.ts"
+    import { initContract } from '@ts-rest/core';
+    import * as v from 'valibot'; // [!code highlight]
+
+    const c = initContract();
+
+    export const contract = c.router({
+      getPokemon: {
+        method: 'GET',
+        path: '/pokemon/:id',
+        responses: {
+          200: v.object({ // [!code highlight]
+            name: v.string(), // [!code highlight]
+          }), // [!code highlight]
+        },
+      },
+    });
+    ```
+
+  </Tab>
+  <Tab value="Arktype">
+    ```typescript title="contract.ts"
+    import { initContract } from '@ts-rest/core';
+    import { type } from 'arktype'; // [!code highlight]
+
+    const c = initContract();
+
+    export const contract = c.router({
+      getPokemon: {
+        method: 'GET',
+        path: '/pokemon/:id',
+        responses: {
+          200: type({ // [!code highlight]
+            name: 'string', // [!code highlight]
+          }), // [!code highlight]
+        },
+      },
+    });
+    ```
+
+  </Tab>
+   <Tab value="None">
+    ```typescript title="contract.ts"
+    import { initContract } from '@ts-rest/core';
+
+    const c = initContract();
+
+    export const contract = c.router({
+      getPokemon: {
+        method: 'GET',
+        path: '/pokemon/:id',
+        responses: {
+          200: c.type<{ name: string }>(), // [!code highlight]
+        },
+      },
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Fulfill the contract on your server
+
+We support Nest, Next.js, Express, Fastify and more - Our server implementation allows you to guarentee your backend stays in sync with your API contract.
+
+```typescript twoslash title="server.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
     method: 'GET',
-    path: '/posts',
-    query: z.object({
-      skip: z.number(),
-      take: z.number(),
-    }), // <-- Zod schema
+    path: '/pokemon/:id',
     responses: {
-      200: c.type<Post[]>(), // <-- OR normal TS types
+      200: c.type<{ name: string }>(),
     },
-    headers: z.object({
-      'x-pagination-page': z.coerce.number().optional(),
-    }),
   },
 });
-```
 
-Fulfil the contract on your sever, with a type-safe router:
+const pokemonService = {
+  getPokemon: async (id: string) => {
+    return { name: 'pikachu' };
+  },
+};
 
-```typescript
+// ---cut---
+import { initServer } from '@ts-rest/express';
+
+const s = initServer();
+
 const router = s.router(contract, {
-  getPost: async ({ params: { id } }) => {
+  getPokemon: async ({ params: { id } }) => {
+    //                  ^?
+    const pokemon = await pokemonService.getPokemon(id);
+
     return {
       status: 200,
-      body: prisma.post.findUnique({ where: { id } }),
+      body: pokemon,
     };
   },
 });
 ```
 
-Consume the api on the client with a RPC-like interface:
+### Use the API on the client
 
-```typescript
-const result = await client.getPosts({
-  headers: { 'x-pagination-page': 1 },
-  query: { skip: 0, take: 10 },
-  // ^-- Fully typed!
+Our `@ts-rest/core` package provides a super light-weight fetch based client - We remain close to HTTP fundamentals, so we always return a status code, and body.
+
+```typescript twoslash title="client.ts"
+import { initContract } from '@ts-rest/core';
+const c = initContract();
+
+export const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
 });
+
+// ---cut---
+import { initClient } from '@ts-rest/core';
+
+const client = initClient(contract, {
+  baseUrl: 'http://localhost:3000',
+});
+
+const result = await client.getPokemon({
+  params: { id: '1' },
+  // ^?
+});
+
+if (result.status === 200) {
+  result.body;
+  //      ^?
+}
 ```
+
+---
+
+## Ready to get started?
+
+<Callout type="note">
+  🚀 **[Get started with the quickstart guide →](/docs/quickstart)**
+
+You just need to install `@ts-rest/core`, a server lib and optionally a client lib
+
+</Callout>

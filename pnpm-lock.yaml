@@ -512,12 +512,27 @@ importers:
 
   apps/docs:
     dependencies:
+      '@shikijs/transformers':
+        specifier: ^3.4.2
+        version: 3.4.2
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@22.15.21)(zod@3.25.32)
+      '@ts-rest/express':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(express@5.1.0)(zod@3.25.32)
+      '@ts-rest/react-query':
+        specifier: ^3.52.1
+        version: 3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(react@19.1.0)(zod@3.25.32)
       fumadocs-core:
         specifier: 15.4.2
         version: 15.4.2(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       fumadocs-mdx:
         specifier: 11.6.6
         version: 11.6.6(acorn@8.10.0)(fumadocs-core@15.4.2(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))
+      fumadocs-twoslash:
+        specifier: ^3.1.3
+        version: 3.1.3(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(fumadocs-ui@15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(shiki@3.4.2)(typescript@5.8.3)
       fumadocs-ui:
         specifier: 15.4.2
         version: 15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8)
@@ -530,6 +545,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
+      twoslash:
+        specifier: ^0.3.1
+        version: 0.3.1(typescript@5.8.3)
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.7
@@ -3602,6 +3620,11 @@ packages:
   '@shikijs/transformers@3.4.2':
     resolution: {integrity: sha512-I5baLVi/ynLEOZoWSAMlACHNnG+yw5HDmse0oe+GW6U1u+ULdEB3UHiVWaHoJSSONV7tlcVxuaMy74sREDkSvg==}
 
+  '@shikijs/twoslash@3.4.2':
+    resolution: {integrity: sha512-zRNPmi2lA8o+k7UQfmbPwH2jPvfW9OrgpsO4OUOM+8QTxrepFU9TNF8vNcxZEW5cbishQkJrV19cI9Zk3cb5aQ==}
+    peerDependencies:
+      typescript: '>=5.5.0'
+
   '@shikijs/types@3.4.2':
     resolution: {integrity: sha512-zHC1l7L+eQlDXLnxvM9R91Efh2V4+rN3oMVS2swCBssbj2U/FBwybD1eeLaq8yl/iwT+zih8iUbTBCgGZOYlVg==}
 
@@ -4120,6 +4143,38 @@ packages:
   '@ts-morph/common@0.19.0':
     resolution: {integrity: sha512-Unz/WHmd4pGax91rdIKWi51wnVUW11QttMEPpBiBgIewnc9UQIX7UDLxr5vRlqeByXCwhkF6VabSsI0raWcyAQ==}
 
+  '@ts-rest/core@3.52.1':
+    resolution: {integrity: sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==}
+    peerDependencies:
+      '@types/node': ^18.18.7 || >=20.8.4
+      zod: ^3.22.3
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      zod:
+        optional: true
+
+  '@ts-rest/express@3.52.1':
+    resolution: {integrity: sha512-ttVynyJSWYnVzn7FazSFvShD5j3Lq1JsIhSKereV2Z51zxWEQwo35CpCO3Q8rELzkfD9CYoT6eNSBJRlJLogIw==}
+    peerDependencies:
+      '@ts-rest/core': ~3.52.0
+      express: ^4.0.0
+      zod: ^3.22.3
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
+  '@ts-rest/react-query@3.52.1':
+    resolution: {integrity: sha512-Y4wx3oQwyEj7h3hVz2Wsrd8u7xWRqXc0K6YpKruZJg5G1pioKdlqqjKvv+JJbtgk+vImzha9z+NgeFnO4oYAkA==}
+    peerDependencies:
+      '@tanstack/react-query': ^4.0.0 || ^5.0.0
+      '@ts-rest/core': ~3.52.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      zod: ^3.22.3
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
   '@tsconfig/node10@1.0.9':
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
 
@@ -4582,6 +4637,11 @@ packages:
   '@typescript-eslint/visitor-keys@8.32.1':
     resolution: {integrity: sha512-ar0tjQfObzhSaW3C3QNmTc5ofj0hDoNQ5XWrCy6zDyabdr0TWhCkClp+rywGNj/odAFBVzzJrK4tEq5M4Hmu4w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript/vfs@1.6.1':
+    resolution: {integrity: sha512-JwoxboBh7Oz1v38tPbkrZ62ZXNHAk9bJ7c9x0eI5zBfBnBYGhURdbnh7Z4smN/MV48Y5OCcZb58n972UtbazsA==}
+    peerDependencies:
+      typescript: '*'
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
@@ -7058,6 +7118,13 @@ packages:
     peerDependenciesMeta:
       '@fumadocs/mdx-remote':
         optional: true
+
+  fumadocs-twoslash@3.1.3:
+    resolution: {integrity: sha512-v/ECQ+hExDZiuY4H1zH7I/8rImR7sNRFLKh+MCmhNXdVUxAjQ8q7PipM+W6hPqmLG+wSHw1iLF1/9Dembc9pcQ==}
+    peerDependencies:
+      fumadocs-ui: ^15.0.0
+      react: 18.x.x || 19.x.x
+      shiki: 1.x.x || 2.x.x || 3.x.x
 
   fumadocs-ui@15.4.2:
     resolution: {integrity: sha512-AAFHu0tT4Y75+2Ma9Z+xdiuRIbfw6cJ+zxDsouNNyUS+KnuJbyBwieTZfY2y/h02vKQ6wQ8eGoniqmG3sdQ6ew==}
@@ -11798,6 +11865,14 @@ packages:
     resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
     engines: {node: '>=0.6.11 <=0.7.0 || >=0.7.3'}
 
+  twoslash-protocol@0.3.1:
+    resolution: {integrity: sha512-BMePTL9OkuNISSyyMclBBhV2s9++DiOCyhhCoV5Kaht6eaWLwVjCCUJHY33eZJPsyKeZYS8Wzz0h+XI01VohVw==}
+
+  twoslash@0.3.1:
+    resolution: {integrity: sha512-OGqMTGvqXTcb92YQdwGfEdK0nZJA64Aj/ChLOelbl3TfYch2IoBST0Yx4C0LQ7Lzyqm9RpgcpgDxeXQIz4p2Kg==}
+    peerDependencies:
+      typescript: ^5.5.0
+
   type-check@0.3.2:
     resolution: {integrity: sha512-ZCmOJdvOWDBYJlzAoFkC+Q0+bUyEOS1ltgp1MGU03fqHG+dbi9tBFU2Rd9QKiDZFAYrhPh2JUf7rZRIuHRKtOg==}
     engines: {node: '>= 0.8.0'}
@@ -12871,7 +12946,7 @@ snapshots:
       '@babel/traverse': 7.22.8
       '@babel/types': 7.22.10
       convert-source-map: 1.8.0
-      debug: 4.3.4
+      debug: 4.4.0
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       lodash: 4.17.21
@@ -12949,7 +13024,7 @@ snapshots:
       '@babel/core': 7.22.9
       '@babel/helper-compilation-targets': 7.22.10
       '@babel/helper-plugin-utils': 7.22.5
-      debug: 4.3.4
+      debug: 4.4.0
       lodash.debounce: 4.0.8
       resolve: 1.22.8
     transitivePeerDependencies:
@@ -16898,6 +16973,15 @@ snapshots:
       '@shikijs/core': 3.4.2
       '@shikijs/types': 3.4.2
 
+  '@shikijs/twoslash@3.4.2(typescript@5.8.3)':
+    dependencies:
+      '@shikijs/core': 3.4.2
+      '@shikijs/types': 3.4.2
+      twoslash: 0.3.1(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@shikijs/types@3.4.2':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
@@ -17319,6 +17403,11 @@ snapshots:
       '@tanstack/query-core': 5.51.9
       react: 18.3.1
 
+  '@tanstack/react-query@5.51.11(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-core': 5.51.9
+      react: 19.1.0
+
   '@tanstack/solid-query@4.33.0(solid-js@1.6.11)':
     dependencies:
       '@tanstack/query-core': 4.33.0
@@ -17402,6 +17491,26 @@ snapshots:
       minimatch: 7.4.6
       mkdirp: 2.1.6
       path-browserify: 1.0.1
+
+  '@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32)':
+    optionalDependencies:
+      '@types/node': 22.15.21
+      zod: 3.25.32
+
+  '@ts-rest/express@3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(express@5.1.0)(zod@3.25.32)':
+    dependencies:
+      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.25.32)
+      express: 5.1.0
+    optionalDependencies:
+      zod: 3.25.32
+
+  '@ts-rest/react-query@3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.25.32))(react@19.1.0)(zod@3.25.32)':
+    dependencies:
+      '@tanstack/react-query': 5.51.11(react@19.1.0)
+      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.25.32)
+      react: 19.1.0
+    optionalDependencies:
+      zod: 3.25.32
 
   '@tsconfig/node10@1.0.9': {}
 
@@ -17548,11 +17657,11 @@ snapshots:
 
   '@types/hast@2.3.4':
     dependencies:
-      '@types/unist': 2.0.6
+      '@types/unist': 3.0.3
 
   '@types/hast@3.0.4':
     dependencies:
-      '@types/unist': 2.0.6
+      '@types/unist': 3.0.3
 
   '@types/history@4.7.11': {}
 
@@ -17609,7 +17718,7 @@ snapshots:
 
   '@types/mdast@3.0.10':
     dependencies:
-      '@types/unist': 2.0.6
+      '@types/unist': 3.0.3
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -17913,7 +18022,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
-      debug: 4.3.4
+      debug: 4.4.0
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.5.4
@@ -17990,6 +18099,13 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.32.1
       eslint-visitor-keys: 4.2.0
+
+  '@typescript/vfs@1.6.1(typescript@5.8.3)':
+    dependencies:
+      debug: 4.4.0
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@ungap/structured-clone@1.2.0': {}
 
@@ -18991,7 +19107,7 @@ snapshots:
 
   capnp-ts@0.7.0:
     dependencies:
-      debug: 4.3.4
+      debug: 4.4.0
       tslib: 2.6.3
     transitivePeerDependencies:
       - supports-color
@@ -21223,6 +21339,25 @@ snapshots:
     transitivePeerDependencies:
       - acorn
       - supports-color
+
+  fumadocs-twoslash@3.1.3(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(fumadocs-ui@15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(shiki@3.4.2)(typescript@5.8.3):
+    dependencies:
+      '@radix-ui/react-popover': 1.1.14(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@shikijs/twoslash': 3.4.2(typescript@5.8.3)
+      fumadocs-ui: 15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8)
+      mdast-util-from-markdown: 2.0.2
+      mdast-util-gfm: 3.1.0
+      mdast-util-to-hast: 13.2.0
+      react: 19.1.0
+      shiki: 3.4.2
+      tailwind-merge: 3.3.0
+      twoslash: 0.3.1(typescript@5.8.3)
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+      - react-dom
+      - supports-color
+      - typescript
 
   fumadocs-ui@15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8):
     dependencies:
@@ -26548,7 +26683,7 @@ snapshots:
 
   spdy-transport@3.0.0:
     dependencies:
-      debug: 4.3.4
+      debug: 4.4.0
       detect-node: 2.1.0
       hpack.js: 2.1.6
       obuf: 1.1.2
@@ -27194,6 +27329,16 @@ snapshots:
       yargs: 17.7.2
 
   tunnel@0.0.6: {}
+
+  twoslash-protocol@0.3.1: {}
+
+  twoslash@0.3.1(typescript@5.8.3):
+    dependencies:
+      '@typescript/vfs': 1.6.1(typescript@5.8.3)
+      twoslash-protocol: 0.3.1
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
 
   type-check@0.3.2:
     dependencies:
