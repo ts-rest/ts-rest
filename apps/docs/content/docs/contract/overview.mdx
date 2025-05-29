@@ -862,6 +862,33 @@ export const contract = c.router({
   in metadata.
 </Callout>
 
+```typescript twoslash title="server.ts"
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+type Pokemon = {
+  name: string;
+  type: string;
+};
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<Pokemon>(),
+    },
+    summary: 'Get a pokemon',
+    metadata: { role: 'trainer' } as const,
+  },
+});
+// ---cut---
+
+const metadata = contract.getPokemon.metadata;
+//     ^?
+```
+
 ## Contract Options
 
 Configure some extra behaviour with these contract options.
