@@ -533,6 +533,9 @@ importers:
       fumadocs-twoslash:
         specifier: ^3.1.3
         version: 3.1.3(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(fumadocs-ui@15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(shiki@3.4.2)(typescript@5.8.3)
+      fumadocs-typescript:
+        specifier: ^4.0.5
+        version: 4.0.5(typescript@5.8.3)
       fumadocs-ui:
         specifier: 15.4.2
         version: 15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8)
@@ -4149,6 +4152,9 @@ packages:
   '@ts-morph/common@0.19.0':
     resolution: {integrity: sha512-Unz/WHmd4pGax91rdIKWi51wnVUW11QttMEPpBiBgIewnc9UQIX7UDLxr5vRlqeByXCwhkF6VabSsI0raWcyAQ==}
 
+  '@ts-morph/common@0.27.0':
+    resolution: {integrity: sha512-Wf29UqxWDpc+i61k3oIOzcUfQt79PIT9y/MWfAGlrkjg6lBC1hwDECLXPVJAhWjiGbfBCxZd65F/LIZF3+jeJQ==}
+
   '@ts-rest/core@3.52.1':
     resolution: {integrity: sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==}
     peerDependencies:
@@ -5596,6 +5602,9 @@ packages:
 
   code-block-writer@12.0.0:
     resolution: {integrity: sha512-q4dMFMlXtKR3XNBHyMHt/3pwYNA69EDk00lloMOaaUMKPUXBw6lpXtbu3MMVG6/uOihGnRDOlkyqsONEUj60+w==}
+
+  code-block-writer@13.0.3:
+    resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
 
   collapse-white-space@1.0.6:
     resolution: {integrity: sha512-jEovNnrhMuqyCcjfEJA56v0Xq8SkIoPKDyaHahwo3POf4qcSXqMYuwNcOTzp74vTsR9Tn08z4MxWqAhcekogkQ==}
@@ -7131,6 +7140,11 @@ packages:
       fumadocs-ui: ^15.0.0
       react: 18.x.x || 19.x.x
       shiki: 1.x.x || 2.x.x || 3.x.x
+
+  fumadocs-typescript@4.0.5:
+    resolution: {integrity: sha512-PN6BKj0jhs9KYUPf9mBIXFoBl7kGywTa/1ks3H8Mrs46geiY2u5amHHdPy5KLnqXrdW6jlCekciV3ztO7qi77g==}
+    peerDependencies:
+      typescript: '*'
 
   fumadocs-ui@15.4.2:
     resolution: {integrity: sha512-AAFHu0tT4Y75+2Ma9Z+xdiuRIbfw6cJ+zxDsouNNyUS+KnuJbyBwieTZfY2y/h02vKQ6wQ8eGoniqmG3sdQ6ew==}
@@ -9027,6 +9041,10 @@ packages:
 
   minimalistic-assert@1.0.1:
     resolution: {integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==}
+
+  minimatch@10.0.1:
+    resolution: {integrity: sha512-ethXTt3SGGR+95gudmqJ1eNhRO7eGEGIgYA9vnPatK4/etz2MEVDno5GMCibdMTuBMyElzIlgxMna3K94XDIDQ==}
+    engines: {node: 20 || >=22}
 
   minimatch@3.0.4:
     resolution: {integrity: sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==}
@@ -11808,6 +11826,9 @@ packages:
 
   ts-morph@18.0.0:
     resolution: {integrity: sha512-Kg5u0mk19PIIe4islUI/HWRvm9bC1lHejK4S0oh1zaZ77TMZAEmQC0sHQYiu2RgCQFZKXz1fMVi/7nOOeirznA==}
+
+  ts-morph@26.0.0:
+    resolution: {integrity: sha512-ztMO++owQnz8c/gIENcM9XfCEzgoGphTv+nKpYNM1bgsdOVC/jRZuEBf6N+mLLDNg68Kl+GgUZfOySaRiG1/Ug==}
 
   ts-node@10.9.1:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
@@ -17503,6 +17524,12 @@ snapshots:
       mkdirp: 2.1.6
       path-browserify: 1.0.1
 
+  '@ts-morph/common@0.27.0':
+    dependencies:
+      fast-glob: 3.3.3
+      minimatch: 10.0.1
+      path-browserify: 1.0.1
+
   '@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3)':
     optionalDependencies:
       '@types/node': 22.15.21
@@ -19289,6 +19316,8 @@ snapshots:
   co@4.6.0: {}
 
   code-block-writer@12.0.0: {}
+
+  code-block-writer@13.0.3: {}
 
   collapse-white-space@1.0.6: {}
 
@@ -21369,6 +21398,21 @@ snapshots:
       - react-dom
       - supports-color
       - typescript
+
+  fumadocs-typescript@4.0.5(typescript@5.8.3):
+    dependencies:
+      estree-util-value-to-estree: 3.4.0
+      hast-util-to-estree: 3.1.3
+      hast-util-to-jsx-runtime: 2.3.6
+      remark: 15.0.1
+      remark-rehype: 11.1.2
+      shiki: 3.4.2
+      tinyglobby: 0.2.14
+      ts-morph: 26.0.0
+      typescript: 5.8.3
+      unist-util-visit: 5.0.0
+    transitivePeerDependencies:
+      - supports-color
 
   fumadocs-ui@15.4.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.8):
     dependencies:
@@ -23997,6 +24041,10 @@ snapshots:
       - utf-8-validate
 
   minimalistic-assert@1.0.1: {}
+
+  minimatch@10.0.1:
+    dependencies:
+      brace-expansion: 2.0.1
 
   minimatch@3.0.4:
     dependencies:
@@ -27267,6 +27315,11 @@ snapshots:
     dependencies:
       '@ts-morph/common': 0.19.0
       code-block-writer: 12.0.0
+
+  ts-morph@26.0.0:
+    dependencies:
+      '@ts-morph/common': 0.27.0
+      code-block-writer: 13.0.3
 
   ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2):
     dependencies:

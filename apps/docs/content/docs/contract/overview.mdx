@@ -1,5 +1,5 @@
 ---
-title: 'Contract'
+title: 'Overview'
 description: The contract is the core of ts-rest, it defines the API contract between your server and client.
 ---
 
@@ -708,6 +708,13 @@ type Headers = ClientInferRequest<typeof contract.pokemon.getPokemon>['headers']
 
 Define response types as a map of status codes to response schemas. Responses default to `application/json` content-type, but you can define other response types using `c.otherResponse`.
 
+<Callout type="note" title="Status Codes">
+  We consider any 2XX status code to be a success, and any 4XX or 5XX status
+  code to be an error - this is relevant to the client implementation, as for
+  example, the react-query client splits up success/failure by data/error
+  objects.
+</Callout>
+
 ```typescript title="responses.ts" twoslash
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
@@ -730,6 +737,8 @@ export const contract = c.router({
   },
 });
 ```
+
+### Other Responses
 
 To define a non `application/json` response, you can use `c.otherResponse`:
 
@@ -756,41 +765,59 @@ export const contract = c.router({
 });
 ```
 
+### Common Responses
+
+A common practise in API design is to define common responses across all routes in your contract, typically for error responses. We support this with the `commonResponses` option.
+
+```typescript title="common-responses.ts" twoslash
+import { initContract, ClientInferResponses } from '@ts-rest/core';
+const c = initContract();
+type Pokemon = {
+  id: string;
+  name: string;
+  type: string;
+};
+// ---cut---
+export const contract = c.router(
+  {
+    getPokemon: {
+      method: 'GET',
+      path: '/pokemon/:id',
+      responses: {
+        200: c.type<Pokemon>(),
+      },
+    },
+  },
+  {
+    commonResponses: {
+      404: c.type<{ issues: string[]; message: string }>(),
+      500: c.type<{ message: string }>(),
+    },
+  },
+);
+
+// ---cut-start---
+// prettier-ignore
+// ---cut-end---
+type Response = ClientInferResponses<typeof contract.getPokemon>;
+//   ^?
+```
+
 ## Combining Contracts
 
 Combine contracts to create modular, organized APIs. This is especially helpful for large applications where you want to split contracts by domain.
 
-```typescript title="combining-contracts.ts"
-import { initContract } from '@ts-rest/core';
-const c = initContract();
-// ---cut---
-const postContract = c.router({
-  getPosts: {
-    method: 'GET',
-    path: '/posts',
-    responses: {
-      200: c.type<{ posts: any[]; total: number }>(),
-    },
-  },
-  createPost: {
-    method: 'POST',
-    path: '/posts',
-    body: c.type<{ title: string; content: string }>(),
-    responses: {
-      201: c.type<{ id: string; title: string }>(),
-    },
-  },
-});
+<Files>
+  <Folder name="shared" defaultOpen>
+    <File name="contract.ts" />
+    <File name="user-contract.ts" />
+    <File name="post-contract.ts" />
+  </Folder>
+</Files>
 
-const userContract = c.router({
-  getUsers: {
-    method: 'GET',
-    path: '/users',
-    responses: {
-      200: c.type<{ users: any[] }>(),
-    },
-  },
-});
+```typescript title="contract.ts"
+import { postContract } from './post-contract';
+import { userContract } from './user-contract';
 
 export const contract = c.router({
   posts: postContract,
@@ -805,26 +832,26 @@ Attach metadata to your contract routes that can be accessed throughout ts-rest.
 ```typescript title="metadata.ts"
 import { initContract } from '@ts-rest/core';
 const c = initContract();
-// ---cut---
+
 export const contract = c.router({
-  getPosts: {
+  getPokemon: {
     method: 'GET',
-    path: '/posts',
+    path: '/pokemon/:id',
     responses: {
-      200: c.type<{ posts: any[] }>(),
+      200: c.type<Pokemon>(),
     },
-    summary: 'Get all posts',
-    metadata: { role: 'guest', cache: true } as const,
+    summary: 'Get a pokemon',
+    metadata: { role: 'trainer' } as const, // [!code ++]
   },
-  createPost: {
+  updatePokemon: {
     method: 'POST',
-    path: '/posts',
-    body: c.type<{ title: string }>(),
+    path: '/pokemon/:id',
+    body: c.type<Pokemon>(),
     responses: {
-      201: c.type<{ id: string }>(),
+      200: c.type<Pokemon>(),
     },
-    summary: 'Create a new post',
-    metadata: { role: 'admin', rateLimit: 10 } as const,
+    summary: 'Update a pokemon',
+    metadata: { role: 'satoshi' } as const, // [!code ++]
   },
 });
 ```
@@ -837,130 +864,35 @@ export const contract = c.router({
 
 ## Contract Options
 
-Configure how your contract behaves with these options.
-
-### Common Responses
-
-Define shared response schemas across all routes in your contract, typically for error responses.
-
-<Tabs items={['Zod', 'Valibot', 'Arktype']}>
-  <Tab value="Zod">
-```typescript  title="common-responses.ts"
-import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-const c = initContract();
-// ---cut---
-export const contract = c.router(
-  {
-    getPosts: {
-      method: 'GET',
-      path: '/posts',
-      responses: {
-        200: c.type<{ posts: any[] }>(),
-      },
-    },
-  },
-  {
-    commonResponses: {
-      404: z.object({
-        message: z.literal('Not Found'),
-        reason: z.string(),
-      }),
-      500: c.otherResponse({
-        contentType: 'text/plain',
-        body: z.literal('Server Error'),
-      }),
-    },
-  }
-);
-```
-  </Tab>
-  <Tab value="Valibot">
-```typescript  title="common-responses.ts"
-import { initContract } from '@ts-rest/core';
-import * as v from 'valibot';
-const c = initContract();
-// ---cut---
-export const contract = c.router(
-  {
-    getPosts: {
-      method: 'GET',
-      path: '/posts',
-      responses: {
-        200: c.type<{ posts: any[] }>(),
-      },
-    },
-  },
-  {
-    commonResponses: {
-      404: v.object({
-        message: v.literal('Not Found'),
-        reason: v.string(),
-      }),
-      500: c.otherResponse({
-        contentType: 'text/plain',
-        body: v.literal('Server Error'),
-      }),
-    },
-  }
-);
-```
-  </Tab>
-  <Tab value="Arktype">
-```typescript  title="common-responses.ts"
-import { initContract } from '@ts-rest/core';
-import { type } from 'arktype';
-const c = initContract();
-// ---cut---
-export const contract = c.router(
-  {
-    getPosts: {
-      method: 'GET',
-      path: '/posts',
-      responses: {
-        200: c.type<{ posts: any[] }>(),
-      },
-    },
-  },
-  {
-    commonResponses: {
-      404: type({
-        message: "'Not Found'",
-        reason: 'string',
-      }),
-      500: c.otherResponse({
-        contentType: 'text/plain',
-        body: type("'Server Error'"),
-      }),
-    },
-  }
-);
-```
-  </Tab>
-</Tabs>
+Configure some extra behaviour with these contract options.
 
 ### Strict Status Codes
 
 By default, ts-rest allows any response status code. Enable `strictStatusCodes` to only allow status codes defined in your contract.
 
-```typescript title="strict-status-codes.ts"
+```typescript title="strict-status-codes.ts" twoslash
 import { initContract } from '@ts-rest/core';
 const c = initContract();
+type Pokemon = {
+  id: string;
+  name: string;
+  type: string;
+};
 // ---cut---
 export const contract = c.router(
   {
-    getPosts: {
+    getPokemon: {
       method: 'GET',
-      path: '/posts',
+      path: '/pokemon/:id',
       responses: {
-        200: c.type<{ posts: any[] }>(),
+        200: c.type<Pokemon>(),
         404: c.type<{ message: string }>(),
       },
-      strictStatusCodes: true,
+      strictStatusCodes: true, // [!code ++]
     },
   },
   {
-    strictStatusCodes: true,
+    strictStatusCodes: true, // [!code ++]
   },
 );
 ```
@@ -975,67 +907,92 @@ export const contract = c.router(
 
 Add a prefix to all paths in your contract, useful for API versioning or modular routing.
 
-```typescript title="path-prefix.ts"
+```typescript title="path-prefix.ts" twoslash
 import { initContract } from '@ts-rest/core';
 const c = initContract();
+type Pokemon = {
+  id: string;
+  name: string;
+  type: string;
+};
 // ---cut---
-const postsContract = c.router(
+const pokemonContract = c.router(
   {
-    getPosts: {
+    getPokemon: {
       method: 'GET',
-      path: '/posts',
+      path: '/pokemon/:id',
       responses: {
-        200: c.type<{ posts: any[] }>(),
+        200: c.type<Pokemon>(),
       },
     },
   },
   {
-    pathPrefix: '/api/v1',
+    pathPrefix: '/v1', // [!code ++]
   },
 );
 
 // Nested contracts combine prefixes
 const apiContract = c.router(
   {
-    posts: postsContract,
+    pokemon: pokemonContract,
   },
   {
-    pathPrefix: '/v2',
+    pathPrefix: '/api', // [!code ++]
   },
 );
+
+const fullPath = apiContract.pokemon.getPokemon.path;
+//     ^?
 ```
 
 ## Type Hints and Intellisense
 
 For better developer experience, you can add JSDoc comments to provide intellisense on your contract types.
 
-```typescript title="intellisense.ts"
-import { initContract } from '@ts-rest/core';
+```typescript title="intellisense.ts" twoslash
+import { initContract, ClientInferRequest, initClient } from '@ts-rest/core';
 import { z } from 'zod';
 const c = initContract();
+type Pokemon = {
+  id: string;
+  name: string;
+  type: string;
+};
 // ---cut---
 export const contract = c.router({
-  getPosts: {
+  searchPokemon: {
     method: 'GET',
-    path: '/posts',
+    path: '/pokemon',
     responses: {
-      200: c.type<{ posts: any[]; total: number }>(),
+      200: c.type<Pokemon[]>(),
     },
     query: z.object({
       /**
-       * @description UTC timestamp in milliseconds
+       * @description The type of pokemon
        */
-      beginDate: z.string(),
+      type: z
+        .enum(['fire', 'water', 'grass', 'electric', 'psychic', 'normal'])
+        .optional(),
       /**
-       * @description UTC timestamp in milliseconds
-       */
-      endDate: z.string(),
-      /**
-       * @description Filter posts by search term
+       * @description Filter pokemon by name
        */
       search: z.string().optional(),
     }),
-    summary: 'Get posts within time-range',
+    summary: 'Search for a pokemon',
+  },
+});
+
+// ---cut-start---
+const client = initClient(contract, {
+  baseUrl: 'https://pokeapi.co/api/v2',
+});
+// ---cut-end---
+
+await client.searchPokemon({
+  query: {
+    search: 'pikachu',
+    type: 'fire',
+    // ^?
   },
 });
 ```

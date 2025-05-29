@@ -1,0 +1,166 @@
+---
+title: 'Type Helpers'
+description: Contracts pretty complex, so we expose some helpers to let you pull out the useful parts for your app
+---
+
+## Client Helpers
+
+### `ClientInferRequest`
+
+Allows you to extract the type the client is able to send via `@ts-rest/core`'s client.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ClientInferRequest } from '@ts-rest/core';
+
+type Request = ClientInferRequest<typeof contract.getPokemon>;
+//   ^?
+```
+
+### `ClientInferResponseBody`
+
+Allows you to extract the type the client is able to receive from the server.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ClientInferResponseBody } from '@ts-rest/core';
+
+type ResponseBody = ClientInferResponseBody<typeof contract.getPokemon, 200>;
+//   ^?
+```
+
+### `ClientInferResponses`
+
+Allows you to extract the type the client is able to receive from the server.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ClientInferResponses } from '@ts-rest/core';
+
+type Responses = ClientInferResponses<typeof contract.getPokemon>;
+//   ^?
+```
+
+## Server Helpers
+
+### `ServerInferRequest`
+
+Allows you to extract the type the server is able to receive from the client.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ServerInferRequest } from '@ts-rest/core';
+
+type Request = ServerInferRequest<typeof contract.getPokemon>;
+//   ^?
+```
+
+### `ServerInferResponseBody`
+
+Allows you to extract the type the server is able to send to the client.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ServerInferResponseBody } from '@ts-rest/core';
+
+type ResponseBody = ServerInferResponseBody<typeof contract.getPokemon, 200>;
+//   ^?
+```
+
+### `ServerInferResponses`
+
+Allows you to extract the type the server is able to send to the client.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ServerInferResponses } from '@ts-rest/core';
+
+type Responses = ServerInferResponses<typeof contract.getPokemon>;
+//   ^?
+```

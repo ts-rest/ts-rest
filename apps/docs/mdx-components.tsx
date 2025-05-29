@@ -6,6 +6,10 @@ import { InstallTabs } from './lib/InstallTabs';
 import { GithubInfo } from 'fumadocs-ui/components/github-info';
 import * as StepsComponents from 'fumadocs-ui/components/steps';
 import * as FileComponents from 'fumadocs-ui/components/files';
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { createGenerator } from 'fumadocs-typescript';
+
+const generator = createGenerator();
 
 // use this function to get MDX components, you will need it for rendering MDX
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
@@ -18,5 +22,8 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     ...StepsComponents,
     ...FileComponents,
     ...components,
+    AutoTypeTable: (props) => (
+      <AutoTypeTable {...props} generator={generator} />
+    ),
   };
 }
