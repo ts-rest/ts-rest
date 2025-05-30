@@ -32,6 +32,7 @@ import {
   ServerInferResponses,
   StandardSchemaError,
   TsRestResponseError,
+  validateMultiSchemaObject,
   validateIfSchema,
 } from '@ts-rest/core';
 import {
@@ -361,28 +362,25 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
-    const pathParamsSchema = parseAsStandardSchema(appRoute.pathParams);
-    const headersSchema = parseAsStandardSchema(appRoute.headers);
-    const querySchema = parseAsStandardSchema(appRoute.query);
-    const bodySchema = parseAsStandardSchema(
-      'body' in appRoute ? appRoute.body : null,
+    const paramsResult = validateIfSchema(req.params, appRoute.pathParams, {
+      passThroughExtraKeys: true,
+    });
+
+    const headersResult = validateMultiSchemaObject(
+      req.headers,
+      appRoute.headers,
     );
-
-    const paramsResult = validateIfSchema(req.params, pathParamsSchema, {
-      passThroughExtraKeys: true,
-    });
-
-    const headersResult = validateIfSchema(req.headers, headersSchema, {
-      passThroughExtraKeys: true,
-    });
 
     const query = options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
 
-    const queryResult = validateIfSchema(query, querySchema);
+    const queryResult = validateIfSchema(query, appRoute.query);
 
-    const bodyResult = validateIfSchema(req.body, bodySchema);
+    const bodyResult = validateIfSchema(
+      req.body,
+      'body' in appRoute ? appRoute.body : null,
+    );
 
     const isHeadersInvalid =
       headersResult.error && options.validateRequestHeaders;
@@ -398,10 +396,10 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       isBodyInvalid
     ) {
       const useLegacyZod = areAllSchemasLegacyZod([
-        pathParamsSchema,
-        headersSchema,
-        querySchema,
-        bodySchema,
+        ...paramsResult.schemasUsed,
+        ...queryResult.schemasUsed,
+        ...bodyResult.schemasUsed,
+        ...headersResult.schemasUsed,
       ]);
 
       if (useLegacyZod) {

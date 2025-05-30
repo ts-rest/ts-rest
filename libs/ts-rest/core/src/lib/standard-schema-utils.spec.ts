@@ -1,14 +1,18 @@
 import { StandardSchemaV1 } from './standard-schema';
 import {
   areAllSchemasLegacyZod,
-  combineStandardSchemas,
   isStandardSchema,
   parseAsStandardSchema,
   validateAgainstStandardSchema,
+  validateMultiSchemaObject,
   validateIfSchema,
 } from './standard-schema-utils';
 import { ZodError, z } from 'zod';
 import * as v from 'valibot';
+import { StandardSchemaError } from './validation-error';
+import { initContract } from './dsl';
+
+const c = initContract();
 
 describe('standard schema utils', () => {
   describe('validateAgainstStandardSchema', () => {
@@ -65,172 +69,6 @@ describe('standard schema utils', () => {
     });
   });
 
-  describe('mergeStandardSchema', () => {
-    it('should merge two strict schemas', () => {
-      const baseHeaders = z.object({ foo: z.string() }).strict();
-      const routeHeaders = z.object({ bar: z.string() }).strict();
-
-      const baseHeadersSchema = parseAsStandardSchema(baseHeaders)!;
-      const routeHeadersSchema = parseAsStandardSchema(routeHeaders)!;
-
-      const combinedSchema = combineStandardSchemas(
-        baseHeadersSchema,
-        routeHeadersSchema,
-      );
-
-      const result = validateAgainstStandardSchema(
-        { foo: 'foo', bar: 'bar', baz: 'baz' },
-        combinedSchema,
-      );
-
-      expect(result).toStrictEqual({
-        error: new ZodError([
-          {
-            code: 'unrecognized_keys',
-            keys: ['baz'],
-            path: [],
-            message: "Unrecognized key(s) in object: 'baz'",
-          },
-        ]),
-      });
-    });
-
-    it('should merge a strict and non-strict schema', () => {
-      const baseHeaders = z.object({ foo: z.string() }).strict();
-      const routeHeaders = z.object({ bar: z.string() });
-      const baseHeadersSchema = parseAsStandardSchema(baseHeaders)!;
-      const routeHeadersSchema = parseAsStandardSchema(routeHeaders)!;
-
-      const headers = combineStandardSchemas(
-        baseHeadersSchema,
-        routeHeadersSchema,
-      );
-
-      const result = validateAgainstStandardSchema(
-        { foo: 'foo', bar: 'bar', baz: 'baz' },
-        headers,
-      );
-
-      expect(result).toEqual({
-        value: {
-          foo: 'foo',
-          bar: 'bar',
-        },
-      });
-    });
-
-    it('should merge a non-strict and strict schema', () => {
-      const baseHeaders = z.object({ foo: z.string() });
-      const routeHeaders = z.object({ bar: z.string() }).strict();
-      const baseHeadersSchema = parseAsStandardSchema(baseHeaders)!;
-      const routeHeadersSchema = parseAsStandardSchema(routeHeaders)!;
-
-      const headers = combineStandardSchemas(
-        baseHeadersSchema,
-        routeHeadersSchema,
-      );
-
-      const result = validateAgainstStandardSchema(
-        { foo: 'foo', bar: 'bar', baz: 'baz' },
-        headers,
-      );
-
-      expect(result).toEqual({
-        error: new ZodError([
-          {
-            code: 'unrecognized_keys',
-            keys: ['baz'],
-            path: [],
-            message: "Unrecognized key(s) in object: 'baz'",
-          },
-        ]),
-      });
-    });
-
-    it('should merge a non-strict and non-strict schema', () => {
-      const baseHeaders = z.object({ foo: z.string() });
-      const routeHeaders = z.object({ bar: z.string() });
-      const baseHeadersSchema = parseAsStandardSchema(baseHeaders)!;
-      const routeHeadersSchema = parseAsStandardSchema(routeHeaders)!;
-
-      const headers = combineStandardSchemas(
-        baseHeadersSchema,
-        routeHeadersSchema,
-      );
-
-      const result = validateAgainstStandardSchema(
-        { foo: 'foo', bar: 'bar', baz: 'baz' },
-        headers,
-      );
-
-      expect(result).toEqual({
-        value: {
-          foo: 'foo',
-          bar: 'bar',
-        },
-      });
-    });
-
-    it('should fail to merge a zod legacy schema and a standard schema', () => {
-      const zodSchema = z.object({ zod: z.string() });
-      const valibotSchema = v.object({ valibot: v.string() });
-
-      const zodSchemaStandard = parseAsStandardSchema(zodSchema)!;
-      const valibotSchemaStandard = parseAsStandardSchema(valibotSchema)!;
-
-      expect(() =>
-        combineStandardSchemas(zodSchemaStandard, valibotSchemaStandard),
-      ).toThrow(
-        'Cannot combine a zod < 3.24.0 schema with a standard schema, please use zod >= 3.24.0 or any other standard schema library',
-      );
-    });
-
-    it('should merge two valibot schemas', () => {
-      const valibotSchema1 = v.object({ foo: v.string() });
-      const valibotSchema2 = v.object({ bar: v.string() });
-
-      const valibotSchema1Standard = parseAsStandardSchema(valibotSchema1)!;
-      const valibotSchema2Standard = parseAsStandardSchema(valibotSchema2)!;
-
-      const combinedSchema = combineStandardSchemas(
-        valibotSchema1Standard,
-        valibotSchema2Standard,
-      );
-
-      const result = validateAgainstStandardSchema(
-        { foo: 'foo', bar: 'bar', extraKey: true },
-        combinedSchema,
-      );
-
-      expect(result).toEqual({
-        value: { foo: 'foo', bar: 'bar' },
-      });
-    });
-
-    it('should merge two valibot schemas (pass through extra keys)', () => {
-      const valibotSchema1 = v.object({ foo: v.string() });
-      const valibotSchema2 = v.object({ bar: v.string() });
-
-      const valibotSchema1Standard = parseAsStandardSchema(valibotSchema1)!;
-      const valibotSchema2Standard = parseAsStandardSchema(valibotSchema2)!;
-
-      const combinedSchema = combineStandardSchemas(
-        valibotSchema1Standard,
-        valibotSchema2Standard,
-      );
-
-      const result = validateAgainstStandardSchema(
-        { foo: 'foo', bar: 'bar', extraKey: true },
-        combinedSchema,
-        { passThroughExtraKeys: true },
-      );
-
-      expect(result).toEqual({
-        value: { foo: 'foo', bar: 'bar', extraKey: true },
-      });
-    });
-  });
-
   describe('validateIfSchema', () => {
     it('should validate the data if a schema is provided', () => {
       const data = { foo: 'bar' };
@@ -240,6 +78,7 @@ describe('standard schema utils', () => {
 
       expect(result).toEqual({
         value: { foo: 'bar' },
+        schemasUsed: [schema],
       });
     });
 
@@ -248,7 +87,7 @@ describe('standard schema utils', () => {
 
       const result = validateIfSchema(data, null);
 
-      expect(result).toEqual({ value: { foo: 'bar' } });
+      expect(result).toEqual({ value: { foo: 'bar' }, schemasUsed: [] });
     });
 
     it('should throw an error if the schema is invalid', () => {
@@ -267,6 +106,7 @@ describe('standard schema utils', () => {
             message: 'Expected number, received string',
           },
         ]),
+        schemasUsed: [schema],
       });
     });
   });
@@ -290,6 +130,170 @@ describe('standard schema utils', () => {
       expect(
         areAllSchemasLegacyZod([zodSchemaStandard, valibotSchemaStandard]),
       ).toBe(false);
+    });
+  });
+
+  describe('validateMultiSchemaObject', () => {
+    it('should work for a legacy zod object', () => {
+      const headers = {
+        'x-foo': 'bar',
+        'x-bar': 'baz',
+      };
+
+      const headersSchema = z.object({
+        'x-foo': z.string(),
+      });
+
+      const result = validateMultiSchemaObject(headers, headersSchema);
+
+      expect(result).toEqual({
+        value: {
+          'x-foo': 'bar',
+          'x-bar': 'baz',
+        },
+        schemasUsed: [headersSchema],
+      });
+    });
+
+    it('should error for missing headers', () => {
+      const headers = {
+        'x-foo': 'bar',
+      };
+
+      const headersSchema = z.object({
+        'x-foo': z.string(),
+        'x-bar': z.string(),
+      });
+
+      const result = validateMultiSchemaObject(headers, headersSchema);
+
+      expect(result).toEqual({
+        error: new ZodError([
+          {
+            code: 'invalid_type',
+            expected: 'string',
+            received: 'undefined',
+            path: ['x-bar'],
+            message: 'Required',
+          },
+        ]),
+        schemasUsed: [headersSchema],
+      });
+    });
+
+    it('should not error for a missing schema', () => {
+      const headers = {
+        'x-foo': 'bar',
+      };
+
+      const result = validateMultiSchemaObject(headers, null);
+
+      expect(result).toEqual({
+        value: {
+          'x-foo': 'bar',
+        },
+        schemasUsed: [],
+      });
+    });
+
+    it('should work for a valibot object', () => {
+      const headers = {
+        'x-foo': 'bar',
+        'x-bar': 'baz',
+      };
+
+      const headersSchema = {
+        'x-foo': v.string(),
+        'x-bar': v.string(),
+      };
+
+      const result = validateMultiSchemaObject(headers, headersSchema);
+
+      expect(result).toEqual({
+        value: {
+          'x-foo': 'bar',
+          'x-bar': 'baz',
+        },
+        schemasUsed: [headersSchema['x-foo'], headersSchema['x-bar']],
+      });
+    });
+
+    it('should error if missing a required header', () => {
+      const schema = { 'x-foo': v.string() };
+      const result = validateMultiSchemaObject({}, schema);
+
+      expect(result).toEqual({
+        error: new StandardSchemaError([
+          {
+            kind: 'schema',
+            type: 'string',
+            expected: 'string',
+            received: 'undefined',
+            message: 'Invalid type: Expected string but received undefined',
+            path: ['x-foo'],
+          } as StandardSchemaV1.Issue,
+        ]),
+        schemasUsed: [schema['x-foo']],
+      });
+    });
+
+    it('should error if the header is the wrong type', () => {
+      const schema = v.string();
+      const result = validateMultiSchemaObject(
+        { 'x-foo': 1 },
+        { 'x-foo': schema },
+      );
+
+      expect(result).toEqual({
+        error: new StandardSchemaError([
+          {
+            kind: 'schema',
+            type: 'string',
+            input: 1,
+            expected: 'string',
+            received: '1',
+            message: 'Invalid type: Expected string but received 1',
+            path: ['x-foo'],
+          } as StandardSchemaV1.Issue,
+        ]),
+        schemasUsed: [schema],
+      });
+    });
+
+    it('should error if mixing zod legacy and valibot', () => {
+      expect(() =>
+        validateMultiSchemaObject(
+          { 'x-foo': 'bar', 'x-bar': 1 },
+          { 'x-foo': v.string(), 'x-bar': z.string() },
+        ),
+      ).toThrow(
+        'Cannot mix zod legacy and standard schema libraries, please use zod >= 3.24.0 or any other standard schema library',
+      );
+    });
+
+    it('should gracefully deal with null, and with other helpers like c.type()', () => {
+      const headers = {
+        'x-foo': 'bar',
+        'x-bar': 1,
+        'x-baz': 1,
+      };
+
+      const headersSchema = {
+        'x-foo': c.type<string>(),
+        'x-bar': null,
+        'x-baz': c.type<null>(),
+      };
+
+      const result = validateMultiSchemaObject(headers, headersSchema);
+
+      expect(result).toEqual({
+        value: {
+          'x-foo': 'bar',
+          'x-bar': 1,
+          'x-baz': 1,
+        },
+        schemasUsed: [],
+      });
     });
   });
 });

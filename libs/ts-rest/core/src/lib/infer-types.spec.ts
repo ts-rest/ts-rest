@@ -10,7 +10,6 @@ import {
   ServerInferResponses,
   InferResponseDefinedStatusCodes,
   InferResponseUndefinedStatusCodes,
-  OptionalizeIfUndefined,
 } from './infer-types';
 import {
   ErrorHttpStatusCode,
@@ -662,7 +661,7 @@ it('type inference helpers', () => {
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
-          } & Record<string, string | undefined>;
+          } & Record<string, string>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
           cache?: FetchOptions['cache'];
@@ -673,7 +672,7 @@ it('type inference helpers', () => {
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
-          } & Record<string, string | undefined>;
+          } & Record<string, string>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
           cache?: FetchOptions['cache'];
@@ -689,7 +688,7 @@ it('type inference helpers', () => {
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
-          } & Record<string, string | undefined>;
+          } & Record<string, string>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
           cache?: FetchOptions['cache'];
@@ -706,7 +705,7 @@ it('type inference helpers', () => {
               authorization?: undefined;
               'pagination-page'?: undefined;
               age?: undefined;
-            } & Record<string, string | undefined>;
+            } & Record<string, string>;
             fetchOptions?: FetchOptions;
             overrideClientOptions?: Partial<OverrideableClientArgs>;
             cache?: FetchOptions['cache'];
@@ -721,21 +720,20 @@ it('type inference helpers', () => {
    * Expect ClientInferRequest to only include extraHeaders when no base headers are defined,
    * demonstrating how base headers affect the client request interface
    */
-  type ClientInferRequestWithoutBaseHeaders = ClientInferRequest<
-    typeof headerlessContract
+  type ClientInferRequestWithoutBaseHeaders = Omit<
+    ClientInferRequest<typeof headerlessContract>['getPost'],
+    'next'
   >;
   type TestClientInferRequestWithoutBaseHeaders = Expect<
     Equal<
       ClientInferRequestWithoutBaseHeaders,
       {
-        getPost: {
-          query: { includeComments?: boolean | undefined };
-          params: { id: string };
-          extraHeaders?: Record<string, string | undefined>;
-          fetchOptions?: FetchOptions;
-          overrideClientOptions?: Partial<OverrideableClientArgs>;
-          cache?: FetchOptions['cache'];
-        };
+        query: { includeComments?: boolean | undefined };
+        params: { id: string };
+        extraHeaders?: Record<string, string>;
+        fetchOptions?: FetchOptions;
+        overrideClientOptions?: Partial<OverrideableClientArgs>;
+        cache?: FetchOptions['cache'];
       }
     >
   >;
@@ -825,22 +823,6 @@ it('type inference helpers', () => {
     Equal<
       InferResponseUndefinedStatusCodesErrorFiltered,
       Exclude<ErrorHttpStatusCode, 404>
-    >
-  >;
-});
-
-describe('OptionalizeIfUndefined', () => {
-  /**
-   * @name OptionalizeSimple
-   * Expect OptionalizeIfUndefined to convert { foo: undefined } to { foo?: undefined }
-   */
-  type OptionalizeSimple = OptionalizeIfUndefined<{ foo: undefined }>;
-  type TestOptionalizeSimple = Expect<
-    Equal<
-      Prettify<OptionalizeSimple>, // pretty as it adds an extra `& {}`
-      {
-        foo?: undefined;
-      }
     >
   >;
 });

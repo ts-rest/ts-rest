@@ -14,6 +14,7 @@ import {
   parseJsonQueryObject,
   ServerInferRequest,
   validationErrorResponse,
+  validateMultiSchemaObject,
 } from '@ts-rest/core';
 import type { Request } from 'express';
 import type { FastifyRequest } from 'fastify';
@@ -58,9 +59,10 @@ class TsRestValidatorPipe implements PipeTransform {
       );
     }
 
-    const headersResult = validateIfSchema(req.headers, appRoute.headers, {
-      passThroughExtraKeys: true,
-    });
+    const headersResult = validateMultiSchemaObject(
+      req.headers,
+      appRoute.headers,
+    );
 
     if (headersResult.error && options.validateRequestHeaders) {
       throw new BadRequestException(
@@ -79,7 +81,7 @@ class TsRestValidatorPipe implements PipeTransform {
 
     const bodyResult = validateIfSchema(
       req.body,
-      (appRoute as AppRoute).method === 'GET' ? null : appRoute.body,
+      'body' in appRoute ? appRoute.body : null,
     );
 
     if (bodyResult.error && options.validateRequestBody) {

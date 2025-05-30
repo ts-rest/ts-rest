@@ -17,6 +17,7 @@ import {
   parseAsStandardSchema,
   areAllSchemasLegacyZod,
   StandardSchemaError,
+  validateMultiSchemaObject,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
 import { type ZodError } from 'zod';
@@ -310,26 +311,22 @@ const handlerFactory = (
       return;
     }
 
-    const pathParamsSchema = parseAsStandardSchema(route.pathParams);
-    const headersSchema = parseAsStandardSchema(route.headers);
-    const querySchema = parseAsStandardSchema(route.query);
-    const bodySchema = parseAsStandardSchema(route.body);
-
-    const pathParamsResult = validateIfSchema(pathParams, pathParamsSchema, {
+    const pathParamsResult = validateIfSchema(pathParams, route.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = validateIfSchema(req.headers, headersSchema, {
-      passThroughExtraKeys: true,
-    });
+    const headersResult = validateMultiSchemaObject(req.headers, route.headers);
 
     query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
 
-    const queryResult = validateIfSchema(query, querySchema);
+    const queryResult = validateIfSchema(query, route.query);
 
-    const bodyResult = validateIfSchema(req.body, bodySchema);
+    const bodyResult = validateIfSchema(
+      req.body,
+      'body' in route ? route.body : null,
+    );
 
     try {
       if (
@@ -340,10 +337,10 @@ const handlerFactory = (
       ) {
         if (throwRequestValidation) {
           const useLegacyZod = areAllSchemasLegacyZod([
-            pathParamsSchema,
-            headersSchema,
-            querySchema,
-            bodySchema,
+            ...pathParamsResult.schemasUsed,
+            ...headersResult.schemasUsed,
+            ...queryResult.schemasUsed,
+            ...bodyResult.schemasUsed,
           ]);
 
           if (useLegacyZod) {

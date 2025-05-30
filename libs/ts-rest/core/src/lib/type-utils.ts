@@ -105,6 +105,13 @@ export type Narrow<T> = Try<T, [], NarrowNotSchema<T>>;
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
+/**
+ * Makes the properties of `T` specified by `K` optional, where `K` can be any type (not necessarily keys of `T`).
+ * If `K` is not a key of `T`, it is ignored.
+ *
+ * @template T - The base object type.
+ * @template K - The keys to make optional (can be any type, only keys of `T` are used).
+ */
 export type PartialByLooseKeys<T, K> = Omit<T, K extends keyof T ? K : never> &
   Partial<Pick<T, K extends keyof T ? K : never>>;
 

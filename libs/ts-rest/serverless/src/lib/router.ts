@@ -13,6 +13,7 @@ import {
   parseAsStandardSchema,
   areAllSchemasLegacyZod,
   StandardSchemaError,
+  validateMultiSchemaObject,
 } from '@ts-rest/core';
 import { Router, withParams, cors } from 'itty-router';
 import { TsRestRequest } from './request';
@@ -74,17 +75,10 @@ const recursivelyProcessContract = ({
 
 const validateRequest = <TPlatformArgs, TRequestExtension>(
   req: TsRestRequest,
-  schema: AppRoute,
+  appRoute: AppRoute,
   options: ServerlessHandlerOptions<TPlatformArgs, TRequestExtension>,
 ) => {
-  const pathParamsSchema = parseAsStandardSchema(schema.pathParams);
-  const headersSchema = parseAsStandardSchema(schema.headers);
-  const querySchema = parseAsStandardSchema(schema.query);
-  const bodySchema = parseAsStandardSchema(
-    'body' in schema ? schema.body : null,
-  );
-
-  const paramsResult = validateIfSchema(req.params, pathParamsSchema, {
+  const paramsResult = validateIfSchema(req.params, appRoute.pathParams, {
     passThroughExtraKeys: true,
   });
 
@@ -93,18 +87,19 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
     headers[key] = value;
   });
 
-  const headersResult = validateIfSchema(headers, headersSchema, {
-    passThroughExtraKeys: true,
-  });
+  const headersResult = validateMultiSchemaObject(headers, appRoute.headers);
 
   const queryResult = validateIfSchema(
     options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query,
-    querySchema,
+    appRoute.query,
   );
 
-  const bodyResult = validateIfSchema(req.content, bodySchema);
+  const bodyResult = validateIfSchema(
+    req.content,
+    'body' in appRoute ? appRoute.body : null,
+  );
 
   if (
     paramsResult.error ||
@@ -113,10 +108,10 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
     bodyResult.error
   ) {
     const useLegacyZod = areAllSchemasLegacyZod([
-      pathParamsSchema,
-      headersSchema,
-      querySchema,
-      bodySchema,
+      ...paramsResult.schemasUsed,
+      ...headersResult.schemasUsed,
+      ...queryResult.schemasUsed,
+      ...bodyResult.schemasUsed,
     ]);
 
     if (useLegacyZod) {

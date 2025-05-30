@@ -67,6 +67,10 @@ const contract = c.router({
   updatePost: {
     method: 'PUT',
     path: `/posts/:id`,
+    headers: {
+      'x-required-header': v.string(),
+      'x-optional-header': v.optional(v.string()),
+    },
     pathParams: v.object({
       id: IdPathParam,
     }),
@@ -253,6 +257,21 @@ describe('standard schema', () => {
               type: 'integer',
             },
           },
+          {
+            in: 'header',
+            name: 'x-required-header',
+            required: true,
+            schema: {
+              type: 'string',
+            },
+          },
+          {
+            in: 'header',
+            name: 'x-optional-header',
+            schema: {
+              type: 'string',
+            },
+          },
         ],
         requestBody: {
           content: {
@@ -343,5 +362,100 @@ describe('standard schema', () => {
         tags: [],
       },
     });
+  });
+
+  it('should handle complex headers, inheritence, transformation and optional headers', async () => {
+    const postContract = c.router(
+      {
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          headers: {
+            'x-route-required-header': v.string(),
+            'x-route-optional-header': v.optional(v.string()),
+            'x-unset': null,
+          },
+          responses: {
+            200: v.object({
+              message: v.string(),
+            }),
+          },
+        },
+      },
+      {
+        baseHeaders: {
+          'x-base-required-header': v.string(),
+          'x-base-optional-header': v.optional(v.string()),
+        },
+      },
+    );
+
+    const parentContract = c.router(
+      {
+        posts: postContract,
+      },
+      {
+        baseHeaders: {
+          'x-parent-required-header': v.string(),
+          'x-parent-optional-header': v.optional(v.string()),
+          'x-unset': v.string(),
+        },
+      },
+    );
+
+    const openApiSchema = await generateOpenApiAsync(
+      parentContract,
+      {
+        info: {
+          title: 'Blog API',
+          version: '0.1',
+        },
+      },
+      {
+        schemaTransformer: VALIBOT_ASYNC,
+      },
+    );
+
+    expect(openApiSchema.paths['/posts/{id}'].get.parameters).toStrictEqual([
+      {
+        name: 'id',
+        in: 'path',
+        required: true,
+        schema: { type: 'string' },
+      },
+      {
+        name: 'x-parent-required-header',
+        in: 'header',
+        required: true,
+        schema: { type: 'string' },
+      },
+      {
+        name: 'x-parent-optional-header',
+        in: 'header',
+        schema: { type: 'string' },
+      },
+      {
+        name: 'x-base-required-header',
+        in: 'header',
+        required: true,
+        schema: { type: 'string' },
+      },
+      {
+        name: 'x-base-optional-header',
+        in: 'header',
+        schema: { type: 'string' },
+      },
+      {
+        name: 'x-route-required-header',
+        in: 'header',
+        required: true,
+        schema: { type: 'string' },
+      },
+      {
+        name: 'x-route-optional-header',
+        in: 'header',
+        schema: { type: 'string' },
+      },
+    ]);
   });
 });

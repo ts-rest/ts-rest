@@ -6,6 +6,8 @@ import {
   ContractAnyType,
   ContractNoBodyType,
   ContractOtherResponse,
+  InferHeadersInput,
+  InferHeadersOutput,
 } from './dsl';
 import { HTTPStatusCode } from './status-codes';
 import {
@@ -181,12 +183,12 @@ export type ServerInferRequest<
             : never;
           headers: 'headers' extends keyof T
             ? Prettify<
-                LowercaseKeys<SchemaOutputOrType<T['headers']>> &
+                InferHeadersOutput<T> &
                   ([TServerHeaders] extends [never]
                     ? {}
                     : Omit<
                         TServerHeaders,
-                        keyof LowercaseKeys<SchemaOutputOrType<T['headers']>>
+                        keyof LowercaseKeys<InferHeadersOutput<T>>
                       >)
               >
             : TServerHeaders;
@@ -198,28 +200,18 @@ export type ServerInferRequest<
   ? { [TKey in keyof T]: ServerInferRequest<T[TKey], TServerHeaders> }
   : never;
 
-/**
- * Convert { foo: undefined } to { foo?: undefined }
- */
-export type OptionalizeIfUndefined<T> = {
-  [K in keyof T as T[K] extends undefined ? K : never]?: T[K];
-} & {
-  [K in keyof T as T[K] extends undefined ? never : K]: T[K];
-};
-
 type ClientInferRequestBase<
   T extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {},
   THeaders = 'headers' extends keyof T
-    ? Prettify<
-        /**
-         * Seems {@link OptionalizeIfUndefined} is necessary when using standard schema libs to convert { foo: undefined } to { foo?: undefined }
-         */
-        OptionalizeIfUndefined<
-          PartialByLooseKeys<
-            LowercaseKeys<SchemaInputOrType<T['headers']>>,
-            keyof LowercaseKeys<TClientArgs['baseHeaders']>
-          >
+    ? /**
+       * We want to only require headers that the user did not provide
+       * in the base headers of the client
+       */
+      Prettify<
+        PartialByLooseKeys<
+          LowercaseKeys<InferHeadersInput<T>>,
+          keyof LowercaseKeys<TClientArgs['baseHeaders']>
         >
       >
     : never,
@@ -248,10 +240,10 @@ type ClientInferRequestBase<
         : never;
       headers: THeaders;
       extraHeaders?: [THeaders] extends [never]
-        ? Record<string, string | undefined>
+        ? Record<string, string>
         : {
-            [K in NonNullable<keyof THeaders>]?: never;
-          } & Record<string, string | undefined>;
+            [K in keyof RequiredKeys<InferHeadersInput<T>>]?: never;
+          } & Record<string, string>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
 
@@ -270,6 +262,10 @@ type ClientInferRequestBase<
     never
   >
 >;
+
+type RequiredKeys<T> = {
+  [K in keyof T]-?: T[K];
+};
 
 export type ClientInferRequest<
   T extends AppRoute | AppRouter,

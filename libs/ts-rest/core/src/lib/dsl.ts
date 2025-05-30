@@ -1,10 +1,15 @@
 import type { z } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
-import { Merge, Opaque, Prettify, WithoutUnknown } from './type-utils';
 import {
-  combineStandardSchemas,
-  parseAsStandardSchema,
-} from './standard-schema-utils';
+  LowercaseKeys,
+  Merge,
+  Opaque,
+  Prettify,
+  SchemaInputOrType,
+  SchemaOutputOrType,
+  WithoutUnknown,
+} from './type-utils';
+import { mergeHeaderSchemasForRoute } from './standard-schema-utils';
 
 type MixedSchemaError<A, B> = Opaque<{ a: A; b: B }, 'MixedSchemaError'>;
 
@@ -26,6 +31,16 @@ export type ContractAnyType =
   | ContractPlainType<unknown>
   | ContractNullType
   | null;
+
+/**
+ * It's the same as ContractAnyType, but it doesn't include standard schema - used for legacy headers support
+ */
+export type ContractAnyTypeLegacy =
+  | z.ZodSchema
+  | ContractPlainType<unknown>
+  | ContractNullType
+  | null;
+
 export type ContractOtherResponse<T extends ContractAnyType> = Opaque<
   { contentType: string; body: T },
   'ContractOtherResponse'
@@ -40,7 +55,7 @@ type AppRouteCommon = {
   path: Path;
   pathParams?: ContractAnyType;
   query?: ContractAnyType;
-  headers?: ContractAnyType;
+  headers?: Record<string, ContractAnyType> | ContractAnyTypeLegacy;
   summary?: string;
   description?: string;
   deprecated?: boolean;
@@ -124,29 +139,51 @@ type RecursivelyApplyOptions<
 };
 
 /**
- * Temporary polyfill to convert zod schemas (pre 3.24.0) to standard schemas, this
- * is the version before zod added standard schema typing, but would be a breaking change
- * if we didnt support
+ * As of 3.53.0 we support Zod (pre standard schema) and standard schema, this function
+ * serves to merge the two types together
  *
- * @deprecated - this will be removed in the next major version
+ * If you're merging two legacy zods, it'll use the zod helper method
+ *
+ * Else it'll merge based on the new object structure (i.e. where headers are Records not schemas)
  */
-export type PolyfillZodToStandardSchema<T> = T extends z.ZodSchema
-  ? StandardSchemaV1<z.input<T>, z.output<T>>
-  : T;
+export type MergeHeadersWithLegacySupport<
+  A extends AppRouteCommon['headers'],
+  B extends AppRouteCommon['headers'],
+> = [A, B] extends [undefined, undefined]
+  ? unknown
+  : A extends undefined
+  ? B
+  : B extends undefined
+  ? A
+  : A extends ContractAnyTypeLegacy
+  ? B extends ContractAnyTypeLegacy
+    ? MergeHeadersLegacy<A, B>
+    : unknown
+  : A extends Record<string, ContractAnyType>
+  ? B extends Record<string, ContractAnyType>
+    ? MergeObjectBasedHeaders<A, B>
+    : unknown
+  : unknown;
 
-type UniversalMerge<A, B> = A extends StandardSchemaV1
-  ? B extends StandardSchemaV1
-    ? StandardSchemaV1<
-        Merge<StandardSchemaV1.InferInput<A>, StandardSchemaV1.InferInput<B>>,
-        Merge<StandardSchemaV1.InferOutput<A>, StandardSchemaV1.InferOutput<B>>
+/**
+ * pre standard schema we used to have headers typed as a zod object, now we type them as Record<string, ContractAnyType>
+ *
+ * This function serves to deal with the old type
+ */
+type MergeHeadersLegacy<A, B> = A extends z.AnyZodObject
+  ? B extends z.AnyZodObject
+    ? z.ZodObject<
+        z.objectUtil.MergeShapes<A['shape'], B['shape']>,
+        B['_def']['unknownKeys'],
+        B['_def']['catchall']
       >
     : unknown extends B
     ? A
-    : MixedSchemaError<A, B>
+    : MixedZodError<A, B>
   : unknown extends A
   ? B
-  : B extends StandardSchemaV1
-  ? MixedSchemaError<A, B>
+  : B extends z.AnyZodObject
+  ? MixedZodError<A, B>
   : unknown extends B
   ? A
   : Prettify<
@@ -156,6 +193,81 @@ type UniversalMerge<A, B> = A extends StandardSchemaV1
       >
     >;
 
+type MixedZodError<A, B> = Opaque<{ a: A; b: B }, 'MixedZodError'>;
+
+/**
+ * Headers are typed as a Record<string, ContractAnyType>
+ *
+ * We need to be able to merge together base headers and route headers, this smushes them together taking precedence to route headers
+ */
+type MergeObjectBasedHeaders<
+  T extends Record<string, ContractAnyType>,
+  U extends Record<string, ContractAnyType>,
+> = {
+  [K in keyof T | keyof U]: K extends keyof U
+    ? U[K]
+    : K extends keyof T
+    ? T[K]
+    : never;
+} extends infer M
+  ? {
+      [K in keyof M as M[K] extends null ? never : K]: M[K];
+    }
+  : never;
+
+type IsEmptyObject<T> = keyof T extends never
+  ? {} extends T
+    ? true
+    : false
+  : false;
+
+/**
+ * For a given app route, infer the headers input type
+ */
+export type InferHeadersInput<
+  T extends AppRoute,
+  THeaders = T['headers'],
+> = unknown extends THeaders
+  ? undefined
+  : // if empty object
+  IsEmptyObject<THeaders> extends true
+  ? {}
+  : // if Zod
+  THeaders extends z.AnyZodObject
+  ? LowercaseKeys<z.input<THeaders>>
+  : // if modern object-based headers
+  THeaders extends Record<string, ContractAnyType>
+  ? {
+      [K in keyof THeaders]: THeaders[K] extends ContractAnyType
+        ? LowercaseKeys<SchemaInputOrType<THeaders[K]>>
+        : never;
+    }
+  : // else
+    undefined;
+
+/**
+ * For a given app route, infer the headers output type
+ */
+export type InferHeadersOutput<
+  T extends AppRoute,
+  THeaders = T['headers'],
+> = unknown extends THeaders
+  ? '1'
+  : // if empty object
+  IsEmptyObject<THeaders> extends true
+  ? {}
+  : // if Zod
+  THeaders extends z.AnyZodObject
+  ? LowercaseKeys<z.output<THeaders>>
+  : // if modern object-based headers
+  THeaders extends Record<string, ContractAnyType>
+  ? {
+      [K in keyof THeaders]: THeaders[K] extends ContractAnyType
+        ? LowercaseKeys<SchemaOutputOrType<THeaders[K]>>
+        : never;
+    }
+  : '3';
+
 type ApplyOptions<
   TRoute extends AppRoute,
   TOptions extends RouterOptions,
@@ -164,9 +276,9 @@ type ApplyOptions<
     path: TOptions['pathPrefix'] extends string
       ? `${TOptions['pathPrefix']}${TRoute['path']}`
       : TRoute['path'];
-    headers: UniversalMerge<
-      PolyfillZodToStandardSchema<TOptions['baseHeaders']>,
-      PolyfillZodToStandardSchema<TRoute['headers']>
+    headers: MergeHeadersWithLegacySupport<
+      UnknownToUndefined<TOptions['baseHeaders']>,
+      UnknownToUndefined<TRoute['headers']>
     >;
     strictStatusCodes: TRoute['strictStatusCodes'] extends boolean
       ? TRoute['strictStatusCodes']
@@ -180,6 +292,18 @@ type ApplyOptions<
       ? Prettify<Merge<TOptions['metadata'], TRoute['metadata']>>
       : TRoute['metadata'];
   }>;
+
+/**
+ * This was needed as **for some reason** headers above end up being `unknown`, our
+ * `MergeHeadersWithLegacySupport` function expends undefined, so we need to normalize it
+ *
+ * Can be moved in V4 when the legacy polyfill is removed
+ */
+export type UnknownToUndefined<T> = unknown extends T
+  ? T extends unknown
+    ? undefined
+    : T
+  : T;
 
 /**
  * A union of all possible endpoint types.
@@ -209,7 +333,7 @@ export type FlattenAppRouter<T extends AppRouter | AppRoute> =
       }[keyof T];
 
 export type RouterOptions<TPrefix extends string = string> = {
-  baseHeaders?: ContractAnyType;
+  baseHeaders?: Record<string, ContractAnyType> | ContractAnyTypeLegacy;
   strictStatusCodes?: boolean;
   pathPrefix?: TPrefix;
   commonResponses?: Record<number, AppRouteResponse>;
@@ -311,14 +435,6 @@ const recursivelyApplyOptions = <T extends AppRouter>(
 ): T => {
   return Object.fromEntries(
     Object.entries(router).map(([key, value]) => {
-      const baseHeadersSchema = parseAsStandardSchema(options?.baseHeaders);
-      const valueHeadersSchema = parseAsStandardSchema(value.headers);
-
-      const combinedHeadersSchema =
-        baseHeadersSchema && valueHeadersSchema
-          ? combineStandardSchemas(baseHeadersSchema, valueHeadersSchema)
-          : baseHeadersSchema || valueHeadersSchema;
-
       if (isAppRoute(value)) {
         return [
           key,
@@ -327,7 +443,10 @@ const recursivelyApplyOptions = <T extends AppRouter>(
             path: options?.pathPrefix
               ? options.pathPrefix + value.path
               : value.path,
-            headers: combinedHeadersSchema,
+            headers: mergeHeaderSchemasForRoute(
+              options?.baseHeaders,
+              value.headers,
+            ),
             strictStatusCodes:
               value.strictStatusCodes ?? options?.strictStatusCodes,
             validateResponseOnClient:

@@ -1,10 +1,59 @@
 import { ExamplesObject, ParameterObject, SchemaObject } from 'openapi3-ts';
 
+export const schemaToParameter = (
+  schema: SchemaObject,
+  where: 'query' | 'header' | 'path',
+  required: boolean,
+  key: string,
+  jsonQuery: boolean,
+): ParameterObject => {
+  let description: string | undefined = undefined;
+
+  if ('description' in schema) {
+    description = schema['description'];
+    delete schema['description'];
+  }
+
+  let examples: ExamplesObject | undefined = undefined;
+  if ('mediaExamples' in schema) {
+    examples = schema['mediaExamples'];
+    delete schema['mediaExamples'];
+  }
+
+  const isDeepObject = 'properties' in schema;
+
+  if (jsonQuery) {
+    return {
+      name: key,
+      in: where,
+      ...(description && { description }),
+      ...(required && { required }),
+      content: {
+        'application/json': {
+          schema,
+          ...(examples && { examples }),
+        },
+      },
+    };
+  } else {
+    return {
+      name: key,
+      in: where,
+      ...(examples && { examples }),
+      ...(description && { description }),
+      ...(required && { required }),
+      ...(isDeepObject && !jsonQuery && { style: 'deepObject' }),
+      schema,
+    };
+  }
+};
+
 /**
  * Convert a @type {SchemaObject} to an array of @type {ParameterObject}
  *
  * @param schema - Legacy Zod3 or any Standard Schema
  * @param where - The location of the parameters
+ * @param jsonQuery - Whether the schema is a JSON query
  * @returns The parameters for the schema
  */
 export const schemaObjectToParameters = (
@@ -23,45 +72,9 @@ export const schemaObjectToParameters = (
     }
 
     for (const [key, value] of Object.entries(properties)) {
-      let description: string | undefined = undefined;
-
-      if ('description' in value) {
-        description = value['description'];
-        delete value['description'];
-      }
-
-      let examples: ExamplesObject | undefined = undefined;
-      if ('mediaExamples' in value) {
-        examples = value['mediaExamples'];
-        delete value['mediaExamples'];
-      }
-
-      const isDeepObject = 'properties' in value;
-
-      if (jsonQuery) {
-        parameters.push({
-          name: key,
-          in: where,
-          ...(description && { description }),
-          ...(requiredSet.has(key) && { required: true }),
-          content: {
-            'application/json': {
-              schema: value,
-              ...(examples && { examples }),
-            },
-          },
-        });
-      } else {
-        parameters.push({
-          name: key,
-          in: where,
-          ...(examples && { examples }),
-          ...(description && { description }),
-          ...(requiredSet.has(key) && { required: true }),
-          ...(isDeepObject && !jsonQuery && { style: 'deepObject' }),
-          schema: value,
-        });
-      }
+      parameters.push(
+        schemaToParameter(value, where, requiredSet.has(key), key, jsonQuery),
+      );
     }
   }
 

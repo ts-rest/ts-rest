@@ -12,7 +12,7 @@ import {
   TsRestResponseError,
   validateResponse,
   StandardSchemaError,
-  parseAsStandardSchema,
+  validateMultiSchemaObject,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
 import { type ZodError } from 'zod';
@@ -137,31 +137,29 @@ const isAppRouteImplementation = <TRoute extends AppRoute>(
 const validateRequest = (
   request: fastify.FastifyRequest,
   reply: fastify.FastifyReply,
-  schema: AppRoute,
+  appRoute: AppRoute,
   options: BaseRegisterRouterOptions,
 ) => {
-  const pathParamsSchema = parseAsStandardSchema(schema.pathParams);
-  const headersSchema = parseAsStandardSchema(schema.headers);
-  const querySchema = parseAsStandardSchema(schema.query);
-  const bodySchema = parseAsStandardSchema(
-    'body' in schema ? schema.body : null,
-  );
-  const paramsResult = validateIfSchema(request.params, pathParamsSchema, {
+  const paramsResult = validateIfSchema(request.params, appRoute.pathParams, {
     passThroughExtraKeys: true,
   });
 
-  const headersResult = validateIfSchema(request.headers, headersSchema, {
-    passThroughExtraKeys: true,
-  });
+  const headersResult = validateMultiSchemaObject(
+    request.headers,
+    appRoute.headers,
+  );
 
   const queryResult = validateIfSchema(
     options.jsonQuery
       ? parseJsonQueryObject(request.query as Record<string, string>)
       : request.query,
-    querySchema,
+    appRoute.query,
   );
 
-  const bodyResult = validateIfSchema(request.body, bodySchema);
+  const bodyResult = validateIfSchema(
+    request.body,
+    'body' in appRoute ? appRoute.body : null,
+  );
 
   if (
     paramsResult.error ||

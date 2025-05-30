@@ -1,7 +1,8 @@
-import { ZodError, ZodIssue } from 'zod';
+import { ZodError, ZodIssue, ZodObject } from 'zod';
 import { StandardSchemaV1 } from './standard-schema';
 import { StandardSchemaError } from './validation-error';
 import { isZodType, zodMerge } from './zod-utils';
+import { ContractAnyType, ContractAnyTypeLegacy } from './dsl';
 
 const VENDOR_LEGACY_ZOD = 'zod-ts-rest-polyfill';
 const VENDOR_STANDARD_SCHEMA = 'ts-rest-combined';
@@ -77,6 +78,114 @@ export const parseAsStandardSchema = (
   }
 
   return null;
+};
+
+/**
+ * Since 3.53.0 we've moved to headers using an object with schemas inside it, rather than a top level schema.
+ *
+ * This makes it easier to merge schemas together.
+ *
+ * @param data - Data to validate e.g. headers
+ * @param schemaObject - Schema object to validate against e.g. { 'x-foo': v.string() }
+ * @returns
+ */
+export const validateMultiSchemaObject = (
+  data: unknown,
+  schemaObject:
+    | Record<string, ContractAnyType>
+    | ContractAnyTypeLegacy
+    | undefined,
+): {
+  value?: unknown;
+  error?: StandardSchemaError | ZodError;
+  schemasUsed: Array<StandardSchemaV1<unknown, unknown>>;
+} => {
+  const schema = parseAsStandardSchema(schemaObject);
+
+  // If the top level is not null we know it's a valid schema we can validate against
+  if (schema !== null) {
+    const result = validateAgainstStandardSchema(data, schema, {
+      passThroughExtraKeys: true,
+    });
+
+    return {
+      value: result.value,
+      error: result.error,
+      schemasUsed: [schema],
+    };
+  }
+
+  const headersMap = new Map<string, unknown>(Object.entries(data ?? {}));
+
+  const vendorSet = new Set<string>();
+  const subSchemas = new Map<string, StandardSchemaV1<unknown, unknown>>();
+
+  for (const [key, schema] of Object.entries(schemaObject ?? {})) {
+    const parsedSchema = parseAsStandardSchema(schema);
+
+    if (schema === null) {
+      continue;
+    }
+
+    if (typeof schema === 'symbol') {
+      continue;
+    }
+
+    if (parsedSchema !== null) {
+      subSchemas.set(key, parsedSchema);
+      vendorSet.add(parsedSchema['~standard'].vendor);
+    } else {
+      throw new Error(
+        `Invalid schema provided for header ${key}, please use a valid schema`,
+      );
+    }
+  }
+
+  if (vendorSet.size > 1 && vendorSet.has(VENDOR_LEGACY_ZOD)) {
+    throw new Error(
+      'Cannot mix zod legacy and standard schema libraries, please use zod >= 3.24.0 or any other standard schema library',
+    );
+  }
+
+  if (subSchemas.size === 0) {
+    return {
+      value: data,
+      schemasUsed: [],
+    };
+  }
+
+  const issues: StandardSchemaV1.Issue[] = [];
+
+  for (const [key, schema] of subSchemas.entries()) {
+    const value = headersMap.get(key);
+    console.log(`validating against schema key:${key} value:${value}`);
+    const result = validateAgainstStandardSchema(value, schema);
+
+    if (result.error) {
+      for (const issue of result.error.issues) {
+        issues.push({
+          ...issue,
+          path: [key],
+        });
+      }
+    } else {
+      headersMap.set(key, result.value);
+    }
+  }
+
+  console.log('issues', issues);
+
+  if (issues.length > 0) {
+    return {
+      error: new StandardSchemaError(issues),
+      schemasUsed: [...subSchemas.values()],
+    };
+  }
+
+  return {
+    value: Object.fromEntries(headersMap.entries()),
+    schemasUsed: [...subSchemas.values()],
+  };
 };
 
 /**
@@ -162,6 +271,35 @@ export const combineStandardSchemas = (
 };
 
 /**
+ * Merges two header schemas together, these can either be legacy zod objects or objects containing standard schemas.
+ */
+export const mergeHeaderSchemasForRoute = (
+  baseSchema: unknown,
+  routeSchema: unknown,
+): unknown => {
+  if (!baseSchema) {
+    return routeSchema;
+  }
+
+  if (!routeSchema) {
+    return baseSchema;
+  }
+
+  if (baseSchema instanceof ZodObject && routeSchema instanceof ZodObject) {
+    const merged = zodMerge(baseSchema, routeSchema);
+
+    return merged;
+  }
+
+  const mergedObjects = {
+    ...baseSchema,
+    ...routeSchema,
+  };
+
+  return mergedObjects;
+};
+
+/**
  * Similar to validateAgainstStandardSchema, but it takes an unknown schema, it will not validate if no schema provided and will check the schema is
  * valid before validating the data.
  *
@@ -175,16 +313,25 @@ export const validateIfSchema = (
   }: {
     passThroughExtraKeys?: boolean;
   } = {},
-): { value?: unknown; error?: StandardSchemaError | ZodError } => {
+): {
+  value?: unknown;
+  error?: StandardSchemaError | ZodError;
+  schemasUsed: Array<StandardSchemaV1<unknown, unknown>>;
+} => {
   const schemaStandard = parseAsStandardSchema(schema);
 
   if (!schemaStandard) {
-    return { value: data };
+    return { value: data, schemasUsed: [] };
   }
 
-  return validateAgainstStandardSchema(data, schemaStandard, {
+  const result = validateAgainstStandardSchema(data, schemaStandard, {
     passThroughExtraKeys,
   });
+
+  return {
+    ...result,
+    schemasUsed: [schemaStandard],
+  };
 };
 
 export const validateAgainstStandardSchema = (

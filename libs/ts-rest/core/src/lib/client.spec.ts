@@ -231,11 +231,11 @@ type TestClientGetPostsWithBaseHeaders = Expect<
           'x-api-key'?: string;
         };
         extraHeaders?: {
-          'x-pagination'?: never;
-          'x-test'?: never;
-          'base-header'?: never;
-          'x-api-key'?: never;
-        } & Record<string, string | undefined>;
+          'x-pagination'?: undefined;
+          'x-test'?: undefined;
+          'base-header'?: undefined;
+          'x-api-key'?: undefined;
+        } & Record<string, string>;
         fetchOptions?: FetchOptions;
         overrideClientOptions?: Partial<OverrideableClientArgs>;
         cache?: FetchOptions['cache'];
@@ -244,48 +244,46 @@ type TestClientGetPostsWithBaseHeaders = Expect<
   >
 >;
 
-/**
- * @name ClientGetPostsWithoutBaseHeaders
- * Expect the client.posts.getPosts parameters to require headers when no base headers are provided,
- * forcing the user to provide required headers like x-api-key
- */
-type ClientGetPostsWithoutBaseHeaders = Parameters<
-  typeof clientWithoutBaseHeaders.posts.getPosts
->[0];
-type TestClientGetPostsWithoutBaseHeaders = Expect<
-  Equal<
-    ClientGetPostsWithoutBaseHeaders,
-    {
-      query?: {
-        take?: number;
-        skip?: number;
-        order?: string;
-      };
-      headers: {
-        'x-pagination'?: number;
-        'x-test'?: string;
-        'base-header'?: string;
-        'x-api-key': string;
-      };
-      extraHeaders?: {
-        'x-pagination'?: never;
-        'x-test'?: never;
-        'base-header'?: never;
-        'x-api-key'?: never;
-      } & Record<string, string | undefined>;
-      fetchOptions?: FetchOptions;
-      overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: FetchOptions['cache'];
-    }
-  >
->;
+it('should require header when no base headers are provided', () => {
+  type Actual = Parameters<typeof clientWithoutBaseHeaders.posts.getPosts>[0];
+  type Assert = Expect<
+    Equal<
+      Actual,
+      {
+        query?: {
+          take?: number;
+          skip?: number;
+          order?: string;
+        };
+        headers: {
+          'x-pagination'?: number;
+          'x-test'?: string;
+          'base-header'?: string;
+          'x-api-key': string;
+        };
+        extraHeaders?: {
+          'x-pagination'?: undefined;
+          'x-test'?: undefined;
+          'base-header'?: undefined;
+          'x-api-key'?: undefined;
+        } & Record<string, string>;
+        fetchOptions?: FetchOptions;
+        overrideClientOptions?: Partial<OverrideableClientArgs>;
+        cache?: FetchOptions['cache'];
+      }
+    >
+  >;
+});
 
 /**
  * @name ClientGetPostWithParams
  * Expect the client.posts.getPost parameters to require params for path parameters,
  * while headers remain optional due to base headers being provided
  */
-type ClientGetPostWithParams = Parameters<typeof client.posts.getPost>[0];
+type ClientGetPostWithParams = Omit<
+  Parameters<typeof client.posts.getPost>[0],
+  'next'
+>;
 type TestClientGetPostWithParams = Expect<
   Equal<
     ClientGetPostWithParams,
@@ -302,7 +300,7 @@ type TestClientGetPostWithParams = Expect<
         'x-test'?: never;
         'base-header'?: never;
         'x-api-key'?: never;
-      } & Record<string, string | undefined>;
+      } & Record<string, string>;
       fetchOptions?: FetchOptions;
       overrideClientOptions?: Partial<OverrideableClientArgs>;
       cache?: FetchOptions['cache'];
@@ -1011,66 +1009,14 @@ const customClient = initClient(router, {
  * Expect the custom client.posts.getPosts to include uploadProgress callback in parameters
  * when using a custom API implementation that supports upload progress tracking
  */
-type CustomClientGetPostsWithUploadProgress = Parameters<
-  typeof customClient.posts.getPosts
->[0];
+type CustomClientGetPostsWithUploadProgress = Pick<
+  Parameters<typeof customClient.posts.getPosts>[0],
+  'uploadProgress'
+>;
 type TestCustomClientGetPostsWithUploadProgress = Expect<
   Equal<
     CustomClientGetPostsWithUploadProgress,
     {
-      query?: {
-        take?: number;
-        skip?: number;
-        order?: string;
-      };
-      headers: {
-        'x-pagination'?: number;
-        'x-test'?: string;
-        'base-header'?: string;
-        'x-api-key': string;
-      };
-      extraHeaders?: {
-        'x-pagination'?: never;
-        'x-test'?: never;
-        'base-header'?: never;
-        'x-api-key'?: never;
-      } & Record<string, string | undefined>;
-      fetchOptions?: FetchOptions;
-      overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: FetchOptions['cache'];
-      uploadProgress?: (progress: number) => void;
-    }
-  >
->;
-
-/**
- * @name CustomClientGetPostWithUploadProgress
- * Expect the custom client.posts.getPost to include uploadProgress callback in parameters
- * when using a custom API implementation that supports upload progress tracking
- */
-type CustomClientGetPostWithUploadProgress = Parameters<
-  typeof customClient.posts.getPost
->[0];
-type TestCustomClientGetPostWithUploadProgress = Expect<
-  Equal<
-    CustomClientGetPostWithUploadProgress,
-    {
-      params: {
-        id: string;
-      };
-      headers?: {
-        'x-test'?: string;
-        'base-header'?: string;
-        'x-api-key'?: string;
-      };
-      extraHeaders?: {
-        'x-test'?: never;
-        'base-header'?: never;
-        'x-api-key'?: never;
-      } & Record<string, string | undefined>;
-      fetchOptions?: FetchOptions;
-      overrideClientOptions?: Partial<OverrideableClientArgs>;
-      cache?: FetchOptions['cache'];
       uploadProgress?: (progress: number) => void;
     }
   >
@@ -1302,9 +1248,9 @@ describe('valibot tests ', () => {
             message: v.string(),
           }),
         },
-        headers: v.object({
-          'x-api-key': v.undefined(), // removed this one
-        }),
+        headers: {
+          'x-api-key': null,
+        },
       },
       routeWithModifiedHeaders: {
         method: 'GET',
@@ -1314,16 +1260,16 @@ describe('valibot tests ', () => {
             message: v.string(),
           }),
         },
-        headers: v.object({
-          'x-api-key': v.undefined(), // removed this one
+        headers: {
+          'x-api-key': null, // removed this one
           'x-test': v.string(), // added this one
-        }),
+        },
       },
     },
     {
-      baseHeaders: v.object({
+      baseHeaders: {
         'x-api-key': v.string(),
-      }),
+      },
     },
   );
   const clientValibot = initClient(contractValibot, {
@@ -1357,10 +1303,7 @@ describe('valibot tests ', () => {
   type TestHeadersOptionalWhenBaseHeadersNullified = Expect<
     Equal<
       HeadersOptionalWhenBaseHeadersNullified,
-      | {
-          'x-api-key'?: undefined;
-        }
-      | undefined // <- Became optional
+      {} | undefined // <- Became optional
     >
   >;
 
@@ -1376,7 +1319,6 @@ describe('valibot tests ', () => {
       HeadersWithModifiedHeaders,
       {
         'x-test': string;
-        'x-api-key'?: undefined; // <- Removed
       } // <- Required
     >
   >;
