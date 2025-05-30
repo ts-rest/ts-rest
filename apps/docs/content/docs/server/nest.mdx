@@ -7,12 +7,7 @@ NestJS integration with ts-rest provides type-safe API endpoints while maintaini
 
 ## Installation
 
-<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
-  <Tab value="npm">```bash npm install @ts-rest/nest ```</Tab>
-  <Tab value="yarn">```bash yarn add @ts-rest/nest ```</Tab>
-  <Tab value="pnpm">```bash pnpm add @ts-rest/nest ```</Tab>
-  <Tab value="bun">```bash bun add @ts-rest/nest ```</Tab>
-</Tabs>
+<InstallTabs packageName="@ts-rest/nest" />
 
 ## Approaches
 
@@ -23,6 +18,7 @@ NestJS has always been a tricky framework to integrate with ts-rest due to how N
 The single handler approach provides a 1:1 migration strategy for existing controllers. You can replace individual Nest routes with ts-rest routes without affecting other routes in the same controller. This is perfect for gradual adoption or when you want different endpoints across multiple controllers.
 
 ```typescript twoslash title="single-handler.ts"
+// @noErrors
 import { Controller } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { initContract } from '@ts-rest/core';
@@ -123,6 +119,7 @@ export class PostController {
 The multi handler approach is ideal for those who prefer functional programming patterns or want compile-time guarantees that every route in a contract is implemented. TypeScript will error if you forget to implement any route.
 
 ```typescript twoslash title="multi-handler.ts"
+// @noErrors
 import { Controller } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { initContract } from '@ts-rest/core';
@@ -216,6 +213,7 @@ Pass the entire contract (or a subset) to both `@TsRestHandler` and `tsRestHandl
 You can still use all existing Nest decorators alongside `@TsRestHandler`. This gives you access to the underlying request/response objects and Nest's dependency injection system.
 
 ```typescript twoslash title="nest-decorators.ts"
+// @noErrors
 import { Controller, Req, Headers, UseGuards } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { initContract } from '@ts-rest/core';
@@ -242,6 +240,10 @@ class AuthGuard {}
 interface AuthenticatedRequest extends Request {
   user: { id: string; name: string };
 }
+
+const console = {
+  log: (message: any) => {},
+};
 
 // ---cut---
 @Controller()
@@ -274,6 +276,7 @@ This isn't limited to parameter decorators - you can use guards, interceptors, p
 While we recommend returning errors as responses to maintain full type safety in your contract, sometimes throwing exceptions is cleaner. `TsRestException` lets you throw type-safe exceptions that ts-rest will catch and convert to properly typed responses.
 
 ```typescript twoslash title="error-handling.ts"
+// @noErrors
 import { Controller } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler, TsRestException } from '@ts-rest/nest';
 import { initContract } from '@ts-rest/core';
@@ -348,6 +351,7 @@ export class UserController {
 Configure ts-rest options using the `@TsRest` decorator on controllers or the `@TsRestHandler` decorator on methods. Controller options apply to all routes and override global options. Method options override controller options for that specific route.
 
 ```typescript twoslash title="configuration.ts"
+// @noErrors
 import { Controller } from '@nestjs/common';
 import { TsRest, TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { initContract } from '@ts-rest/core';
@@ -384,6 +388,10 @@ const contract = c.router({
     },
   },
 });
+
+const console = {
+  log: (message: any) => {},
+};
 
 // ---cut---
 @Controller()
