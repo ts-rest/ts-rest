@@ -300,19 +300,38 @@ const contract = c.router({
   },
 });
 
-// Mock service for example
+const db = {
+  getUserByEmail: async (
+    email: string,
+  ): Promise<{ id: string; email: string; name: string } | null> => {
+    return null;
+  },
+};
+
+// ---cut---
+
 class UserService {
   async createUser(data: { email: string; name: string }) {
-    // Mock user already exists check
-    const userExists = data.email === 'existing@example.com';
-    if (userExists) {
-      throw new Error('User already exists');
+    const user = await db.getUserByEmail(data.email);
+
+    if (user) {
+      throw new TsRestException(contract.createUser, {
+        status: 409,
+        body: {
+          code: 'UserAlreadyExists',
+          message: 'User with this email already exists',
+        },
+      });
     }
-    return { id: '1', ...data };
+
+    return {
+      id: '1',
+      email: data.email,
+      name: data.name,
+    };
   }
 }
 
-// ---cut---
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -320,19 +339,9 @@ export class UserController {
   @TsRestHandler(contract.createUser)
   async createUser() {
     return tsRestHandler(contract.createUser, async ({ body }) => {
-      try {
-        const user = await this.userService.createUser(body);
-        return { status: 201, body: user };
-      } catch (error) {
-        // Type-safe exception throwing with autocomplete
-        throw new TsRestException(contract.createUser, {
-          status: 409,
-          body: {
-            code: 'UserAlreadyExists',
-            message: 'User with this email already exists',
-          },
-        });
-      }
+      const user = await this.userService.createUser(body);
+
+      return { status: 201, body: user };
     });
   }
 }
@@ -428,14 +437,4 @@ export class SearchController {
 
 **Workaround:** Use ts-rest's [path prefix feature](/docs/contract/overview#path-prefix) in your contract definition to achieve similar functionality.
 
-</Callout>
-
-## Next Steps
-
-<Callout type="note">
-  🚀 **Ready to go deeper?** - [Configuration options
-  →](/docs/nest/configuration) - Learn about all available configuration options
-  - [OpenAPI generation →](/docs/openapi) - Generate OpenAPI specs from your
-  NestJS endpoints - [Client usage →](/docs/client) - Connect to your NestJS API
-  with the type-safe client
 </Callout>
