@@ -1,0 +1,970 @@
+---
+title: 'Simple Fetch Client'
+description: The simple fetch client provides a lightweight, type-safe way to make HTTP requests using your ts-rest contract.
+---
+
+The simple fetch client is ts-rest's default HTTP client implementation, built on top of the standard [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). It provides automatic type inference, request/response handling, and seamless integration with your contract definitions.
+
+## Basic Usage
+
+Import `initClient` from `@ts-rest/core` and pass your contract to get a fully typed client:
+
+```typescript twoslash title="client.ts"
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  pokemon: c.router({
+    getPokemon: {
+      method: 'GET',
+      path: '/pokemon/:id',
+      responses: {
+        200: z.object({
+          id: z.string(),
+          name: z.string(),
+          type: z.string(),
+        }),
+      },
+    },
+    updatePokemon: {
+      method: 'PUT',
+      path: '/pokemon/:id',
+      body: z.object({
+        name: z.string(),
+        type: z.string(),
+      }),
+      responses: {
+        200: z.object({
+          id: z.string(),
+          name: z.string(),
+          type: z.string(),
+        }),
+      },
+    },
+    deletePokemon: {
+      method: 'DELETE',
+      path: '/pokemon/:id',
+      responses: {
+        204: c.noBody(),
+      },
+    },
+  }),
+});
+
+const console = {
+  log: (message: any) => {},
+  error: (message: any) => {},
+};
+
+// ---cut---
+import { initClient } from '@ts-rest/core';
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  baseHeaders: {},
+});
+
+const result = await client.pokemon.getPokemon({
+  params: { id: '1' },
+});
+
+if (result.status === 200) {
+  console.log(result.body.name); // Fully typed!
+  //             ^?
+} else {
+  console.error(result.status);
+  //             ^?
+}
+```
+
+## Client Configuration
+
+### Base Configuration
+
+Configure your client with base settings that apply to all requests:
+
+```typescript twoslash title="client-config.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+    },
+  },
+});
+
+// ---cut---
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  baseHeaders: {
+    'X-API-Key': 'your-api-key',
+  },
+  credentials: 'include', // For sending cookies
+  validateResponse: true, // Validate responses against schema
+  throwOnUnknownStatus: true, // Throw on unexpected status codes
+});
+```
+
+### Dynamic Headers
+
+You can provide headers as functions for dynamic values:
+
+```typescript title="dynamic-headers.ts"
+import { initClient } from '@ts-rest/core';
+import { getAccessToken } from './auth';
+import { contract } from './contract';
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  baseHeaders: {
+    Authorization: () => `Bearer ${getAccessToken()}`,
+  },
+});
+```
+
+## Making Requests
+
+### Query Requests (GET)
+
+Any endpoint using the `GET` method is treated as a query request:
+
+```typescript twoslash title="queries.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: z.object({
+        id: z.string(),
+        name: z.string(),
+        type: z.string(),
+      }),
+    },
+  },
+  searchPokemon: {
+    method: 'GET',
+    path: '/pokemon',
+    query: z.object({
+      type: z.string().optional(),
+      limit: z.coerce.number().optional(),
+    }),
+    responses: {
+      200: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          type: z.string(),
+        }),
+      ),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+// ---cut---
+// Simple GET with path parameters
+const pokemon = await client.getPokemon({
+  params: { id: '25' },
+});
+
+// GET with query parameters
+const results = await client.searchPokemon({
+  query: {
+    type: 'electric',
+    limit: 10,
+  },
+});
+
+// GET with no parameters
+const allPokemon = await client.searchPokemon();
+```
+
+### Mutation Requests (POST, PUT, PATCH, DELETE)
+
+Any endpoint using `POST`, `PUT`, `PATCH`, or `DELETE` methods are treated as mutation requests:
+
+```typescript twoslash title="mutations.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const PokemonSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+});
+
+const contract = c.router({
+  createPokemon: {
+    method: 'POST',
+    path: '/pokemon',
+    body: z.object({
+      name: z.string(),
+      type: z.string(),
+    }),
+    responses: {
+      201: PokemonSchema,
+    },
+  },
+  updatePokemon: {
+    method: 'PUT',
+    path: '/pokemon/:id',
+    body: z.object({
+      name: z.string(),
+      type: z.string(),
+    }),
+    responses: {
+      200: PokemonSchema,
+    },
+  },
+  deletePokemon: {
+    method: 'DELETE',
+    path: '/pokemon/:id',
+    responses: {
+      204: c.noBody(),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+// ---cut---
+// POST with body
+const newPokemon = await client.createPokemon({
+  body: {
+    name: 'Pikachu',
+    type: 'Electric',
+  },
+});
+
+// PUT with path params and body
+const updatedPokemon = await client.updatePokemon({
+  params: { id: '25' },
+  body: {
+    name: 'Pikachu',
+    type: 'Electric',
+  },
+});
+
+// DELETE with path params
+const deleted = await client.deletePokemon({
+  params: { id: '25' },
+});
+```
+
+## Request Parameters
+
+### Breaking Down the Request Object
+
+Each request accepts an object with the following optional properties:
+
+- `params` - Path parameters for the URL
+- `query` - Query string parameters
+- `headers` - Request headers (merged with base headers)
+- `extraHeaders` - Headers not defined in the contract
+- `body` - Request body for mutations
+- `fetchOptions` - Additional fetch options
+- `overrideClientOptions` - Override client settings for this request
+- `cache` - Shorthand for `fetchOptions.cache`
+
+```typescript twoslash title="request-params.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  updatePokemon: {
+    method: 'PUT',
+    path: '/pokemon/:id',
+    headers: z.object({
+      'x-api-version': z.string().optional(),
+    }),
+    body: z.object({
+      name: z.string(),
+      type: z.string(),
+    }),
+    query: z.object({
+      notify: z.boolean().optional(),
+    }),
+    responses: {
+      200: z.object({
+        id: z.string(),
+        name: z.string(),
+        type: z.string(),
+      }),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  baseHeaders: {},
+});
+
+const abortController = new AbortController();
+
+// ---cut---
+const result = await client.updatePokemon({
+  params: { id: '25' },
+  query: { notify: true },
+  headers: { 'x-api-version': 'v2' },
+  extraHeaders: { 'x-request-id': 'abc123' },
+  body: {
+    name: 'Raichu',
+    type: 'Electric',
+  },
+  fetchOptions: {
+    signal: abortController.signal,
+  },
+  cache: 'no-store',
+});
+```
+
+## Response Handling
+
+### Understanding Response Types
+
+The fetch client returns a discriminated union based on the status code, allowing for precise type checking:
+
+```typescript twoslash title="response-types.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: z.object({
+        id: z.string(),
+        name: z.string(),
+        type: z.string(),
+      }),
+      404: z.object({
+        message: z.string(),
+      }),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+// ---cut---
+const result = await client.getPokemon({
+  params: { id: '25' },
+});
+
+// Type-safe status checking
+if (result.status === 200) {
+  // result.body is typed as Pokemon
+  result.body.name;
+  //          ^?
+  result.headers.get('Content-Type');
+} else if (result.status === 404) {
+  // result.body is typed as { message: string }
+  result.body.message;
+  //          ^?
+} else {
+  // result.body is unknown for other status codes
+  result.status;
+  //      ^?
+}
+```
+
+<Callout type="note">
+  The response includes three properties: `status` (the HTTP status code),
+  `body` (the parsed response body), and `headers` (a Headers object with
+  response headers).
+</Callout>
+
+## Content Types
+
+### JSON (Default)
+
+By default, all requests use `application/json` content type:
+
+```typescript twoslash title="json-content.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  createPokemon: {
+    method: 'POST',
+    path: '/pokemon',
+    body: z.object({
+      name: z.string(),
+      type: z.string(),
+    }),
+    responses: {
+      201: z.object({
+        id: z.string(),
+        name: z.string(),
+        type: z.string(),
+      }),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+// ---cut---
+// Automatically serialized as JSON
+const result = await client.createPokemon({
+  body: {
+    name: 'Pikachu',
+    type: 'Electric',
+  },
+});
+```
+
+### Form Data (multipart/form-data)
+
+For file uploads, use the `multipart/form-data` content type:
+
+```typescript twoslash title="form-data.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  uploadImage: {
+    method: 'POST',
+    path: '/pokemon/:id/image',
+    contentType: 'multipart/form-data',
+    body: c.type<{
+      image: File;
+      description?: string;
+    }>(),
+    responses: {
+      200: z.object({
+        imageUrl: z.string(),
+      }),
+    },
+  },
+  uploadMultiple: {
+    method: 'POST',
+    path: '/pokemon/:id/images',
+    contentType: 'multipart/form-data',
+    body: c.type<{
+      images: File[];
+    }>(),
+    responses: {
+      200: z.object({
+        imageUrls: z.array(z.string()),
+      }),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+// ---cut---
+// Single file upload
+const file = new File(['image data'], 'pikachu.jpg', { type: 'image/jpeg' });
+const result = await client.uploadImage({
+  params: { id: '25' },
+  body: {
+    image: file,
+    description: 'Pikachu headshot',
+  },
+});
+
+// Multiple file upload
+const files = [
+  new File(['image1'], 'front.jpg', { type: 'image/jpeg' }),
+  new File(['image2'], 'back.jpg', { type: 'image/jpeg' }),
+];
+const multiResult = await client.uploadMultiple({
+  params: { id: '25' },
+  body: {
+    images: files,
+  },
+});
+
+// You can also pass FormData directly
+const formData = new FormData();
+formData.append('image', file);
+formData.append('description', 'Custom form data');
+
+const formResult = await client.uploadImage({
+  params: { id: '25' },
+  body: formData,
+});
+```
+
+### URL Encoded Forms (application/x-www-form-urlencoded)
+
+For traditional form submissions:
+
+```typescript twoslash title="url-encoded.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  submitForm: {
+    method: 'POST',
+    path: '/contact',
+    contentType: 'application/x-www-form-urlencoded',
+    body: z.object({
+      name: z.string(),
+      email: z.string(),
+      message: z.string(),
+    }),
+    responses: {
+      200: c.otherResponse({
+        contentType: 'text/plain',
+        body: z.string(),
+      }),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+// ---cut---
+// Automatically converted to URLSearchParams
+const result = await client.submitForm({
+  body: {
+    name: 'Ash Ketchum',
+    email: 'ash@pokemon.com',
+    message: 'Gotta catch em all!',
+  },
+});
+
+// You can also pass a string directly
+const stringResult = await client.submitForm({
+  body: 'name=Ash&email=ash@pokemon.com&message=Hello',
+});
+```
+
+## Advanced Features
+
+### JSON Query Parameters
+
+Enable JSON encoding for complex query parameters:
+
+```typescript twoslash title="json-query.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  searchPokemon: {
+    method: 'GET',
+    path: '/pokemon',
+    query: z.object({
+      filter: z.object({
+        type: z.string(),
+        level: z.number().min(1).max(100),
+      }),
+      sort: z
+        .object({
+          field: z.enum(['name', 'level', 'type']),
+          direction: z.enum(['asc', 'desc']),
+        })
+        .optional(),
+    }),
+    responses: {
+      200: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          type: z.string(),
+        }),
+      ),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  jsonQuery: true, // Enable JSON query encoding
+});
+
+// ---cut---
+const results = await client.searchPokemon({
+  query: {
+    filter: {
+      type: 'Electric',
+      level: 50,
+    },
+    sort: {
+      field: 'name',
+      direction: 'asc',
+    },
+  },
+});
+```
+
+<Callout type="warning">
+  **Important:** When using `jsonQuery`, make sure your server is configured to
+  parse JSON-encoded query parameters. Objects with `.toJSON()` methods (like
+  Date) will be irreversibly converted to their JSON representation.
+</Callout>
+
+### Response Validation
+
+Enable automatic response validation against your contract schemas:
+
+```typescript twoslash title="response-validation.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: z.object({
+        id: z.string(),
+        name: z.string(),
+        createdAt: z.coerce.date(), // Transforms string to Date
+      }),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  validateResponse: true, // Enable response validation
+});
+
+// ---cut---
+const result = await client.getPokemon({
+  params: { id: '25' },
+});
+
+if (result.status === 200) {
+  // result.body.createdAt is automatically transformed to Date
+  result.body.createdAt instanceof Date; // true
+  //          ^?
+}
+```
+
+<Callout type="note">
+  Response validation only works with validation schemas (Zod, Valibot, etc.). 
+  Plain TypeScript types (`c.type<>()`) are not validated at runtime.
+</Callout>
+
+### Strict Status Codes
+
+Enforce that only status codes defined in your contract are allowed:
+
+```typescript title="strict-status.ts"
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract'; // Contract with strictStatusCodes: true
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  throwOnUnknownStatus: true, // Throw on unexpected status codes
+});
+
+// This will throw an error if server returns a status code
+// not defined in the contract
+const result = await client.getPokemon({
+  params: { id: '25' },
+});
+```
+
+### Credentials and Cookies
+
+Configure credential handling for cross-origin requests:
+
+```typescript title="credentials.ts"
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  credentials: 'include', // Send cookies with requests
+});
+```
+
+### Fetch Options
+
+Pass additional fetch options for fine-grained control:
+
+```typescript twoslash title="fetch-options.ts"
+import { initClient } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+    },
+  },
+});
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+const abortController = new AbortController();
+
+// ---cut---
+const result = await client.getPokemon({
+  params: { id: '25' },
+  fetchOptions: {
+    signal: abortController.signal,
+    mode: 'cors',
+    cache: 'no-cache',
+  },
+  // Shorthand for fetchOptions.cache
+  cache: 'force-cache',
+});
+
+// Cancel the request
+abortController.abort();
+```
+
+### Next.js Integration
+
+The fetch client works seamlessly with Next.js features:
+
+```typescript title="nextjs.ts"
+import { initClient } from '@ts-rest/core';
+import { contract } from './contract';
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+});
+
+// Use Next.js revalidation
+const result = await client.getPokemon({
+  params: { id: '25' },
+  fetchOptions: {
+    next: {
+      revalidate: 3600, // Revalidate every hour
+      tags: ['pokemon', 'pokemon-25'],
+    },
+  },
+});
+```
+
+## Custom API Implementation
+
+While the default fetch implementation covers most use cases, you can provide a custom `api` function for advanced scenarios like request/response interceptors, custom error handling, or using alternative HTTP clients.
+
+### Basic Custom API
+
+```typescript title="custom-api.ts"
+const console = {
+  log: (message: string) => {},
+};
+
+// ---cut---
+import { initClient, tsRestFetchApi, ApiFetcherArgs } from '@ts-rest/core';
+import { contract } from './contract';
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  api: async (args: ApiFetcherArgs) => {
+    // Add logging
+    console.log(`Making ${args.method} request to ${args.path}`);
+
+    // Call the default implementation
+    const result = await tsRestFetchApi(args);
+
+    console.log(`Response: ${result.status}`);
+    return result;
+  },
+});
+```
+
+### Custom API with Extra Arguments
+
+Extend the API with custom arguments that are fully typed:
+
+```typescript twoslash title="custom-api-args.ts"
+import { initClient, tsRestFetchApi, ApiFetcherArgs } from '@ts-rest/core';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+const contract = c.router({
+  uploadFile: {
+    method: 'POST',
+    path: '/upload',
+    body: c.type<{ file: File }>(),
+    responses: {
+      200: z.object({ url: z.string() }),
+    },
+  },
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    query: z.object({
+      skip: z.number().optional(),
+      take: z.number().optional(),
+    }),
+    responses: {
+      200: z.array(
+        z.object({
+          id: z.string(),
+          title: z.string(),
+        }),
+      ),
+    },
+  },
+});
+
+const console = {
+  log: (message: string) => {},
+};
+
+// ---cut---
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  api: async (
+    args: ApiFetcherArgs & {
+      uploadProgress?: (progress: number) => void;
+      myCustomArg?: string;
+    },
+  ) => {
+    // Handle custom arguments
+    if (args.uploadProgress) {
+      args.uploadProgress(0);
+    }
+
+    if (args.myCustomArg) {
+      // Do something with myCustomArg ✨
+      console.log(`Custom arg received: ${args.myCustomArg}`);
+    }
+
+    const result = await tsRestFetchApi(args);
+
+    args.uploadProgress?.(100);
+    return result;
+  },
+});
+
+// Now you can use the custom arguments with full type safety and autocomplete! 🤯
+const uploadResult = await client.uploadFile({
+  body: { file: new File([''], 'test.txt') },
+  uploadProgress: (progress) => {
+    console.log(`Upload progress: ${progress}%`);
+  },
+});
+// @noErrors
+const postsResult = await client.getPosts({
+  query: { skip: 0, take: 10 },
+  my​C
+  //^|
+});
+```
+
+{/* Note above for devs, the zero width space above is used to stop prettier adding a comma */}
+
+<Callout type="info">
+  **Magic of Type Safety:** The custom arguments become fully typed and work
+  with your IDE's autocomplete! You can use this pattern to accomplish many
+  advanced scenarios like adding cache arguments, logger arguments, upload
+  progress tracking, or any other custom functionality your API needs.
+</Callout>
+
+<Callout type="warning">
+  **Important:** Any extra arguments you provide will be passed to your API
+  function, even if they're not properly typed (e.g., if you've used
+  `@ts-expect-error`). This is because the `args` parameter spreads all the
+  arguments you pass to your API calls.
+</Callout>
+
+### Using Alternative HTTP Clients
+
+You can completely replace the fetch implementation with libraries like Axios:
+
+```typescript title="axios-client.ts"
+import axios, { AxiosError, isAxiosError } from 'axios';
+import { initClient, ApiFetcherArgs } from '@ts-rest/core';
+import { contract } from './contract';
+
+const client = initClient(contract, {
+  baseUrl: 'https://api.example.com',
+  api: async (args: ApiFetcherArgs) => {
+    try {
+      const result = await axios.request({
+        method: args.method,
+        url: `${args.baseUrl}${args.path}`,
+        headers: args.headers,
+        data: args.body,
+        params: args.query,
+      });
+
+      return {
+        status: result.status,
+        body: result.data,
+        headers: new Headers(result.headers as Record<string, string>),
+      };
+    } catch (error) {
+      if (isAxiosError(error) && error.response) {
+        return {
+          status: error.response.status,
+          body: error.response.data,
+          headers: new Headers(
+            error.response.headers as Record<string, string>,
+          ),
+        };
+      }
+      throw error;
+    }
+  },
+});
+```
+
+---
+
+## Ready to make requests?
+
+<Callout type="note">
+  🚀 **Not quite enough?** - checkout [React Query
+  client](/docs/client/react-query) for React applications with caching and
+  state management
+</Callout>

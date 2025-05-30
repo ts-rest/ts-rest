@@ -765,6 +765,37 @@ export const contract = c.router({
 });
 ```
 
+### No Body Response
+
+Sometimes you just want to send a request with no body, or a response with no body.
+
+```typescript title="responses.ts" twoslash
+import {
+  initContract,
+  ClientInferRequest,
+  ServerInferResponseBody,
+} from '@ts-rest/core';
+const c = initContract();
+// ---cut---
+
+export const contract = c.router({
+  deletePokemon: {
+    method: 'DELETE',
+    path: '/pokemon/:id',
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+    },
+  },
+});
+
+type Request = ClientInferRequest<typeof contract.deletePokemon>;
+//   ^?
+
+type Response = ServerInferResponseBody<typeof contract.deletePokemon, 204>;
+//   ^?
+```
+
 ### Common Responses
 
 A common practise in API design is to define common responses across all routes in your contract, typically for error responses. We support this with the `commonResponses` option.

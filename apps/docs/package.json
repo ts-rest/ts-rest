@@ -12,6 +12,7 @@
     "@shikijs/transformers": "^3.4.2",
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/express": "^3.52.1",
+    "@ts-rest/nest": "^3.52.1",
     "@ts-rest/react-query": "^3.52.1",
     "fumadocs-core": "15.4.2",
     "fumadocs-mdx": "11.6.6",

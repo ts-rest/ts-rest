@@ -1,0 +1,433 @@
+---
+title: 'NestJS'
+description: How to use ts-rest with NestJS
+---
+
+NestJS integration with ts-rest provides type-safe API endpoints while maintaining the familiar NestJS decorator-based architecture. We offer two approaches to fit different development styles and migration strategies.
+
+## Installation
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">```bash npm install @ts-rest/nest ```</Tab>
+  <Tab value="yarn">```bash yarn add @ts-rest/nest ```</Tab>
+  <Tab value="pnpm">```bash pnpm add @ts-rest/nest ```</Tab>
+  <Tab value="bun">```bash bun add @ts-rest/nest ```</Tab>
+</Tabs>
+
+## Approaches
+
+NestJS has always been a tricky framework to integrate with ts-rest due to how Nest handles routing and controllers. Rather than requiring you to abandon Nest's decorator approach, we provide two flexible patterns that work alongside your existing Nest architecture.
+
+### Single Handler Approach - Easy Migration and Flexibility
+
+The single handler approach provides a 1:1 migration strategy for existing controllers. You can replace individual Nest routes with ts-rest routes without affecting other routes in the same controller. This is perfect for gradual adoption or when you want different endpoints across multiple controllers.
+
+```typescript twoslash title="single-handler.ts"
+import { Controller } from '@nestjs/common';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+
+type Post = {
+  id: string;
+  title: string;
+  content: string;
+  published: boolean;
+};
+
+const contract = c.router({
+  getPost: {
+    method: 'GET',
+    path: '/posts/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    responses: {
+      200: c.type<Post>(),
+      404: c.type<{ message: string }>(),
+    },
+  },
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    query: z.object({
+      take: z.coerce.number().default(10),
+      skip: z.coerce.number().default(0),
+    }),
+    responses: {
+      200: c.type<Post[]>(),
+    },
+  },
+});
+
+// Mock service for example
+class PostService {
+  async getPost(id: string): Promise<Post | null> {
+    return { id, title: 'Hello World', content: 'Content', published: true };
+  }
+
+  async getPosts(): Promise<Post[]> {
+    return [
+      { id: '1', title: 'Hello World', content: 'Content', published: true },
+    ];
+  }
+}
+
+// ---cut---
+@Controller()
+export class PostController {
+  constructor(private readonly postService: PostService) {}
+
+  @TsRestHandler(contract.getPost)
+  async getPost() {
+    return tsRestHandler(contract.getPost, async ({ params }) => {
+      const post = await this.postService.getPost(params.id);
+
+      if (!post) {
+        return { status: 404, body: { message: 'Post not found' } };
+      }
+
+      return { status: 200, body: post };
+    });
+  }
+
+  @TsRestHandler(contract.getPosts)
+  async getPosts() {
+    return tsRestHandler(contract.getPosts, async ({ query }) => {
+      const posts = await this.postService.getPosts();
+
+      return { status: 200, body: posts };
+    });
+  }
+}
+```
+
+<Callout type="note">
+  The method names don't matter in ts-rest controllers, just like regular Nest
+  endpoints. Name them whatever makes sense for your codebase.
+</Callout>
+
+**Why do we return `tsRestHandler`?** This function simply returns its second argument, but provides full TypeScript intellisense and type safety for the implementation. This keeps the API consistent with other ts-rest server implementations like `@ts-rest/express` and `@ts-rest/fastify`.
+
+#### Benefits
+
+- **Easy migration**: Replace one route at a time without touching others
+- **Flexible architecture**: Implement one contract across multiple controllers based on your domain
+- **Gradual adoption**: Perfect for existing codebases
+- **Freedom of organization**: No requirement for 1:1 contract-to-controller mapping
+
+### Multi Handler Approach - Ultimate Type Safety
+
+The multi handler approach is ideal for those who prefer functional programming patterns or want compile-time guarantees that every route in a contract is implemented. TypeScript will error if you forget to implement any route.
+
+```typescript twoslash title="multi-handler.ts"
+import { Controller } from '@nestjs/common';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+
+type Post = {
+  id: string;
+  title: string;
+  content: string;
+  published: boolean;
+};
+
+const contract = c.router({
+  getPost: {
+    method: 'GET',
+    path: '/posts/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    responses: {
+      200: c.type<Post>(),
+      404: c.type<{ message: string }>(),
+    },
+  },
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    query: z.object({
+      take: z.coerce.number().default(10),
+      skip: z.coerce.number().default(0),
+    }),
+    responses: {
+      200: c.type<Post[]>(),
+    },
+  },
+});
+
+// Mock service for example
+class PostService {
+  async getPost(id: string): Promise<Post | null> {
+    return { id, title: 'Hello World', content: 'Content', published: true };
+  }
+
+  async getPosts(): Promise<Post[]> {
+    return [
+      { id: '1', title: 'Hello World', content: 'Content', published: true },
+    ];
+  }
+}
+
+// ---cut---
+@Controller()
+export class PostController {
+  constructor(private readonly postService: PostService) {}
+
+  @TsRestHandler(contract)
+  async handler() {
+    return tsRestHandler(contract, {
+      getPost: async ({ params }) => {
+        const post = await this.postService.getPost(params.id);
+
+        if (!post) {
+          return { status: 404, body: { message: 'Post not found' } };
+        }
+
+        return { status: 200, body: post };
+      },
+      getPosts: async ({ query }) => {
+        const posts = await this.postService.getPosts();
+
+        return { status: 200, body: posts };
+      },
+    });
+  }
+}
+```
+
+Pass the entire contract (or a subset) to both `@TsRestHandler` and `tsRestHandler`. TypeScript will enforce that you implement every route defined in the contract.
+
+#### Benefits
+
+- **Compile-time safety**: TypeScript errors if you miss implementing any route
+- **Less boilerplate**: Single decorator and handler for multiple routes
+- **Consistency**: Easier to move code between `@ts-rest/express`, `@ts-rest/fastify`, and `@ts-rest/next`
+- **Functional approach**: Great for those who prefer this programming style
+
+## Using Nest Decorators
+
+You can still use all existing Nest decorators alongside `@TsRestHandler`. This gives you access to the underlying request/response objects and Nest's dependency injection system.
+
+```typescript twoslash title="nest-decorators.ts"
+import { Controller, Req, Headers, UseGuards } from '@nestjs/common';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+
+const contract = c.router({
+  getProfile: {
+    method: 'GET',
+    path: '/profile',
+    headers: z.object({
+      authorization: z.string(),
+    }),
+    responses: {
+      200: c.type<{ id: string; name: string }>(),
+      401: c.type<{ message: string }>(),
+    },
+  },
+});
+
+// Mock guard and request type
+class AuthGuard {}
+interface AuthenticatedRequest extends Request {
+  user: { id: string; name: string };
+}
+
+// ---cut---
+@Controller()
+export class UserController {
+  @TsRestHandler(contract.getProfile)
+  @UseGuards(AuthGuard)
+  async getProfile(
+    @Req() req: AuthenticatedRequest,
+    @Headers('authorization') auth: string,
+  ) {
+    return tsRestHandler(contract.getProfile, async ({ headers }) => {
+      // You can use both ts-rest typed data and Nest decorators
+      console.log('Auth header from ts-rest:', headers.authorization);
+      console.log('Auth header from Nest:', auth);
+      console.log('User from request:', req.user);
+
+      return {
+        status: 200,
+        body: { id: req.user.id, name: req.user.name },
+      };
+    });
+  }
+}
+```
+
+This isn't limited to parameter decorators - you can use guards, interceptors, pipes, and any other Nest decorators as you normally would.
+
+## Type-Safe Error Handling
+
+While we recommend returning errors as responses to maintain full type safety in your contract, sometimes throwing exceptions is cleaner. `TsRestException` lets you throw type-safe exceptions that ts-rest will catch and convert to properly typed responses.
+
+```typescript twoslash title="error-handling.ts"
+import { Controller } from '@nestjs/common';
+import { TsRestHandler, tsRestHandler, TsRestException } from '@ts-rest/nest';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+
+const contract = c.router({
+  createUser: {
+    method: 'POST',
+    path: '/users',
+    body: z.object({
+      email: z.string().email(),
+      name: z.string(),
+    }),
+    responses: {
+      201: c.type<{ id: string; email: string; name: string }>(),
+      400: c.type<{ code: string; message: string }>(),
+      409: c.type<{ code: string; message: string }>(),
+    },
+  },
+});
+
+// Mock service for example
+class UserService {
+  async createUser(data: { email: string; name: string }) {
+    // Mock user already exists check
+    const userExists = data.email === 'existing@example.com';
+    if (userExists) {
+      throw new Error('User already exists');
+    }
+    return { id: '1', ...data };
+  }
+}
+
+// ---cut---
+@Controller()
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @TsRestHandler(contract.createUser)
+  async createUser() {
+    return tsRestHandler(contract.createUser, async ({ body }) => {
+      try {
+        const user = await this.userService.createUser(body);
+        return { status: 201, body: user };
+      } catch (error) {
+        // Type-safe exception throwing with autocomplete
+        throw new TsRestException(contract.createUser, {
+          status: 409,
+          body: {
+            code: 'UserAlreadyExists',
+            message: 'User with this email already exists',
+          },
+        });
+      }
+    });
+  }
+}
+```
+
+`TsRestException` provides full autocomplete for valid status codes and response bodies defined in your contract.
+
+<Callout type="warning">
+  **Caution:** Be careful when throwing exceptions from shared code used by
+  multiple routes. You might throw the wrong exception type for a given route.
+  For maximum safety, return responses directly from the handler.
+</Callout>
+
+## Configuration
+
+Configure ts-rest options using the `@TsRest` decorator on controllers or the `@TsRestHandler` decorator on methods. Controller options apply to all routes and override global options. Method options override controller options for that specific route.
+
+```typescript twoslash title="configuration.ts"
+import { Controller } from '@nestjs/common';
+import { TsRest, TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+
+const contract = c.router({
+  search: {
+    method: 'GET',
+    path: '/search',
+    query: z.object({
+      filters: z.object({
+        category: z.string(),
+        price: z.number(),
+      }),
+      sort: z.string().default('name'),
+    }),
+    responses: {
+      200: c.type<{ results: any[] }>(),
+    },
+  },
+  getItem: {
+    method: 'GET',
+    path: '/items/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    query: z.object({
+      include: z.array(z.string()).optional(),
+    }),
+    responses: {
+      200: c.type<{ item: any }>(),
+    },
+  },
+});
+
+// ---cut---
+@Controller()
+@TsRest({ jsonQuery: true }) // Applied to all routes in this controller
+export class SearchController {
+  @TsRestHandler(contract.search)
+  async search() {
+    return tsRestHandler(contract.search, async ({ query }) => {
+      // query.filters is properly parsed as an object due to jsonQuery: true
+      console.log(query.filters.category);
+      return { status: 200, body: { results: [] } };
+    });
+  }
+
+  @TsRestHandler(contract.getItem, { jsonQuery: false }) // Override for this route
+  async getItem() {
+    return tsRestHandler(contract.getItem, async ({ query, params }) => {
+      // query.include is a string array due to normal query parsing
+      return { status: 200, body: { item: {} } };
+    });
+  }
+}
+```
+
+<Callout type="note">
+  For global configuration options and more details, check the [configuration
+  documentation](/docs/nest/configuration).
+</Callout>
+
+## Important Considerations
+
+<Callout type="warning" title="Path Prefixes">
+  **Known Limitation:** Nest's global prefixes, versioning, and controller prefixes are currently ignored by ts-rest. See [GitHub issue #70](https://github.com/ts-rest/ts-rest/issues/70) for details.
+
+**Workaround:** Use ts-rest's [path prefix feature](/docs/contract/overview#path-prefix) in your contract definition to achieve similar functionality.
+
+</Callout>
+
+## Next Steps
+
+<Callout type="note">
+  🚀 **Ready to go deeper?** - [Configuration options
+  →](/docs/nest/configuration) - Learn about all available configuration options
+  - [OpenAPI generation →](/docs/openapi) - Generate OpenAPI specs from your
+  NestJS endpoints - [Client usage →](/docs/client) - Connect to your NestJS API
+  with the type-safe client
+</Callout>
