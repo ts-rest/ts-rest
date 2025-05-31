@@ -1,0 +1,70 @@
+---
+title: 'FAQ'
+description: Frequently Asked Questions
+---
+
+## Who uses ts-rest? 💚
+
+We (the core team) heavily dogfood ts-rest in production at our respective companies, myself ([@oliverbutler](https://github.com/oliverbutler)) uses `@ts-rest/react-query` and `@ts-rest/nest` extensively at [Onsi](https://onsi.com)
+
+I founded `ts-rest` primarily to solve the problems we faced inhouse, the difficulty to introduce cross-stack type safety in an existing large codebase, incrementally.
+
+## Is this project actively maintained? ✅
+
+Yes! There may be gaps from time to time, as we're all working full time, but we're actively working towards a 4.0 release, which should really just be to clean out old deprecated APIs which we've gathered over **50 minor versions** of 3.0.
+
+## How can I contribute? 🤩
+
+Please feel free to open an issue or PR, we're always happy to help!
+
+## How does this compare to tRPC? 🤔
+
+[tRPC](https://trpc.io/) is great - [KATT (Alex Johansson)](https://github.com/KATT) and all the [other maintainers](https://github.com/trpc/trpc/graphs/contributors) have done some amazing work, and for applications with a single Next.js app, or an express server only consumed by TRPC clients, I whole heartily recommend using tRPC! Also I have undoubtedly taken inspiration from tRPC for ts-rest.
+
+One of the biggest differences between tRPC and ts-rest is that tRPC defines your API implementation _as the contract_, for some use cases it is beneficial to have a separate contract to represent the API.
+
+One example of this is with NX, in NX you can rebuild only "affected" packages, however, if you export your contract (e.g. tRPC) from the backend, your front end will need to be rebuilt as well. ts-rest negates this issue by allowing (in NX) for a library for the API contract to be created, this then means the only case in which the front and backend need to be rebuilt is when the contract changes.
+
+<Callout type="info" title="REST(ish)?">
+
+REST(ish)? REST is a term the industry (as a whole) has used incorrectly for many years now. In recent years, it is used as a synonym for HTTP requests over a API. [Read more here](https://htmx.org/essays/how-did-rest-come-to-mean-the-opposite-of-rest/)
+
+</Callout>
+
+ts-rest allows you design an API as you would "normally", e.g. GET, POST, PUT, DELETE etc. to `/posts`, `/posts/:id`, `/posts/:id/comments` etc. whilst providing these endpoints to the client as RPC-type calls like `client.posts.getPost({ id: "1" })` or `client.posts.getPostComments()` in a fully type safe interface.
+
+tRPC structures your API as RPC calls such as `/trpc/getPosts` or `/trpc/getPostComments` etc, this provides an arguably simpler API for the client implementation, however, you loose the predictability of REST(ish) APIs if you have consumers who aren't in TypeScript (able to use @ts-rest) or public consumers.
+
+tRPC has many plugins to solve this issue by mapping the API implementation to a REST-like API, however, these approaches are often a bit clunky and reduce the safety of the system overall, ts-rest does this heavy lifting in the client and server implementations rather than requiring a second layer of abstraction and API endpoint(s) to be defined.
+
+## Why is my TypeScript intellisense _slow_? 🐌
+
+You'll need to enable `strict` in your `tsconfig.json`:
+
+```json
+  "compilerOptions": {
+    ...
+    "strict": true
+  }
+```
+
+If you're using a monorepo, make sure this is applied at the `project` level. Example:
+
+```
+./apps/some-app/tsconfig.json
+```
+
+^ make sure `strict` is `true` here
+
+If you cannot use `strict` entirely, you'll need to at least enable `strictNullChecks`.
+
+This is required as part of [Zod](https://github.com/colinhacks/zod#requirements). See why [here](https://github.com/colinhacks/zod/issues/1750).
+
+### It's **still quite slow**
+
+If you've correctly enabled `strict` and `strictNullChecks`, and you're still experiencing slow intellisense, you may be approaching the point at which (pre `tsgo`) Typescript
+starts to feel fairly sluggish.
+
+1. **Try split up your clients/contracts** We've had some success with _splitting up our clients_ into different domains, for instance `postClient`, `userClient`, `authClient` etc. this splits up the client into smaller chunks, which can help with intellisense performance.
+2. **Move to a more tsc friendly validator** Zod 3 was fairly renowned for it's affect on intellisense in large codebases, [Zod 4](https://zod.dev/v4) improves greatly on this, and is supported from `ts-rest 3.53.0` with our acceptance of the Standard Schema spec.
+3. **Utilise monorepo tooling** - NX (and probably others) offers some ways to pre-compile modules, emitting .d.ts files for your modules, this could be a good way to speed up intellisense.

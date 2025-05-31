@@ -1,4 +1,13 @@
 {
   "title": "",
-  "pages": ["index", "quickstart", "contract", "client", "server", "openapi"]
+  "pages": [
+    "index",
+    "quickstart",
+    "contract",
+    "client",
+    "server",
+    "openapi",
+    "recipies",
+    "faq"
+  ]
 }
