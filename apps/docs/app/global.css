@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/vitepress.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-twoslash/twoslash.css';
+
+:root {
+  --color-fd-primary: #6b3fcf;
+  --color-fd-ring: #c9a9f5;
+}
+
+.dark {
+  --color-fd-ring: #d2a8ff;
+  --color-fd-primary: #d2a8ff;
+}

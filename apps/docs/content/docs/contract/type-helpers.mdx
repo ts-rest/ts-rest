@@ -1,0 +1,166 @@
+---
+title: 'Type Helpers'
+description: Contracts pretty complex, so we expose some helpers to let you pull out the useful parts for your app
+---
+
+## Client Helpers
+
+### `ClientInferRequest`
+
+Extracts the exact request type that the client needs to send, including any optional fields and client-specific options like `fetchOptions`. This is useful when you need to type function parameters or variables that will be passed to the ts-rest client.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ClientInferRequest } from '@ts-rest/core';
+
+type Request = ClientInferRequest<typeof contract.getPokemon>;
+//   ^?
+```
+
+### `ClientInferResponseBody`
+
+Extracts the response body type for a specific status code as the client will receive it. Perfect for typing React component props or variables that store API response data.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ClientInferResponseBody } from '@ts-rest/core';
+
+type ResponseBody = ClientInferResponseBody<typeof contract.getPokemon, 200>;
+//   ^?
+```
+
+### `ClientInferResponses`
+
+Extracts all possible response types that the client can receive, including status codes and headers. Useful for handling all response scenarios in error handling or response processing logic.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ClientInferResponses } from '@ts-rest/core';
+
+type Responses = ClientInferResponses<typeof contract.getPokemon>;
+//   ^?
+```
+
+## Server Helpers
+
+### `ServerInferRequest`
+
+Extracts the request type as the server will receive it, including any Zod transformations applied to path params or query strings. Essential for typing Lambda handlers, route handlers, or middleware functions that process incoming requests.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ServerInferRequest } from '@ts-rest/core';
+
+type Request = ServerInferRequest<typeof contract.getPokemon>;
+//   ^?
+```
+
+### `ServerInferResponseBody`
+
+Extracts the response body type that the server needs to return for a specific status code. Useful for typing service functions or database query results that will be returned as API responses.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ServerInferResponseBody } from '@ts-rest/core';
+
+type ResponseBody = ServerInferResponseBody<typeof contract.getPokemon, 200>;
+//   ^?
+```
+
+### `ServerInferResponses`
+
+Extracts all possible response types that the server can return, including status codes and any response metadata. Perfect for typing handler return values or functions that need to return different response types based on business logic.
+
+```typescript twoslash
+import { initContract } from '@ts-rest/core';
+
+const c = initContract();
+
+const contract = c.router({
+  getPokemon: {
+    method: 'GET',
+
+    path: '/pokemon/:id',
+    responses: {
+      200: c.type<{ name: string }>(),
+    },
+  },
+});
+// ---cut---
+
+import { ServerInferResponses } from '@ts-rest/core';
+
+type Responses = ServerInferResponses<typeof contract.getPokemon>;
+//   ^?
+```
