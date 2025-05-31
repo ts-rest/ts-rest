@@ -1,5 +1,15 @@
 # @ts-rest/open-api
 
+## 3.53.0
+
+### Minor Changes
+
+- bb96ae5e: Add operation ID parameter to operationMapper function, allowing using the appRoute's id in the callback.
+
+### Patch Changes
+
+- dd305e7a: Support `c.otherResponse()` when generating OpenAPI schema
+
 ## 3.52.1
 
 ## 3.52.0
