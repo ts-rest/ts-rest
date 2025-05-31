@@ -22,8 +22,17 @@ export interface TsRestQueryClientFunctions<
 > {
   getQueryData(queryKey: QueryKey): TQueryFnData | undefined;
 
+  getInfiniteQueryData(
+    queryKey: QueryKey,
+  ): InfiniteData<TQueryFnData> | undefined;
+
   ensureQueryData<TData = TQueryFnData>(
     options: EnsureQueryDataOptions<TQueryFnData, TError, TData> &
+      TsRestQueryOptions<TAppRoute, TClientArgs>,
+  ): Promise<TData>;
+
+  ensureInfiniteQueryData<TData = InfiniteData<TQueryFnData>>(
+    options: EnsureQueryDataOptions<InfiniteData<TQueryFnData>, TError, TData> &
       TsRestQueryOptions<TAppRoute, TClientArgs>,
   ): Promise<TData>;
 
@@ -37,6 +46,15 @@ export interface TsRestQueryClientFunctions<
     options?: SetDataOptions,
   ): TQueryFnData | undefined;
 
+  setInfiniteQueryData(
+    queryKey: QueryKey,
+    updater: Updater<
+      InfiniteData<TQueryFnData> | undefined,
+      InfiniteData<TQueryFnData> | undefined
+    >,
+    options?: SetDataOptions,
+  ): InfiniteData<TQueryFnData> | undefined;
+
   setQueriesData(
     filters: QueryFilters,
     updater: Updater<TQueryFnData | undefined, TQueryFnData | undefined>,
@@ -46,6 +64,10 @@ export interface TsRestQueryClientFunctions<
   getQueryState(
     queryKey: QueryKey,
   ): QueryState<TQueryFnData, TError> | undefined;
+
+  getInfiniteQueryState(
+    queryKey: QueryKey,
+  ): QueryState<InfiniteData<TQueryFnData>, TError> | undefined;
 
   fetchQuery<TData = TQueryFnData>(
     options: FetchQueryOptions<TQueryFnData, TError, TData> &
