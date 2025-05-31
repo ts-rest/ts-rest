@@ -902,11 +902,8 @@ packages:
     resolution: {directory: ../../dist/libs/ts-rest/core, type: directory}
     peerDependencies:
       '@types/node': ^18.18.7 || >=20.8.4
-      zod: ^3.22.3
     peerDependenciesMeta:
       '@types/node':
-        optional: true
-      zod:
         optional: true
 
   '@ts-rest/nest@file:../../dist/libs/ts-rest/nest':
@@ -916,10 +913,6 @@ packages:
       '@nestjs/core': ^9.0.0 || ^10.0.0 || ^11.0.0
       '@ts-rest/core': ~3.52.0
       rxjs: ^7.1.0
-      zod: ^3.22.3
-    peerDependenciesMeta:
-      zod:
-        optional: true
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}

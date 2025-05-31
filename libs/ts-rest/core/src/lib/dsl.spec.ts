@@ -6,9 +6,13 @@ import {
   ContractPlainType,
   ContractPlainTypeRuntimeSymbol,
   ContractNoBodyType,
+  MergeHeadersWithLegacySupport,
+  AppRoute,
+  InferHeadersInput,
 } from './dsl';
 import type { Equal, Expect } from './test-helpers';
 import { Prettify } from './type-utils';
+import * as v from 'valibot';
 
 const c = initContract();
 
@@ -26,9 +30,10 @@ describe('contract', () => {
       },
     });
 
-    type ContractShape = Expect<
+    type ContractShape = typeof contract;
+    type TestContractShape = Expect<
       Equal<
-        typeof contract,
+        ContractShape,
         {
           getPost: {
             method: 'GET';
@@ -117,38 +122,35 @@ describe('contract', () => {
       },
     });
 
-    type ContractShape = Expect<
+    type ContractShape = typeof contract.posts.getPost;
+    type TestContractShape = Expect<
       Equal<
-        typeof contract,
+        ContractShape,
         {
-          posts: {
-            getPost: {
-              method: 'GET';
-              path: '/posts/:id';
-              responses: {
-                200: z.ZodObject<
-                  {
-                    id: z.ZodNumber;
-                  },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
-                >;
-              };
-              headers: z.ZodObject<
-                { 'x-foo': z.ZodString },
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo': string },
-                { 'x-foo': string }
-              >;
-            };
+          method: 'GET';
+          path: '/posts/:id';
+          responses: {
+            200: z.ZodObject<
+              {
+                id: z.ZodNumber;
+              },
+              'strip',
+              z.ZodTypeAny,
+              {
+                id: number;
+              },
+              {
+                id: number;
+              }
+            >;
           };
+          headers: z.ZodObject<
+            { 'x-foo': z.ZodString },
+            'strip',
+            z.ZodTypeAny,
+            { 'x-foo': string },
+            { 'x-foo': string }
+          >;
         }
       >
     >;
@@ -1056,5 +1058,425 @@ describe('contract', () => {
         }
       >
     >;
+  });
+});
+
+describe('header types', () => {
+  it('should handle two zod objects', () => {
+    const leftSchema = z.object({
+      left: z.string(),
+    });
+
+    const rightSchema = z.object({
+      right: z.string(),
+    });
+
+    type Resut = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+    type TestResult = Expect<
+      Equal<
+        Resut,
+        z.ZodObject<
+          z.objectUtil.MergeShapes<
+            {
+              left: z.ZodString;
+            },
+            {
+              right: z.ZodString;
+            }
+          >,
+          'strip',
+          z.ZodTypeAny,
+          {
+            left: string;
+            right: string;
+          },
+          {
+            left: string;
+            right: string;
+          }
+        >
+      >
+    >;
+  });
+  it('should handle left being undefined', () => {
+    const leftSchema = undefined;
+    const rightSchema = z.object({
+      right: z.string(),
+    });
+
+    type Resut = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+    type TestResult = Expect<
+      Equal<
+        Resut,
+        z.ZodObject<
+          {
+            right: z.ZodString;
+          },
+          'strip',
+          z.ZodTypeAny,
+          {
+            right: string;
+          },
+          {
+            right: string;
+          }
+        >
+      >
+    >;
+  });
+
+  it('should handle right being undefined', () => {
+    const leftSchema = z.object({
+      left: z.string(),
+    });
+
+    const rightSchema = undefined;
+
+    type Resut = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+    type TestResult = Expect<
+      Equal<
+        Resut,
+        z.ZodObject<
+          {
+            left: z.ZodString;
+          },
+          'strip',
+          z.ZodTypeAny,
+          {
+            left: string;
+          },
+          {
+            left: string;
+          }
+        >
+      >
+    >;
+  });
+
+  it('should handle both being undefined', () => {
+    const leftSchema = undefined;
+    const rightSchema = undefined;
+
+    type Resut = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+    type TestResult = Expect<Equal<Resut, unknown>>;
+  });
+
+  it('should handle two records', () => {
+    const leftSchema = {
+      left: z.string(),
+    };
+
+    const rightSchema = {
+      right: z.string(),
+    };
+
+    type Result = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+
+    type TestResult = Expect<
+      Equal<
+        Result,
+        {
+          left: z.ZodString;
+          right: z.ZodString;
+        }
+      >
+    >;
+  });
+
+  it('should handle left undefined and right record', () => {
+    const leftSchema = undefined;
+    const rightSchema = {
+      right: z.string(),
+    };
+
+    type Result = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+
+    type TestResult = Expect<
+      Equal<
+        Result,
+        {
+          right: z.ZodString;
+        }
+      >
+    >;
+  });
+
+  it('should handle left record and right undefined', () => {
+    const leftSchema = {
+      left: z.string(),
+    };
+
+    const rightSchema = undefined;
+
+    type Result = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+
+    type TestResult = Expect<Equal<Result, { left: z.ZodString }>>; // left wins
+  });
+
+  it('should handle right null and left record', () => {
+    const leftSchema = {
+      left: z.string(),
+    };
+
+    const rightSchema = {
+      left: null,
+    };
+
+    type Result = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+
+    type TestResult = Expect<Equal<Result, {}>>; // correctly unset 'left'
+  });
+
+  it('should handle left null and right record', () => {
+    const leftSchema = {
+      left: null,
+    };
+
+    const rightSchema = {
+      right: z.string(),
+    };
+
+    type Result = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+
+    type TestResult = Expect<Equal<Result, { right: z.ZodString }>>; // right wins
+  });
+
+  it('should handle both null', () => {
+    const leftSchema = {
+      left: null,
+    };
+
+    const rightSchema = {
+      right: null,
+    };
+
+    type Result = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+
+    type TestResult = Expect<Equal<Result, {}>>; // correctly unset 'left' and 'right'
+  });
+
+  it('should handle both entirely undefined', () => {
+    const leftSchema = undefined;
+    const rightSchema = undefined;
+
+    type Result = MergeHeadersWithLegacySupport<
+      typeof leftSchema,
+      typeof rightSchema
+    >;
+
+    type TestResult = Expect<Equal<Result, unknown>>;
+  });
+
+  describe('InferHeadersInput', () => {
+    it('should handle undefined', () => {
+      const route = c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+          headers: undefined,
+        },
+      });
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<Equal<Actual, undefined>>;
+    });
+
+    it('should handle empty object', () => {
+      const route = c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          headers: {},
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+      });
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<Equal<Actual, {}>>;
+    });
+
+    it('should handle zod object', () => {
+      const route = c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          headers: z.object({
+            'x-foo': z.string(),
+          }),
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+      });
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<Equal<Actual, { 'x-foo': string }>>;
+    });
+
+    it('should lowercase keys', () => {
+      const route = c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          headers: z.object({
+            'X-FOO': z.string(),
+          }),
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+      });
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<Equal<Actual, { 'x-foo': string }>>;
+    });
+
+    it('should handle standard schema', () => {
+      const route = c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          headers: {
+            'x-foo': v.string(),
+          },
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+      });
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<Equal<Actual, { 'x-foo': string }>>;
+    });
+
+    it('should handle mixed object and zod', () => {
+      const route = c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          headers: {
+            'x-foo': v.string(),
+            'x-bar': z.string(),
+          },
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+      });
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<
+        Equal<Actual, { 'x-foo': string; 'x-bar': string }>
+      >;
+    });
+
+    it('should handle optional headers', () => {
+      const route = c.router({
+        getPost: {
+          method: 'GET',
+          path: '/posts/:id',
+          headers: {
+            'x-foo': v.optional(v.string()),
+          },
+          responses: {
+            200: c.type<{ id: number }>(),
+          },
+        },
+      });
+
+      const headers = {
+        'x-foo': v.optional(v.string()),
+      };
+
+      type Actual = InferHeadersInput<typeof route.getPost, typeof headers>;
+      type TestResult = Expect<Equal<Actual, { 'x-foo': string | undefined }>>;
+    });
+
+    it('should handle optional headers with base headers', () => {
+      const route = c.router(
+        {
+          getPost: {
+            method: 'GET',
+            path: '/posts/:id',
+            headers: {
+              'x-foo': v.string(),
+            },
+            responses: {
+              200: c.type<{ id: number }>(),
+            },
+          },
+        },
+        {
+          baseHeaders: {
+            'x-bar': v.string(),
+          },
+        },
+      );
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<
+        Equal<Actual, { 'x-foo': string; 'x-bar': string }>
+      >;
+    });
+
+    it('should unset header with null', () => {
+      const route = c.router(
+        {
+          getPost: {
+            method: 'GET',
+            path: '/posts/:id',
+            headers: {
+              'x-foo': null,
+            },
+            responses: {
+              200: c.type<{ id: number }>(),
+            },
+          },
+        },
+        {
+          baseHeaders: {
+            'x-foo': v.string(),
+          },
+        },
+      );
+
+      type Actual = InferHeadersInput<typeof route.getPost>;
+      type TestResult = Expect<Equal<Actual, {}>>;
+    });
   });
 });

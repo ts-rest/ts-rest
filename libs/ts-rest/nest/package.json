@@ -27,12 +27,6 @@
   "peerDependencies": {
     "@nestjs/common": "^9.0.0 || ^10.0.0 || ^11.0.0",
     "@nestjs/core": "^9.0.0 || ^10.0.0 || ^11.0.0",
-    "rxjs": "^7.1.0",
-    "zod": "^3.22.3"
-  },
-  "peerDependenciesMeta": {
-    "zod": {
-      "optional": true
-    }
+    "rxjs": "^7.1.0"
   }
 }

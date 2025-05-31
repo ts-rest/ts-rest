@@ -1,9 +1,15 @@
-import { initContract } from '@ts-rest/core';
+import {
+  ContractAnyType,
+  initContract,
+  SchemaInputOrType,
+  StandardSchemaV1,
+} from '@ts-rest/core';
 import {
   RequestValidationErrorSchema,
   TsRestException,
   tsRestHandler,
   TsRestHandler,
+  TsRestRequestValidationError,
 } from './ts-rest-nest-handler';
 import { z } from 'zod';
 import {
@@ -37,6 +43,8 @@ import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import { TsRestModule } from './ts-rest.module';
 import path = require('path');
+import * as v from 'valibot';
+import { APP_FILTER } from '@nestjs/core';
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T,
@@ -184,9 +192,93 @@ describe('ts-rest-nest-handler', () => {
           queryResult: null,
           paramsResult: null,
         });
-        expect(() =>
-          RequestValidationErrorSchema.parse(responsePost.body),
-        ).not.toThrowError();
+        expect(
+          RequestValidationErrorSchema.safeParse(responsePost.body),
+        ).toStrictEqual({
+          data: expect.any(Object),
+          success: true,
+        });
+      });
+
+      it('should validate body with valibot', async () => {
+        const c = initContract();
+
+        const contract = c.router({
+          postRequest: {
+            path: '/test',
+            method: 'POST',
+            body: v.object({
+              message: v.string(),
+            }),
+            responses: {
+              200: v.object({
+                message: v.string(),
+              }),
+            },
+          },
+        });
+
+        @Controller()
+        class SingleHandlerTestController {
+          @TsRestHandler(contract)
+          async postRequest() {
+            return tsRestHandler(contract, {
+              postRequest: async ({ body }) => ({
+                status: 200,
+                body: body,
+              }),
+            });
+          }
+        }
+
+        const moduleRef = await Test.createTestingModule({
+          controllers: [SingleHandlerTestController],
+        }).compile();
+
+        const app = moduleRef.createNestApplication();
+        await app.init();
+
+        const response = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 'hello' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'hello' });
+
+        const responsePost = await supertest(app.getHttpServer())
+          .post('/test')
+          .send({ message: 123 });
+
+        expect(responsePost.status).toBe(400);
+        expect(responsePost.body).toEqual({
+          bodyResult: {
+            issues: [
+              {
+                expected: 'string',
+                input: 123,
+                kind: 'schema',
+                message: 'Invalid type: Expected string but received 123',
+                path: [
+                  {
+                    input: {
+                      message: 123,
+                    },
+                    key: 'message',
+                    origin: 'value',
+                    type: 'object',
+                    value: 123,
+                  },
+                ],
+                received: '123',
+                type: 'string',
+              },
+            ],
+            name: 'ValidationError',
+          },
+          headersResult: null,
+          queryResult: null,
+          paramsResult: null,
+        });
       });
 
       it("shouldn't validate body", async () => {
@@ -975,8 +1067,8 @@ describe('ts-rest-nest-handler', () => {
           path: '/test',
           method: 'GET',
           responses: {
-            200: z.object({
-              message: z.string(),
+            200: v.object({
+              message: v.string(),
             }),
           },
         },
@@ -1574,7 +1666,6 @@ describe('ts-rest-nest-handler', () => {
       class TestController {
         @TsRestHandler(contract.getRequest)
         async handler(@Headers('x-api-key') apiKey: string | undefined) {
-          console.log(apiKey);
           return tsRestHandler(contract.getRequest, async () => ({
             status: 200,
             body: { message: apiKey || 'no header' },
@@ -2304,6 +2395,359 @@ describe('ts-rest-nest-handler', () => {
       expect(response.text).toEqual('');
       expect(response.headers['content-length']).toBeUndefined();
       expect(response.headers['content-type']).toBeUndefined();
+    });
+  });
+
+  describe('valibot', () => {
+    it('should be able to intercept a TsRestRequestValidationError when using a standard schema validator', async () => {
+      const c = initContract();
+      const contract = c.router({
+        getIndex: {
+          method: 'POST',
+          path: '/',
+          body: v.object({
+            name: v.string(),
+          }),
+          responses: {
+            200: c.noBody(),
+          },
+        },
+      });
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getIndex: async ({ body }) => ({
+              status: 200,
+              body: undefined,
+            }),
+          });
+        }
+      }
+
+      @Catch()
+      class TestErrorFilter implements ExceptionFilter {
+        catch(exception: unknown, host: ArgumentsHost) {
+          const ctx = host.switchToHttp();
+          const req = ctx.getRequest<Request>();
+          const res = ctx.getResponse<Response>();
+
+          if (exception instanceof TsRestRequestValidationError) {
+            return res.status(400).send({
+              custom: 'error filter caught it',
+              bodyErrors: exception.body?.issues?.length || 0,
+              headerErrors: exception.headers?.issues?.length || 0,
+              pathParameterErrors: exception.pathParams?.issues?.length || 0,
+              queryParameterErrors: exception.query?.issues?.length || 0,
+            });
+          }
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+        providers: [
+          {
+            provide: APP_FILTER,
+            useClass: TestErrorFilter,
+          },
+        ],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).post('/').send({
+        name: 123,
+      });
+
+      expect(response.status).toEqual(400);
+      expect(response.body).toEqual({
+        custom: 'error filter caught it',
+        bodyErrors: 1,
+        headerErrors: 0,
+        pathParameterErrors: 0,
+        queryParameterErrors: 0,
+      });
+    });
+
+    it('should allow unsetting base headers with null', async () => {
+      const c = initContract();
+      const contract = c.router(
+        {
+          getIndex: {
+            method: 'GET',
+            path: '/',
+            responses: {
+              200: v.object({
+                xApiKey: v.string(),
+              }),
+            },
+            headers: {
+              'x-api-key': null,
+            },
+          },
+        },
+        {
+          baseHeaders: {
+            'x-api-key': v.string(),
+          },
+        },
+      );
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getIndex: async ({ headers }) => {
+              return {
+                status: 200,
+                body: { xApiKey: (headers['x-api-key'] as string) || '' },
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).get('/'); // no x-api-key header
+      expect({
+        status: response.status,
+        body: response.body,
+      }).toEqual({
+        status: 200,
+        body: {
+          xApiKey: '',
+        },
+      });
+    });
+
+    it('should combine parent and child headers', async () => {
+      const c = initContract();
+      const contract = c.router(
+        {
+          getIndex: {
+            method: 'GET',
+            path: '/',
+            headers: {
+              'x-route-header': v.string(),
+            },
+            responses: {
+              200: v.object({
+                xBaseHeader: v.string(),
+                xRouteHeader: v.string(),
+              }),
+            },
+          },
+        },
+        {
+          baseHeaders: {
+            'x-base-header': v.string(),
+          },
+        },
+      );
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getIndex: async ({ headers }) => {
+              return {
+                status: 200,
+                body: {
+                  xBaseHeader: headers['x-base-header'],
+                  xRouteHeader: headers['x-route-header'],
+                },
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).get('/');
+      expect(response.status).toEqual(400);
+      expect(response.body).toStrictEqual({
+        bodyResult: null,
+        headersResult: {
+          issues: [
+            {
+              expected: 'string',
+              kind: 'schema',
+              message: 'Invalid type: Expected string but received undefined',
+              path: ['x-base-header'],
+              received: 'undefined',
+              type: 'string',
+            },
+            {
+              expected: 'string',
+              kind: 'schema',
+              message: 'Invalid type: Expected string but received undefined',
+              path: ['x-route-header'],
+              received: 'undefined',
+              type: 'string',
+            },
+          ],
+          name: 'ValidationError',
+        },
+        paramsResult: null,
+        queryResult: null,
+      });
+    });
+
+    it('should be albe to use just base headers', async () => {
+      const c = initContract();
+      const contract = c.router(
+        {
+          getIndex: {
+            method: 'GET',
+            path: '/',
+            responses: {
+              200: v.object({
+                xBaseHeader: v.string(),
+              }),
+            },
+          },
+        },
+        {
+          baseHeaders: {
+            'x-base-header': v.string(),
+          },
+        },
+      );
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getIndex: async ({ headers }) => {
+              return {
+                status: 200,
+                body: {
+                  xBaseHeader: headers['x-base-header'],
+                },
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server).get('/');
+      expect(response.status).toEqual(400);
+      expect(response.body).toStrictEqual({
+        bodyResult: null,
+        headersResult: {
+          issues: [
+            {
+              expected: 'string',
+              kind: 'schema',
+              message: 'Invalid type: Expected string but received undefined',
+              path: ['x-base-header'],
+              received: 'undefined',
+              type: 'string',
+            },
+          ],
+          name: 'ValidationError',
+        },
+        paramsResult: null,
+        queryResult: null,
+      });
+    });
+
+    it('should be able to successfully merge headers', async () => {
+      const c = initContract();
+      const contract = c.router(
+        {
+          getIndex: {
+            method: 'GET',
+            path: '/',
+            headers: {
+              'x-route-header': v.string(),
+            },
+            responses: {
+              200: v.object({
+                xBaseHeader: v.string(),
+                xRouteHeader: v.string(),
+              }),
+            },
+          },
+        },
+        {
+          baseHeaders: {
+            'x-base-header': v.string(),
+          },
+        },
+      );
+
+      @Controller()
+      class TestController {
+        @TsRestHandler(contract)
+        async handler() {
+          return tsRestHandler(contract, {
+            getIndex: async ({ headers }) => {
+              return {
+                status: 200,
+                body: {
+                  xBaseHeader: headers['x-base-header'],
+                  xRouteHeader: headers['x-route-header'],
+                },
+              };
+            },
+          });
+        }
+      }
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [TestController],
+      }).compile();
+
+      const app = moduleRef.createNestApplication();
+      await app.init();
+
+      const server = app.getHttpServer();
+
+      const response = await supertest(server)
+        .get('/')
+        .set('x-base-header', 'base-header')
+        .set('x-route-header', 'route-header');
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toStrictEqual({
+        xBaseHeader: 'base-header',
+        xRouteHeader: 'route-header',
+      });
     });
   });
 });

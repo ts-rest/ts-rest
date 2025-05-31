@@ -17,6 +17,7 @@ import {
   SuccessfulHttpStatusCode,
 } from './status-codes';
 import { FetchOptions, OverrideableClientArgs } from './client';
+import { Prettify } from './type-utils';
 
 const c = initContract();
 
@@ -133,9 +134,17 @@ const headerlessContract = c.router({
 });
 
 it('type inference helpers', () => {
-  type ServerInferResponsesTest = Expect<
+  /**
+   * @name ServerInferResponsesWithUnknownStatusCodes
+   * Expect ServerInferResponses to include all defined status codes plus unknown status codes
+   * for endpoints that don't have strict status codes enabled
+   */
+  type ServerInferResponsesWithUnknownStatusCodes = ServerInferResponses<
+    typeof contract
+  >;
+  type TestServerInferResponsesWithUnknownStatusCodes = Expect<
     Equal<
-      ServerInferResponses<typeof contract>,
+      ServerInferResponsesWithUnknownStatusCodes,
       {
         getPost:
           | {
@@ -173,9 +182,17 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferResponsesStrictTest = Expect<
+  /**
+   * @name ServerInferResponsesWithStrictStatusCodes
+   * Expect ServerInferResponses to only include explicitly defined status codes
+   * when strict status codes are enabled, excluding unknown status codes
+   */
+  type ServerInferResponsesWithStrictStatusCodes = ServerInferResponses<
+    typeof contractStrict
+  >;
+  type TestServerInferResponsesWithStrictStatusCodes = Expect<
     Equal<
-      ServerInferResponses<typeof contractStrict>,
+      ServerInferResponsesWithStrictStatusCodes,
       {
         getPost:
           | {
@@ -208,9 +225,19 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferResponsesIgnoreStrictTest = Expect<
+  /**
+   * @name ServerInferResponsesIgnoreStrictMode
+   * Expect ServerInferResponses to include unknown status codes even when strict mode is enabled
+   * but explicitly ignored via the 'ignore' parameter
+   */
+  type ServerInferResponsesIgnoreStrictMode = ServerInferResponses<
+    typeof contractStrict,
+    HTTPStatusCode,
+    'ignore'
+  >;
+  type TestServerInferResponsesIgnoreStrictMode = Expect<
     Equal<
-      ServerInferResponses<typeof contractStrict, HTTPStatusCode, 'ignore'>,
+      ServerInferResponsesIgnoreStrictMode,
       {
         getPost:
           | {
@@ -248,9 +275,18 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferResponsesTest2 = Expect<
+  /**
+   * @name ServerInferResponsesSpecificStatusCode
+   * Expect ServerInferResponses to filter responses to only include the specified status code (200),
+   * returning unknown body for endpoints that don't define that status code
+   */
+  type ServerInferResponsesSpecificStatusCode = ServerInferResponses<
+    typeof contract,
+    200
+  >;
+  type TestServerInferResponsesSpecificStatusCode = Expect<
     Equal<
-      ServerInferResponses<typeof contract, 200>,
+      ServerInferResponsesSpecificStatusCode,
       {
         getPost: {
           status: 200;
@@ -274,9 +310,18 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferResponsesTest3 = Expect<
+  /**
+   * @name ServerInferResponsesUndefinedStatusCode
+   * Expect ServerInferResponses to return unknown body for all endpoints
+   * when filtering by a status code (401) that is not defined in any endpoint
+   */
+  type ServerInferResponsesUndefinedStatusCode = ServerInferResponses<
+    typeof contract,
+    401
+  >;
+  type TestServerInferResponsesUndefinedStatusCode = Expect<
     Equal<
-      ServerInferResponses<typeof contract, 401>,
+      ServerInferResponsesUndefinedStatusCode,
       {
         getPost: {
           status: 401;
@@ -300,13 +345,19 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferResponsesErrorsTest = Expect<
+  /**
+   * @name ServerInferResponsesErrorStatusCodes
+   * Expect ServerInferResponses to filter responses to only include error status codes,
+   * showing defined error responses and unknown for undefined error codes
+   */
+  type ServerInferResponsesErrorStatusCodes = ServerInferResponses<
+    typeof contractStrict,
+    ErrorHttpStatusCode,
+    'ignore'
+  >;
+  type TestServerInferResponsesErrorStatusCodes = Expect<
     Equal<
-      ServerInferResponses<
-        typeof contractStrict,
-        ErrorHttpStatusCode,
-        'ignore'
-      >,
+      ServerInferResponsesErrorStatusCodes,
       {
         getPost:
           | { status: 404; body: { message: string } }
@@ -327,9 +378,19 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferResponsesSuccessForceTest = Expect<
+  /**
+   * @name ServerInferResponsesSuccessStatusCodesForced
+   * Expect ServerInferResponses to only include successful status codes when forced,
+   * filtering out error responses and unknown status codes
+   */
+  type ServerInferResponsesSuccessStatusCodesForced = ServerInferResponses<
+    typeof contract,
+    SuccessfulHttpStatusCode,
+    'force'
+  >;
+  type TestServerInferResponsesSuccessStatusCodesForced = Expect<
     Equal<
-      ServerInferResponses<typeof contract, SuccessfulHttpStatusCode, 'force'>,
+      ServerInferResponsesSuccessStatusCodesForced,
       {
         getPost: {
           status: 200;
@@ -353,9 +414,15 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ClientInferResponsesTest = Expect<
+  /**
+   * @name ClientInferResponsesWithHeaders
+   * Expect ClientInferResponses to include Headers object in all response types,
+   * distinguishing client-side responses from server-side responses
+   */
+  type ClientInferResponsesWithHeaders = ClientInferResponses<typeof contract>;
+  type TestClientInferResponsesWithHeaders = Expect<
     Equal<
-      ClientInferResponses<typeof contract>,
+      ClientInferResponsesWithHeaders,
       {
         getPost:
           | {
@@ -422,16 +489,34 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferResponseBodyTest = Expect<
+  /**
+   * @name ServerInferResponseBodySpecificEndpoint
+   * Expect ServerInferResponseBody to extract the response body type for a specific endpoint and status code,
+   * including optional properties from Zod defaults
+   */
+  type ServerInferResponseBodySpecificEndpoint = ServerInferResponseBody<
+    typeof contract.getPost,
+    200
+  >;
+  type TestServerInferResponseBodySpecificEndpoint = Expect<
     Equal<
-      ServerInferResponseBody<typeof contract.getPost, 200>,
+      ServerInferResponseBodySpecificEndpoint,
       { title?: string | undefined; id: number; content: string }
     >
   >;
 
-  type ClientInferResponseBodyTest = Expect<
+  /**
+   * @name ClientInferResponseBodySpecificEndpoint
+   * Expect ClientInferResponseBody to extract the response body type for a specific endpoint and status code,
+   * with required properties (no optional from Zod defaults on client side)
+   */
+  type ClientInferResponseBodySpecificEndpoint = ClientInferResponseBody<
+    typeof contract.getPost,
+    200
+  >;
+  type TestClientInferResponseBodySpecificEndpoint = Expect<
     Equal<
-      ClientInferResponseBody<typeof contract.getPost, 200>,
+      ClientInferResponseBodySpecificEndpoint,
       { title: string; id: number; content: string }
     >
   >;
@@ -450,16 +535,28 @@ it('type inference helpers', () => {
     },
   });
 
-  type ClientInferResponseBodyCommonResponsesTest = Expect<
-    Equal<
-      ClientInferResponseBody<typeof contractWithCommonErrors.get, 400>,
-      { message: string }
-    >
+  /**
+   * @name ClientInferResponseBodyWithCommonResponses
+   * Expect ClientInferResponseBody to work with common response definitions,
+   * extracting the correct body type from shared response schemas
+   */
+  type ClientInferResponseBodyWithCommonResponses = ClientInferResponseBody<
+    typeof contractWithCommonErrors.get,
+    400
+  >;
+  type TestClientInferResponseBodyWithCommonResponses = Expect<
+    Equal<ClientInferResponseBodyWithCommonResponses, { message: string }>
   >;
 
-  type ServerInferRequestTest = Expect<
+  /**
+   * @name ServerInferRequestWithTransforms
+   * Expect ServerInferRequest to include transformed types for path params and headers,
+   * showing how Zod transforms affect the inferred server-side types
+   */
+  type ServerInferRequestWithTransforms = ServerInferRequest<typeof contract>;
+  type TestServerInferRequestWithTransforms = Expect<
     Equal<
-      ServerInferRequest<typeof contract>,
+      ServerInferRequestWithTransforms,
       {
         getPost: {
           query: { includeComments: boolean };
@@ -488,16 +585,22 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ServerInferRequestOverrideServerHeadersTest = Expect<
+  /**
+   * @name ServerInferRequestWithOverriddenHeaders
+   * Expect ServerInferRequest to merge contract headers with overridden server headers,
+   * allowing server-specific header types to be injected
+   */
+  type ServerInferRequestWithOverriddenHeaders = ServerInferRequest<
+    typeof contract,
+    {
+      authorization: string | undefined;
+      age: string | undefined;
+      'content-type': string | undefined;
+    }
+  >;
+  type TestServerInferRequestWithOverriddenHeaders = Expect<
     Equal<
-      ServerInferRequest<
-        typeof contract,
-        {
-          authorization: string | undefined;
-          age: string | undefined;
-          'content-type': string | undefined;
-        }
-      >,
+      ServerInferRequestWithOverriddenHeaders,
       {
         getPost: {
           query: { includeComments: boolean };
@@ -539,9 +642,17 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ClientInferRequestTest = Expect<
+  /**
+   * @name ClientInferRequestWithClientOptions
+   * Expect ClientInferRequest to include client-specific options like fetchOptions and extraHeaders,
+   * showing the difference between client and server request inference
+   */
+  type ClientInferRequestWithClientOptions = ClientInferRequest<
+    typeof contract
+  >;
+  type TestClientInferRequestWithClientOptions = Expect<
     Equal<
-      ClientInferRequest<typeof contract>,
+      ClientInferRequestWithClientOptions,
       {
         getPost: {
           query: { includeComments?: boolean | undefined };
@@ -550,7 +661,7 @@ it('type inference helpers', () => {
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
-          } & Record<string, string | undefined>;
+          } & Record<string, string>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
           cache?: FetchOptions['cache'];
@@ -561,7 +672,7 @@ it('type inference helpers', () => {
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
-          } & Record<string, string | undefined>;
+          } & Record<string, string>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
           cache?: FetchOptions['cache'];
@@ -577,7 +688,7 @@ it('type inference helpers', () => {
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
-          } & Record<string, string | undefined>;
+          } & Record<string, string>;
           fetchOptions?: FetchOptions;
           overrideClientOptions?: Partial<OverrideableClientArgs>;
           cache?: FetchOptions['cache'];
@@ -594,7 +705,7 @@ it('type inference helpers', () => {
               authorization?: undefined;
               'pagination-page'?: undefined;
               age?: undefined;
-            } & Record<string, string | undefined>;
+            } & Record<string, string>;
             fetchOptions?: FetchOptions;
             overrideClientOptions?: Partial<OverrideableClientArgs>;
             cache?: FetchOptions['cache'];
@@ -604,70 +715,114 @@ it('type inference helpers', () => {
     >
   >;
 
-  type ClientInferRequestHeaderlessTest = Expect<
+  /**
+   * @name ClientInferRequestWithoutBaseHeaders
+   * Expect ClientInferRequest to only include extraHeaders when no base headers are defined,
+   * demonstrating how base headers affect the client request interface
+   */
+  type ClientInferRequestWithoutBaseHeaders = Omit<
+    ClientInferRequest<typeof headerlessContract>['getPost'],
+    'next'
+  >;
+  type TestClientInferRequestWithoutBaseHeaders = Expect<
     Equal<
-      ClientInferRequest<typeof headerlessContract>,
+      ClientInferRequestWithoutBaseHeaders,
       {
-        getPost: {
-          query: { includeComments?: boolean | undefined };
-          params: { id: string };
-          extraHeaders?: Record<string, string | undefined>;
-          fetchOptions?: FetchOptions;
-          overrideClientOptions?: Partial<OverrideableClientArgs>;
-          cache?: FetchOptions['cache'];
-        };
+        query: { includeComments?: boolean | undefined };
+        params: { id: string };
+        extraHeaders?: Record<string, string>;
+        fetchOptions?: FetchOptions;
+        overrideClientOptions?: Partial<OverrideableClientArgs>;
+        cache?: FetchOptions['cache'];
       }
     >
   >;
 
-  type InferResponseDefinedStatusCodesTests = [
-    Expect<
-      Equal<InferResponseDefinedStatusCodes<typeof contract.getPost>, 200 | 404>
-    >,
-    Expect<
-      Equal<
-        InferResponseDefinedStatusCodes<
-          typeof contract.getPost,
-          SuccessfulHttpStatusCode
-        >,
-        200
-      >
-    >,
-    Expect<
-      Equal<
-        InferResponseDefinedStatusCodes<
-          typeof contract.getPost,
-          ErrorHttpStatusCode
-        >,
-        404
-      >
-    >,
-  ];
+  /**
+   * @name InferResponseDefinedStatusCodesBasic
+   * Expect InferResponseDefinedStatusCodes to extract all explicitly defined status codes
+   * from an endpoint's response definitions
+   */
+  type InferResponseDefinedStatusCodesBasic = InferResponseDefinedStatusCodes<
+    typeof contract.getPost
+  >;
+  type TestInferResponseDefinedStatusCodesBasic = Expect<
+    Equal<InferResponseDefinedStatusCodesBasic, 200 | 404>
+  >;
 
-  type InferResponseUndefinedStatusCodesTests = [
-    Expect<
-      Equal<
-        InferResponseUndefinedStatusCodes<typeof contract.getPost>,
-        Exclude<HTTPStatusCode, 200 | 404>
-      >
-    >,
-    Expect<
-      Equal<
-        InferResponseUndefinedStatusCodes<
-          typeof contract.getPost,
-          SuccessfulHttpStatusCode
-        >,
-        Exclude<SuccessfulHttpStatusCode, 200>
-      >
-    >,
-    Expect<
-      Equal<
-        InferResponseUndefinedStatusCodes<
-          typeof contract.getPost,
-          ErrorHttpStatusCode
-        >,
-        Exclude<ErrorHttpStatusCode, 404>
-      >
-    >,
-  ];
+  /**
+   * @name InferResponseDefinedStatusCodesFiltered
+   * Expect InferResponseDefinedStatusCodes to filter defined status codes by a specific type,
+   * only returning successful status codes that are explicitly defined
+   */
+  type InferResponseDefinedStatusCodesFiltered =
+    InferResponseDefinedStatusCodes<
+      typeof contract.getPost,
+      SuccessfulHttpStatusCode
+    >;
+  type TestInferResponseDefinedStatusCodesFiltered = Expect<
+    Equal<InferResponseDefinedStatusCodesFiltered, 200>
+  >;
+
+  /**
+   * @name InferResponseDefinedStatusCodesErrorsOnly
+   * Expect InferResponseDefinedStatusCodes to filter defined status codes by error type,
+   * only returning error status codes that are explicitly defined
+   */
+  type InferResponseDefinedStatusCodesErrorsOnly =
+    InferResponseDefinedStatusCodes<
+      typeof contract.getPost,
+      ErrorHttpStatusCode
+    >;
+  type TestInferResponseDefinedStatusCodesErrorsOnly = Expect<
+    Equal<InferResponseDefinedStatusCodesErrorsOnly, 404>
+  >;
+
+  /**
+   * @name InferResponseUndefinedStatusCodesBasic
+   * Expect InferResponseUndefinedStatusCodes to extract all status codes that are NOT explicitly defined,
+   * representing the complement of defined status codes
+   */
+  type InferResponseUndefinedStatusCodesBasic =
+    InferResponseUndefinedStatusCodes<typeof contract.getPost>;
+  type TestInferResponseUndefinedStatusCodesBasic = Expect<
+    Equal<
+      InferResponseUndefinedStatusCodesBasic,
+      Exclude<HTTPStatusCode, 200 | 404>
+    >
+  >;
+
+  /**
+   * @name InferResponseUndefinedStatusCodesSuccessFiltered
+   * Expect InferResponseUndefinedStatusCodes to extract undefined successful status codes,
+   * showing which successful codes are not explicitly defined in the endpoint
+   */
+  type InferResponseUndefinedStatusCodesSuccessFiltered =
+    InferResponseUndefinedStatusCodes<
+      typeof contract.getPost,
+      SuccessfulHttpStatusCode
+    >;
+  type TestInferResponseUndefinedStatusCodesSuccessFiltered = Expect<
+    Equal<
+      InferResponseUndefinedStatusCodesSuccessFiltered,
+      Exclude<SuccessfulHttpStatusCode, 200>
+    >
+  >;
+
+  /**
+   * @name InferResponseUndefinedStatusCodesErrorFiltered
+   * Expect InferResponseUndefinedStatusCodes to extract undefined error status codes,
+   * showing which error codes are not explicitly defined in the endpoint
+   */
+  type InferResponseUndefinedStatusCodesErrorFiltered =
+    InferResponseUndefinedStatusCodes<
+      typeof contract.getPost,
+      ErrorHttpStatusCode
+    >;
+  type TestInferResponseUndefinedStatusCodesErrorFiltered = Expect<
+    Equal<
+      InferResponseUndefinedStatusCodesErrorFiltered,
+      Exclude<ErrorHttpStatusCode, 404>
+    >
+  >;
 });

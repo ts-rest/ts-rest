@@ -8,12 +8,6 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "express": "^4.0.0 || ^5.0.0",
-    "zod": "^3.22.3"
-  },
-  "peerDependenciesMeta": {
-    "zod": {
-      "optional": true
-    }
+    "express": "^4.0.0 || ^5.0.0"
   }
 }

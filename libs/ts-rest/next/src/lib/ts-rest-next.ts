@@ -3,7 +3,7 @@ import {
   AppRoute,
   AppRouteQuery,
   AppRouter,
-  checkZodSchema,
+  validateIfSchema,
   HTTPStatusCode,
   isAppRoute,
   isAppRouteNoBody,
@@ -14,22 +14,41 @@ import {
   TsRestResponseError,
   validateResponse,
   ZodErrorSchema,
+  parseAsStandardSchema,
+  areAllSchemasLegacyZod,
+  StandardSchemaError,
+  validateMultiSchemaObject,
 } from '@ts-rest/core';
 import { getPathParamsFromArray } from './path-utils';
-import { z } from 'zod';
+import { type ZodError } from 'zod';
 
-export class RequestValidationError extends Error {
+export class TsRestRequestValidationError extends Error {
   constructor(
-    public pathParams: z.ZodError | null,
-    public headers: z.ZodError | null,
-    public query: z.ZodError | null,
-    public body: z.ZodError | null,
+    public pathParams: StandardSchemaError | null,
+    public headers: StandardSchemaError | null,
+    public query: StandardSchemaError | null,
+    public body: StandardSchemaError | null,
   ) {
     super('[ts-rest] request validation failed');
   }
 }
 
-export const RequestValidationErrorSchema = ZodErrorSchema;
+/**
+ * @deprecated use TsRestRequestValidationError instead, this will be removed in v4
+ */
+export class RequestValidationError extends Error {
+  constructor(
+    public pathParams: ZodError | null,
+    public headers: ZodError | null,
+    public query: ZodError | null,
+    public body: ZodError | null,
+  ) {
+    super('[ts-rest] request validation failed');
+  }
+}
+
+export const RequestValidationErrorSchema: typeof ZodErrorSchema =
+  ZodErrorSchema;
 
 type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {
@@ -292,51 +311,68 @@ const handlerFactory = (
       return;
     }
 
-    const pathParamsResult = checkZodSchema(pathParams, route.pathParams, {
+    const pathParamsResult = validateIfSchema(pathParams, route.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = checkZodSchema(req.headers, route.headers, {
-      passThroughExtraKeys: true,
-    });
+    const headersResult = validateMultiSchemaObject(req.headers, route.headers);
 
     query = jsonQuery
       ? parseJsonQueryObject(query as Record<string, string>)
       : req.query;
 
-    const queryResult = checkZodSchema(query, route.query);
+    const queryResult = validateIfSchema(query, route.query);
 
-    const bodyResult = checkZodSchema(req.body, route.body);
+    const bodyResult = validateIfSchema(
+      req.body,
+      'body' in route ? route.body : null,
+    );
 
     try {
       if (
-        !pathParamsResult.success ||
-        !headersResult.success ||
-        !queryResult.success ||
-        !bodyResult.success
+        pathParamsResult.error ||
+        headersResult.error ||
+        queryResult.error ||
+        bodyResult.error
       ) {
         if (throwRequestValidation) {
-          throw new RequestValidationError(
-            pathParamsResult.success ? null : pathParamsResult.error,
-            headersResult.success ? null : headersResult.error,
-            queryResult.success ? null : queryResult.error,
-            bodyResult.success ? null : bodyResult.error,
-          );
+          const useLegacyZod = areAllSchemasLegacyZod([
+            ...pathParamsResult.schemasUsed,
+            ...headersResult.schemasUsed,
+            ...queryResult.schemasUsed,
+            ...bodyResult.schemasUsed,
+          ]);
+
+          if (useLegacyZod) {
+            throw new RequestValidationError(
+              (pathParamsResult.error as ZodError) || null,
+              (headersResult.error as ZodError) || null,
+              (queryResult.error as ZodError) || null,
+              (bodyResult.error as ZodError) || null,
+            );
+          } else {
+            throw new TsRestRequestValidationError(
+              (pathParamsResult.error as StandardSchemaError) || null,
+              (headersResult.error as StandardSchemaError) || null,
+              (queryResult.error as StandardSchemaError) || null,
+              (bodyResult.error as StandardSchemaError) || null,
+            );
+          }
         }
 
-        if (!pathParamsResult.success) {
+        if (pathParamsResult.error) {
           res.status(400).json(pathParamsResult.error);
           return;
         }
-        if (!headersResult.success) {
+        if (headersResult.error) {
           res.status(400).send(headersResult.error);
           return;
         }
-        if (!queryResult.success) {
+        if (queryResult.error) {
           res.status(400).json(queryResult.error);
           return;
         }
-        if (!bodyResult.success) {
+        if (bodyResult.error) {
           res.status(400).json(bodyResult.error);
           return;
         }
@@ -345,10 +381,10 @@ const handlerFactory = (
       let result: { status: HTTPStatusCode; body: any };
       try {
         result = await route.implementation({
-          body: bodyResult.data,
-          query: queryResult.data,
-          params: pathParamsResult.data,
-          headers: headersResult.data,
+          body: bodyResult.value,
+          query: queryResult.value,
+          params: pathParamsResult.value,
+          headers: headersResult.value,
           req,
           res,
         });

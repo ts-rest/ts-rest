@@ -24,27 +24,29 @@ import {
 import {
   AppRoute,
   AppRouter,
-  checkZodSchema,
+  areAllSchemasLegacyZod,
   isAppRoute,
   isAppRouteOtherResponse,
+  parseAsStandardSchema,
   parseJsonQueryObject,
   ServerInferResponses,
+  StandardSchemaError,
   TsRestResponseError,
-  ZodErrorSchema,
+  validateMultiSchemaObject,
+  validateIfSchema,
 } from '@ts-rest/core';
 import {
   TsRestAppRouteMetadataKey,
   TsRestOptionsMetadataKey,
 } from './constants';
 import { TsRestRequestShape } from './ts-rest-request.decorator';
-import { z } from 'zod';
 import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
 import {
   evaluateTsRestOptions,
   MaybeTsRestOptions,
   TsRestOptions,
 } from './ts-rest-options';
-import { PATH_METADATA } from '@nestjs/common/constants';
+import { type ZodError } from 'zod';
 
 type TsRestAppRouteMetadata = {
   appRoute: AppRoute;
@@ -57,12 +59,12 @@ type TsRestAppRouteMetadata = {
   routeKey: string | null;
 };
 
-export class RequestValidationError extends BadRequestException {
+export class TsRestRequestValidationError extends BadRequestException {
   constructor(
-    public pathParams: z.ZodError | null,
-    public headers: z.ZodError | null,
-    public query: z.ZodError | null,
-    public body: z.ZodError | null,
+    public pathParams: StandardSchemaError | null,
+    public headers: StandardSchemaError | null,
+    public query: StandardSchemaError | null,
+    public body: StandardSchemaError | null,
   ) {
     super({
       paramsResult: pathParams,
@@ -73,17 +75,47 @@ export class RequestValidationError extends BadRequestException {
   }
 }
 
-export const RequestValidationErrorSchema = z.object({
-  paramsResult: ZodErrorSchema.nullable(),
-  headersResult: ZodErrorSchema.nullable(),
-  queryResult: ZodErrorSchema.nullable(),
-  bodyResult: ZodErrorSchema.nullable(),
-});
+export class RequestValidationError extends BadRequestException {
+  constructor(
+    public pathParams: ZodError | null,
+    public headers: ZodError | null,
+    public query: ZodError | null,
+    public body: ZodError | null,
+  ) {
+    super({
+      paramsResult: pathParams,
+      headersResult: headers,
+      queryResult: query,
+      bodyResult: body,
+    });
+  }
+}
 
+export { RequestValidationErrorSchemaForNest as RequestValidationErrorSchema } from '@ts-rest/core';
+
+/**
+ * Error emitted when response validation fails (when using a standard schema validator)
+ *
+ * This is the new standard
+ */
+export class TsRestResponseValidationError extends InternalServerErrorException {
+  constructor(
+    public appRoute: AppRoute,
+    public error: StandardSchemaError,
+  ) {
+    super(
+      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`,
+    );
+  }
+}
+
+/**
+ * @deprecated use TsRestResponseValidationError instead, this will be removed in v4
+ */
 export class ResponseValidationError extends InternalServerErrorException {
   constructor(
     public appRoute: AppRoute,
-    public error: z.ZodError,
+    public error: ZodError,
   ) {
     super(
       `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`,
@@ -330,44 +362,61 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
 
     const options = evaluateTsRestOptions(this.globalOptions, ctx);
 
-    const paramsResult = checkZodSchema(req.params, appRoute.pathParams, {
+    const paramsResult = validateIfSchema(req.params, appRoute.pathParams, {
       passThroughExtraKeys: true,
     });
 
-    const headersResult = checkZodSchema(req.headers, appRoute.headers, {
-      passThroughExtraKeys: true,
-    });
+    const headersResult = validateMultiSchemaObject(
+      req.headers,
+      appRoute.headers,
+    );
 
     const query = options.jsonQuery
       ? parseJsonQueryObject(req.query as Record<string, string>)
       : req.query;
 
-    const queryResult = checkZodSchema(query, appRoute.query);
+    const queryResult = validateIfSchema(query, appRoute.query);
 
-    const bodyResult = checkZodSchema(
+    const bodyResult = validateIfSchema(
       req.body,
       'body' in appRoute ? appRoute.body : null,
     );
 
     const isHeadersInvalid =
-      !headersResult.success && options.validateRequestHeaders;
+      headersResult.error && options.validateRequestHeaders;
 
-    const isQueryInvalid = !queryResult.success && options.validateRequestQuery;
+    const isQueryInvalid = queryResult.error && options.validateRequestQuery;
 
-    const isBodyInvalid = !bodyResult.success && options.validateRequestBody;
+    const isBodyInvalid = bodyResult.error && options.validateRequestBody;
 
     if (
-      !paramsResult.success ||
+      paramsResult.error ||
       isHeadersInvalid ||
       isQueryInvalid ||
       isBodyInvalid
     ) {
-      throw new RequestValidationError(
-        !paramsResult.success ? paramsResult.error : null,
-        isHeadersInvalid ? headersResult.error : null,
-        isQueryInvalid ? queryResult.error : null,
-        isBodyInvalid ? bodyResult.error : null,
-      );
+      const useLegacyZod = areAllSchemasLegacyZod([
+        ...paramsResult.schemasUsed,
+        ...queryResult.schemasUsed,
+        ...bodyResult.schemasUsed,
+        ...headersResult.schemasUsed,
+      ]);
+
+      if (useLegacyZod) {
+        throw new RequestValidationError(
+          (paramsResult.error as ZodError) || null,
+          (headersResult.error as ZodError) || null,
+          (queryResult.error as ZodError) || null,
+          (bodyResult.error as ZodError) || null,
+        );
+      } else {
+        throw new TsRestRequestValidationError(
+          (paramsResult.error as StandardSchemaError) || null,
+          (headersResult.error as StandardSchemaError) || null,
+          (queryResult.error as StandardSchemaError) || null,
+          (bodyResult.error as StandardSchemaError) || null,
+        );
+      }
     }
 
     return next.handle().pipe(
@@ -375,10 +424,10 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
         let result = null;
         try {
           const res = {
-            params: paramsResult.data,
-            query: queryResult.success ? queryResult.data : req.query,
-            body: bodyResult.success ? bodyResult.data : req.body,
-            headers: headersResult.success ? headersResult.data : req.headers,
+            params: paramsResult.value,
+            query: queryResult.value || req.query,
+            body: bodyResult.value || req.body,
+            headers: headersResult.value || req.headers,
           };
 
           /**
@@ -451,19 +500,28 @@ const validateResponse = (
     );
   }
 
-  const responseValidation = checkZodSchema(
-    body,
+  const responseStandardSchema = parseAsStandardSchema(
     appRoute.responses[response.status],
   );
+  const responseValidation = validateIfSchema(body, responseStandardSchema);
 
-  if (!responseValidation.success) {
+  if (responseValidation.error) {
     const { error } = responseValidation;
 
-    throw new ResponseValidationError(appRoute, error);
+    const isZodSchema = areAllSchemasLegacyZod([responseStandardSchema]);
+
+    if (isZodSchema) {
+      throw new ResponseValidationError(appRoute, error as ZodError);
+    } else {
+      throw new TsRestResponseValidationError(
+        appRoute,
+        error as StandardSchemaError,
+      );
+    }
   }
 
   return {
     status: response.status,
-    body: responseValidation.data,
+    body: responseValidation.value,
   };
 };

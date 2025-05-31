@@ -1,8 +1,8 @@
-import { initContract } from '@ts-rest/core';
+import { initContract, type AppRoute } from '@ts-rest/core';
 import { z } from 'zod';
 import { generateOpenApi } from './ts-rest-open-api';
 import { extendApi } from '@anatine/zod-openapi';
-import { SecurityRequirementObject } from 'openapi3-ts';
+import { SecurityRequirementObject, type OperationObject } from 'openapi3-ts';
 
 const c = initContract();
 
@@ -118,7 +118,6 @@ const router = c.router({
     path: '/media-examples',
     query: z.object({
       foo: extendApi(z.string(), {
-        // this will only be added when jsonQuery is enabled
         mediaExamples: {
           one: { value: 'foo' },
           two: { value: 'bar' },
@@ -176,6 +175,10 @@ const expectedApiDoc = {
             required: true,
             schema: {
               type: 'string',
+            },
+            examples: {
+              one: { value: 'foo' },
+              two: { value: 'bar' },
             },
           },
         ],

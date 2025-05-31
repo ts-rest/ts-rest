@@ -1,7 +1,7 @@
 import {
   AppRoute,
   AppRouter,
-  checkZodSchema,
+  validateIfSchema,
   HTTPStatusCode,
   isAppRoute,
   isAppRouteNoBody,
@@ -9,6 +9,8 @@ import {
   parseJsonQueryObject,
   TsRestResponseError,
   validateResponse,
+  parseAsStandardSchema,
+  validateMultiSchemaObject,
 } from '@ts-rest/core';
 import {
   IRouter,
@@ -87,39 +89,40 @@ const recursivelyApplyExpressRouter = ({
 const validateRequest = (
   req: Request,
   res: Response,
-  schema: AppRoute,
+  appRoute: AppRoute,
   options: TsRestExpressOptions<AppRouter>,
 ) => {
-  const paramsResult = checkZodSchema(req.params, schema.pathParams, {
+  const paramsResult = validateIfSchema(req.params, appRoute.pathParams, {
     passThroughExtraKeys: true,
   });
 
-  const headersResult = checkZodSchema(req.headers, schema.headers, {
-    passThroughExtraKeys: true,
-  });
+  const headersResult = validateMultiSchemaObject(
+    req.headers,
+    appRoute.headers,
+  );
 
   const query = options.jsonQuery
     ? parseJsonQueryObject(req.query as Record<string, string>)
     : req.query;
 
-  const queryResult = checkZodSchema(query, schema.query);
+  const queryResult = validateIfSchema(query, appRoute.query);
 
-  const bodyResult = checkZodSchema(
+  const bodyResult = validateIfSchema(
     req.body,
-    'body' in schema ? schema.body : null,
+    'body' in appRoute ? appRoute.body : null,
   );
 
   if (
-    !paramsResult.success ||
-    !headersResult.success ||
-    !queryResult.success ||
-    !bodyResult.success
+    paramsResult.error ||
+    headersResult.error ||
+    queryResult.error ||
+    bodyResult.error
   ) {
     throw new RequestValidationError(
-      !paramsResult.success ? paramsResult.error : null,
-      !headersResult.success ? headersResult.error : null,
-      !queryResult.success ? queryResult.error : null,
-      !bodyResult.success ? bodyResult.error : null,
+      paramsResult.error || null,
+      headersResult.error || null,
+      queryResult.error || null,
+      bodyResult.error || null,
     );
   }
 
@@ -165,10 +168,10 @@ const initializeExpressRoute = ({
       let result: { status: HTTPStatusCode; body: any };
       try {
         result = await handler({
-          params: validationResults.paramsResult.data as any,
-          body: validationResults.bodyResult.data as any,
-          query: validationResults.queryResult.data,
-          headers: validationResults.headersResult.data as any,
+          params: validationResults.paramsResult.value as any,
+          body: validationResults.bodyResult.value as any,
+          query: validationResults.queryResult.value,
+          headers: validationResults.headersResult.value as any,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           files: req.files,

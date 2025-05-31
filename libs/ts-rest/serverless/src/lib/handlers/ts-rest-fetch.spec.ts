@@ -354,9 +354,10 @@ describe('fetchRequestHandler', () => {
     expect(response.headers).toEqual(expectedResponse.headers);
     const body = await response.json();
     expect(body).toEqual(await expectedResponse.json());
-    expect(() => {
-      RequestValidationErrorSchema.parse(body);
-    }).not.toThrowError();
+    expect(RequestValidationErrorSchema.safeParse(body)).toStrictEqual({
+      data: expect.any(Object),
+      success: true,
+    });
   });
 
   it('should handle 500 response', async () => {

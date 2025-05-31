@@ -1,7 +1,7 @@
 import {
   AppRoute,
   AppRouter,
-  checkZodSchema,
+  validateIfSchema,
   FlattenAppRouter,
   HTTPStatusCode,
   isAppRouteNoBody,
@@ -11,28 +11,24 @@ import {
   ServerInferResponses,
   TsRestResponseError,
   validateResponse,
-  ZodErrorSchema,
+  StandardSchemaError,
+  validateMultiSchemaObject,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
-import { z } from 'zod';
+import { type ZodError } from 'zod';
 
 export class RequestValidationError extends Error {
   constructor(
-    public pathParams: z.ZodError | null,
-    public headers: z.ZodError | null,
-    public query: z.ZodError | null,
-    public body: z.ZodError | null,
+    public pathParams: ZodError | StandardSchemaError | null,
+    public headers: ZodError | StandardSchemaError | null,
+    public query: ZodError | StandardSchemaError | null,
+    public body: ZodError | StandardSchemaError | null,
   ) {
     super('[ts-rest] request validation failed');
   }
 }
 
-export const RequestValidationErrorSchema = z.object({
-  pathParameterErrors: ZodErrorSchema.nullable(),
-  headerErrors: ZodErrorSchema.nullable(),
-  queryParameterErrors: ZodErrorSchema.nullable(),
-  bodyErrors: ZodErrorSchema.nullable(),
-});
+export { RequestValidationErrorSchemaWithoutMessage as RequestValidationErrorSchema } from '@ts-rest/core';
 
 type FastifyContextConfig<T extends AppRouter | AppRoute> = {
   tsRestRoute: T extends AppRoute ? T : FlattenAppRouter<T>;
@@ -141,40 +137,41 @@ const isAppRouteImplementation = <TRoute extends AppRoute>(
 const validateRequest = (
   request: fastify.FastifyRequest,
   reply: fastify.FastifyReply,
-  schema: AppRoute,
+  appRoute: AppRoute,
   options: BaseRegisterRouterOptions,
 ) => {
-  const paramsResult = checkZodSchema(request.params, schema.pathParams, {
+  const paramsResult = validateIfSchema(request.params, appRoute.pathParams, {
     passThroughExtraKeys: true,
   });
 
-  const headersResult = checkZodSchema(request.headers, schema.headers, {
-    passThroughExtraKeys: true,
-  });
+  const headersResult = validateMultiSchemaObject(
+    request.headers,
+    appRoute.headers,
+  );
 
-  const queryResult = checkZodSchema(
+  const queryResult = validateIfSchema(
     options.jsonQuery
       ? parseJsonQueryObject(request.query as Record<string, string>)
       : request.query,
-    schema.query,
+    appRoute.query,
   );
 
-  const bodyResult = checkZodSchema(
+  const bodyResult = validateIfSchema(
     request.body,
-    'body' in schema ? schema.body : null,
+    'body' in appRoute ? appRoute.body : null,
   );
 
   if (
-    !paramsResult.success ||
-    !headersResult.success ||
-    !queryResult.success ||
-    !bodyResult.success
+    paramsResult.error ||
+    headersResult.error ||
+    queryResult.error ||
+    bodyResult.error
   ) {
     throw new RequestValidationError(
-      paramsResult.success ? null : paramsResult.error,
-      headersResult.success ? null : headersResult.error,
-      queryResult.success ? null : queryResult.error,
-      bodyResult.success ? null : bodyResult.error,
+      paramsResult.error || null,
+      headersResult.error || null,
+      queryResult.error || null,
+      bodyResult.error || null,
     );
   }
 
@@ -358,13 +355,13 @@ const registerRoute = <TAppRoute extends AppRoute>(
       try {
         result = await handler({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          params: validationResults.paramsResult.data as any,
-          query: validationResults.queryResult.data,
+          params: validationResults.paramsResult.value as any,
+          query: validationResults.queryResult.value,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          headers: validationResults.headersResult.data as any,
+          headers: validationResults.headersResult.value as any,
           request,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          body: validationResults.bodyResult.data as any,
+          body: validationResults.bodyResult.value as any,
           reply,
           appRoute,
         });

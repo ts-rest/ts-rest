@@ -21,12 +21,6 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@tanstack/vue-query": "^4.0.0",
-    "zod": "^3.22.3"
-  },
-  "peerDependenciesMeta": {
-    "zod": {
-      "optional": true
-    }
+    "@tanstack/vue-query": "^4.0.0"
   }
 }

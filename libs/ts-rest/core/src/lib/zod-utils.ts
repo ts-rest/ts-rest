@@ -1,9 +1,13 @@
 import { z } from 'zod';
 
+// TODO: remove in next major version
+/** @deprecated use isStandardSchema */
 export const isZodType = (obj: unknown): obj is z.ZodTypeAny => {
   return typeof (obj as z.ZodTypeAny)?.safeParse === 'function';
 };
 
+// TODO: remove in next major version
+/** @deprecated */
 export const isZodObject = (
   obj: unknown,
 ): obj is z.AnyZodObject | z.ZodEffects<z.AnyZodObject> => {
@@ -18,10 +22,14 @@ export const isZodObject = (
   return false;
 };
 
+// TODO: remove in next major version
+/** @deprecated */
 export const isZodObjectStrict = (obj: unknown): obj is z.AnyZodObject => {
   return typeof (obj as z.AnyZodObject)?.passthrough === 'function';
 };
 
+// TODO: remove in next major version
+/** @deprecated */
 export const extractZodObjectShape = <
   T extends z.AnyZodObject | z.ZodEffects<z.ZodTypeAny>,
 >(
@@ -38,6 +46,13 @@ export const extractZodObjectShape = <
   return obj.shape;
 };
 
+/**
+ * @deprecated use mergeStandardSchema
+ *
+ * This exists so that on zod < v3.25.0 we dont have breaking changes
+ *
+ * Remove in next major version
+ */
 export const zodMerge = (objectA: unknown, objectB: unknown) => {
   if (isZodObjectStrict(objectA)) {
     if (isZodObjectStrict(objectB)) {
@@ -54,45 +69,9 @@ export const zodMerge = (objectA: unknown, objectB: unknown) => {
   return Object.assign({}, objectA, objectB);
 };
 
-export const checkZodSchema = (
-  data: unknown,
-  schema: unknown,
-  { passThroughExtraKeys = false } = {},
-):
-  | {
-      success: true;
-      data: unknown;
-    }
-  | {
-      success: false;
-      error: z.ZodError;
-    } => {
-  if (isZodType(schema)) {
-    const result = schema.safeParse(data);
-
-    if (result.success) {
-      return {
-        success: true,
-        data:
-          passThroughExtraKeys && typeof data === 'object'
-            ? { ...data, ...result.data }
-            : result.data,
-      };
-    }
-
-    return {
-      success: false,
-      error: result.error,
-    };
-  }
-
-  return {
-    success: true,
-    data: data,
-  };
-};
-
 // Convert a ZodError to a plain object because ZodError extends Error and causes problems with NestJS
+// TODO: remove in next major version
+/** @deprecated use validationErrorResponse */
 export const zodErrorResponse = (
   error: z.ZodError,
 ): Pick<z.ZodError, 'name' | 'issues'> => {
@@ -102,6 +81,8 @@ export const zodErrorResponse = (
   };
 };
 
+// TODO: remove in next major version
+/** @deprecated use ValidationErrorSchema */
 export const ZodErrorSchema = z.object({
   name: z.literal('ZodError'),
   issues: z.array(
