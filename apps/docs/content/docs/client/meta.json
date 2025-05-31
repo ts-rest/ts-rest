@@ -1,0 +1,4 @@
+{
+  "title": "Client",
+  "pages": ["fetch", "react-query-v4", "react-query-v5", "vue-query-v4"]
+}

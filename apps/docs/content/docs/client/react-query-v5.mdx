@@ -1,0 +1,567 @@
+---
+title: 'React Query (v5)'
+description: The React Query client provides a lightweight, type-safe way to make HTTP requests using your ts-rest contract.
+---
+
+Fully typed RPC-like client for React Query v5? Oh, yes!
+
+```tsx
+const {
+  data, // <- fully typed response data
+  error, // <- fully typed error data
+} = tsr.getPost.useQuery({
+  queryKey: ['posts'],
+  queryData: {
+    // <- fully typed request data
+    params: { id: '1' },
+  },
+  staleTime: 1000, // <- react-query options (optional)
+});
+```
+
+:::info
+
+This documentation is for React Query v5. If you are looking for the v4 docs, please click [here](/docs/react-query/v4).
+
+In order to use the React Query v5 version of `@ts-rest/react-query`, make sure you import `@ts-rest/react-query/v5` in your code and not `@ts-rest/react-query`.
+
+:::
+
+## Instructions
+
+### 1. Installation
+
+<InstallTabs packageName="@ts-rest/react-query @tanstack/react-query@5" />
+
+### 2. Setup React Query
+
+If you are not familiar enough with React Query, check out the [official `@tanstack/react-query` documentation](https://tanstack.com/query/v5/docs/framework/react/overview) to learn more about it and how to set it up.
+
+Before proceeding, make sure you set up your `QueryClientProvider` at the root of your application or layout.
+
+### 3. Initialize ts-rest React Query
+
+Import your contract, and pass it with the client options to the `initTsrReactQuery` function. The client options are the same as the ones you would pass to the `initClient` function in `@ts-rest/core`.
+
+```tsx
+import { initTsrReactQuery } from '@ts-rest/react-query/v5';
+import { getAccessToken } from '@some-auth-lib/sdk';
+import { contract } from './contract';
+
+export const tsr = initTsrReactQuery(contract, {
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {
+    'x-app-source': 'ts-rest',
+    'x-access-token': () => getAccessToken(),
+  },
+});
+```
+
+:::info
+
+`initTsrReactQuery` uses our fetch client under the hood, so you can configure it just as you would the fetch client, including passing a custom API fetcher.
+For more information, see the [fetch client documentation](/docs/core/fetch).
+
+:::
+
+### 4. Setup ts-rest Provider
+
+Add the `tsr.ReactQueryProvider` to your root component, just below the `QueryClientProvider`. It is important that it lives as a child of the `QueryClientProvider` so that ts-rest can access the query client.
+
+```tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
+import { tsr } from './tsr';
+
+const queryClient = new QueryClient();
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <tsr.ReactQueryProvider>{children}</tsr.ReactQueryProvider>
+    </QueryClientProvider>
+  );
+}
+```
+
+Now use the hooks from `tsr` in your components. The structure of the `tsr` container follows the same structure as your contract.
+
+## Complete Example
+
+```tsx
+import { tsr } from './tsr';
+
+const Posts = () => {
+  const tsrQueryClient = tsr.useQueryClient();
+
+  const { data, isPending } = tsr.posts.get.useQuery({ queryKey: ['posts'] });
+  const { mutate } = tsr.posts.create.useMutation({
+    onMutate: (newPost) => {
+      // get current posts, so we can reset back to it if the mutation fails
+      const lastGoodKnown = tsrQueryClient.posts.get.getQueryData(['posts']);
+
+      // optimistically update the cache with the new post
+      tsrQueryClient.posts.get.setQueryData(['posts'], (old) => ({
+        ...old,
+        body: [
+          ...old.body,
+          {
+            ...newPost.body,
+            id: `placeholder-${Date.now()}`,
+          },
+        ],
+      }));
+
+      // return the old posts to be stored in mutation context
+      return { lastGoodKnown };
+    },
+    onError: (error, newPost, context) => {
+      tsrQueryClient.posts.get.setQueryData(['posts'], context.lastGoodKnown);
+    },
+    onSettled: () => {
+      // trigger a refetch regardless if the mutation was successful or not
+      tsrQueryClient.invalidateQueries({ queryKey: ['posts'] });
+      //                 ^ QueryClient functions that do not consume or provide typed data are not wrapped by ts-rest
+      // and are provided at the root level only
+    },
+  });
+
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (data?.status !== 200) {
+    return <div>Error</div>;
+  }
+
+  return (
+    <div>
+      <ul>
+        {data.body.map((post) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+      <button onClick={() => mutate({ body: { title: 'Hello World' } })}>
+        Create Post
+      </button>
+    </div>
+  );
+};
+```
+
+All the hooks have the same function signatures and options exactly as the ones from `@tanstack/react-query`, with the only difference being that you need to pass `queryData` instead of `queryFn`.
+
+:::info
+
+When destructing the response from `useQuery` or `useMutation`, remember that ts-rest returns a `status` and `body` property, so you'll need to destructure those as well.
+
+:::
+
+## Directly Fetching
+
+If you want to make `fetch` requests directly without going through React Query, we also expose `query` and `mutate` functions, so you do not have to initialize a separate fetch client.
+
+```typescript
+// Normal fetch
+const { body, status } = await tsr.posts.get.query();
+
+// useQuery hook
+const { data, isLoading } = tsr.posts.get.useQuery();
+```
+
+## Query Client
+
+In addition to the hooks provided, `@ts-rest/react-query` also provides an extended version of `QueryClient` that is fully type-safe.
+
+It follows the same structure as your contract, and can be used the same way as the original `QueryClient` with similar function
+signatures to the ts-rest hooks for functions such as `queryClient.fetchQuery` and it's respective `useQuery` hook.
+
+```tsx
+import { tsr } from './tsr';
+
+const Posts = () => {
+  const POSTS_QUERY_KEY = ['posts'];
+
+  const tsrQueryClient = tsr.useQueryClient();
+  const { data, isLoading } = tsr.posts.get.useQuery({
+    queryKey: POSTS_QUERY_KEY,
+  });
+  const { mutate } = tsr.posts.create.useMutation();
+
+  const createPost = async () => {
+    return mutate(
+      { body: { title: 'Hello World' } },
+      {
+        onSuccess: async (data) => {
+          //  this is typed ^
+          tsrQueryClient.posts.get.setQueryData(POSTS_QUERY_KEY, (oldPosts) => {
+            //                                     this is also typed ^
+            return {
+              ...oldPosts,
+              body: [...oldPosts.body, data.body],
+            };
+          });
+        },
+      },
+    );
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (data?.status !== 200) {
+    return <div>Error</div>;
+  }
+
+  return (
+    <div>
+      <button onClick={createPost}>Create Post</button>
+      {data.body.map((post) => (
+        <p key={post.id}>post.title</p>
+      ))}
+    </div>
+  );
+};
+```
+
+### Non-Wrapped Functions
+
+For functions that do not consume or provide typed data such as `queryClient.invalidateQueries()`, it makes no sense to wrap these and access them through an endpoint path such as `tsrQueryClient.posts.get.invalidateQueries()`.
+As such, these functions are provided as-is at the root level of the `tsr.useQueryClient()` instance.
+
+You can actually use the `QueryClient` returned from `tsr.useQueryClient()` anywhere you would normally use a `QueryClient` instance, as under the hood
+we use the `QueryClient` returned from `useQueryClient()`, and we simply extend it with the ts-rest functions.
+
+## Error Handling
+
+If a request fails, the `error` property will be set to the response from the server, or the thrown error by `fetch`. This is the same as the `data` property for successful requests.
+
+The type of the `error` property on the React Query hooks will be set as `{ status: ...; body: ...; headers: ... } | Error`, where status is a non-2xx status code, and `body`
+set to your response schema for status codes defined in your contract, or `unknown` for status codes not in your contract.
+
+The `Error` type is included because requests can fail without returning a response. See [Fetch#Exceptions](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch#exceptions) for more information.
+
+```tsx
+import { isFetchError } from '@ts-rest/react-query/v5';
+import { tsr } from './tsr';
+
+const Post = ({ id }: { id: string }) => {
+  const { data, error, isPending } = tsr.getPost.useQuery({
+    queryKey: ['posts', id],
+    queryData: {
+      params: { id },
+    },
+  });
+
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    if (isFetchError(error)) {
+      return (
+        <div>
+          We could not retrieve this post. Please check your internet
+          connection.
+        </div>
+      );
+    }
+
+    if (error.status === 404) {
+      return <div>Post not found</div>;
+    }
+
+    return <div>Unexpected error occurred</div>;
+  }
+
+  return (
+    <div>
+      <h1>{data.body.title}</h1>
+      <p>{data.body.content}</p>
+    </div>
+  );
+};
+```
+
+## Fully Type-Safe Error Handling
+
+In order to ensure that your code is handling all possible error cases, there are type guard functions that have been provided to help the handling of both expected and unexpected errors.
+
+- `isFetchError(error)` - Returns `true` if the error is an instance of `Error` thrown by `fetch`.
+- `isUnknownErrorResponse(error, contractEndpoint)` - Returns `true` if the error, if a response has been received but the status code is not defined in the contract.
+- `isNotKnownResponseError(error, contractEndpoint)` - Combines `isFetchError` and `isUnknownErrorResponse`, in case you want to be able to quickly type guard into defined error responses in one statement.
+- `exhaustiveGuard(error)` - Check if all possible error cases have been handled. Otherwise, you get a compile-time error.
+
+We also return the `contractEndpoint` property from all hooks, so you can easily pass it to the types guards without having import the contract.
+
+```tsx
+import {
+  isFetchError,
+  isUnknownErrorResponse,
+  exhaustiveGuard,
+} from '@ts-rest/react-query/v5';
+import { tsr } from './tsr';
+
+const Post = ({ id }: { id: string }) => {
+  const { data, error, isPending, contractEndpoint } = tsr.getPost.useQuery({
+    queryKey: ['posts', id],
+    queryData: {
+      params: { id },
+    },
+  });
+
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    if (isFetchError(error)) {
+      return (
+        <div>
+          We could not retrieve this post. Please check your internet
+          connection.
+        </div>
+      );
+    }
+
+    if (isUnknownErrorResponse(error, contractEndpoint)) {
+      return <div>Unexpected error occurred</div>;
+    }
+
+    if (error.status === 404) {
+      return <div>Post not found</div>;
+    }
+
+    // this should be unreachable code if you handle all possible error cases
+    // if not, you will get a compile-time error on the line below
+    return exhaustiveGuard(error);
+  }
+
+  return (
+    <div>
+      <h1>{data.body.title}</h1>
+      <p>{data.body.content}</p>
+    </div>
+  );
+};
+```
+
+## SSR
+
+The common strategy to efficiently and optimally do server side rendering, as well as prevent request waterfalls on the client, is to do prefetching on the server,
+then pass a dehydrated form of the query cache from the server to the client.
+
+In these scenarios, the React Query code will not run inside a provider, so we need to initialize the `QueryClient` manually and pass it to ts-rest.
+
+Therefore, instead of using `tsr.useQueryClient()` as you usually would in your components, use `tsr.initQueryClient(queryClient)` to pass your created `QueryClient` to ts-rest.
+
+See the [`@tanstack/react-query` Server Rendering Guide](https://tanstack.com/query/v5/docs/framework/react/guides/ssr) for an in-depth guide on how to properly do server side rendering.
+
+## Examples
+
+### Next.js Pages Router
+
+```tsx
+// pages/posts.tsx
+import { dehydrate, QueryClient } from '@tanstack/react-query';
+import { tsr } from './tsr';
+
+export async function getServerSideProps() {
+  const tsrQueryClient = tsr.initQueryClient(new QueryClient());
+
+  await tsrQueryClient.getPosts.prefetchQuery({ queryKey: ['POSTS'] });
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+  };
+}
+```
+
+### React Server Components
+
+```tsx
+// app/posts/page.tsx
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
+import { tsr } from './tsr';
+
+export default async function PostsPage() {
+  const tsrQueryClient = tsr.initQueryClient(new QueryClient()); // <-- or pass a QueryClient from anywhere depending on your needs
+
+  await tsrQueryClient.getPosts.prefetchQuery({ queryKey: ['POSTS'] });
+
+  return (
+    <HydrationBoundary state={dehydrate(tsrQueryClient)}>
+      <Posts />
+    </HydrationBoundary>
+  );
+}
+```
+
+## Use Queries
+
+You can also fetch multiple queries at once using `useQueries` or `useSuspenseQueries`. It can be useful for fetching multiple queries, usually from the same endpoint.
+
+ts-rest currently does not support multiple queries from different endpoints. While it is an uncommon use case, we are open to implementing it in the future.
+
+```tsx
+import { tsr } from './tsr';
+
+const Posts = ({ ids }: { ids: string[] }) => {
+  const { data, pending } = tsr.posts.get.useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ['posts', id],
+      queryData: {
+        params: { id },
+      },
+    })),
+    combine: (results) => {
+      return {
+        data: results.map((result) => result.data),
+        pending: results.some((result) => result.isPending),
+      };
+    },
+  });
+
+  if (pending) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      {queries.map((query) => (
+        <p key={query.data?.body.id}>{query.data?.body.title}</p>
+      ))}
+    </div>
+  );
+};
+```
+
+See the [official `useQueries()` docs](https://tanstack.com/query/v5/docs/react/reference/useQueries) for more information.
+
+## Infinite Query
+
+Infinite query hooks such as `useInfiniteQuery` and `useSuspenseInfiniteQuery`, `queryData` should be a function that maps a context object containing `pageParam` to the actual query data.
+
+```tsx
+import { tsr } from './tsr';
+
+const PAGE_SIZE = 5;
+
+export const Posts = () => {
+  const { data, isLoading, isError, fetchNextPage, hasNextPage } =
+    tsr.getPosts.useInfiniteQuery({
+      queryKey: ['posts'],
+      queryData: ({ pageParam }) => ({
+        query: {
+          skip: pageParam.skip,
+          take: pageParam.take,
+        },
+      }),
+      initialPageParam: { skip: 0, take: PAGE_SIZE },
+      getNextPageParam: (lastPage, allPages) => {
+        return lastPage.body.posts.length >= PAGE_SIZE
+          ? { take: PAGE_SIZE, skip: allPages.length * PAGE_SIZE }
+          : undefined;
+      },
+    });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error</div>;
+  }
+
+  const posts = data.pages.flatMap((page) =>
+    page.status === 200 ? page.body.posts : [],
+  );
+
+  return (
+    <div>
+      <ul>
+        {posts.map((post) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+      <button onClick={fetchNextPage}>Load more</button>
+    </div>
+  );
+};
+```
+
+See the [official `useInfiniteQuery()` docs](https://tanstack.com/query/v5/docs/framework/react/reference/useInfiniteQuery) for more information.
+
+### QueryClient Methods
+
+You can also use `fetchInfiniteQuery` and `prefetchInfiniteQuery` on the ts-rest extended `QueryClient`.
+
+These will take the same arguments as `fetchQuery`, but need to specify an `initialPageParam` in order to correctly put the data in the cache with its corresponding `pageParam`.
+
+```tsx
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
+import { tsr } from './tsr';
+
+export default async function Page() {
+  const tsrQueryClient = tsr.initQueryClient(new QueryClient());
+
+  const initialPageParam = { skip: 0, take: 10 };
+  await tsrQueryClient.getPosts.prefetchInfiniteQuery({
+    queryKey: ['posts'],
+    queryData: {
+      query: initialPageParam,
+    },
+    initialPageParam,
+  });
+
+  return (
+    <main>
+      <HydrationBoundary state={dehydrate(tsrQueryClient)}>
+        <Posts />
+      </HydrationBoundary>
+    </main>
+  );
+}
+```
+
+## Troubleshooting
+
+### `No QueryClient set, use QueryClientProvider to set one`
+
+If you see this error despite having set a `QueryClient` using `QueryClientProvider`. Then you might have different versions of `@tanstack/react-query` installed in your project.
+
+This can also happen in rare cases when ESM and CJS versions of the package are mixed by a bundler like Webpack.
+
+If you have made sure that you are using the same version of `@tanstack/react-query` across your project, and are still having problems, you can work around this
+by importing `@tanstack/react-query` from `@ts-rest/react-query/tanstack` instead of `@tanstack/react-query`. This will ensure that you are using the same version as the one used
+by `@ts-rest/react-query`.
+
+```tsx
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@ts-rest/react-query/tanstack';
+
+const queryClient = new QueryClient();
+
+function App() {
+  return <QueryClientProvider client={queryClient}>...</QueryClientProvider>;
+}
+```
+
+:::info
+
+The import path is `@ts-rest/react-query/tanstack` and not `@ts-rest/react-query/v5/tanstack`. `@ts-rest/react-query/tanstack` simply re-exports whichever version of `@tanstack/react-query` you have installed.
+
+:::
