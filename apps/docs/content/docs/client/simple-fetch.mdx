@@ -298,9 +298,9 @@ const contract = c.router({
   updatePokemon: {
     method: 'PUT',
     path: '/pokemon/:id',
-    headers: z.object({
+    headers: {
       'x-api-version': z.string().optional(),
-    }),
+    },
     body: z.object({
       name: z.string(),
       type: z.string(),

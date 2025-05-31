@@ -166,10 +166,6 @@ const PathParamsSchema = z.object({
   id: z.number().transform((id) => Number(id)),
 });
 
-const HeadersSchema = z.object({
-  'x-api-key': z.string(),
-});
-
 // ---cut---
 export const contract = c.router({
   updatePokemon: {
@@ -177,8 +173,12 @@ export const contract = c.router({
     path: '/pokemon/:id',
     pathParams: PathParamsSchema, // [!code highlight]
     body: PokemonSchema, // [!code highlight]
-    headers: HeadersSchema, // [!code highlight]
-    //          ^?
+    // ---cut-start---
+    // prettier-ignore
+    // ---cut-end---
+    headers: { // [!code highlight]
+      'x-api-key': z.string(), // [!code highlight]
+    }, // [!code highlight]
     responses: {
       200: PokemonSchema, // [!code highlight]
       400: ErrorSchema, // [!code highlight]
@@ -508,11 +508,11 @@ export const contract = c.router({
   getPokemon: {
     method: 'GET',
     path: '/pokemon/:id',
-    headers: z.object({ // [!code highlight]
+    headers: { // [!code highlight]
       authorization: z.string(), // [!code highlight]
       'x-pagination-limit': z.coerce.number().optional(), // [!code highlight]
       'x-api-version': z.string().default('v1'), // [!code highlight]
-    }), // [!code highlight]
+    }, // [!code highlight]
     responses: {
       200: c.type<{ posts: any[] }>(),
     },
@@ -530,11 +530,11 @@ export const contract = c.router({
   getPokemon: {
     method: 'GET',
     path: '/pokemon/:id',
-    headers: v.object({ // [!code highlight]
+    headers: { // [!code highlight]
       authorization: v.string(), // [!code highlight]
       'x-pagination-limit': v.optional(v.pipe(v.string(), v.transform(Number))), // [!code highlight]
       'x-api-version': v.fallback(v.string(), 'v1'), // [!code highlight]
-    }), // [!code highlight]
+    }, // [!code highlight]
     responses: {
       200: c.type<{ posts: any[] }>(),
     },
@@ -552,11 +552,11 @@ export const contract = c.router({
   getPokemon: {
     method: 'GET',
     path: '/pokemon/:id',
-    headers: type({ // [!code highlight]
-      authorization: 'string', // [!code highlight]
-      'x-pagination-limit?': 'string.numeric.parse', // [!code highlight]
-      'x-api-version': 'string = "v1"', // [!code highlight]
-    }), // [!code highlight]
+    headers: { // [!code highlight]
+      authorization: type('string'), // [!code highlight]
+      'x-pagination-limit': type('string.numeric.parse'), // [!code highlight]
+      'x-api-version': type('string = "v1"'), // [!code highlight]
+    }, // [!code highlight]
     responses: {
       200: c.type<{ posts: any[] }>(),
     },
@@ -573,11 +573,11 @@ export const contract = c.router({
   getPokemon: {
     method: 'GET',
     path: '/pokemon/:id',
-    headers: c.type<{ // [!code highlight]
-      authorization: string; // [!code highlight]
-      'x-pagination-limit'?: string; // [!code highlight]
-      'x-api-version'?: string; // [!code highlight]
-    }>(), // [!code highlight]
+    headers: { // [!code highlight]
+      authorization: c.type<string>(), // [!code highlight]
+      'x-pagination-limit': c.type<string>(), // [!code highlight]
+      'x-api-version': c.type<string>(), // [!code highlight]
+    }, // [!code highlight]
     responses: {
       200: c.type<{ posts: any[] }>(),
     },
@@ -615,9 +615,9 @@ export const contract = c.router(
       // ---cut-start---
       // prettier-ignore
       // ---cut-end---
-      headers: z.object({ // [!code --]
+      headers: { // [!code --]
         'x-api-key': z.string(), // [!code --]
-      }), // [!code --]
+      }, // [!code --]
     },
     updatePokemon: {
       method: 'PUT',
@@ -629,28 +629,28 @@ export const contract = c.router(
       // ---cut-start---
       // prettier-ignore
       // ---cut-end---
-      headers: z.object({ // [!code --]
+      headers: { // [!code --]
         'x-api-key': z.string(), // [!code --]
-      }), // [!code --]
+      }, // [!code --]
     },
   },
   {
     // ---cut-start---
     // prettier-ignore
     // ---cut-end---
-    baseHeaders: z.object({ // [!code ++]
+    baseHeaders: { // [!code ++]
       'x-api-key': z.string(), // [!code ++]
-    }), // [!code ++]
+    }, // [!code ++]
   },
 );
 ```
 
-It's also possible to "nullify" a base header within a specific route by setting it to `undefined`, for example if you're making one endpoint public, you can do:
+It's also possible to "nullify" a base header within a specific route by setting it to `null`, for example if you're making one endpoint public, you can do:
 
 ```typescript title="base-headers.ts"
-headers: z.object({
-  'x-api-key': z.undefined(),  // [!code ++]
-}),
+headers: {
+  'x-api-key': null,  // [!code ++]
+},
 ```
 
 Base headers are also inherited by nested contracts, so this is perfectly valid:
@@ -678,22 +678,22 @@ export const contract = c.router(
           responses: {
             200: c.type<Pokemon>(),
           },
-          headers: z.object({
+          headers: {
             'x-inner': z.string(), // [!code highlight]
-          }),
+          },
         },
       },
       {
-        baseHeaders: z.object({
+        baseHeaders: {
           'x-sub-contract': z.string(), // [!code highlight]
-        }),
+        },
       },
     ),
   },
   {
-    baseHeaders: z.object({
+    baseHeaders: {
       'x-contact': z.string(), // [!code highlight]
-    }),
+    },
   },
 );
 

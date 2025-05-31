@@ -225,9 +225,9 @@ const contract = c.router({
   getProfile: {
     method: 'GET',
     path: '/profile',
-    headers: z.object({
+    headers: {
       authorization: z.string(),
-    }),
+    },
     responses: {
       200: c.type<{ id: string; name: string }>(),
       401: c.type<{ message: string }>(),

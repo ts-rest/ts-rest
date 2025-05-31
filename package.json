@@ -97,7 +97,7 @@
     "valibot": "^1.1.0",
     "vitest": "0.32.4",
     "vue": "^3.3.4",
-    "zod": "3.25.36",
+    "zod": "3.25.42",
     "zustand": "^4.1.1"
   },
   "devDependencies": {

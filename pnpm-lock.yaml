@@ -18,7 +18,7 @@ importers:
         version: 1.10.0
       '@anatine/zod-openapi':
         specifier: ^2.0.1
-        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.25.36)
+        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.25.42)
       '@azure/functions':
         specifier: ^4.5.0
         version: 4.5.0
@@ -218,8 +218,8 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
       zod:
-        specifier: 3.25.36
-        version: 3.25.36
+        specifier: 3.25.42
+        version: 3.25.42
       zustand:
         specifier: ^4.1.1
         version: 4.1.1(immer@9.0.15)(react@18.3.1)
@@ -516,17 +516,17 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2
       '@ts-rest/core':
-        specifier: ^3.52.1
-        version: 3.52.1(@types/node@22.15.21)(zod@3.22.3)
+        specifier: 3.53.0-alpha.3
+        version: 3.53.0-alpha.3(@types/node@22.15.21)
       '@ts-rest/express':
-        specifier: ^3.52.1
-        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(express@5.1.0)(zod@3.22.3)
+        specifier: 3.53.0-alpha.3
+        version: 3.53.0-alpha.3(@ts-rest/core@3.53.0-alpha.3(@types/node@22.15.21))(express@5.1.0)
       '@ts-rest/nest':
-        specifier: ^3.52.1
-        version: 3.52.1(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(rxjs@7.8.1)(zod@3.22.3)
+        specifier: 3.53.0-alpha.3
+        version: 3.53.0-alpha.3(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@ts-rest/core@3.53.0-alpha.3(@types/node@22.15.21))(rxjs@7.8.1)
       '@ts-rest/react-query':
-        specifier: ^3.52.1
-        version: 3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(react@19.1.0)(zod@3.22.3)
+        specifier: 3.53.0-alpha.3
+        version: 3.53.0-alpha.3(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.53.0-alpha.3(@types/node@22.15.21))(react@19.1.0)
       fumadocs-core:
         specifier: 15.4.2
         version: 15.4.2(@types/react@19.1.6)(algoliasearch@4.14.2)(next@15.3.2(@babel/core@7.22.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.55.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -554,12 +554,15 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
+      shiki:
+        specifier: ^3.4.2
+        version: 3.4.2
       twoslash:
         specifier: ^0.3.1
         version: 0.3.1(typescript@5.8.3)
       zod:
-        specifier: 3.22.3
-        version: 3.22.3
+        specifier: 3.25.42
+        version: 3.25.42
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.7
@@ -4158,49 +4161,34 @@ packages:
   '@ts-morph/common@0.27.0':
     resolution: {integrity: sha512-Wf29UqxWDpc+i61k3oIOzcUfQt79PIT9y/MWfAGlrkjg6lBC1hwDECLXPVJAhWjiGbfBCxZd65F/LIZF3+jeJQ==}
 
-  '@ts-rest/core@3.52.1':
-    resolution: {integrity: sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==}
+  '@ts-rest/core@3.53.0-alpha.3':
+    resolution: {integrity: sha512-4OajpfKlLjYHED62cZxv0mmEtOfUjmQ8QtXRBHG1OrUbFTYc7NwtmI4qWsHC20H7iqP2qc4LOgKti+yXuQs39Q==}
     peerDependencies:
       '@types/node': ^18.18.7 || >=20.8.4
-      zod: ^3.22.3
     peerDependenciesMeta:
       '@types/node':
         optional: true
-      zod:
-        optional: true
 
-  '@ts-rest/express@3.52.1':
-    resolution: {integrity: sha512-ttVynyJSWYnVzn7FazSFvShD5j3Lq1JsIhSKereV2Z51zxWEQwo35CpCO3Q8rELzkfD9CYoT6eNSBJRlJLogIw==}
+  '@ts-rest/express@3.53.0-alpha.3':
+    resolution: {integrity: sha512-hDWaD5vy2B5FsWs7mmMLxEVhSphUqsI4o6rHg1KEc0ywceZ8nisHZZzJJCJGStbKzEqclcKDI1tgoeXAm+1fww==}
     peerDependencies:
-      '@ts-rest/core': ~3.52.0
-      express: ^4.0.0
-      zod: ^3.22.3
-    peerDependenciesMeta:
-      zod:
-        optional: true
+      '@ts-rest/core': 3.53.0-alpha.3
+      express: ^4.0.0 || ^5.0.0
 
-  '@ts-rest/nest@3.52.1':
-    resolution: {integrity: sha512-6Abk9tRu0yxBv6PORAU6RIRizRQTQow7VeZ41j9vfEXXYUcR6DnkltGVIGSBepkg50wwJ9ygr0fplwNoWUUkBw==}
+  '@ts-rest/nest@3.53.0-alpha.3':
+    resolution: {integrity: sha512-2b5s6tFOfyKGwrS+gvMXfl9Un+jw7db+oHZvkNAfq90NZWqPEP6zPWBvrYZBEOX3RyF5gPqhKa2tC9D4MUtPDw==}
     peerDependencies:
       '@nestjs/common': ^9.0.0 || ^10.0.0 || ^11.0.0
       '@nestjs/core': ^9.0.0 || ^10.0.0 || ^11.0.0
-      '@ts-rest/core': ~3.52.0
+      '@ts-rest/core': 3.53.0-alpha.3
       rxjs: ^7.1.0
-      zod: ^3.22.3
-    peerDependenciesMeta:
-      zod:
-        optional: true
 
-  '@ts-rest/react-query@3.52.1':
-    resolution: {integrity: sha512-Y4wx3oQwyEj7h3hVz2Wsrd8u7xWRqXc0K6YpKruZJg5G1pioKdlqqjKvv+JJbtgk+vImzha9z+NgeFnO4oYAkA==}
+  '@ts-rest/react-query@3.53.0-alpha.3':
+    resolution: {integrity: sha512-OCx+1YYy2WyZuczHtjqGV2tN46Z0g/ip2T73VJ5pfc8/DLjv2uFdYw9Gijn6MidnrL3wxgwH9NMVhr/os4I+Uw==}
     peerDependencies:
       '@tanstack/react-query': ^4.0.0 || ^5.0.0
-      '@ts-rest/core': ~3.52.0
+      '@ts-rest/core': 3.53.0-alpha.3
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      zod: ^3.22.3
-    peerDependenciesMeta:
-      zod:
-        optional: true
 
   '@tsconfig/node10@1.0.9':
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
@@ -12782,8 +12770,8 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
-  zod@3.25.36:
-    resolution: {integrity: sha512-eRFS3i8T0IrpGdL8HQyqFAugGOn7jOjyGgGdtv5NY4Wkhi7lJDk732bNZ609YMIGFbLoaj6J69O1Mura23gfIw==}
+  zod@3.25.42:
+    resolution: {integrity: sha512-PcALTLskaucbeHc41tU/xfjfhcz8z0GdhhDcSgrCTmSazUuqnYqiXO63M0QUBVwpBlsLsNVn5qHSC5Dw3KZvaQ==}
 
   zustand@4.1.1:
     resolution: {integrity: sha512-h4F3WMqsZgvvaE0n3lThx4MM81Ls9xebjvrABNzf5+jb3/03YjNTSgZXeyrvXDArMeV9untvWXRw1tY+ntPYbA==}
@@ -12912,11 +12900,11 @@ snapshots:
       ts-deepmerge: 4.0.0
       zod: 3.22.3
 
-  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.25.36)':
+  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.25.42)':
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.0
-      zod: 3.25.36
+      zod: 3.25.42
 
   '@angular-devkit/core@15.2.4(chokidar@3.5.3)':
     dependencies:
@@ -17545,34 +17533,27 @@ snapshots:
       minimatch: 10.0.1
       path-browserify: 1.0.1
 
-  '@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3)':
+  '@ts-rest/core@3.53.0-alpha.3(@types/node@22.15.21)':
     optionalDependencies:
       '@types/node': 22.15.21
-      zod: 3.22.3
 
-  '@ts-rest/express@3.52.1(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(express@5.1.0)(zod@3.22.3)':
+  '@ts-rest/express@3.53.0-alpha.3(@ts-rest/core@3.53.0-alpha.3(@types/node@22.15.21))(express@5.1.0)':
     dependencies:
-      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.22.3)
+      '@ts-rest/core': 3.53.0-alpha.3(@types/node@22.15.21)
       express: 5.1.0
-    optionalDependencies:
-      zod: 3.22.3
 
-  '@ts-rest/nest@3.52.1(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(rxjs@7.8.1)(zod@3.22.3)':
+  '@ts-rest/nest@3.53.0-alpha.3(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@ts-rest/core@3.53.0-alpha.3(@types/node@22.15.21))(rxjs@7.8.1)':
     dependencies:
       '@nestjs/common': 10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1)
       '@nestjs/core': 10.3.10(@nestjs/common@10.3.10(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.3.10)(reflect-metadata@0.1.13)(rxjs@7.8.1)
-      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.22.3)
+      '@ts-rest/core': 3.53.0-alpha.3(@types/node@22.15.21)
       rxjs: 7.8.1
-    optionalDependencies:
-      zod: 3.22.3
 
-  '@ts-rest/react-query@3.52.1(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.52.1(@types/node@22.15.21)(zod@3.22.3))(react@19.1.0)(zod@3.22.3)':
+  '@ts-rest/react-query@3.53.0-alpha.3(@tanstack/react-query@5.51.11(react@19.1.0))(@ts-rest/core@3.53.0-alpha.3(@types/node@22.15.21))(react@19.1.0)':
     dependencies:
       '@tanstack/react-query': 5.51.11(react@19.1.0)
-      '@ts-rest/core': 3.52.1(@types/node@22.15.21)(zod@3.22.3)
+      '@ts-rest/core': 3.53.0-alpha.3(@types/node@22.15.21)
       react: 19.1.0
-    optionalDependencies:
-      zod: 3.22.3
 
   '@tsconfig/node10@1.0.9': {}
 
@@ -21399,7 +21380,7 @@ snapshots:
       tinyexec: 1.0.1
       tinyglobby: 0.2.14
       unist-util-visit: 5.0.0
-      zod: 3.25.36
+      zod: 3.25.42
     transitivePeerDependencies:
       - acorn
       - supports-color
@@ -24058,7 +24039,7 @@ snapshots:
       workerd: 1.20240304.0
       ws: 8.13.0
       youch: 3.3.3
-      zod: 3.25.36
+      zod: 3.25.42
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -28413,7 +28394,7 @@ snapshots:
 
   zod@3.22.3: {}
 
-  zod@3.25.36: {}
+  zod@3.25.42: {}
 
   zustand@4.1.1(immer@9.0.15)(react@18.3.1):
     dependencies:
