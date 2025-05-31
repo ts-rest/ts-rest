@@ -3,10 +3,12 @@
   "pages": [
     "index",
     "quickstart",
+    "---Documentation---",
     "contract",
     "client",
     "server",
     "openapi",
+    "---Extras---",
     "recipies",
     "changelog",
     "faq"
