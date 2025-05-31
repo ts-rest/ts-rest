@@ -1,5 +1,11 @@
 # @ts-rest/express
 
+## 3.53.0
+
+### Minor Changes
+
+- ab2a39f3: add express v5 support to @ts-rest/express
+
 ## 3.52.1
 
 ## 3.52.0

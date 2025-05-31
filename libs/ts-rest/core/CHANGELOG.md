@@ -1,5 +1,13 @@
 # @ts-rest/core
 
+## 3.53.0
+
+### Patch Changes
+
+- 2c6367c8: Fix handling of responses with no body and content type json header
+- 0ca71d02: Fixed a bug where leading and trailing forward slashes the baseUrl and path would double up
+- 612c2957: allow passing numbers as path params into ts-rest core
+
 ## 3.52.1
 
 ### Patch Changes

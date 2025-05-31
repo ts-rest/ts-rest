@@ -1,5 +1,11 @@
 # @ts-rest/next
 
+## 3.53.0
+
+### Patch Changes
+
+- 172f7633: fix: nextjs query params polute reading path params
+
 ## 3.52.1
 
 ## 3.52.0
