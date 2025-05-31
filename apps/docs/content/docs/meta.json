@@ -1,0 +1,14 @@
+{
+  "title": "",
+  "pages": [
+    "index",
+    "quickstart",
+    "contract",
+    "client",
+    "server",
+    "openapi",
+    "recipies",
+    "changelog",
+    "faq"
+  ]
+}

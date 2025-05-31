@@ -1,0 +1,113 @@
+---
+title: 'Fastify'
+description: How to use ts-rest with Fastify
+---
+
+## Installation
+
+<InstallTabs packageName="@ts-rest/fastify" />
+
+## Usage
+
+```typescript
+import Fastify from 'fastify';
+import { initServer } from '@ts-rest/fastify';
+
+const app = Fastify();
+
+const s = initServer();
+
+const router = s.router(contract, {
+  getPost: async ({ params: { id } }) => {
+    const post = await prisma.post.findUnique({ where: { id } });
+
+    return {
+      status: 200,
+      body: post,
+    };
+  },
+  createPost: async ({ body }) => {
+    const post = await prisma.post.create({
+      data: body,
+    });
+
+    return {
+      status: 201,
+      body: post,
+    };
+  },
+});
+
+app.register(s.plugin(router));
+
+const start = async () => {
+  try {
+    await app.listen({ port: 3000 });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+};
+
+start();
+```
+
+`s.registerRouter` is a function that takes a contract, a corresponding router with implementations for each route and a fastify app, and it will
+create the corresponding fastify routes for each endpoint with the correct method, paths and middleware and attach them to your fastify app.
+
+## Options
+
+You can pass an optional options object as the last argument for `s.registerRouter`.
+
+```typescript
+type Options = {
+  logInitialization?: boolean; // print route initialization logs to console
+  jsonQuery?: boolean;
+  responseValidation?: boolean;
+  requestValidationErrorHandler?:
+    | 'combined'
+    | ((
+        err: TsRestRequestValidationError,
+        request: fastify.FastifyRequest,
+        reply: fastify.FastifyReply,
+      ) => void);
+};
+```
+
+### Response Validation
+
+To enable response parsing and validation, you can use the `validateResponses` option.
+If there is a corresponding response Zod schema defined in the contract for the returned status code, the response will be parsed and validated.
+If validation fails a `ResponseValidationError` will be thrown causing a 500 response to be returned.
+
+```typescript
+s.registerRouter(contract, router, app, {
+  validateResponses: true,
+});
+```
+
+### Request Validation Error Handling
+
+The default functionality of handling request validation errors is `combined` which returns a 400 response with all validation errors in the body in this form.
+
+```typescript
+{
+  pathParameterErrors: z.ZodError | null;
+  headerErrors: z.ZodError | null;
+  queryParameterErrors: z.ZodError | null;
+  bodyErrors: z.ZodError | null;
+}
+```
+
+You can also pass a custom error handler function to the `requestValidationErrorHandler` option.
+
+```typescript
+s.registerRouter(contract, router, app, {
+  requestValidationErrorHandler: (err, req, res, next) => {
+    //             err is typed as ^ RequestValidationError
+    res.status(400).json({
+      message: 'Validation failed',
+    });
+  },
+});
+```
