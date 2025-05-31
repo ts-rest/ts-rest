@@ -8,6 +8,7 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
  * Docs Layout: app/docs/layout.tsx
  */
 export const baseOptions: BaseLayoutProps = {
+  githubUrl: 'https://github.com/ts-rest/ts-rest',
   nav: {
     title: (
       <>

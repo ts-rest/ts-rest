@@ -589,8 +589,6 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  apps/docs-legacy: {}
-
   apps/example-azure-function: {}
 
   apps/example-express: {}
