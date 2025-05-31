@@ -1,0 +1,23 @@
+{
+  "requestContext": {
+    "elb": {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test-target-group/1234567890abcdef"
+    }
+  },
+  "httpMethod": "GET",
+  "path": "/test",
+  "queryStringParameters": {
+    "foo": "bar"
+  },
+  "headers": {
+    "accept": "*/*",
+    "content-type": "application/json",
+    "host": "example.com",
+    "user-agent": "curl/7.58.0",
+    "x-forwarded-for": "192.168.0.1",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
+  "body": "",
+  "isBase64Encoded": false
+}

@@ -1,0 +1,22 @@
+{
+  "requestContext": {
+    "elb": {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test-target-group/1234567890abcdef"
+    }
+  },
+  "httpMethod": "POST",
+  "path": "/api/items",
+  "queryStringParameters": null,
+  "headers": {
+    "accept": "application/json",
+    "content-type": "application/json",
+    "host": "example.com",
+    "user-agent": "curl/7.58.0",
+    "x-forwarded-for": "192.168.0.1",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https",
+    "content-length": "25"
+  },
+  "body": "{\"name\":\"Test Item\"}",
+  "isBase64Encoded": false
+}
