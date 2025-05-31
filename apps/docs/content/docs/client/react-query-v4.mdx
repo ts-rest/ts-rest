@@ -41,7 +41,7 @@ export const client = initQueryClient(router, {
 
 To customise the API, follow the same docs as the core client [here](/docs/core/custom)
 
-:::tip
+<Callout title="JSON Query Parameters">
 
 By default, ts-rest encodes query parameters as regular URL encoded strings (with support for nested objects, arrays etc) with full decode compatibility from [`qs`](https://www.npmjs.com/package/qs)
 
@@ -55,7 +55,7 @@ export const client = initQueryClient(router, {
 
 ```
 
-:::
+</Callout>
 
 ## useQuery and useMutation
 
@@ -69,11 +69,11 @@ const queryResult = client.posts.get.useQuery(
 );
 ```
 
-:::tip
+<Callout title="Design Philosophy">
 
 The design philosophy of `@ts-rest/react-query` is to make it as easy as possible to use `react-query` with `@ts-rest`. This means that the `useQuery` and `useMutation` hooks are as close to the original `react-query` hooks as possible, as such we don't abstract away from the query keys or the options. Only the query function itself!
 
-:::
+</Callout>
 
 ```tsx
 const App = () => {
@@ -101,13 +101,13 @@ const App = () => {
 };
 ```
 
-:::info
+<Callout type="info" title="Response Structure">
 
 When destructing the response from `useQuery` or `useMutation`, remember that ts-rest returns a `status` and `body` property, so you'll need to destructure those as well.
 
 The reason for this is error handling! Please see the [Relevant Docs](/docs/core/errors#client-error-typing)
 
-:::
+</Callout>
 
 ## Error Handling
 
@@ -314,12 +314,12 @@ If you would like to use any of these functions outside a component or a hook, t
 
 Functions such as `invalidateQueries` that neither exchange typed data nor invoke the API have no benefit of being wrapped. Therefore, call these functions directly through your `QueryClient` instance.
 
-:::info
+<Callout type="info" title="Error Handling">
 
 Functions that may throw on failure such as `fetchQuery` will throw an error if the request fails or returns a non-2xx response.
 Be sure to handle these errors appropriately.
 
-:::
+</Callout>
 
 ## Troubleshooting
 

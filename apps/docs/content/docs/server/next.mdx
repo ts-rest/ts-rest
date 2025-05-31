@@ -11,9 +11,11 @@ description: How to use ts-rest with Next.js
 
 For maximum type safety, by default `@ts-rest/next` uses a single endpoint for all routes.
 
-:::info
-It is possible to split out to multiple endpoints by having multiple [...ts-rest].tsx files in different folders, so long as the routers you use all begin with the same path e.g. all `/posts` endpoints in a posts folder.
-:::
+<Callout type="info" title="Multiple Endpoints">
+  It is possible to split out to multiple endpoints by having multiple
+  [...ts-rest].tsx files in different folders, so long as the routers you use
+  all begin with the same path e.g. all `/posts` endpoints in a posts folder.
+</Callout>
 
 ```typescript
 // pages/api/[...ts-rest].tsx

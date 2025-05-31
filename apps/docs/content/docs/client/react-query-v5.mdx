@@ -19,13 +19,13 @@ const {
 });
 ```
 
-:::info
+<Callout type="info" title="React Query v5 Documentation">
 
 This documentation is for React Query v5. If you are looking for the v4 docs, please click [here](/docs/react-query/v4).
 
 In order to use the React Query v5 version of `@ts-rest/react-query`, make sure you import `@ts-rest/react-query/v5` in your code and not `@ts-rest/react-query`.
 
-:::
+</Callout>
 
 ## Instructions
 
@@ -57,12 +57,12 @@ export const tsr = initTsrReactQuery(contract, {
 });
 ```
 
-:::info
+<Callout type="info" title="Fetch Client Configuration">
 
 `initTsrReactQuery` uses our fetch client under the hood, so you can configure it just as you would the fetch client, including passing a custom API fetcher.
 For more information, see the [fetch client documentation](/docs/core/fetch).
 
-:::
+</Callout>
 
 ### 4. Setup ts-rest Provider
 
@@ -151,11 +151,11 @@ const Posts = () => {
 
 All the hooks have the same function signatures and options exactly as the ones from `@tanstack/react-query`, with the only difference being that you need to pass `queryData` instead of `queryFn`.
 
-:::info
+<Callout type="info" title="Response Structure">
 
 When destructing the response from `useQuery` or `useMutation`, remember that ts-rest returns a `status` and `body` property, so you'll need to destructure those as well.
 
-:::
+</Callout>
 
 ## Directly Fetching
 
@@ -560,8 +560,8 @@ function App() {
 }
 ```
 
-:::info
+<Callout type="info" title="Import Path">
 
 The import path is `@ts-rest/react-query/tanstack` and not `@ts-rest/react-query/v5/tanstack`. `@ts-rest/react-query/tanstack` simply re-exports whichever version of `@tanstack/react-query` you have installed.
 
-:::
+</Callout>
