@@ -18,7 +18,7 @@ importers:
         version: 1.10.0
       '@anatine/zod-openapi':
         specifier: ^2.0.1
-        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.25.42)
+        version: 2.0.1(openapi3-ts@2.0.2)(zod@3.22.3)
       '@azure/functions':
         specifier: ^4.5.0
         version: 4.5.0
@@ -218,8 +218,8 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
       zod:
-        specifier: 3.25.42
-        version: 3.25.42
+        specifier: 3.22.3
+        version: 3.22.3
       zustand:
         specifier: ^4.1.1
         version: 4.1.1(immer@9.0.15)(react@18.3.1)
@@ -561,8 +561,8 @@ importers:
         specifier: ^0.3.1
         version: 0.3.1(typescript@5.8.3)
       zod:
-        specifier: 3.25.42
-        version: 3.25.42
+        specifier: 3.22.3
+        version: 3.22.3
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.7
@@ -12898,11 +12898,11 @@ snapshots:
       ts-deepmerge: 4.0.0
       zod: 3.22.3
 
-  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.25.42)':
+  '@anatine/zod-openapi@2.0.1(openapi3-ts@2.0.2)(zod@3.22.3)':
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.0
-      zod: 3.25.42
+      zod: 3.22.3
 
   '@angular-devkit/core@15.2.4(chokidar@3.5.3)':
     dependencies:
@@ -24037,7 +24037,7 @@ snapshots:
       workerd: 1.20240304.0
       ws: 8.13.0
       youch: 3.3.3
-      zod: 3.25.42
+      zod: 3.22.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
