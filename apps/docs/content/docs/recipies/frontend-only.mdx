@@ -1,0 +1,92 @@
+---
+title: 'Frontend Only'
+description: Want to gradually introduce ts-rest to your project?
+---
+
+The ideal way to use `ts-rest` is to control both the client and server, however, we don't live in a perfect world where we can afford to rewrite everything at once! This guide will show you how to use `ts-rest` without a backend, commonly utilised to help migrate an existing application to `ts-rest`.
+
+## Adding `@ts-rest` to your project
+
+<InstallTabs packageName="@ts-rest/core @ts-rest/react-query" />
+
+This command installs the core, and the `react-query` adapter. We strongly recommend using `react-query` as it is a fantastic way to handle many common problems with data fetching in react, and ts-rest provides first class support for it.
+
+## Initialise a Contract
+
+The first step is to create a contract, normally in the ts-rest docs we advise you to create this in a shared library, either in a monorepo or published to a package registry. However, for this guide we're going to create it in the same project as the client.
+
+```typescript
+const c = initContract();
+
+export const contract = c.router({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    responses: {
+      200: c.type<{ posts: Post[]; total: number }>(),
+    },
+    query: z.object({
+      take: z.string().transform(Number).optional(),
+      skip: z.string().transform(Number).optional(),
+      search: z.string().optional(),
+    }),
+    summary: 'Get all posts',
+  },
+  // ...
+});
+```
+
+Read our [core guide](/docs/core) to learn more about contracts.
+
+## Setup react-query in your project
+
+It's worth following the excellent `@tanstack/react-query` [installation guide](https://tanstack.com/query/v4/docs/react/quick-start) to get started with `react-query`. We're going to assume you've already done this (snippet below)
+
+```tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient();
+
+const App = () => {
+  return (
+    // Provide the client to your App
+    <QueryClientProvider client={queryClient}>
+      <Todos />
+    </QueryClientProvider>
+  );
+};
+```
+
+## Consume the Contract
+
+Now that we have a contract, we can use it to create a client. We're going to use `react-query` to handle the data fetching, but you can use any data fetching library you want.
+
+```tsx
+import { contract } from './contract';
+
+export const client = initQueryClient(contract, {
+  baseUrl: 'http://localhost:3333',
+  baseHeaders: {},
+});
+
+const YourComponent = () => {
+  const queryResult = client.getPosts.useQuery(
+    ['posts'], // <- queryKey
+    { query: { take: 10 } }, // <- Query params, Params, Body etc (all typed)
+    { staleTime: 1000 }, // <- react-query options (optional)
+  );
+
+  // ... use the query result
+};
+```
+
+<Callout type="info" title="Where should I put the client?">
+
+You should probably put the client somewhere accessible to all components, possibly at the top level of your application.
+
+</Callout>
+
+## Next Steps
+
+Now that you're using ts-rest in a non-breaking way you're in an excellent position to experiment with your team, if the experiment is successful you can start to migrate your backend to use ts-rest, all incrementally and without breaking your application!
