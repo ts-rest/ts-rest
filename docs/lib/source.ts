@@ -9,7 +9,6 @@ export const source = loader({
   // it assigns a URL to your pages
   baseUrl: '/',
   source: docs.toFumadocsSource(),
-  // @ts-expect-error - icon is not typed
   icon: (icon) => {
     if (!icon) {
       return undefined;
