@@ -7,7 +7,7 @@
     "dev": "next dev --turbo",
     "start": "next start",
     "postinstall": "fumadocs-mdx",
-    "changelog": "node ../../scripts/generate-changelog.js"
+    "generate-changelog": "node ./generate-changelog.js"
   },
   "dependencies": {
     "@shikijs/transformers": "^3.4.2",

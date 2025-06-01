@@ -1,0 +1,781 @@
+---
+title: Changelog
+description: This is a combined changelog for all ts-rest packages, automatically generated from individual package changelogs.
+
+---
+
+## 3.52.1
+
+- ([5005793](https://github.com/ts-rest/ts-rest/commit/5005793)) **core**: Fix trailing slashes not being preserved by the client
+
+## 3.52.0
+
+- ([964f7c6](https://github.com/ts-rest/ts-rest/commit/964f7c6)) **core**: Support optional path params in the type system, and ensure multiple levels of query params are dealt with in nest
+- ([964f7c6](https://github.com/ts-rest/ts-rest/commit/964f7c6)) **express**: Support optional path params in the type system, and ensure multiple levels of query params are dealt with in nest
+- ([23567fa](https://github.com/ts-rest/ts-rest/commit/23567fa)) **nest**: Change multi-handler to not use @All decorator, now creates dummy methods for each route within a multi handler at runtime. This means we no longer need our own route matching alogirithm (we can utilise nest entirely) and we now don't have collisions with other controllers with the same path but different methods
+- ([964f7c6](https://github.com/ts-rest/ts-rest/commit/964f7c6)) **nest**: Support optional path params in the type system, and ensure multiple levels of query params are dealt with in nest
+- ([9a444c5](https://github.com/ts-rest/ts-rest/commit/9a444c5)) **nest**: Added NestJS v11 to dependencies
+- ([83416b3](https://github.com/ts-rest/ts-rest/commit/83416b3)) **open-api**: Support automatic reusable "Components" in OpenAPI schemas, reduces final size of schema, uses the "Title" property from @anatine/zod-openapi
+- ([5cde6d9](https://github.com/ts-rest/ts-rest/commit/5cde6d9)) **react-query-v5**: add react 19 as peer dependency
+
+## 3.51.1
+
+- ([6c987f6](https://github.com/ts-rest/ts-rest/commit/6c987f6)) **express**: Fix route handler type for DELETE endpoints with no body
+
+## 3.51.0
+
+- ([d9111cc](https://github.com/ts-rest/ts-rest/commit/d9111cc)) **react-query**: Add ability to pass `skipToken` to `queryData` similar to how you can pass it to `queryFn` in plain React Query
+- ([d4692e3](https://github.com/ts-rest/ts-rest/commit/d4692e3)) **serverless**: New `createFetchHandler` function added so a fetch handler can be initialized once and re-used
+- ([7cf4415](https://github.com/ts-rest/ts-rest/commit/7cf4415)) **serverless**: Fix AWS Lambda handler not working in Node.js environments.
+- ([d4692e3](https://github.com/ts-rest/ts-rest/commit/d4692e3)) **serverless**: Fix response handling for itty-router >= 5.0.17
+
+## 3.50.0
+
+- ([83f6675](https://github.com/ts-rest/ts-rest/commit/83f6675)) **core**: Do not require `body` to be defined for DELETE endpoints in contracts
+- ([e6af1db](https://github.com/ts-rest/ts-rest/commit/e6af1db)) **serverless**: Revert breaking change from v3.47.0. Order of generics on `tsr.router` and `tsr.route` have been reverted. `tsr.routerWithMiddleware` has been introduced so the contract does need to be passed twice.
+
+## 3.49.4
+
+- ([52a2b35](https://github.com/ts-rest/ts-rest/commit/52a2b35)) **core**: Fix broken types on TS 5.5 in Node environments without `lib.dom`
+
+## 3.49.3
+
+- ([1f9fd4a](https://github.com/ts-rest/ts-rest/commit/1f9fd4a)) **core**: Fix client functions resolving as `any` in TS 5.5 when `dom` is not included in tsconfig libs
+- ([740c538](https://github.com/ts-rest/ts-rest/commit/740c538)) **core**: Fix pnpm `Maximum call stack size exceeded` when installing @ts-rest/core
+
+## 3.49.2
+
+- ([6d7bea2](https://github.com/ts-rest/ts-rest/commit/6d7bea2)) **serverless**: Fix broken package exports
+
+## 3.49.1
+
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **core**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **express**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **fastify**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **nest**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **next**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **open-api**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **react-query**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **serverless**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **solid-query**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+- ([b31454f](https://github.com/ts-rest/ts-rest/commit/b31454f)) **vue-query**: All ts-rest libraries are now packaged in a better way to be compatible with as many bundlers as possible. The @tanstack/react-query `No QueryClient set` error should also occur much less now.
+
+## 3.49.0
+
+- ([597cd92](https://github.com/ts-rest/ts-rest/commit/597cd92)) **core**: You can now pass functions as values for your `baseHeaders` in your client. This makes it much easier now to fetch and set access tokens from your authentication libraries.
+- ([597cd92](https://github.com/ts-rest/ts-rest/commit/597cd92)) **react-query**: You can now pass functions as values for your `baseHeaders` in your client. This makes it much easier now to fetch and set access tokens from your authentication libraries.
+- ([597cd92](https://github.com/ts-rest/ts-rest/commit/597cd92)) **react-query**: New and vastly improved React Query integration with v5 support in `@ts-rest/react-query/v5`
+- ([597cd92](https://github.com/ts-rest/ts-rest/commit/597cd92)) **solid-query**: You can now pass functions as values for your `baseHeaders` in your client. This makes it much easier now to fetch and set access tokens from your authentication libraries.
+- ([597cd92](https://github.com/ts-rest/ts-rest/commit/597cd92)) **vue-query**: You can now pass functions as values for your `baseHeaders` in your client. This makes it much easier now to fetch and set access tokens from your authentication libraries.
+
+## 3.48.1
+
+- ([f2835dd](https://github.com/ts-rest/ts-rest/commit/f2835dd)) **core**: Fix merging of `baseHeaders` and `headers` in contracts when they are defined using plain types
+- ([48f2a8c](https://github.com/ts-rest/ts-rest/commit/48f2a8c)) **fastify**: Use fastify logger for route initalization logs
+- **serverless**: Updated
+
+## 3.48.0
+
+- ([24bb37c](https://github.com/ts-rest/ts-rest/commit/24bb37c)) **react-query**: RECOMMENDED: Add `includeThrownErrorsInErrorType` in react query client options. This should include the `Error` exception in the `error` type to cover non-HTTP errors such as network or CORS errors. Disabled by default so it does not break existing code, but extremely recommended to switch on.
+- **serverless**: Updated
+
+## 3.47.0
+
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **express**: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **fastify**: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **next**: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **react-query**: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **serverless**: BREAKING CHANGE: The order of generics on the `tsr.*` methods have been swapped. Now you don't have to pass `typeof contract` first. You can now pass your request extension type only.
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **serverless**: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **serverless**: Fluent router builder for easier modification of request context type in middleware. Try it out through `tsr.routerBuilder(contract)`!
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **solid-query**: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+- ([eb2c647](https://github.com/ts-rest/ts-rest/commit/eb2c647)) **vue-query**: Make sure initialized client and router types are exported so they can be re-exported with types emitted
+
+## 3.46.0
+
+- ([d763d45](https://github.com/ts-rest/ts-rest/commit/d763d45)) **core**: Export `RequestValidationErrorSchema` for default request validation error responses.
+- ([d763d45](https://github.com/ts-rest/ts-rest/commit/d763d45)) **express**: Export `RequestValidationErrorSchema` for default request validation error responses.
+- ([fb42b94](https://github.com/ts-rest/ts-rest/commit/fb42b94)) **fastify**: Add ts-rest route to fastify config object
+- ([bfec125](https://github.com/ts-rest/ts-rest/commit/bfec125)) **fastify**: Add option to define hooks on app level or route level
+- ([d763d45](https://github.com/ts-rest/ts-rest/commit/d763d45)) **fastify**: Export `RequestValidationErrorSchema` for default request validation error responses.
+- ([610428d](https://github.com/ts-rest/ts-rest/commit/610428d)) **fastify**: Fix when `pathPrefix` is used multiple times in nested contracts
+- ([d763d45](https://github.com/ts-rest/ts-rest/commit/d763d45)) **nest**: Export `RequestValidationErrorSchema` for default request validation error responses.
+- ([d763d45](https://github.com/ts-rest/ts-rest/commit/d763d45)) **next**: Export `RequestValidationErrorSchema` for default request validation error responses.
+- ([d763d45](https://github.com/ts-rest/ts-rest/commit/d763d45)) **serverless**: Export `RequestValidationErrorSchema` for default request validation error responses.
+- ([72fd14e](https://github.com/ts-rest/ts-rest/commit/72fd14e)) **serverless**: Add Azure Functions compatibility
+
+## 3.45.2
+
+- ([f5febbf](https://github.com/ts-rest/ts-rest/commit/f5febbf)) **serverless**: Change response handler type to accept promises
+
+## 3.45.1
+
+- ([b56a97d](https://github.com/ts-rest/ts-rest/commit/b56a97d)) **next**: Fix type inference for `createSingleRouteHandler`
+- **serverless**: Updated
+
+## 3.45.0
+
+- ([3dc697f](https://github.com/ts-rest/ts-rest/commit/3dc697f)) **fastify**: Pass `appRoute` to route handlers
+- ([5f83426](https://github.com/ts-rest/ts-rest/commit/5f83426)) **react-query**: Export the entire `@tanstack/react-query` from `@ts-rest/react-query/tanstack` to fix `No QueryClient set` errors caused by version mismatches
+- **serverless**: Updated
+
+## 3.44.1
+
+- ([08878f0](https://github.com/ts-rest/ts-rest/commit/08878f0)) **serverless**: Create type helpers for route-level middleware context
+
+## 3.44.0
+
+- ([60f90fa](https://github.com/ts-rest/ts-rest/commit/60f90fa)) **core**: Allow entire contract to be passed to `TsRestResponseError` so common responses can be thrown easily
+- ([45e5104](https://github.com/ts-rest/ts-rest/commit/45e5104)) **core**: Add router-level metadata
+- **serverless**: Updated
+
+## 3.43.0
+
+- ([308b966](https://github.com/ts-rest/ts-rest/commit/308b966)) **core**: `TsRestResponseError` can be thrown from any server package
+- ([308b966](https://github.com/ts-rest/ts-rest/commit/308b966)) **express**: `TsRestResponseError` can be thrown from any server package
+- ([308b966](https://github.com/ts-rest/ts-rest/commit/308b966)) **fastify**: `TsRestResponseError` can be thrown from any server package
+- ([308b966](https://github.com/ts-rest/ts-rest/commit/308b966)) **nest**: `TsRestResponseError` can be thrown from any server package
+- ([308b966](https://github.com/ts-rest/ts-rest/commit/308b966)) **next**: `TsRestResponseError` can be thrown from any server package
+- ([77f23a8](https://github.com/ts-rest/ts-rest/commit/77f23a8)) **open-api**: Add `operationMapper` option to extend OpenAPI operations
+- ([308b966](https://github.com/ts-rest/ts-rest/commit/308b966)) **serverless**: `TsRestResponseError` can be thrown from any server package
+- ([05e8a92](https://github.com/ts-rest/ts-rest/commit/05e8a92)) **serverless**: Add ability to include custom platform context for serverless fetch handler
+
+## 3.42.0
+
+- ([7372bee](https://github.com/ts-rest/ts-rest/commit/7372bee)) **core**: Allow arrays of files to be uploaded
+- ([7108c19](https://github.com/ts-rest/ts-rest/commit/7108c19)) **serverless**: Add middleware support
+
+## 3.41.2
+
+- ([b6bd2ed](https://github.com/ts-rest/ts-rest/commit/b6bd2ed)) **serverless**: Fix module resolution when not using node16 or nodenext
+
+## 3.41.1
+
+- ([d107181](https://github.com/ts-rest/ts-rest/commit/d107181)) **serverless**: Fix broken type for `@ts-rest/serverless/next` handler
+
+## 3.41.0
+
+- ([fc0adc6](https://github.com/ts-rest/ts-rest/commit/fc0adc6)) **core**: Add contract option to define common responses
+- ([a0ee91d](https://github.com/ts-rest/ts-rest/commit/a0ee91d)) **open-api**: Fix setting of response description
+- ([5a48f18](https://github.com/ts-rest/ts-rest/commit/5a48f18)) **react-query**: Fix `select` option
+- **serverless**: Updated
+- ([5a48f18](https://github.com/ts-rest/ts-rest/commit/5a48f18)) **solid-query**: Fix `select` option
+- ([5a48f18](https://github.com/ts-rest/ts-rest/commit/5a48f18)) **vue-query**: Fix `select` option
+
+## 3.40.1
+
+- ([afa5066](https://github.com/ts-rest/ts-rest/commit/afa5066)) **core**: Fix incorrect type for URL `params` when using optional params without defining `pathParams`
+- ([afa5066](https://github.com/ts-rest/ts-rest/commit/afa5066)) **core**: Fix broken types for `c.responses()`
+- **serverless**: Updated
+
+## 3.40.0
+
+- ([fa7219d](https://github.com/ts-rest/ts-rest/commit/fa7219d)) **serverless**: Support Next.js App Router route handlers
+
+## 3.39.2
+
+- ([dc554da](https://github.com/ts-rest/ts-rest/commit/dc554da)) **core**: Fix `params` resolving as `any` when `pathParams` is missing and zod is not installed
+- **serverless**: Updated
+
+## 3.39.1
+
+- ([4e166b3](https://github.com/ts-rest/ts-rest/commit/4e166b3)) **fastify**: Fix fastify crashing on malformed request JSON
+- **serverless**: Updated
+
+## 3.39.0
+
+- ([860e402](https://github.com/ts-rest/ts-rest/commit/860e402)) **core**: Add contract definition for an absent body and handle accordingly on the server
+- ([487b2b6](https://github.com/ts-rest/ts-rest/commit/487b2b6)) **core**: Add `c.responses` utility
+- ([8f4cfe6](https://github.com/ts-rest/ts-rest/commit/8f4cfe6)) **core**: Fix client not validating response
+- ([860e402](https://github.com/ts-rest/ts-rest/commit/860e402)) **express**: Add contract definition for an absent body and handle accordingly on the server
+- ([860e402](https://github.com/ts-rest/ts-rest/commit/860e402)) **fastify**: Add contract definition for an absent body and handle accordingly on the server
+- ([860e402](https://github.com/ts-rest/ts-rest/commit/860e402)) **nest**: Add contract definition for an absent body and handle accordingly on the server
+- ([860e402](https://github.com/ts-rest/ts-rest/commit/860e402)) **next**: Add contract definition for an absent body and handle accordingly on the server
+- ([860e402](https://github.com/ts-rest/ts-rest/commit/860e402)) **serverless**: Add contract definition for an absent body and handle accordingly on the server
+
+## 3.38.0
+
+- ([0b9f249](https://github.com/ts-rest/ts-rest/commit/0b9f249)) **core**: Fix ts-rest overwriting a supplied content-type header
+- ([15d4926](https://github.com/ts-rest/ts-rest/commit/15d4926)) **core**: Fix invalid `extraHeaders` type when no headers are defined in the contract
+- ([33d6a57](https://github.com/ts-rest/ts-rest/commit/33d6a57)) **express**: Add single route implementation helper
+- ([33d6a57](https://github.com/ts-rest/ts-rest/commit/33d6a57)) **fastify**: Add single route implementation helper
+- ([33d6a57](https://github.com/ts-rest/ts-rest/commit/33d6a57)) **next**: Add single route implementation helper
+- **serverless**: Updated
+
+## 3.37.0
+
+- ([6a5280c](https://github.com/ts-rest/ts-rest/commit/6a5280c)) **core**: Allow fetch options to be set and client options to be overridden per request
+- ([77db06b](https://github.com/ts-rest/ts-rest/commit/77db06b)) **core**: Fix client not correctly encoding application/x-www-form-urlencoded body
+- ([85b262b](https://github.com/ts-rest/ts-rest/commit/85b262b)) **nest**: Fix return types for Nest handlers
+- ([6a5280c](https://github.com/ts-rest/ts-rest/commit/6a5280c)) **next**: Deprecate initNextClient. Use `initClient` from @ts-rest/core and use the `fetchOptions.next` parameter.
+- ([6a5280c](https://github.com/ts-rest/ts-rest/commit/6a5280c)) **react-query**: Allow fetch options to be set and client options to be overridden per request
+- **serverless**: Updated
+- ([6a5280c](https://github.com/ts-rest/ts-rest/commit/6a5280c)) **solid-query**: Allow fetch options to be set and client options to be overridden per request
+- ([6a5280c](https://github.com/ts-rest/ts-rest/commit/6a5280c)) **vue-query**: Allow fetch options to be set and client options to be overridden per request
+
+## 3.36.0
+
+- ([c7e05d8](https://github.com/ts-rest/ts-rest/commit/c7e05d8)) **core**: Fix optional path parameters showing in types with a question mark if path params are not used
+- ([3e8701c](https://github.com/ts-rest/ts-rest/commit/3e8701c)) **nest**: Add functionality to be able to set configuration options globally using `TsRestModule`
+- ([ab4dd27](https://github.com/ts-rest/ts-rest/commit/ab4dd27)) **next**: Add support for creating single url routes in Next.js
+- **serverless**: Updated
+
+## 3.35.1
+
+- ([b3fde9b](https://github.com/ts-rest/ts-rest/commit/b3fde9b)) **nest**: Fix Nest.js interceptor returninng promise when using new Nest.js handlers
+- ([14f9416](https://github.com/ts-rest/ts-rest/commit/14f9416)) **nest**: Allow Nest.js handlers to return non-promise responses
+
+## 3.35.0
+
+- ([bacc9d1](https://github.com/ts-rest/ts-rest/commit/bacc9d1)) **serverless**: New serverless library for AWS Lambda, Edge runtimes and Next.js-specific Edge runtime
+
+## 3.34.0
+
+- ([ea5c641](https://github.com/ts-rest/ts-rest/commit/ea5c641)) **express**: Export type `TsRestExpressOptions`
+- ([b194d2a](https://github.com/ts-rest/ts-rest/commit/b194d2a)) **open-api**: Allow examples on body and responses
+- ([4665e0f](https://github.com/ts-rest/ts-rest/commit/4665e0f)) **open-api**: Correctly add `style: deepObject` for optional objects
+
+## 3.33.1
+
+- ([6d2c369](https://github.com/ts-rest/ts-rest/commit/6d2c369)) **react-query**: Remove TanStack Query v5 from peer dependencies
+- ([6d2c369](https://github.com/ts-rest/ts-rest/commit/6d2c369)) **vue-query**: Remove TanStack Query v5 from peer dependencies
+
+## 3.33.0
+
+- ([820658a](https://github.com/ts-rest/ts-rest/commit/820658a)) **express**: feat `@ts-rest/express`: Allow file downloads with Express
+
+## 3.32.0
+
+- ([c4fb3f6](https://github.com/ts-rest/ts-rest/commit/c4fb3f6)) **core**: feat: `@ts-rest/core`: Add support for `x-www-form-urlencoded` content-type to core client fetcher
+
+## 3.31.0
+
+- ([dcf40a6](https://github.com/ts-rest/ts-rest/commit/dcf40a6)) **nest**: feat: `@ts-rest/nest` allow TsRestException to be handled by NestJS exception filters
+- ([89941a2](https://github.com/ts-rest/ts-rest/commit/89941a2)) **nest**: feat: `@ts-rest/nest` Adds support to provide a `cause` to `TsRestException`
+- ([3668247](https://github.com/ts-rest/ts-rest/commit/3668247)) **next**: feat: `@ts-rest/next` allow nextjs as a peer dependency
+- ([cb7aa3d](https://github.com/ts-rest/ts-rest/commit/cb7aa3d)) **next**: feat: `ts-rest/next` allow customization for zod validation errors
+- ([29fe85b](https://github.com/ts-rest/ts-rest/commit/29fe85b)) **react-query**: feat: `@ts-rest/react-query` use object-syntax in react-query to support [@tanstack/react-query@^5.0.0](https://tanstack.com/query/latest/docs/react/guides/migrating-to-v5)
+- ([29fe85b](https://github.com/ts-rest/ts-rest/commit/29fe85b)) **vue-query**: feat: `@ts-rest/react-query` use object-syntax in react-query to support [@tanstack/react-query@^5.0.0](https://tanstack.com/query/latest/docs/react/guides/migrating-to-v5)
+
+## 3.30.5
+
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **core**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **core**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **express**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **express**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **fastify**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **fastify**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **nest**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **nest**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **next**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **next**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **open-api**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **open-api**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **react-query**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **react-query**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **solid-query**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **solid-query**: add changeset for latest changes
+- ([9bd7402](https://github.com/ts-rest/ts-rest/commit/9bd7402)) **vue-query**: - `@ts-rest/fastify` fix: fastify deprecated routerPath property (fixes [#392](https://github.com/ts-rest/ts-rest/issues/392))
+- ([8cc95c5](https://github.com/ts-rest/ts-rest/commit/8cc95c5)) **vue-query**: add changeset for latest changes
+
+## 3.30.4
+
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **core**: - (all packages) fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **express**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **fastify**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **nest**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **next**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **open-api**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **react-query**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **solid-query**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+- ([10dff96](https://github.com/ts-rest/ts-rest/commit/10dff96)) **vue-query**: - fix: address `zod` [CVE](https://nvd.nist.gov/vuln/detail/CVE-2023-4316) with bump `@ts-rest` peer dependency `zod` to minimum `^3.22.3`
+
+## 3.30.3
+
+- ([da48e62](https://github.com/ts-rest/ts-rest/commit/da48e62)) **core**: fix: apply `validateResponseOnClient` recursively to nested App Routers in `@ts-rest/core` client
+
+## 3.30.2
+
+- ([bd0161b](https://github.com/ts-rest/ts-rest/commit/bd0161b)) **core**: fix: content-type application/json will not be automatically included in client request if the route is GET or body is undefined/null
+- ([bd0161b](https://github.com/ts-rest/ts-rest/commit/bd0161b)) **vue-query**: fix: content-type application/json will not be automatically included in client request if the route is GET or body is undefined/null
+
+## 3.30.1
+
+- ([a30326c](https://github.com/ts-rest/ts-rest/commit/a30326c)) **fastify**: Remove console log in fasitfy route initialization for `@ts-rest/fastify`
+
+## 3.30.0
+
+- ([c056132](https://github.com/ts-rest/ts-rest/commit/c056132)) **core**: feat: add support for client-side response validation against contract schemas for `@ts-rest/core` (see docs for usage)
+- ([225921c](https://github.com/ts-rest/ts-rest/commit/225921c)) **express**: feat: added stronger typing for the `req` object in the route handler for '@ts-rest/express'
+
+## 3.29.0
+
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **core**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **express**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([f45aa1b](https://github.com/ts-rest/ts-rest/commit/f45aa1b)) **fastify**: fix: Type error when combining server contracts with fastify
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **fastify**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([19aeb0a](https://github.com/ts-rest/ts-rest/commit/19aeb0a)) **nest**: - feat: Add option to disable request validation
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **nest**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **next**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([5c80a5e](https://github.com/ts-rest/ts-rest/commit/5c80a5e)) **open-api**: fix(ts-rest-open-api): pathParams and query descriptions from `zod` `.describe()`
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **open-api**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **react-query**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([5f7b236](https://github.com/ts-rest/ts-rest/commit/5f7b236)) **solid-query**: - bump `@ts-rest/react-query` peer dependency `@tanstack/react-query` to `^4.0.0` (latest 4.33.0)
+- ([2feedbb](https://github.com/ts-rest/ts-rest/commit/2feedbb)) **vue-query**: Adds new `@ts-rest/vue-query` package!
+
+## 3.28.0
+
+- ([a7755ef](https://github.com/ts-rest/ts-rest/commit/a7755ef)) **core**: Adds support for fetch cache and support for Nextjs App Dir fetch (docs coming soon), see this PR for more info: https://github.com/ts-rest/ts-rest/pull/315
+- ([16501dd](https://github.com/ts-rest/ts-rest/commit/16501dd)) **core**: tsRestFetchApi should be more flexible when determining application/json content type header
+- ([207e9c5](https://github.com/ts-rest/ts-rest/commit/207e9c5)) **nest**: We now support the following versions of Nestjs:
+- ([a7755ef](https://github.com/ts-rest/ts-rest/commit/a7755ef)) **next**: Adds support for fetch cache and support for Nextjs App Dir fetch, see this PR for more info: https://github.com/ts-rest/ts-rest/pull/315
+
+## 3.27.0
+
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **core**: Upgrade zod to 3.21.4
+- ([637142f](https://github.com/ts-rest/ts-rest/commit/637142f)) **express**: Exposed `AppRouteOptions` and `AppRouteImplementation` types. They allow for greater developer flexibility and can be used to split router handlers.
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **express**: Upgrade zod to 3.21.4
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **fastify**: Upgrade zod to 3.21.4
+- ([f14ad97](https://github.com/ts-rest/ts-rest/commit/f14ad97)) **fastify**: Re-throw errors from route handlers
+- ([4444929](https://github.com/ts-rest/ts-rest/commit/4444929)) **fastify**: Pass the parsed request body from zod to the route handler instead of the original request.
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **nest**: Upgrade zod to 3.21.4
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **next**: Upgrade zod to 3.21.4
+- ([b85118a](https://github.com/ts-rest/ts-rest/commit/b85118a)) **open-api**: Add support for headers (using Zod) in open-api generation, from PR #318
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **open-api**: Upgrade zod to 3.21.4
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **react-query**: Upgrade zod to 3.21.4
+- ([55411ad](https://github.com/ts-rest/ts-rest/commit/55411ad)) **solid-query**: Upgrade zod to 3.21.4
+
+## 3.26.4
+
+- ([62db9e0](https://github.com/ts-rest/ts-rest/commit/62db9e0)) **nest**: fix: add support for trailing slashes in the nest multi-handler routing
+
+## 3.26.3
+
+- ([5365f2a](https://github.com/ts-rest/ts-rest/commit/5365f2a)) **nest**: Fix multi-handler breaking in Fastify with query parameters
+
+## 3.26.2
+
+- ([b3d3868](https://github.com/ts-rest/ts-rest/commit/b3d3868)) **nest**: Remove extra peer dependencies from @ts-rest/nest
+
+## 3.26.1
+
+- ([1afbf08](https://github.com/ts-rest/ts-rest/commit/1afbf08)) **nest**: Add missing ts-rest-nest support for Fastify (thanks btravers for the GH issue)
+
+## 3.26.0
+
+- ([fcf877d](https://github.com/ts-rest/ts-rest/commit/fcf877d)) **core**: Allow defining non-json response types in the contract
+- ([48b138d](https://github.com/ts-rest/ts-rest/commit/48b138d)) **core**: Add new `SingleHandler` and `MultiHandler` API to `@ts-rest/nest`
+- ([2763208](https://github.com/ts-rest/ts-rest/commit/2763208)) **core**: Added `pathPrefix` to contract options to allow recursive path prefixing.
+- ([fcf877d](https://github.com/ts-rest/ts-rest/commit/fcf877d)) **express**: Allow defining non-json response types in the contract
+- ([fcf877d](https://github.com/ts-rest/ts-rest/commit/fcf877d)) **fastify**: Allow defining non-json response types in the contract
+- ([fcf877d](https://github.com/ts-rest/ts-rest/commit/fcf877d)) **nest**: Allow defining non-json response types in the contract
+- ([48b138d](https://github.com/ts-rest/ts-rest/commit/48b138d)) **nest**: Add new `SingleHandler` and `MultiHandler` API to `@ts-rest/nest`
+- ([fcf877d](https://github.com/ts-rest/ts-rest/commit/fcf877d)) **next**: Allow defining non-json response types in the contract
+
+## 3.25.1
+
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **core**: Fix ESM/CJS issues in package.json
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **express**: Fix ESM/CJS issues in package.json
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **fastify**: Fix ESM/CJS issues in package.json
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **nest**: Fix ESM/CJS issues in package.json
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **next**: Fix ESM/CJS issues in package.json
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **open-api**: Fix ESM/CJS issues in package.json
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **react-query**: Fix ESM/CJS issues in package.json
+- ([81560d4](https://github.com/ts-rest/ts-rest/commit/81560d4)) **solid-query**: Fix ESM/CJS issues in package.json
+
+## 3.25.0
+
+- ([bf21a75](https://github.com/ts-rest/ts-rest/commit/bf21a75)) **core**: Internal refactor of types
+- ([bf21a75](https://github.com/ts-rest/ts-rest/commit/bf21a75)) **express**: Internal refactor of types
+- ([871466c](https://github.com/ts-rest/ts-rest/commit/871466c)) **fastify**: Added support for registering ts-rest as a Fastify plugin
+- ([bf21a75](https://github.com/ts-rest/ts-rest/commit/bf21a75)) **fastify**: Internal refactor of types
+- ([bf21a75](https://github.com/ts-rest/ts-rest/commit/bf21a75)) **nest**: Internal refactor of types
+- ([bf21a75](https://github.com/ts-rest/ts-rest/commit/bf21a75)) **next**: Internal refactor of types
+- ([bf21a75](https://github.com/ts-rest/ts-rest/commit/bf21a75)) **react-query**: Internal refactor of types
+- ([bf21a75](https://github.com/ts-rest/ts-rest/commit/bf21a75)) **solid-query**: Internal refactor of types
+
+## 3.24.0
+
+- ([2c16e94](https://github.com/ts-rest/ts-rest/commit/2c16e94)) **fastify**: Release initial fastify implementation
+
+## 3.23.0
+
+- ([74bb4a8](https://github.com/ts-rest/ts-rest/commit/74bb4a8)) **core**: Implement strict mode at a contract level. Strict mode ensures that only known responses are allowed by the type system. This applies both on the server and client side. Enable this with `strictStatusCodes: true` when defining a contract. If you would like to have the vanilla client throw an error when the response status is not known then you will need to use `throwOnUnknownStatus` when initializing the client.
+- ([df77869](https://github.com/ts-rest/ts-rest/commit/df77869)) **core**: Response headers are now exposed to clients. Users of custom API fetchers should start returning headers.
+- ([74e41dc](https://github.com/ts-rest/ts-rest/commit/74e41dc)) **core**: Add 'metadata' property to routes
+- ([74bb4a8](https://github.com/ts-rest/ts-rest/commit/74bb4a8)) **express**: Implement strict mode at a contract level. Strict mode ensures that only known responses are allowed by the type system. This applies both on the server and client side. Enable this with `strictStatusCodes: true` when defining a contract. If you would like to have the vanilla client throw an error when the response status is not known then you will need to use `throwOnUnknownStatus` when initializing the client.
+- ([74e41dc](https://github.com/ts-rest/ts-rest/commit/74e41dc)) **express**: Add middleware directly through ts-rest with type-safe injected route object
+- ([74bb4a8](https://github.com/ts-rest/ts-rest/commit/74bb4a8)) **nest**: Implement strict mode at a contract level. Strict mode ensures that only known responses are allowed by the type system. This applies both on the server and client side. Enable this with `strictStatusCodes: true` when defining a contract. If you would like to have the vanilla client throw an error when the response status is not known then you will need to use `throwOnUnknownStatus` when initializing the client.
+- ([74bb4a8](https://github.com/ts-rest/ts-rest/commit/74bb4a8)) **next**: Implement strict mode at a contract level. Strict mode ensures that only known responses are allowed by the type system. This applies both on the server and client side. Enable this with `strictStatusCodes: true` when defining a contract. If you would like to have the vanilla client throw an error when the response status is not known then you will need to use `throwOnUnknownStatus` when initializing the client.
+- ([df77869](https://github.com/ts-rest/ts-rest/commit/df77869)) **react-query**: Response headers are now exposed to clients. Users of custom API fetchers should start returning headers.
+- ([df77869](https://github.com/ts-rest/ts-rest/commit/df77869)) **solid-query**: Response headers are now exposed to clients. Users of custom API fetchers should start returning headers.
+
+## 3.22.0
+
+- ([d61b127](https://github.com/ts-rest/ts-rest/commit/d61b127)) **core**: Implement tanstack query cancellation
+- ([1c53ac9](https://github.com/ts-rest/ts-rest/commit/1c53ac9)) **core**: Add `throwOnUnknownStatus` to `initClient` configuration. When set to `true` the client will throw errors for all status codes returned by the server which are not defined in the contract.
+- ([d61b127](https://github.com/ts-rest/ts-rest/commit/d61b127)) **react-query**: Implement tanstack query cancellation
+- ([d61b127](https://github.com/ts-rest/ts-rest/commit/d61b127)) **solid-query**: Implement tanstack query cancellation
+
+## 3.21.2
+
+- ([42c478a](https://github.com/ts-rest/ts-rest/commit/42c478a)) **react-query**: Provide QueryClient functions through client directly
+
+## 3.21.1
+
+- ([1b4ef1e](https://github.com/ts-rest/ts-rest/commit/1b4ef1e)) **core**: Fix incorrect detection of zod objects with nested ZodEffects and fix regression with validation
+- ([1b4ef1e](https://github.com/ts-rest/ts-rest/commit/1b4ef1e)) **express**: Fix incorrect detection of zod objects with nested ZodEffects and fix regression with validation
+- ([1b4ef1e](https://github.com/ts-rest/ts-rest/commit/1b4ef1e)) **nest**: Fix incorrect detection of zod objects with nested ZodEffects and fix regression with validation
+- ([1b4ef1e](https://github.com/ts-rest/ts-rest/commit/1b4ef1e)) **next**: Fix incorrect detection of zod objects with nested ZodEffects and fix regression with validation
+- ([1b4ef1e](https://github.com/ts-rest/ts-rest/commit/1b4ef1e)) **open-api**: Fix incorrect detection of zod objects with nested ZodEffects and fix regression with validation
+
+## 3.21.0
+
+- ([b2bf874](https://github.com/ts-rest/ts-rest/commit/b2bf874)) **core**: Added React Query QueryClient function helpers
+- ([8729bb5](https://github.com/ts-rest/ts-rest/commit/8729bb5)) **core**: Fix node16 esm module resolution
+- ([b2bf874](https://github.com/ts-rest/ts-rest/commit/b2bf874)) **core**: Add rawQuery parameter to custom API fetcher parameters
+- ([8729bb5](https://github.com/ts-rest/ts-rest/commit/8729bb5)) **express**: Fix node16 esm module resolution
+- ([8729bb5](https://github.com/ts-rest/ts-rest/commit/8729bb5)) **nest**: Fix node16 esm module resolution
+- ([8729bb5](https://github.com/ts-rest/ts-rest/commit/8729bb5)) **next**: Fix node16 esm module resolution
+- ([8729bb5](https://github.com/ts-rest/ts-rest/commit/8729bb5)) **open-api**: Fix node16 esm module resolution
+- ([b2bf874](https://github.com/ts-rest/ts-rest/commit/b2bf874)) **react-query**: Added React Query QueryClient function helpers
+- ([8729bb5](https://github.com/ts-rest/ts-rest/commit/8729bb5)) **react-query**: Fix node16 esm module resolution
+- ([b2bf874](https://github.com/ts-rest/ts-rest/commit/b2bf874)) **react-query**: Add rawQuery parameter to custom API fetcher parameters
+- ([b2bf874](https://github.com/ts-rest/ts-rest/commit/b2bf874)) **solid-query**: Added React Query QueryClient function helpers
+- ([8729bb5](https://github.com/ts-rest/ts-rest/commit/8729bb5)) **solid-query**: Fix node16 esm module resolution
+- ([b2bf874](https://github.com/ts-rest/ts-rest/commit/b2bf874)) **solid-query**: Add rawQuery parameter to custom API fetcher parameters
+
+## 3.20.0
+
+- ([c1c1d31](https://github.com/ts-rest/ts-rest/commit/c1c1d31)) **core**: Add type-safe header definitions to contracts
+- ([c1c1d31](https://github.com/ts-rest/ts-rest/commit/c1c1d31)) **express**: Add type-safe header definitions to contracts
+- ([c1c1d31](https://github.com/ts-rest/ts-rest/commit/c1c1d31)) **nest**: Add type-safe header definitions to contracts
+- ([c1c1d31](https://github.com/ts-rest/ts-rest/commit/c1c1d31)) **next**: Add type-safe header definitions to contracts
+- ([c1c1d31](https://github.com/ts-rest/ts-rest/commit/c1c1d31)) **react-query**: Add type-safe header definitions to contracts
+- ([c1c1d31](https://github.com/ts-rest/ts-rest/commit/c1c1d31)) **solid-query**: Add type-safe header definitions to contracts
+
+## 3.19.5
+
+- ([574dbab](https://github.com/ts-rest/ts-rest/commit/574dbab)) **core**: Improved Zod object detection in OpenAPI
+- ([574dbab](https://github.com/ts-rest/ts-rest/commit/574dbab)) **open-api**: Improved Zod object detection in OpenAPI
+- ([a668ad7](https://github.com/ts-rest/ts-rest/commit/a668ad7)) **open-api**: Add missing support for Zod Refine
+
+## 3.19.4
+
+- ([4b6e9f6](https://github.com/ts-rest/ts-rest/commit/4b6e9f6)) **core**: Filter out undefined values from json queries
+
+## 3.19.3
+
+- ([5ee543f](https://github.com/ts-rest/ts-rest/commit/5ee543f)) **react-query**: Export ts-rest react-query types
+
+## 3.19.2
+
+- ([96ab6bd](https://github.com/ts-rest/ts-rest/commit/96ab6bd)) **core**: Revert ESM fix, due to failed compilation on Next.js
+- ([96ab6bd](https://github.com/ts-rest/ts-rest/commit/96ab6bd)) **express**: Revert ESM fix, due to failed compilation on Next.js
+- ([96ab6bd](https://github.com/ts-rest/ts-rest/commit/96ab6bd)) **nest**: Revert ESM fix, due to failed compilation on Next.js
+- ([96ab6bd](https://github.com/ts-rest/ts-rest/commit/96ab6bd)) **next**: Revert ESM fix, due to failed compilation on Next.js
+- ([96ab6bd](https://github.com/ts-rest/ts-rest/commit/96ab6bd)) **open-api**: Revert ESM fix, due to failed compilation on Next.js
+- ([96ab6bd](https://github.com/ts-rest/ts-rest/commit/96ab6bd)) **react-query**: Revert ESM fix, due to failed compilation on Next.js
+- ([96ab6bd](https://github.com/ts-rest/ts-rest/commit/96ab6bd)) **solid-query**: Revert ESM fix, due to failed compilation on Next.js
+
+## 3.19.1
+
+- ([5e1c6a2](https://github.com/ts-rest/ts-rest/commit/5e1c6a2)) **core**: feat: add rawBody and contentType to Custom Client API arguments
+- ([ecac73d](https://github.com/ts-rest/ts-rest/commit/ecac73d)) **core**: Fix compatibility with Node.js TS native ESM code
+- ([ecac73d](https://github.com/ts-rest/ts-rest/commit/ecac73d)) **express**: Fix compatibility with Node.js TS native ESM code
+- ([ecac73d](https://github.com/ts-rest/ts-rest/commit/ecac73d)) **nest**: Fix compatibility with Node.js TS native ESM code
+- ([ecac73d](https://github.com/ts-rest/ts-rest/commit/ecac73d)) **next**: Fix compatibility with Node.js TS native ESM code
+- ([ecac73d](https://github.com/ts-rest/ts-rest/commit/ecac73d)) **open-api**: Fix compatibility with Node.js TS native ESM code
+- ([5e1c6a2](https://github.com/ts-rest/ts-rest/commit/5e1c6a2)) **react-query**: feat: add rawBody and contentType to Custom Client API arguments
+- ([ecac73d](https://github.com/ts-rest/ts-rest/commit/ecac73d)) **react-query**: Fix compatibility with Node.js TS native ESM code
+- ([5e1c6a2](https://github.com/ts-rest/ts-rest/commit/5e1c6a2)) **solid-query**: feat: add rawBody and contentType to Custom Client API arguments
+- ([ecac73d](https://github.com/ts-rest/ts-rest/commit/ecac73d)) **solid-query**: Fix compatibility with Node.js TS native ESM code
+
+## 3.19.0
+
+- ([2bb39f8](https://github.com/ts-rest/ts-rest/commit/2bb39f8)) **core**: Added inference type helpers
+
+## 3.18.1
+
+- ([9bd4c77](https://github.com/ts-rest/ts-rest/commit/9bd4c77)) **core**: Fixes broken typing where sometimes the client's request args were incorrectly typed as optional
+
+## 3.18.0
+
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **core**: Export the default fetch API as `tsRestFetchApi` from the core library, enables you to easy modify the fetcher
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **core**: Add the ability to remove a baseHeader on a per-request basis by setting the headers value to undefined
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **core**: Allow custom API to allow extra args, and type them in the individual api calls
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **core**: Prettify the arguments of API calls, making it much clearer what data should be passed to ts-rest api calls (thanks @mattpocockuk!)
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **react-query**: Allow custom API to allow extra args, type them in the react query api calls
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **react-query**: Add the ability to remove a baseHeader on a per-request basis by setting the headers value to undefined
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **react-query**: Prettify the arguments of API calls, making it much clearer what data should be passed to ts-rest api calls (thanks @mattpocockuk!)
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **solid-query**: Export the default fetch API as `tsRestFetchApi` from the core library, enables you to easy modify the fetcher
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **solid-query**: Add the ability to remove a baseHeader on a per-request basis by setting the headers value to undefined
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **solid-query**: Add solid-query support for extra args and custom headers
+- ([3fa43d9](https://github.com/ts-rest/ts-rest/commit/3fa43d9)) **solid-query**: Prettify the arguments of API calls, making it much clearer what data should be passed to ts-rest api calls (thanks @mattpocockuk!)
+
+## 3.17.0
+
+- ([cb2a794](https://github.com/ts-rest/ts-rest/commit/cb2a794)) **open-api**: Improved OpenAPI generation
+
+## 3.16.2
+
+- ([3fa8679](https://github.com/ts-rest/ts-rest/commit/3fa8679)) **core**: Do not throw error for missing content-type header
+
+## 3.16.1
+
+- ([832b645](https://github.com/ts-rest/ts-rest/commit/832b645)) **core**: fix(core): wrong "content-type" detection
+- ([41a5fbb](https://github.com/ts-rest/ts-rest/commit/41a5fbb)) **express**: Make @ts-rest/express ESM compatible
+- ([8a8b606](https://github.com/ts-rest/ts-rest/commit/8a8b606)) **nest**: Increased type safety for the @TsRest decorator
+
+## 3.16.0
+
+- ([e490cf3](https://github.com/ts-rest/ts-rest/commit/e490cf3)) **core**: - Added server-side response validation feature
+- ([e490cf3](https://github.com/ts-rest/ts-rest/commit/e490cf3)) **express**: - Added server-side response validation feature
+- ([e490cf3](https://github.com/ts-rest/ts-rest/commit/e490cf3)) **nest**: - Added server-side response validation feature
+- ([e490cf3](https://github.com/ts-rest/ts-rest/commit/e490cf3)) **next**: - Added server-side response validation feature
+
+## 3.15.0
+
+- ([0f1edf9](https://github.com/ts-rest/ts-rest/commit/0f1edf9)) **core**: Rename some Nest functions and types, and deprecate old names
+- ([3f65909](https://github.com/ts-rest/ts-rest/commit/3f65909)) **core**: Drop usage of ES6 Proxy for clients (fixes IE11 support)
+- ([0f1edf9](https://github.com/ts-rest/ts-rest/commit/0f1edf9)) **nest**: Rename some Nest functions and types, and deprecate old names
+- ([3f65909](https://github.com/ts-rest/ts-rest/commit/3f65909)) **react-query**: Drop usage of ES6 Proxy for clients (fixes IE11 support)
+- ([3f65909](https://github.com/ts-rest/ts-rest/commit/3f65909)) **solid-query**: Drop usage of ES6 Proxy for clients (fixes IE11 support)
+
+## 3.14.0
+
+- ([13ca71b](https://github.com/ts-rest/ts-rest/commit/13ca71b)) **core**: Enable nested routers without declaring new constants
+
+## 3.13.1
+
+- ([d778e60](https://github.com/ts-rest/ts-rest/commit/d778e60)) **core**: Rebuilt without code comments in the compiled JS
+- ([d778e60](https://github.com/ts-rest/ts-rest/commit/d778e60)) **express**: Rebuilt without code comments in the compiled JS
+- ([d778e60](https://github.com/ts-rest/ts-rest/commit/d778e60)) **nest**: Rebuilt without code comments in the compiled JS
+- ([d778e60](https://github.com/ts-rest/ts-rest/commit/d778e60)) **next**: Rebuilt without code comments in the compiled JS
+- ([d778e60](https://github.com/ts-rest/ts-rest/commit/d778e60)) **open-api**: Rebuilt without code comments in the compiled JS
+- ([d778e60](https://github.com/ts-rest/ts-rest/commit/d778e60)) **react-query**: Rebuilt without code comments in the compiled JS
+- ([d778e60](https://github.com/ts-rest/ts-rest/commit/d778e60)) **solid-query**: Rebuilt without code comments in the compiled JS
+
+## 3.13.0
+
+- ([491a32d](https://github.com/ts-rest/ts-rest/commit/491a32d)) **react-query**: Add useQueries capability
+
+## 3.12.1
+
+- ([e0164f6](https://github.com/ts-rest/ts-rest/commit/e0164f6)) **core**: Publish README
+- ([e0164f6](https://github.com/ts-rest/ts-rest/commit/e0164f6)) **express**: Publish README
+- ([e0164f6](https://github.com/ts-rest/ts-rest/commit/e0164f6)) **nest**: Publish README
+- ([e0164f6](https://github.com/ts-rest/ts-rest/commit/e0164f6)) **next**: Publish README
+- ([e0164f6](https://github.com/ts-rest/ts-rest/commit/e0164f6)) **open-api**: Publish README
+- ([e0164f6](https://github.com/ts-rest/ts-rest/commit/e0164f6)) **react-query**: Publish README
+- ([e0164f6](https://github.com/ts-rest/ts-rest/commit/e0164f6)) **solid-query**: Publish README
+
+## 3.12.0
+
+- ([a53a384](https://github.com/ts-rest/ts-rest/commit/a53a384)) **core**: Add response shape shape helper to make allow you to extract the response from a Contract route
+- ([5a13803](https://github.com/ts-rest/ts-rest/commit/5a13803)) **core**: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+- ([36e5bd4](https://github.com/ts-rest/ts-rest/commit/36e5bd4)) **core**: Fix typing for query
+- ([5a13803](https://github.com/ts-rest/ts-rest/commit/5a13803)) **express**: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+- ([a53a384](https://github.com/ts-rest/ts-rest/commit/a53a384)) **nest**: Add response shape shape helper to make allow you to extract the response from a Contract route
+- ([5a13803](https://github.com/ts-rest/ts-rest/commit/5a13803)) **nest**: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+- ([5a13803](https://github.com/ts-rest/ts-rest/commit/5a13803)) **next**: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+- ([5a13803](https://github.com/ts-rest/ts-rest/commit/5a13803)) **open-api**: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+- ([5a13803](https://github.com/ts-rest/ts-rest/commit/5a13803)) **react-query**: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+- ([36e5bd4](https://github.com/ts-rest/ts-rest/commit/36e5bd4)) **react-query**: Fix typing for query
+- ([5a13803](https://github.com/ts-rest/ts-rest/commit/5a13803)) **solid-query**: Allow typed query parameters by encoding them as JSON strings (disabled by default)
+
+## 3.11.2
+
+- ([7a9a8a1](https://github.com/ts-rest/ts-rest/commit/7a9a8a1)) **solid-query**: Fix broken ESM module building for solid-query, was causing build errors with solid, especially solid-start
+
+## 3.11.1
+
+- ([0427ea3](https://github.com/ts-rest/ts-rest/commit/0427ea3)) **open-api**: Don't use $ref in OpenAPI
+
+## 3.11.0
+
+- ([57acbad](https://github.com/ts-rest/ts-rest/commit/57acbad)) **core**: Added the ability to omit the second parameter if there no required query parameters
+- ([57acbad](https://github.com/ts-rest/ts-rest/commit/57acbad)) **react-query**: Added the ability to omit the second parameter if there no required query parameters
+- ([57acbad](https://github.com/ts-rest/ts-rest/commit/57acbad)) **solid-query**: Added the ability to omit the second parameter if there no required query parameters
+
+## 3.10.2
+
+- ([fd456fc](https://github.com/ts-rest/ts-rest/commit/fd456fc)) **react-query**: Fix CJS export, fixes @ts-rest/react-query 3.10.1
+
+## 3.10.1
+
+- ([7f76c10](https://github.com/ts-rest/ts-rest/commit/7f76c10)) **react-query**: Fix missing typings due to new declaration file path
+
+## 3.10.0
+
+- ([046e498](https://github.com/ts-rest/ts-rest/commit/046e498)) **core**: Use Nest.js req.query and req.params instead of parsing from URL
+- ([35c64db](https://github.com/ts-rest/ts-rest/commit/35c64db)) **core**: Move next lib utils out of @ts-rest/core to reduce bundle size
+- ([046e498](https://github.com/ts-rest/ts-rest/commit/046e498)) **nest**: Use Nest.js req.query and req.params instead of parsing from URL
+- ([35c64db](https://github.com/ts-rest/ts-rest/commit/35c64db)) **next**: Move next lib utils out of @ts-rest/core to reduce bundle size
+
+## 3.9.0
+
+- ([020a8c5](https://github.com/ts-rest/ts-rest/commit/020a8c5)) **express**: Allow optional [ts-rest] ... logging for express endpoints
+- ([020a8c5](https://github.com/ts-rest/ts-rest/commit/020a8c5)) **express**: Pass express errors to next() rather than catching them and handling with ts-rest
+
+## 3.8.0
+
+- ([59b8d29](https://github.com/ts-rest/ts-rest/commit/59b8d29)) **core**: Add credentials option for fetch client
+- ([1b3faaf](https://github.com/ts-rest/ts-rest/commit/1b3faaf)) **core**: Use z.input for body and query types for clients
+- ([c716ab5](https://github.com/ts-rest/ts-rest/commit/c716ab5)) **open-api**: Fixed missing query parameters in generated OpenAPI
+- ([1b3faaf](https://github.com/ts-rest/ts-rest/commit/1b3faaf)) **react-query**: Use z.input for body and query types for clients
+- ([1b3faaf](https://github.com/ts-rest/ts-rest/commit/1b3faaf)) **solid-query**: Use z.input for body and query types for clients
+
+## 3.7.0
+
+- ([d4d9be5](https://github.com/ts-rest/ts-rest/commit/d4d9be5)) **core**: Add support for pathParams Zod verification
+- ([8a19717](https://github.com/ts-rest/ts-rest/commit/8a19717)) **core**: Add pathParams transformations
+- ([d4d9be5](https://github.com/ts-rest/ts-rest/commit/d4d9be5)) **express**: Add support for pathParams Zod verification
+- ([8a19717](https://github.com/ts-rest/ts-rest/commit/8a19717)) **nest**: Add pathParams transformations
+- ([8a19717](https://github.com/ts-rest/ts-rest/commit/8a19717)) **next**: Add pathParams transformations
+
+## 3.6.1
+
+- **react-query**: Updated
+
+## 3.6.0
+
+- ([6753c69](https://github.com/ts-rest/ts-rest/commit/6753c69)) **core**: Build ESM and CommonJS for improved compatibility
+- ([6753c69](https://github.com/ts-rest/ts-rest/commit/6753c69)) **express**: Build ESM and CommonJS for improved compatibility
+- ([6753c69](https://github.com/ts-rest/ts-rest/commit/6753c69)) **nest**: Build ESM and CommonJS for improved compatibility
+- ([6753c69](https://github.com/ts-rest/ts-rest/commit/6753c69)) **next**: Build ESM and CommonJS for improved compatibility
+- ([6753c69](https://github.com/ts-rest/ts-rest/commit/6753c69)) **open-api**: Build ESM and CommonJS for improved compatibility
+- ([6753c69](https://github.com/ts-rest/ts-rest/commit/6753c69)) **react-query**: Build ESM and CommonJS for improved compatibility
+- ([6753c69](https://github.com/ts-rest/ts-rest/commit/6753c69)) **solid-query**: Build ESM and CommonJS for improved compatibility
+
+## 3.5.0
+
+- ([068822d](https://github.com/ts-rest/ts-rest/commit/068822d)) **core**: Add support for multipart/form-data
+- ([068822d](https://github.com/ts-rest/ts-rest/commit/068822d)) **express**: Add support for multipart/form-data
+- ([068822d](https://github.com/ts-rest/ts-rest/commit/068822d)) **nest**: Add support for multipart/form-data
+- ([068822d](https://github.com/ts-rest/ts-rest/commit/068822d)) **react-query**: Add support for multipart/form-data
+- ([068822d](https://github.com/ts-rest/ts-rest/commit/068822d)) **solid-query**: Add support for multipart/form-data
+
+## 3.4.2
+
+- ([242d795](https://github.com/ts-rest/ts-rest/commit/242d795)) **react-query**: Fix custom api not being used on useMutation
+- ([242d795](https://github.com/ts-rest/ts-rest/commit/242d795)) **solid-query**: Fix custom api not being used on useMutation
+
+## 3.4.1
+
+- ([92346a0](https://github.com/ts-rest/ts-rest/commit/92346a0)) **express**: Fix body not working without Zod schema
+
+## 3.4.0
+
+- ([3dc6b1c](https://github.com/ts-rest/ts-rest/commit/3dc6b1c)) **open-api**: Allow setting operationId in open-api docs
+
+## 3.3.0
+
+- ([bd619e4](https://github.com/ts-rest/ts-rest/commit/bd619e4)) **express**: Make createExpressEndpoints take IRouter instead of Express
+
+## 3.2.2
+
+- ([09f8252](https://github.com/ts-rest/ts-rest/commit/09f8252)) **express**: Expose request headers in express router
+
+## 3.2.1
+
+- ([029de31](https://github.com/ts-rest/ts-rest/commit/029de31)) **react-query**: Fix missing typescript definitions
+- ([029de31](https://github.com/ts-rest/ts-rest/commit/029de31)) **solid-query**: Fix missing typescript definitions
+
+## 3.2.0
+
+- ([c9a5a52](https://github.com/ts-rest/ts-rest/commit/c9a5a52)) **react-query**: Add useInfiniteQuery support to @ts-rest/react-query
+- ([c9a5a52](https://github.com/ts-rest/ts-rest/commit/c9a5a52)) **solid-query**: Add useInfiniteQuery support to @ts-rest/solid-query
+
+## 3.1.1
+
+- ([d3a74fe](https://github.com/ts-rest/ts-rest/commit/d3a74fe)) **core**: Remove unnecessary recursion
+
+## 3.1.0
+
+- ([1696c44](https://github.com/ts-rest/ts-rest/commit/1696c44)) **next**: Provide access to req and res from Next.js adapter
+
+## 3.0.0
+
+- ([895112a](https://github.com/ts-rest/ts-rest/commit/895112a)) **core**: Migrate paths to a string rather than function
+- ([895112a](https://github.com/ts-rest/ts-rest/commit/895112a)) **express**: Migrate paths to a string rather than function
+- ([895112a](https://github.com/ts-rest/ts-rest/commit/895112a)) **nest**: Migrate paths to a string rather than function
+- ([895112a](https://github.com/ts-rest/ts-rest/commit/895112a)) **next**: Migrate paths to a string rather than function
+- ([895112a](https://github.com/ts-rest/ts-rest/commit/895112a)) **open-api**: Migrate paths to a string rather than function
+- ([6195da1](https://github.com/ts-rest/ts-rest/commit/6195da1)) **open-api**: Fix body zod parsing not working at all
+
+## 2.1.0
+
+- ([75f157a](https://github.com/ts-rest/ts-rest/commit/75f157a)) **core**: Add Zod validation to @ts-rest/next
+- ([75f157a](https://github.com/ts-rest/ts-rest/commit/75f157a)) **express**: Add Zod validation to @ts-rest/next
+- ([75f157a](https://github.com/ts-rest/ts-rest/commit/75f157a)) **nest**: Add Zod validation to @ts-rest/next
+- ([75f157a](https://github.com/ts-rest/ts-rest/commit/75f157a)) **next**: Add Zod validation to @ts-rest/next
+- ([a80cc0f](https://github.com/ts-rest/ts-rest/commit/a80cc0f)) **next**: Add initial Next implementation, with a single endpoint based implementation
+
+## 2.0.1
+
+- ([119aed6](https://github.com/ts-rest/ts-rest/commit/119aed6)) **core**: Bump versions to 2.0.1
+- ([119aed6](https://github.com/ts-rest/ts-rest/commit/119aed6)) **express**: Bump versions to 2.0.1
+- ([119aed6](https://github.com/ts-rest/ts-rest/commit/119aed6)) **nest**: Bump versions to 2.0.1
+- ([119aed6](https://github.com/ts-rest/ts-rest/commit/119aed6)) **open-api**: Bump versions to 2.0.1
+
+## 2.0.0
+
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **core**: Change contract to support multiple responses, for different statuses
+- ([c88fb99](https://github.com/ts-rest/ts-rest/commit/c88fb99)) **core**: Rename data to body to be more HTTP spec compliant
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **core**: Add error handling support to express
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **express**: Change contract to support multiple responses, for different statuses
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **express**: Add error handling support to express
+- ([c88fb99](https://github.com/ts-rest/ts-rest/commit/c88fb99)) **express**: Rename data to body to be more HTTP spec compliant
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **nest**: Change contract to support multiple responses, for different statuses
+- ([c88fb99](https://github.com/ts-rest/ts-rest/commit/c88fb99)) **nest**: Rename data to body to be more HTTP spec compliant
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **nest**: Add error handling support to express
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **open-api**: Change contract to support multiple responses, for different statuses
+- ([4792b26](https://github.com/ts-rest/ts-rest/commit/4792b26)) **open-api**: Add error handling support to express
+
+## 1.3.0
+
+- ([a5d7e97](https://github.com/ts-rest/ts-rest/commit/a5d7e97)) **core**: Add basic open-api support
+- ([077d57b](https://github.com/ts-rest/ts-rest/commit/077d57b)) **core**: Update client to have zod response type
+- ([5f87b1a](https://github.com/ts-rest/ts-rest/commit/5f87b1a)) **core**: Add OpenAPI options for generateOpenApi
+- ([077d57b](https://github.com/ts-rest/ts-rest/commit/077d57b)) **express**: Update client to have zod response type
+- ([5f87b1a](https://github.com/ts-rest/ts-rest/commit/5f87b1a)) **express**: Add OpenAPI options for generateOpenApi
+- ([077d57b](https://github.com/ts-rest/ts-rest/commit/077d57b)) **nest**: Update client to have zod response type
+- ([5f87b1a](https://github.com/ts-rest/ts-rest/commit/5f87b1a)) **nest**: Add OpenAPI options for generateOpenApi
+- ([a5d7e97](https://github.com/ts-rest/ts-rest/commit/a5d7e97)) **open-api**: Add basic open-api support
+- ([077d57b](https://github.com/ts-rest/ts-rest/commit/077d57b)) **open-api**: Update client to have zod response type
+- ([5f87b1a](https://github.com/ts-rest/ts-rest/commit/5f87b1a)) **open-api**: Add OpenAPI options for generateOpenApi
+
+## 1.2.0
+
+- ([987fd07](https://github.com/ts-rest/ts-rest/commit/987fd07)) **core**: Add query and mutation support to react-query, instead of requring useMutation and useQuery
+
+## 1.1.0
+
+- ([72dd65d](https://github.com/ts-rest/ts-rest/commit/72dd65d)) **core**: Extract express logic to @ts-rest/express
+- ([72dd65d](https://github.com/ts-rest/ts-rest/commit/72dd65d)) **express**: Extract express logic to @ts-rest/express
+
+## 1.0.4
+
+- ([3adb9c8](https://github.com/ts-rest/ts-rest/commit/3adb9c8)) **core**: Change build path
+- ([3adb9c8](https://github.com/ts-rest/ts-rest/commit/3adb9c8)) **nest**: Change build path
+
+## 1.0.3
+
+- ([0d706a3](https://github.com/ts-rest/ts-rest/commit/0d706a3)) **core**: Sync package versions
+- ([0d706a3](https://github.com/ts-rest/ts-rest/commit/0d706a3)) **nest**: Sync package versions
+
+## 1.0.2
+
+- ([1fe80ea](https://github.com/ts-rest/ts-rest/commit/1fe80ea)) **core**: sync versions
+- ([1fe80ea](https://github.com/ts-rest/ts-rest/commit/1fe80ea)) **nest**: sync versions
+
+## 1.0.1
+
+- ([8d908ee](https://github.com/ts-rest/ts-rest/commit/8d908ee)) **core**: Update package scope
+
+## 1.0.0
+
+- ([86a5cb7](https://github.com/ts-rest/ts-rest/commit/86a5cb7)) **core**: add react-query and nest integration
+- ([86a5cb7](https://github.com/ts-rest/ts-rest/commit/86a5cb7)) **nest**: add react-query and nest integration
+
