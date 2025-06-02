@@ -97,6 +97,7 @@
     "vitest": "0.32.4",
     "vue": "^3.3.4",
     "zod": "3.22.3",
+    "zod4": "npm:zod@3.25.47",
     "zustand": "^4.1.1"
   },
   "devDependencies": {

@@ -22,7 +22,7 @@ export default function Layout({ children }: { children: any }) {
         <PostHogProvider>
           <Banner variant="rainbow" id="3-53-0-release">
             Zod 4 (and all other Standard Schema support) is available as a
-            release candidate `3.53.0-rc.0`
+            release candidate `3.53.0-rc.1`
           </Banner>
           <RootProvider>{children}</RootProvider>
           <CookieBanner />

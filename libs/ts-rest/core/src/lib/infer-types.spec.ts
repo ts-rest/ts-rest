@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { initContract } from './dsl';
+import { z as z4 } from 'zod4/v4';
+import {
+  UnknownOrUndefinedObjectValuesToOptionalKeys,
+  initContract,
+} from './dsl';
 import { Equal, Expect } from './test-helpers';
 import {
   ClientInferRequest,
@@ -16,8 +20,9 @@ import {
   HTTPStatusCode,
   SuccessfulHttpStatusCode,
 } from './status-codes';
-import { FetchOptions, OverrideableClientArgs } from './client';
+import { FetchOptions, OverrideableClientArgs, initClient } from './client';
 import { Prettify } from './type-utils';
+import * as v from 'valibot';
 
 const c = initContract();
 
@@ -825,4 +830,142 @@ it('type inference helpers', () => {
       Exclude<ErrorHttpStatusCode, 404>
     >
   >;
+});
+
+describe('ClientInferRequest', () => {
+  it('standard schema - optional headers', () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/post',
+        headers: {
+          'x-foo': v.optional(v.string()),
+        },
+        responses: {
+          200: c.noBody(),
+        },
+      },
+    });
+
+    const client = initClient(contract, { baseUrl: '' });
+    const testUsage = () => client.getPost({ headers: { 'x-foo': 'string' } });
+
+    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
+    type TestResult = Expect<
+      Equal<
+        Actual,
+        {
+          'x-foo'?: string | undefined;
+        }
+      >
+    >;
+  });
+
+  it('headers zod coerce', () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/post',
+        headers: {
+          'x-foo': z.coerce.number().optional(),
+        },
+        responses: {
+          200: c.noBody(),
+        },
+      },
+    });
+
+    const client = initClient(contract, { baseUrl: '' });
+    const testUsage = () => client.getPost({ headers: { 'x-foo': 1 } });
+
+    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
+    type TestResult = Expect<Equal<Actual, { 'x-foo'?: number | undefined }>>;
+  });
+
+  it('headers zod (4) coerce', () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts',
+        headers: {
+          'x-foo': z4.coerce.number().optional(),
+        },
+        responses: {
+          200: c.noBody(),
+        },
+      },
+    });
+
+    const client = initClient(contract, { baseUrl: '' });
+    const testUsage = () => client.getPost({ headers: { 'x-foo': 1 } });
+
+    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
+    type TestResult = Expect<Equal<Actual, { 'x-foo'?: unknown }>>;
+  });
+
+  it('headers zod (4) union sometimes undefined', () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts',
+        headers: {
+          'x-foo': z4.union([
+            z4.string(),
+            z4.number(),
+            z4.null(),
+            z4.undefined(),
+          ]),
+          'x-required': z4.union([z4.string(), z4.number(), z4.null()]),
+        },
+        responses: {
+          200: c.noBody(),
+        },
+      },
+    });
+
+    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
+    type TestResult = Expect<
+      Equal<
+        Actual,
+        {
+          'x-foo'?: string | number | null | undefined; // <- this one becomes optional as it contains undefined
+          'x-required': string | number | null;
+        }
+      >
+    >;
+  });
+});
+
+describe('UnknownOrUndefinedObjectValuesToOptionalKeys', () => {
+  it('should make undefined key optional', () => {
+    type Actual = Prettify<
+      UnknownOrUndefinedObjectValuesToOptionalKeys<{
+        foo: string | undefined;
+      }>
+    >;
+    type Assert = Expect<Equal<Actual, { foo?: string | undefined }>>;
+  });
+
+  it('should make unknown key optional', () => {
+    type Actual = Prettify<
+      UnknownOrUndefinedObjectValuesToOptionalKeys<{
+        foo: unknown;
+      }>
+    >;
+    type Assert = Expect<Equal<Actual, { foo?: unknown }>>;
+  });
+
+  it('should not affect a non-empty object', () => {
+    type Actual = Prettify<
+      UnknownOrUndefinedObjectValuesToOptionalKeys<{
+        foo: string;
+      }>
+    >;
+    type Assert = Expect<Equal<Actual, { foo: string }>>;
+  });
+
+  it('should not affect an empty object', () => {
+    type Actual = Prettify<UnknownOrUndefinedObjectValuesToOptionalKeys<{}>>;
+    type Assert = Expect<Equal<Actual, {}>>;
+  });
 });
