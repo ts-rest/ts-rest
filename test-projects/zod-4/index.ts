@@ -51,7 +51,7 @@ export const contract = c.router({
   },
 });
 
-const client = initClient(contract, { baseUrl: '' });
+const client = initClient(contract, { baseUrl: 'http://localhost:8000' });
 
 client.getPokemon({ params: { id: '1' } });
 
