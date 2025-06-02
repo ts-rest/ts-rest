@@ -848,7 +848,7 @@ describe('ClientInferRequest', () => {
     });
 
     const client = initClient(contract, { baseUrl: '' });
-    client.getPost({ headers: { 'x-foo': 'string' } });
+    const testUsage = () => client.getPost({ headers: { 'x-foo': 'string' } });
 
     type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
     type TestResult = Expect<
@@ -876,7 +876,7 @@ describe('ClientInferRequest', () => {
     });
 
     const client = initClient(contract, { baseUrl: '' });
-    client.getPost({ headers: { 'x-foo': 1 } });
+    const testUsage = () => client.getPost({ headers: { 'x-foo': 1 } });
 
     type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
     type TestResult = Expect<Equal<Actual, { 'x-foo'?: number | undefined }>>;
@@ -897,7 +897,7 @@ describe('ClientInferRequest', () => {
     });
 
     const client = initClient(contract, { baseUrl: '' });
-    client.getPost({ headers: { 'x-foo': 1 } });
+    const testUsage = () => client.getPost({ headers: { 'x-foo': 1 } });
 
     type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
     type TestResult = Expect<Equal<Actual, { 'x-foo'?: unknown }>>;
