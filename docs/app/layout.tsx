@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
 import { Banner } from 'fumadocs-ui/components/banner';
 import { PostHogProvider } from '../components/PostHogProvider';
+import { CookieBanner } from '../components/CookieBanner';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,6 +25,7 @@ export default function Layout({ children }: { children: any }) {
             release candidate `3.53.0-rc.0`
           </Banner>
           <RootProvider>{children}</RootProvider>
+          <CookieBanner />
         </PostHogProvider>
       </body>
     </html>
