@@ -54,11 +54,11 @@ export function CookieBanner() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:bottom-4 md:right-4 md:left-auto z-50 md:max-w-sm">
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 md:p-4">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-4 md:p-4">
         <div className="flex items-start gap-3">
           <Cookie className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 md:mb-5">
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 mb-4 md:mb-5">
               We use tracking cookies (
               <Link href="https://posthog.com/">Posthog</Link>) to track docs
               usage and help us improve.
@@ -75,7 +75,7 @@ export function CookieBanner() {
               <button
                 type="button"
                 onClick={handleDeclineCookies}
-                className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 rounded-md transition-colors touch-manipulation"
+                className="flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-300 text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 rounded-md transition-colors touch-manipulation"
               >
                 <X className="h-4 w-4 sm:h-3 sm:w-3" />
                 Decline cookies
@@ -85,7 +85,7 @@ export function CookieBanner() {
           <button
             type="button"
             onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 p-1 touch-manipulation"
+            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 flex-shrink-0 p-1 touch-manipulation"
           >
             <X className="h-4 w-4" />
           </button>
