@@ -816,4 +816,78 @@ describe('tsRestLambda', () => {
       isBase64Encoded: false,
     });
   });
+
+  // ALB Event Tests
+  describe('ALB Events', () => {
+    let albEvent: any;
+
+    beforeEach(() => {
+      albEvent = {
+        requestContext: {
+          elb: {
+            targetGroupArn: 'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test-target-group/1234567890abcdef'
+          }
+        },
+        httpMethod: 'GET',
+        path: '/test',
+        queryStringParameters: {
+          foo: 'bar'
+        },
+        headers: {
+          'content-type': 'application/json',
+          'origin': 'http://localhost'
+        },
+        body: '',
+        isBase64Encoded: false
+      };
+    });
+
+    it('should handle GET request with ALB event', async () => {
+      const response = await lambdaHandler(albEvent, {} as Context);
+      expect(response).toEqual({
+        statusCode: 200,
+        headers: {
+          'access-control-allow-credentials': 'true',
+          'access-control-allow-origin': 'http://localhost',
+          'content-type': 'application/json',
+          vary: 'Origin',
+        },
+        multiValueHeaders: {
+          'access-control-allow-credentials': ['true'],
+          'access-control-allow-origin': ['http://localhost'],
+          'content-type': ['application/json'],
+          vary: ['Origin'],
+        },
+        body: '{"foo":"bar"}',
+        isBase64Encoded: false,
+      });
+    });
+
+    it('should handle POST request with ALB event', async () => {
+      albEvent.httpMethod = 'POST';
+      albEvent.path = '/ping/123';
+      albEvent.body = '{"ping":"foo"}';
+
+      const response = await lambdaHandler(albEvent, {} as Context);
+      expect(response).toEqual({
+        statusCode: 200,
+        headers: {
+          'access-control-allow-credentials': 'true',
+          'access-control-allow-origin': 'http://localhost',
+          'cache-control': 'no-cache, no-store',
+          'content-type': 'application/json',
+          vary: 'Origin',
+        },
+        multiValueHeaders: {
+          'access-control-allow-credentials': ['true'],
+          'access-control-allow-origin': ['http://localhost'],
+          'cache-control': ['no-cache', 'no-store'],
+          'content-type': ['application/json'],
+          vary: ['Origin'],
+        },
+        body: '{"id":"123","pong":"foo"}',
+        isBase64Encoded: false,
+      });
+    });
+  });
 });
