@@ -902,6 +902,38 @@ describe('ClientInferRequest', () => {
     type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
     type TestResult = Expect<Equal<Actual, { 'x-foo'?: unknown }>>;
   });
+
+  it('headers zod (4) union sometimes undefined', () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts',
+        headers: {
+          'x-foo': z4.union([
+            z4.string(),
+            z4.number(),
+            z4.null(),
+            z4.undefined(),
+          ]),
+          'x-required': z4.union([z4.string(), z4.number(), z4.null()]),
+        },
+        responses: {
+          200: c.noBody(),
+        },
+      },
+    });
+
+    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
+    type TestResult = Expect<
+      Equal<
+        Actual,
+        {
+          'x-foo'?: string | number | null | undefined; // <- this one becomes optional as it contains undefined
+          'x-required': string | number | null;
+        }
+      >
+    >;
+  });
 });
 
 describe('UnknownOrUndefinedObjectValuesToOptionalKeys', () => {
