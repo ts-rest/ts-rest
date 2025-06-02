@@ -22,6 +22,8 @@
     "fumadocs-ui": "15.4.2",
     "lucide-react": "^0.511.0",
     "next": "15.3.2",
+    "posthog-js": "^1.249.0",
+    "posthog-node": "^4.18.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "shiki": "^3.4.2",
