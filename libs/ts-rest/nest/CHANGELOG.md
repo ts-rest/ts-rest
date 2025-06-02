@@ -1,5 +1,11 @@
 # @ts-rest/nest
 
+## 3.53.0
+
+### Minor Changes
+
+- f36510a3: Support the "Standard Schema" validation interface to enable support for Zod4, Valibot, Arktype etc.
+
 ## 3.52.1
 
 ## 3.52.0
