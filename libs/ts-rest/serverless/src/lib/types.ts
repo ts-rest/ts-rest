@@ -152,6 +152,7 @@ export type ServerlessHandlerOptions<
   errorHandler?: (
     err: unknown,
     req: TsRestRequest,
+    args: TPlatformArgs,
   ) => TsRestResponse | Promise<TsRestResponse> | void | Promise<void>;
   cors?: CorsOptions | false;
   basePath?: string;
