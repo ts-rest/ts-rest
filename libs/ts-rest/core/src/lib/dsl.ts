@@ -237,13 +237,35 @@ export type InferHeadersInput<
   ? LowercaseKeys<z.input<THeaders>>
   : // if modern object-based headers
   THeaders extends Record<string, ContractAnyType>
-  ? {
-      [K in keyof THeaders]: THeaders[K] extends ContractAnyType
-        ? LowercaseKeys<SchemaInputOrType<THeaders[K]>>
-        : never;
-    }
+  ? LowercaseKeys<
+      UnknownOrUndefinedObjectValuesToOptionalKeys<{
+        [K in keyof THeaders]: THeaders[K] extends ContractAnyType
+          ? SchemaInputOrType<THeaders[K]>
+          : never;
+      }>
+    >
   : // else
     undefined;
+
+/**
+ * { foo: string | undefined } => { foo?: string | undefined }
+ * { foo: unknown } => { foo?: unknown }
+ *
+ * @internal
+ */
+export type UnknownOrUndefinedObjectValuesToOptionalKeys<T> = {
+  [K in keyof T as undefined extends T[K]
+    ? K
+    : unknown extends T[K]
+    ? K
+    : never]?: T[K];
+} & {
+  [K in keyof T as undefined extends T[K]
+    ? never
+    : unknown extends T[K]
+    ? never
+    : K]: T[K];
+};
 
 /**
  * For a given app route, infer the headers output type

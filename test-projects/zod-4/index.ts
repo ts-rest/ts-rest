@@ -53,7 +53,7 @@ export const contract = c.router({
 
 const client = initClient(contract, { baseUrl: '' });
 
-client.getPokemon({ headers: {} });
+client.getPokemon({ params: { id: '1' } });
 
 export const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
