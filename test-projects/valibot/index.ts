@@ -1,7 +1,7 @@
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import express from 'express';
 import * as bodyParser from 'body-parser';
-import { initContract } from '@ts-rest/core';
+import { initClient, initContract } from '@ts-rest/core';
 import * as v from 'valibot';
 
 const c = initContract();
@@ -24,6 +24,12 @@ const contract = c.router({
     pathParams: v.object({
       id: StringToNumberSchema,
     }),
+    headers: {
+      'x-test': v.pipe(
+        v.unknown(),
+        v.transform((i) => Number(i)),
+      ),
+    },
     responses: {
       200: PokemonSchema,
     },
@@ -53,6 +59,9 @@ const contract = c.router({
     },
   },
 });
+
+const client = initClient(contract, { baseUrl: 'http://localhost:8000' });
+const testHeaders = () => client.getPokemon({ params: { id: '1' } });
 
 export const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));

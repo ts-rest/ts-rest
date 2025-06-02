@@ -1,7 +1,7 @@
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import express from 'express';
 import * as bodyParser from 'body-parser';
-import { initContract } from '@ts-rest/core';
+import { initClient, initContract } from '@ts-rest/core';
 import { generateOpenApi } from '@ts-rest/open-api';
 import { z } from 'zod';
 
@@ -16,6 +16,9 @@ const contract = c.router({
   getPokemon: {
     method: 'GET',
     path: '/pokemon/:id',
+    headers: z.object({
+      'x-test': z.coerce.number().optional(),
+    }),
     pathParams: z.object({
       id: z.coerce.number(),
     }),
@@ -48,6 +51,9 @@ const contract = c.router({
     },
   },
 });
+
+const client = initClient(contract, { baseUrl: 'http://localhost:8000' });
+const testHeaders = () => client.getPokemon({ params: { id: 1 } });
 
 export const openApiSchema = generateOpenApi(contract, {
   info: {
