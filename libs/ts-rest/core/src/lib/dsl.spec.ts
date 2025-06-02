@@ -1424,7 +1424,7 @@ describe('header types', () => {
       };
 
       type Actual = InferHeadersInput<typeof route.getPost, typeof headers>;
-      type TestResult = Expect<Equal<Actual, { 'x-foo': string | undefined }>>;
+      type TestResult = Expect<Equal<Actual, { 'x-foo'?: string | undefined }>>;
     });
 
     it('should handle optional headers with base headers', () => {
