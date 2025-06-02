@@ -158,7 +158,6 @@ export const validateMultiSchemaObject = (
 
   for (const [key, schema] of subSchemas.entries()) {
     const value = headersMap.get(key);
-    console.log(`validating against schema key:${key} value:${value}`);
     const result = validateAgainstStandardSchema(value, schema);
 
     if (result.error) {
@@ -172,8 +171,6 @@ export const validateMultiSchemaObject = (
       headersMap.set(key, result.value);
     }
   }
-
-  console.log('issues', issues);
 
   if (issues.length > 0) {
     return {
