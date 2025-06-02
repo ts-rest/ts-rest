@@ -1,7 +1,7 @@
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import express from 'express';
 import * as bodyParser from 'body-parser';
-import { initContract, isZodType } from '@ts-rest/core';
+import { initClient, initContract, isZodType } from '@ts-rest/core';
 import { z } from 'zod/v4';
 
 const c = initContract();
@@ -15,6 +15,9 @@ export const contract = c.router({
   getPokemon: {
     method: 'GET',
     path: '/pokemon/:id',
+    headers: {
+      optional: z.coerce.number().optional(),
+    },
     pathParams: z.object({
       id: z.coerce.number(),
     }),
@@ -47,6 +50,10 @@ export const contract = c.router({
     },
   },
 });
+
+const client = initClient(contract, { baseUrl: '' });
+
+client.getPokemon({ headers: {} });
 
 export const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));

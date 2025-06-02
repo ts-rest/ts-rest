@@ -18,6 +18,7 @@ import {
 } from './status-codes';
 import { FetchOptions, OverrideableClientArgs } from './client';
 import { Prettify } from './type-utils';
+import * as v from 'valibot';
 
 const c = initContract();
 
@@ -825,4 +826,48 @@ it('type inference helpers', () => {
       Exclude<ErrorHttpStatusCode, 404>
     >
   >;
+});
+
+describe('ClientInferRequest', () => {
+  it('standard schema - optional headers', () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts/:id',
+        headers: {
+          'x-foo': v.optional(v.string()),
+        },
+        responses: {
+          200: c.noBody(),
+        },
+      },
+    });
+    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
+    type TestResult = Expect<
+      Equal<
+        Actual,
+        {
+          'x-foo': string | undefined;
+        }
+      >
+    >;
+  });
+
+  it('headers zod coerce', () => {
+    const contract = c.router({
+      getPost: {
+        method: 'GET',
+        path: '/posts/:id',
+        headers: {
+          'x-foo': z.coerce.number().optional(),
+        },
+        responses: {
+          200: c.noBody(),
+        },
+      },
+    });
+
+    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
+    type TestResult = Expect<Equal<Actual, { 'x-foo': number | undefined }>>;
+  });
 });

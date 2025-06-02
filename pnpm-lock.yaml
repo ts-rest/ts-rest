@@ -220,6 +220,9 @@ importers:
       zod:
         specifier: 3.22.3
         version: 3.22.3
+      zod4:
+        specifier: npm:zod@3.25.47
+        version: zod@3.25.47
       zustand:
         specifier: ^4.1.1
         version: 4.1.1(immer@9.0.15)(react@18.3.1)
@@ -10999,6 +11002,9 @@ packages:
 
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
+
+  zod@3.25.47:
+    resolution: {integrity: sha512-+f8+agSYoT9niC0VUL60IuXnr81FJeJ27Lf5YPrmcxTWmygcpGBeEuAAovDDEjkyQ36KyqNswwbhISZ1Z7yY+A==}
 
   zustand@4.1.1:
     resolution: {integrity: sha512-h4F3WMqsZgvvaE0n3lThx4MM81Ls9xebjvrABNzf5+jb3/03YjNTSgZXeyrvXDArMeV9untvWXRw1tY+ntPYbA==}
@@ -24288,6 +24294,8 @@ snapshots:
       commander: 9.4.1
 
   zod@3.22.3: {}
+
+  zod@3.25.47: {}
 
   zustand@4.1.1(immer@9.0.15)(react@18.3.1):
     dependencies:
