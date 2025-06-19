@@ -35,7 +35,7 @@ Enable `strict` in your `tsconfig.json`, this is required to work with some ts-r
 This should ideally be shared between your consumers and producers, e.g. in a shared library in a monorepo, or a shared npm package. Think of this as your HTTP Schema that both your client and backend can use.
 
 <Callout type="info" title="Shared contract">
-  We strongly reccomend using a validation library like Zod, Valibot, or Arktype
+  We strongly recommend using a validation library like Zod, Valibot, or Arktype
   to define your contract.
 
 This provides **runtime validation** of your contract, as opposed to just type safety.
