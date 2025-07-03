@@ -11,9 +11,11 @@ import {
   Controller,
   INestApplication,
   ModuleMetadata,
+  StreamableFile,
   Type,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { Readable } from 'node:stream';
 import * as supertest from 'supertest';
 import { z } from 'zod';
 import { TsRestModule } from './ts-rest.module';
@@ -583,6 +585,71 @@ describe('ts-rest-nest', () => {
       expect(responseCss.status).toEqual(200);
       expect(responseCss.text).toEqual('body { color: red; }');
       expect(responseCss.header['content-type']).toEqual('text/css');
+    });
+  });
+
+  // https://docs.nestjs.com/techniques/streaming-files
+  describe('can serve a StreamableFile', () => {
+    const c = initContract();
+    const streamableFileContract = c.router({
+      getRobots: {
+        method: 'GET',
+        path: `/robots.txt`,
+        responses: {
+          200: c.otherResponse({
+            contentType: 'text/plain',
+            body: z.unknown(),
+          }),
+        },
+      },
+    });
+
+    @TsRest({ validateResponses: true })
+    @Controller()
+    class StreamableFileController
+      implements NestControllerInterface<typeof streamableFileContract>
+    {
+      @TsRest(streamableFileContract.getRobots)
+      async getRobots(@TsRestRequest() _: any) {
+        const inMemoryFile = Readable.from(['User-agent: * Disallow: /']);
+        const body = new StreamableFile(inMemoryFile, {
+          // otherResponse.contentType takes precedence
+          type: 'text/ignored',
+          disposition: 'attachment;filename="robots.txt"',
+        });
+
+        return { status: 200, body } as const;
+      }
+    }
+
+    it('express', async () => {
+      const server = await initializeApp({
+        controllers: [StreamableFileController],
+      });
+
+      const response = await supertest(server).get('/robots.txt');
+      expect(response.status).toEqual(200);
+      expect(response.text).toEqual('User-agent: * Disallow: /');
+      expect(response.header['content-type']).toEqual('text/plain');
+      // note: CORS does not expose content-disposition to client-side JS by default
+      expect(response.header['content-disposition']).toEqual(
+        'attachment;filename="robots.txt"',
+      );
+    });
+
+    it('fastify', async () => {
+      const server = await initializeApp(
+        { controllers: [StreamableFileController] },
+        'fastify',
+      );
+
+      const response = await supertest(server).get('/robots.txt');
+      expect(response.status).toEqual(200);
+      expect(response.text).toEqual('User-agent: * Disallow: /');
+      expect(response.headers['content-type']).toEqual('text/plain');
+      expect(response.headers['content-disposition']).toEqual(
+        'attachment;filename="robots.txt"',
+      );
     });
   });
 
