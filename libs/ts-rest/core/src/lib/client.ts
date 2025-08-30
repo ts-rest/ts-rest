@@ -331,7 +331,7 @@ export const fetchApi = (options: FetchApiOptions) => {
 export const evaluateFetchApiArgs = <TAppRoute extends AppRoute>(
   route: TAppRoute,
   clientArgs: InitClientArgs,
-  inputArgs?: ClientInferRequest<AppRouteMutation, ClientArgs>,
+  inputArgs?: ClientInferRequest<TAppRoute, ClientArgs>,
 ) => {
   const {
     query,
@@ -429,9 +429,7 @@ export const getRouteQuery = <TAppRoute extends AppRoute>(
   clientArgs: InitClientArgs,
 ) => {
   const knownResponseStatuses = Object.keys(route.responses);
-  return async (
-    inputArgs?: ClientInferRequest<AppRouteMutation, ClientArgs>,
-  ) => {
+  return async (inputArgs?: ClientInferRequest<TAppRoute, ClientArgs>) => {
     const fetchApiArgs = evaluateFetchApiArgs(route, clientArgs, inputArgs);
     const response = await fetchApi(fetchApiArgs);
 
