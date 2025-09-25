@@ -45,6 +45,7 @@ export type AppRouteImplementation<T extends AppRoute> = (
       FastifyContextConfig<T>
     >;
     reply: fastify.FastifyReply<
+      // @ts-expect-error this needs to be ignored for fastify 4/5 compatibility
       fastify.RawServerDefault,
       fastify.RawRequestDefaultExpression,
       fastify.RawReplyDefaultExpression,
@@ -362,6 +363,7 @@ const registerRoute = <TAppRoute extends AppRoute>(
           request,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           body: validationResults.bodyResult.value as any,
+          // @ts-expect-error this needs to be ignored for fastify 4/5 compatibility
           reply,
           appRoute,
         });

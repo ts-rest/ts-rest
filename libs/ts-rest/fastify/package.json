@@ -8,6 +8,9 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "fastify": "^4.0.0"
+    "fastify": "^4.0.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "fastify": "^5.6.1"
   }
 }

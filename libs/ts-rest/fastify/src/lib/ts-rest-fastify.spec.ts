@@ -74,9 +74,9 @@ describe('ts-rest-fastify', () => {
 
   const router = s.router(contract, {
     test: async ({ request, reply }) => {
-      expect(request.routeConfig.tsRestRoute).toEqual(contract.test);
       expect(request.routeOptions.config.tsRestRoute).toEqual(contract.test);
-      expect(reply.context.config.tsRestRoute).toEqual(contract.test);
+      expect(request.routeOptions.config.tsRestRoute).toEqual(contract.test);
+      expect(reply.routeOptions.config.tsRestRoute).toEqual(contract.test);
 
       return {
         status: 200,
@@ -593,9 +593,10 @@ describe('ts-rest-fastify', () => {
 
     expect(response.statusCode).toEqual(400);
     expect(response.body).toEqual({
+      code: 'FST_ERR_CTP_INVALID_JSON_BODY',
       error: 'Bad Request',
       message: expect.stringContaining(
-        "Expected property name or '}' in JSON at position 1",
+        "Body is not valid JSON but content-type is set to 'application/json'",
       ),
       statusCode: 400,
     });
