@@ -238,10 +238,13 @@ export const initServer = () => ({
     Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
       if (Array.isArray(hookOrHookArray)) {
         hookOrHookArray.forEach((hook) => {
-          app.addHook(hookName as any, hook as any);
+          // @ts-expect-error - function expects specific hook names rather than just a string
+          app.addHook(hookName, hook);
         });
+        return;
       } else {
-        app.addHook(hookName as any, hookOrHookArray as any);
+        // @ts-expect-error - function expects specific hook names rather than just a string
+        app.addHook(hookName, hookOrHookArray);
       }
     });
 
@@ -274,10 +277,13 @@ export const initServer = () => ({
         Object.entries(hooks).forEach(([hookName, hookOrHookArray]) => {
           if (Array.isArray(hookOrHookArray)) {
             hookOrHookArray.forEach((hook) => {
-              app.addHook(hookName as any, hook as any);
+              // @ts-expect-error - function expects specific hook names rather than just a string
+              app.addHook(hookName, hook);
             });
+            return;
           } else {
-            app.addHook(hookName as any, hookOrHookArray as any);
+            // @ts-expect-error - function expects specific hook names rather than just a string
+            app.addHook(hookName, hookOrHookArray);
           }
         });
 
@@ -300,10 +306,14 @@ export const initServer = () => ({
 const requestValidationErrorHandler = (
   handler: BaseRegisterRouterOptions['requestValidationErrorHandler'] = 'combined',
 ) => {
-  return (err: unknown, request: FastifyRequest, reply: FastifyReply) => {
+  return (
+    err: unknown,
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
     if (err instanceof RequestValidationError) {
       if (handler === 'combined') {
-        return reply.code(400).send({
+        return reply.status(400).send({
           pathParameterErrors: err.pathParams,
           headerErrors: err.headers,
           queryParameterErrors: err.query,
