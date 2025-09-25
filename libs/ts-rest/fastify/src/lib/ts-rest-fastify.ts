@@ -313,7 +313,7 @@ const requestValidationErrorHandler = (
   ) => {
     if (err instanceof RequestValidationError) {
       if (handler === 'combined') {
-        return reply.status(400).send({
+        return reply.code(400).send({
           pathParameterErrors: err.pathParams,
           headerErrors: err.headers,
           queryParameterErrors: err.query,
