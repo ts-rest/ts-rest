@@ -2,6 +2,12 @@
 
 This library was generated with [Nx](https://nx.dev).
 
+## Requirements
+
+4.x version of this library requires fastify 5.x+
+
+If you need to use fastify 4.x, use version 3.x of this library.
+
 ## Building
 
 Run `nx build ts-rest-fastify` to build the library.
