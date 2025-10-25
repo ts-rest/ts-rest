@@ -4,6 +4,7 @@ export * from './lib/response';
 export {
   RequestValidationError,
   ResponseValidationError,
+  TsRestRequestValidationError,
   type AppRouteImplementation,
   type AppRouteImplementationOrOptions,
   type AppRouteOptions,
