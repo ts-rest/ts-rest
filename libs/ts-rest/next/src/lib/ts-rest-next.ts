@@ -13,9 +13,6 @@ import {
   ServerInferResponses,
   TsRestResponseError,
   validateResponse,
-  ZodErrorSchema,
-  parseAsStandardSchema,
-  areAllSchemasLegacyZod,
   StandardSchemaError,
   validateMultiSchemaObject,
 } from '@ts-rest/core';
@@ -46,9 +43,6 @@ export class RequestValidationError extends Error {
     super('[ts-rest] request validation failed');
   }
 }
-
-export const RequestValidationErrorSchema: typeof ZodErrorSchema =
-  ZodErrorSchema;
 
 type AppRouteImplementation<T extends AppRoute> = (
   args: ServerInferRequest<T, NextApiRequest['headers']> & {
@@ -336,28 +330,12 @@ const handlerFactory = (
         bodyResult.error
       ) {
         if (throwRequestValidation) {
-          const useLegacyZod = areAllSchemasLegacyZod([
-            ...pathParamsResult.schemasUsed,
-            ...headersResult.schemasUsed,
-            ...queryResult.schemasUsed,
-            ...bodyResult.schemasUsed,
-          ]);
-
-          if (useLegacyZod) {
-            throw new RequestValidationError(
-              (pathParamsResult.error as ZodError) || null,
-              (headersResult.error as ZodError) || null,
-              (queryResult.error as ZodError) || null,
-              (bodyResult.error as ZodError) || null,
-            );
-          } else {
-            throw new TsRestRequestValidationError(
-              (pathParamsResult.error as StandardSchemaError) || null,
-              (headersResult.error as StandardSchemaError) || null,
-              (queryResult.error as StandardSchemaError) || null,
-              (bodyResult.error as StandardSchemaError) || null,
-            );
-          }
+          throw new TsRestRequestValidationError(
+            (pathParamsResult.error as StandardSchemaError) || null,
+            (headersResult.error as StandardSchemaError) || null,
+            (queryResult.error as StandardSchemaError) || null,
+            (bodyResult.error as StandardSchemaError) || null,
+          );
         }
 
         if (pathParamsResult.error) {

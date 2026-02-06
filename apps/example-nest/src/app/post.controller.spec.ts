@@ -76,16 +76,20 @@ describe('PostController', () => {
         .query('skip=0')
         .expect(400)
         .expect({
-          issues: [
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              message: 'Required',
-              path: ['take'],
-              received: 'undefined',
-            },
-          ],
-          name: 'ZodError',
+          paramsResult: null,
+          headersResult: null,
+          queryResult: {
+            name: 'ValidationError',
+            issues: [
+              {
+                expected: 'string',
+                code: 'invalid_type',
+                path: ['take'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+            ],
+          },
+          bodyResult: null,
         });
     });
   });
@@ -101,16 +105,20 @@ describe('PostController', () => {
         })
         .expect(400)
         .expect({
-          issues: [
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              message: 'Expected string, received number',
-              path: ['content'],
-              received: 'number',
-            },
-          ],
-          name: 'ZodError',
+          paramsResult: null,
+          headersResult: null,
+          queryResult: null,
+          bodyResult: {
+            name: 'ValidationError',
+            issues: [
+              {
+                expected: 'string',
+                code: 'invalid_type',
+                path: ['content'],
+                message: 'Invalid input: expected string, received number',
+              },
+            ],
+          },
         });
     });
 

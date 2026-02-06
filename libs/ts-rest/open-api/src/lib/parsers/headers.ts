@@ -1,4 +1,4 @@
-import { AppRoute, isStandardSchema, isZodObject } from '@ts-rest/core';
+import { AppRoute, isStandardSchema } from '@ts-rest/core';
 import {
   AsyncAndSyncHelper,
   GetAsyncFunction,
@@ -44,7 +44,7 @@ const syncFunc: GetSyncFunction<GetHeaderParameterHelper> = ({
     return [];
   }
 
-  if (isZodObject(schema)) {
+  if (isStandardSchema(schema)) {
     const transformedSchema = transformSchema({
       schema,
       appRoute,
@@ -103,7 +103,7 @@ const asyncFunc: GetAsyncFunction<GetHeaderParameterHelper> = async ({
     return [];
   }
 
-  if (isZodObject(schema)) {
+  if (isStandardSchema(schema)) {
     const transformedSchema = await transformSchema({
       schema,
       appRoute,

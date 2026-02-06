@@ -5,15 +5,13 @@ import {
   isAppRouteNoBody,
   isAppRouteOtherResponse,
   parseJsonQueryObject,
-  ResponseValidationError as ResponseValidationErrorCore,
   validateResponse,
   HTTPStatusCode,
   TsRestResponseError,
   validateIfSchema,
-  parseAsStandardSchema,
-  areAllSchemasLegacyZod,
   StandardSchemaError,
   validateMultiSchemaObject,
+  TsRestRequestValidationError,
 } from '@ts-rest/core';
 import { Router, withParams, cors } from 'itty-router';
 import { TsRestRequest } from './request';
@@ -23,16 +21,12 @@ import {
   isAppRouteImplementation,
   isRouterImplementation,
   RouterImplementation,
-  RequestValidationError,
-  ResponseValidationError,
   ServerlessHandlerOptions,
   RouterImplementationOrFluentRouter,
-  TsRestRequestValidationError,
 } from './types';
 import { blobToArrayBuffer } from './utils';
 import { TsRestHttpError } from './http-error';
 import { RouterBuilder } from './router-builder';
-import { type ZodError } from 'zod';
 
 const recursivelyProcessContract = ({
   schema,
@@ -107,28 +101,12 @@ const validateRequest = <TPlatformArgs, TRequestExtension>(
     queryResult.error ||
     bodyResult.error
   ) {
-    const useLegacyZod = areAllSchemasLegacyZod([
-      ...paramsResult.schemasUsed,
-      ...headersResult.schemasUsed,
-      ...queryResult.schemasUsed,
-      ...bodyResult.schemasUsed,
-    ]);
-
-    if (useLegacyZod) {
-      throw new RequestValidationError(
-        (paramsResult.error as ZodError) || null,
-        (headersResult.error as ZodError) || null,
-        (queryResult.error as ZodError) || null,
-        (bodyResult.error as ZodError) || null,
-      );
-    } else {
-      throw new TsRestRequestValidationError(
-        (paramsResult.error as StandardSchemaError) || null,
-        (headersResult.error as StandardSchemaError) || null,
-        (queryResult.error as StandardSchemaError) || null,
-        (bodyResult.error as StandardSchemaError) || null,
-      );
-    }
+    throw new TsRestRequestValidationError(
+      (paramsResult.error as StandardSchemaError) || null,
+      (headersResult.error as StandardSchemaError) || null,
+      (queryResult.error as StandardSchemaError) || null,
+      (bodyResult.error as StandardSchemaError) || null,
+    );
   }
 
   return {
@@ -308,23 +286,18 @@ export const createServerlessRouter = <
         let validatedResponseBody = result.body;
 
         if (options.responseValidation) {
-          try {
-            const response = validateResponse({
-              appRoute,
-              response: {
-                status: statusCode,
-                body: result.body,
-              },
-            });
+          /**
+           * @throws {TsRestResponseValidationError} when the response validation fails
+           **/
+          const response = validateResponse({
+            appRoute,
+            response: {
+              status: statusCode,
+              body: result.body,
+            },
+          });
 
-            validatedResponseBody = response.body;
-          } catch (e) {
-            if (e instanceof ResponseValidationErrorCore) {
-              throw new ResponseValidationError(appRoute, e.cause);
-            }
-
-            throw e;
-          }
+          validatedResponseBody = response.body;
         }
 
         const responseType = appRoute.responses[statusCode];

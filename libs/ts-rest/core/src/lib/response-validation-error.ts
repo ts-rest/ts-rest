@@ -1,4 +1,3 @@
-import type { ZodError } from 'zod';
 import { AppRoute } from './dsl';
 import { StandardSchemaError } from './validation-error';
 
@@ -13,16 +12,13 @@ export class TsRestResponseValidationError extends Error {
   }
 }
 
-/**
- * @deprecated use TsRestResponseValidationError instead, this will be removed in v4
- */
-export class ResponseValidationError extends Error {
+export class TsRestRequestValidationError extends Error {
   constructor(
-    public appRoute: AppRoute,
-    public cause: ZodError,
+    public pathParams: StandardSchemaError | null,
+    public headers: StandardSchemaError | null,
+    public query: StandardSchemaError | null,
+    public body: StandardSchemaError | null,
   ) {
-    super(
-      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${cause.message}`,
-    );
+    super('[ts-rest] request validation failed');
   }
 }

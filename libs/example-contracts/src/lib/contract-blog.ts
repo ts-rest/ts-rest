@@ -98,9 +98,9 @@ export const apiBlog = c.router(
         search: z.string().optional(),
       }),
       summary: 'Get all posts!',
-      headers: z.object({
+      headers: {
         'x-pagination': z.coerce.number().optional(),
-      }),
+      },
       metadata: { roles: ['guest', 'user'] } as const,
     },
     testPathParams: {
@@ -128,8 +128,8 @@ export const apiBlog = c.router(
     },
   },
   {
-    baseHeaders: z.object({
+    baseHeaders: {
       'x-api-key': z.string(),
-    }),
+    },
   },
 );

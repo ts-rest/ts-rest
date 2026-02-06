@@ -1,4 +1,4 @@
-import { AppRoute, isStandardSchema, isZodObject } from '@ts-rest/core';
+import { AppRoute, isStandardSchema } from '@ts-rest/core';
 import {
   AsyncAndSyncHelper,
   GetAsyncFunction,
@@ -33,7 +33,7 @@ const syncFunc: GetSyncFunction<GetQueryParameterHelper> = ({
   jsonQuery = false,
 }) => {
   const schema = appRoute.query;
-  const isSchema = isZodObject(schema) || isStandardSchema(schema);
+  const isSchema = isStandardSchema(schema);
 
   if (!isSchema) {
     return [];
@@ -62,7 +62,7 @@ const asyncFunc: GetAsyncFunction<GetQueryParameterHelper> = async ({
   jsonQuery = false,
 }) => {
   const schema = appRoute.query;
-  const isSchema = isZodObject(schema) || isStandardSchema(schema);
+  const isSchema = isStandardSchema(schema);
 
   if (!isSchema) {
     return [];

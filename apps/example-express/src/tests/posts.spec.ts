@@ -35,12 +35,12 @@ describe('Posts Endpoints', () => {
         {
           code: 'invalid_type',
           expected: 'number',
-          message: 'Expected number, received nan',
+          message: 'Invalid input: expected string, received undefined',
           path: ['x-pagination'],
           received: 'nan',
         },
       ],
-      name: 'ZodError',
+      name: 'ValidationError',
     });
   });
 

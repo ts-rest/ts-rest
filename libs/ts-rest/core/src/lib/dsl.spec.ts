@@ -6,7 +6,7 @@ import {
   ContractPlainType,
   ContractPlainTypeRuntimeSymbol,
   ContractNoBodyType,
-  MergeHeadersWithLegacySupport,
+  MergeHeaders,
   AppRoute,
   InferHeadersInput,
 } from './dsl';
@@ -43,14 +43,7 @@ describe('contract', () => {
                 {
                   id: z.ZodNumber;
                 },
-                'strip',
-                z.ZodTypeAny,
-                {
-                  id: number;
-                },
-                {
-                  id: number;
-                }
+                z.core.$strip
               >;
             };
           };
@@ -87,14 +80,7 @@ describe('contract', () => {
                   {
                     id: z.ZodNumber;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
+                  z.core.$strip
                 >;
               };
             };
@@ -115,9 +101,9 @@ describe('contract', () => {
               id: z.number(),
             }),
           },
-          headers: z.object({
+          headers: {
             'x-foo': z.string(),
-          }),
+          },
         },
       },
     });
@@ -134,23 +120,12 @@ describe('contract', () => {
               {
                 id: z.ZodNumber;
               },
-              'strip',
-              z.ZodTypeAny,
-              {
-                id: number;
-              },
-              {
-                id: number;
-              }
+              z.core.$strip
             >;
           };
-          headers: z.ZodObject<
-            { 'x-foo': z.ZodString },
-            'strip',
-            z.ZodTypeAny,
-            { 'x-foo': string },
-            { 'x-foo': string }
-          >;
+          headers: {
+            'x-foo': z.ZodString;
+          };
         }
       >
     >;
@@ -172,9 +147,9 @@ describe('contract', () => {
         },
       },
       {
-        baseHeaders: z.object({
+        baseHeaders: {
           'x-foo': z.string(),
-        }),
+        },
       },
     );
 
@@ -191,23 +166,12 @@ describe('contract', () => {
                   {
                     id: z.ZodNumber;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
+                  z.core.$strip
                 >;
               };
-              headers: z.ZodObject<
-                { 'x-foo': z.ZodString },
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo': string },
-                { 'x-foo': string }
-              >;
+              headers: {
+                'x-foo': z.ZodString;
+              };
             };
           };
         }
@@ -227,16 +191,16 @@ describe('contract', () => {
                 id: z.number(),
               }),
             },
-            headers: z.object({
+            headers: {
               'x-bar': z.string(),
-            }),
+            },
           },
         },
       },
       {
-        baseHeaders: z.object({
+        baseHeaders: {
           'x-foo': z.string(),
-        }),
+        },
       },
     );
 
@@ -253,26 +217,13 @@ describe('contract', () => {
                   {
                     id: z.ZodNumber;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
+                  z.core.$strip
                 >;
               };
-              headers: z.ZodObject<
-                z.objectUtil.MergeShapes<
-                  { 'x-foo': z.ZodString },
-                  { 'x-bar': z.ZodString }
-                >,
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo': string; 'x-bar': string },
-                { 'x-foo': string; 'x-bar': string }
-              >;
+              headers: {
+                'x-foo': z.ZodString;
+                'x-bar': z.ZodString;
+              };
             };
           };
         }
@@ -292,12 +243,12 @@ describe('contract', () => {
                 id: z.number(),
               }),
             },
-            headers: c.type<{ 'x-bar': string }>(),
+            headers: { 'x-bar': c.type<string>() },
           },
         },
       },
       {
-        baseHeaders: c.type<{ 'x-foo': string }>(),
+        baseHeaders: { 'x-foo': c.type<string>() },
       },
     );
 
@@ -314,19 +265,12 @@ describe('contract', () => {
                   {
                     id: z.ZodNumber;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
+                  z.core.$strip
                 >;
               };
               headers: {
-                'x-foo': string;
-                'x-bar': string;
+                'x-foo': ContractPlainType<string>;
+                'x-bar': ContractPlainType<string>;
               };
             };
           };
@@ -347,16 +291,16 @@ describe('contract', () => {
                 id: z.number(),
               }),
             },
-            headers: z.object({
+            headers: {
               'x-foo': z.string().optional(),
-            }),
+            },
           },
         },
       },
       {
-        baseHeaders: z.object({
+        baseHeaders: {
           'x-foo': z.string(),
-        }),
+        },
       },
     );
 
@@ -373,26 +317,12 @@ describe('contract', () => {
                   {
                     id: z.ZodNumber;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
+                  z.core.$strip
                 >;
               };
-              headers: z.ZodObject<
-                z.objectUtil.MergeShapes<
-                  { 'x-foo': z.ZodString },
-                  { 'x-foo': z.ZodOptional<z.ZodString> }
-                >,
-                'strip',
-                z.ZodTypeAny,
-                { 'x-foo'?: string },
-                { 'x-foo'?: string }
-              >;
+              headers: {
+                'x-foo': z.ZodOptional<z.ZodString>;
+              };
             };
           };
         }
@@ -944,27 +874,13 @@ describe('contract', () => {
                   {
                     id: z.ZodNumber;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
+                  z.core.$strip
                 >;
                 404: z.ZodObject<
                   {
                     message: z.ZodString;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    message: string;
-                  },
-                  {
-                    message: string;
-                  }
+                  z.core.$strip
                 >;
               };
             };
@@ -1017,40 +933,19 @@ describe('contract', () => {
                   {
                     id: z.ZodNumber;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    id: number;
-                  },
-                  {
-                    id: number;
-                  }
+                  z.core.$strip
                 >;
                 400: z.ZodObject<
                   {
                     overrideReason: z.ZodString;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    overrideReason: string;
-                  },
-                  {
-                    overrideReason: string;
-                  }
+                  z.core.$strip
                 >;
                 404: z.ZodObject<
                   {
                     message: z.ZodString;
                   },
-                  'strip',
-                  z.ZodTypeAny,
-                  {
-                    message: string;
-                  },
-                  {
-                    message: string;
-                  }
+                  z.core.$strip
                 >;
               };
             };
@@ -1063,101 +958,56 @@ describe('contract', () => {
 
 describe('header types', () => {
   it('should handle two zod objects', () => {
-    const leftSchema = z.object({
+    const leftSchema = {
       left: z.string(),
-    });
+    };
 
-    const rightSchema = z.object({
+    const rightSchema = {
       right: z.string(),
-    });
+    };
 
-    type Resut = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
     type TestResult = Expect<
       Equal<
-        Resut,
-        z.ZodObject<
-          z.objectUtil.MergeShapes<
-            {
-              left: z.ZodString;
-            },
-            {
-              right: z.ZodString;
-            }
-          >,
-          'strip',
-          z.ZodTypeAny,
-          {
-            left: string;
-            right: string;
-          },
-          {
-            left: string;
-            right: string;
-          }
-        >
+        Result,
+        {
+          left: z.ZodString;
+          right: z.ZodString;
+        }
       >
     >;
   });
   it('should handle left being undefined', () => {
     const leftSchema = undefined;
-    const rightSchema = z.object({
+    const rightSchema = {
       right: z.string(),
-    });
+    };
 
-    type Resut = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
     type TestResult = Expect<
       Equal<
-        Resut,
-        z.ZodObject<
-          {
-            right: z.ZodString;
-          },
-          'strip',
-          z.ZodTypeAny,
-          {
-            right: string;
-          },
-          {
-            right: string;
-          }
-        >
+        Result,
+        {
+          right: z.ZodString;
+        }
       >
     >;
   });
 
   it('should handle right being undefined', () => {
-    const leftSchema = z.object({
+    const leftSchema = {
       left: z.string(),
-    });
+    };
 
     const rightSchema = undefined;
 
-    type Resut = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
     type TestResult = Expect<
       Equal<
-        Resut,
-        z.ZodObject<
-          {
-            left: z.ZodString;
-          },
-          'strip',
-          z.ZodTypeAny,
-          {
-            left: string;
-          },
-          {
-            left: string;
-          }
-        >
+        Result,
+        {
+          left: z.ZodString;
+        }
       >
     >;
   });
@@ -1166,10 +1016,7 @@ describe('header types', () => {
     const leftSchema = undefined;
     const rightSchema = undefined;
 
-    type Resut = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Resut = MergeHeaders<typeof leftSchema, typeof rightSchema>;
     type TestResult = Expect<Equal<Resut, unknown>>;
   });
 
@@ -1182,10 +1029,7 @@ describe('header types', () => {
       right: z.string(),
     };
 
-    type Result = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
 
     type TestResult = Expect<
       Equal<
@@ -1204,10 +1048,7 @@ describe('header types', () => {
       right: z.string(),
     };
 
-    type Result = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
 
     type TestResult = Expect<
       Equal<
@@ -1226,10 +1067,7 @@ describe('header types', () => {
 
     const rightSchema = undefined;
 
-    type Result = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
 
     type TestResult = Expect<Equal<Result, { left: z.ZodString }>>; // left wins
   });
@@ -1243,10 +1081,7 @@ describe('header types', () => {
       left: null,
     };
 
-    type Result = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
 
     type TestResult = Expect<Equal<Result, {}>>; // correctly unset 'left'
   });
@@ -1260,10 +1095,7 @@ describe('header types', () => {
       right: z.string(),
     };
 
-    type Result = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
 
     type TestResult = Expect<Equal<Result, { right: z.ZodString }>>; // right wins
   });
@@ -1277,10 +1109,7 @@ describe('header types', () => {
       right: null,
     };
 
-    type Result = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
 
     type TestResult = Expect<Equal<Result, {}>>; // correctly unset 'left' and 'right'
   });
@@ -1289,10 +1118,7 @@ describe('header types', () => {
     const leftSchema = undefined;
     const rightSchema = undefined;
 
-    type Result = MergeHeadersWithLegacySupport<
-      typeof leftSchema,
-      typeof rightSchema
-    >;
+    type Result = MergeHeaders<typeof leftSchema, typeof rightSchema>;
 
     type TestResult = Expect<Equal<Result, unknown>>;
   });
@@ -1335,9 +1161,9 @@ describe('header types', () => {
         getPost: {
           method: 'GET',
           path: '/posts/:id',
-          headers: z.object({
+          headers: {
             'x-foo': z.string(),
-          }),
+          },
           responses: {
             200: c.type<{ id: number }>(),
           },
@@ -1353,9 +1179,9 @@ describe('header types', () => {
         getPost: {
           method: 'GET',
           path: '/posts/:id',
-          headers: z.object({
+          headers: {
             'X-FOO': z.string(),
-          }),
+          },
           responses: {
             200: c.type<{ id: number }>(),
           },

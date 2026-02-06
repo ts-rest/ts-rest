@@ -1,7 +1,7 @@
 import {
   FetchOptions,
   initContract,
-  OverrideableClientArgs,
+  OverridableClientArgs,
 } from '@ts-rest/core';
 import { z } from 'zod';
 import { initNextClient } from './next-client';
@@ -38,7 +38,7 @@ describe('next-client', () => {
       };
       extraHeaders?: Test['extraHeaders'];
       fetchOptions?: FetchOptions;
-      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      overrideClientOptions?: Partial<OverridableClientArgs>;
       cache?: FetchOptions['cache'];
       next?: FetchOptions['next'];
     };

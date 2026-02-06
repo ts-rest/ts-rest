@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { z as z4 } from 'zod4/v4';
 import {
   UnknownOrUndefinedObjectValuesToOptionalKeys,
   initContract,
@@ -20,7 +19,7 @@ import {
   HTTPStatusCode,
   SuccessfulHttpStatusCode,
 } from './status-codes';
-import { FetchOptions, OverrideableClientArgs, initClient } from './client';
+import { FetchOptions, OverridableClientArgs, initClient } from './client';
 import { Prettify } from './type-utils';
 import * as v from 'valibot';
 
@@ -86,9 +85,9 @@ const contract = c.router(
         pathParams: z.object({
           id: z.string().transform((id) => Number(id)),
         }),
-        headers: z.object({
+        headers: {
           'pagination-page': z.string().transform(Number),
-        }),
+        },
         responses: {
           200: z.object({
             comments: z.array(
@@ -104,10 +103,10 @@ const contract = c.router(
     },
   },
   {
-    baseHeaders: z.object({
+    baseHeaders: {
       Authorization: z.string(),
       age: z.coerce.number().optional(),
-    }),
+    },
   },
 );
 
@@ -566,23 +565,32 @@ it('type inference helpers', () => {
         getPost: {
           query: { includeComments: boolean };
           params: { id: number };
-          headers: { authorization: string; age?: number };
+          headers: {
+            Authorization: string;
+            age: number | undefined;
+          };
         };
         createPost: {
           body: { title: string; content: string };
-          headers: { authorization: string; age?: number };
+          headers: {
+            Authorization: string;
+            age: number | undefined;
+          };
         };
         uploadImage: {
           body: {};
-          headers: { authorization: string; age?: number };
+          headers: {
+            Authorization: string;
+            age: number | undefined;
+          };
         };
         nested: {
           getComments: {
             params: { id: number };
             headers: {
-              authorization: string;
               'pagination-page': number;
-              age?: number;
+              Authorization: string;
+              age: number | undefined;
             };
           };
         };
@@ -611,24 +619,24 @@ it('type inference helpers', () => {
           query: { includeComments: boolean };
           params: { id: number };
           headers: {
-            authorization: string;
-            age?: number;
+            Authorization: string;
+            age: number | undefined;
             'content-type': string | undefined;
           };
         };
         createPost: {
           body: { title: string; content: string };
           headers: {
-            authorization: string;
-            age?: number;
+            Authorization: string;
+            age: number | undefined;
             'content-type': string | undefined;
           };
         };
         uploadImage: {
           body: {};
           headers: {
-            authorization: string;
-            age?: number;
+            Authorization: string;
+            age: number | undefined;
             'content-type': string | undefined;
           };
         };
@@ -636,9 +644,9 @@ it('type inference helpers', () => {
           getComments: {
             params: { id: number };
             headers: {
-              authorization: string;
               'pagination-page': number;
-              age?: number;
+              Authorization: string;
+              age: number | undefined;
               'content-type': string | undefined;
             };
           };
@@ -662,24 +670,30 @@ it('type inference helpers', () => {
         getPost: {
           query: { includeComments?: boolean | undefined };
           params: { id: string };
-          headers: { authorization: string; age?: number };
+          headers: {
+            age?: unknown;
+            authorization: string;
+          };
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string>;
           fetchOptions?: FetchOptions;
-          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          overrideClientOptions?: Partial<OverridableClientArgs>;
           cache?: FetchOptions['cache'];
         };
         createPost: {
           body: { title: string; content: string };
-          headers: { authorization: string; age?: number };
+          headers: {
+            age?: unknown;
+            authorization: string;
+          };
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string>;
           fetchOptions?: FetchOptions;
-          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          overrideClientOptions?: Partial<OverridableClientArgs>;
           cache?: FetchOptions['cache'];
         };
         uploadImage: {
@@ -689,13 +703,16 @@ it('type inference helpers', () => {
                 images: File[];
               }
             | FormData;
-          headers: { authorization: string; age?: number };
+          headers: {
+            age?: unknown;
+            authorization: string;
+          };
           extraHeaders?: {
             authorization?: undefined;
             age?: undefined;
           } & Record<string, string>;
           fetchOptions?: FetchOptions;
-          overrideClientOptions?: Partial<OverrideableClientArgs>;
+          overrideClientOptions?: Partial<OverridableClientArgs>;
           cache?: FetchOptions['cache'];
         };
         nested: {
@@ -704,7 +721,7 @@ it('type inference helpers', () => {
             headers: {
               authorization: string;
               'pagination-page': string;
-              age?: number;
+              age?: unknown;
             };
             extraHeaders?: {
               authorization?: undefined;
@@ -712,7 +729,7 @@ it('type inference helpers', () => {
               age?: undefined;
             } & Record<string, string>;
             fetchOptions?: FetchOptions;
-            overrideClientOptions?: Partial<OverrideableClientArgs>;
+            overrideClientOptions?: Partial<OverridableClientArgs>;
             cache?: FetchOptions['cache'];
           };
         };
@@ -737,7 +754,7 @@ it('type inference helpers', () => {
         params: { id: string };
         extraHeaders?: Record<string, string>;
         fetchOptions?: FetchOptions;
-        overrideClientOptions?: Partial<OverrideableClientArgs>;
+        overrideClientOptions?: Partial<OverridableClientArgs>;
         cache?: FetchOptions['cache'];
       }
     >
@@ -879,60 +896,7 @@ describe('ClientInferRequest', () => {
     const testUsage = () => client.getPost({ headers: { 'x-foo': 1 } });
 
     type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
-    type TestResult = Expect<Equal<Actual, { 'x-foo'?: number | undefined }>>;
-  });
-
-  it('headers zod (4) coerce', () => {
-    const contract = c.router({
-      getPost: {
-        method: 'GET',
-        path: '/posts',
-        headers: {
-          'x-foo': z4.coerce.number().optional(),
-        },
-        responses: {
-          200: c.noBody(),
-        },
-      },
-    });
-
-    const client = initClient(contract, { baseUrl: '' });
-    const testUsage = () => client.getPost({ headers: { 'x-foo': 1 } });
-
-    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
     type TestResult = Expect<Equal<Actual, { 'x-foo'?: unknown }>>;
-  });
-
-  it('headers zod (4) union sometimes undefined', () => {
-    const contract = c.router({
-      getPost: {
-        method: 'GET',
-        path: '/posts',
-        headers: {
-          'x-foo': z4.union([
-            z4.string(),
-            z4.number(),
-            z4.null(),
-            z4.undefined(),
-          ]),
-          'x-required': z4.union([z4.string(), z4.number(), z4.null()]),
-        },
-        responses: {
-          200: c.noBody(),
-        },
-      },
-    });
-
-    type Actual = ClientInferRequest<typeof contract.getPost>['headers'];
-    type TestResult = Expect<
-      Equal<
-        Actual,
-        {
-          'x-foo'?: string | number | null | undefined; // <- this one becomes optional as it contains undefined
-          'x-required': string | number | null;
-        }
-      >
-    >;
   });
 });
 

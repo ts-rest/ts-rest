@@ -1,8 +1,13 @@
 import * as express from 'express';
-import { initContract, ResponseValidationError } from '@ts-rest/core';
+import convert from '@openapi-contrib/json-schema-to-openapi-schema';
+import {
+  initContract,
+  TsRestResponseError,
+  TsRestResponseValidationError,
+} from '@ts-rest/core';
 import { apiBlog, contractTs } from '@ts-rest/example-contracts';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
-import { generateOpenApi } from '@ts-rest/open-api';
+import { generateOpenApi, SchemaTransformerAsync } from '@ts-rest/open-api';
 import * as bodyParser from 'body-parser';
 import { Request, Response, NextFunction } from 'express';
 import { serve, setup } from 'swagger-ui-express';
@@ -10,6 +15,7 @@ import { mockPostFixtureFactory } from './fixtures';
 import cors = require('cors');
 import { tsRouter } from './ts-router';
 import { getPost } from './get-post';
+import z from 'zod';
 
 const app = express();
 
@@ -74,9 +80,21 @@ const validateResponseContact = initContract().router({
   },
 });
 
-const openapi = generateOpenApi(apiBlog, {
-  info: { title: 'Play API', version: '0.1' },
-});
+export const ZOD_4_ASYNC: SchemaTransformerAsync = async ({ schema }) => {
+  if (schema instanceof z.core.$ZodAny) {
+    const jsonSchema = z.toJSONSchema(schema);
+    return await convert(jsonSchema);
+  }
+  return null;
+};
+
+const openapi = generateOpenApi(
+  apiBlog,
+  {
+    info: { title: 'Play API', version: '0.1' },
+  },
+  { schemaTransformer: ZOD_4_ASYNC },
+);
 
 const apiDocs = express.Router();
 
@@ -109,7 +127,7 @@ createExpressEndpoints(
 );
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err instanceof ResponseValidationError) {
+  if (err instanceof TsRestResponseValidationError) {
     console.error(err.cause);
   }
 

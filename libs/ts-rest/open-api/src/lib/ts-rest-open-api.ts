@@ -14,7 +14,6 @@ import type {
 import {
   PathSchemaResults,
   RouterPath,
-  SchemaTransformer,
   SchemaTransformerAsync,
   SchemaTransformerSync,
 } from './types';
@@ -23,7 +22,6 @@ import {
   convertSchemaObjectToMediaTypeObject,
   extractReferenceSchemas,
 } from './utils';
-import { ZOD_3_SCHEMA_TRANSFORMER } from './transformers';
 
 declare module 'openapi3-ts' {
   interface SchemaObject {
@@ -45,7 +43,7 @@ declare module 'openapi3-ts' {
 export function generateOpenApi(
   router: AppRouter,
   apiDoc: Omit<OpenAPIObject, 'paths' | 'openapi'> & { info: InfoObject },
-  options?: {
+  options: {
     setOperationId?: boolean | 'concatenated-path';
     jsonQuery?: boolean;
     operationMapper?: (
@@ -53,18 +51,12 @@ export function generateOpenApi(
       appRoute: AppRoute,
       id: string,
     ) => OperationObject;
-    schemaTransformer?: SchemaTransformerSync;
+    schemaTransformer: SchemaTransformerSync;
   },
 ): OpenAPIObject {
-  /**
-   * Default to ZOD_3_SCHEMA_TRANSFORMER to avoid a breaking change in 3.53.0
-   */
-  const transformSchema: SchemaTransformer =
-    options?.schemaTransformer || ZOD_3_SCHEMA_TRANSFORMER;
-
   const paths = performContractTraversal.sync({
     contract: router,
-    transformSchema,
+    transformSchema: options?.schemaTransformer,
     jsonQuery: !!options?.jsonQuery,
   });
 
@@ -175,16 +167,7 @@ const traversedPathsToOpenApi = (
         ? extractReferenceSchemas(responseSchemaObject, referenceSchemas)
         : null;
 
-      const description =
-        response &&
-        typeof response === 'object' &&
-        'description' in response &&
-        response.description
-          ? response.description
-          : statusCode;
-
       responses[statusCode] = {
-        description,
         ...(responseSchemaObjectWithReferences
           ? {
               content: {

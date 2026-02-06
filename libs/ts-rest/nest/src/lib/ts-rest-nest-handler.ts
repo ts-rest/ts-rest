@@ -24,7 +24,6 @@ import {
 import {
   AppRoute,
   AppRouter,
-  areAllSchemasLegacyZod,
   isAppRoute,
   isAppRouteOtherResponse,
   parseAsStandardSchema,
@@ -34,12 +33,14 @@ import {
   TsRestResponseError,
   validateMultiSchemaObject,
   validateIfSchema,
+  TsRestResponseValidationError,
+  TsRestRequestValidationError,
+  ServerInferRequest,
 } from '@ts-rest/core';
 import {
   TsRestAppRouteMetadataKey,
   TsRestOptionsMetadataKey,
 } from './constants';
-import { TsRestRequestShape } from './ts-rest-request.decorator';
 import { TS_REST_MODULE_OPTIONS_TOKEN } from './ts-rest.module';
 import {
   evaluateTsRestOptions,
@@ -48,18 +49,15 @@ import {
 } from './ts-rest-options';
 import { type ZodError } from 'zod';
 
-type TsRestAppRouteMetadata = {
-  appRoute: AppRoute;
-  /**
-   * if we're in a multi handler, this is the key of the route e.g. `getHello`
-   * inside a contract with multiple handlers
-   *
-   * Otherwise, it's null, i.e. single handler
-   */
-  routeKey: string | null;
-};
+export type TsRestRequestShape<TRoute extends AppRoute> = ServerInferRequest<
+  TRoute,
+  Request['headers']
+>;
 
-export class TsRestRequestValidationError extends BadRequestException {
+/**
+ * Mirrors the internal error thrown by ts-rest when validation of the request fails, but adapted for Nest and with the appropriate metadata to be able to return the correct error response
+ */
+export class TsRestNestRequestValidationError extends BadRequestException {
   constructor(
     public pathParams: StandardSchemaError | null,
     public headers: StandardSchemaError | null,
@@ -75,6 +73,17 @@ export class TsRestRequestValidationError extends BadRequestException {
   }
 }
 
+type TsRestAppRouteMetadata = {
+  appRoute: AppRoute;
+  /**
+   * if we're in a multi handler, this is the key of the route e.g. `getHello`
+   * inside a contract with multiple handlers
+   *
+   * Otherwise, it's null, i.e. single handler
+   */
+  routeKey: string | null;
+};
+
 export class RequestValidationError extends BadRequestException {
   constructor(
     public pathParams: ZodError | null,
@@ -88,38 +97,6 @@ export class RequestValidationError extends BadRequestException {
       queryResult: query,
       bodyResult: body,
     });
-  }
-}
-
-export { RequestValidationErrorSchemaForNest as RequestValidationErrorSchema } from '@ts-rest/core';
-
-/**
- * Error emitted when response validation fails (when using a standard schema validator)
- *
- * This is the new standard
- */
-export class TsRestResponseValidationError extends InternalServerErrorException {
-  constructor(
-    public appRoute: AppRoute,
-    public error: StandardSchemaError,
-  ) {
-    super(
-      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`,
-    );
-  }
-}
-
-/**
- * @deprecated use TsRestResponseValidationError instead, this will be removed in v4
- */
-export class ResponseValidationError extends InternalServerErrorException {
-  constructor(
-    public appRoute: AppRoute,
-    public error: ZodError,
-  ) {
-    super(
-      `[ts-rest] Response validation failed for ${appRoute.method} ${appRoute.path}: ${error.message}`,
-    );
   }
 }
 
@@ -395,28 +372,12 @@ export class TsRestHandlerInterceptor implements NestInterceptor {
       isQueryInvalid ||
       isBodyInvalid
     ) {
-      const useLegacyZod = areAllSchemasLegacyZod([
-        ...paramsResult.schemasUsed,
-        ...queryResult.schemasUsed,
-        ...bodyResult.schemasUsed,
-        ...headersResult.schemasUsed,
-      ]);
-
-      if (useLegacyZod) {
-        throw new RequestValidationError(
-          (paramsResult.error as ZodError) || null,
-          (headersResult.error as ZodError) || null,
-          (queryResult.error as ZodError) || null,
-          (bodyResult.error as ZodError) || null,
-        );
-      } else {
-        throw new TsRestRequestValidationError(
-          (paramsResult.error as StandardSchemaError) || null,
-          (headersResult.error as StandardSchemaError) || null,
-          (queryResult.error as StandardSchemaError) || null,
-          (bodyResult.error as StandardSchemaError) || null,
-        );
-      }
+      throw new TsRestNestRequestValidationError(
+        paramsResult.error || null,
+        headersResult.error || null,
+        queryResult.error || null,
+        bodyResult.error || null,
+      );
     }
 
     return next.handle().pipe(
@@ -508,16 +469,10 @@ const validateResponse = (
   if (responseValidation.error) {
     const { error } = responseValidation;
 
-    const isZodSchema = areAllSchemasLegacyZod([responseStandardSchema]);
-
-    if (isZodSchema) {
-      throw new ResponseValidationError(appRoute, error as ZodError);
-    } else {
-      throw new TsRestResponseValidationError(
-        appRoute,
-        error as StandardSchemaError,
-      );
-    }
+    throw new TsRestResponseValidationError(
+      appRoute,
+      error as StandardSchemaError,
+    );
   }
 
   return {

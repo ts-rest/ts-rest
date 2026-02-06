@@ -1,15 +1,14 @@
 import {
   initContract,
-  ResponseValidationError,
+  TsRestRequestValidationError,
   TsRestResponseError,
+  TsRestResponseValidationError,
 } from '@ts-rest/core';
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
   createNextRoute,
   createNextRouter,
   createSingleRouteHandler,
-  RequestValidationError,
-  RequestValidationErrorSchema,
 } from './ts-rest-next';
 import { z } from 'zod';
 
@@ -30,7 +29,7 @@ const contract = c.router({
     query: null,
     responses: {
       200: c.type<{ id: string }>(),
-      400: RequestValidationErrorSchema,
+      400: c.type<TsRestRequestValidationError>(),
       404: z.object({
         message: z.literal('Not Found'),
       }),
@@ -397,10 +396,14 @@ describe('createNextRouter', () => {
       await resultingRouter(req, mockRes);
 
       expect(errorHandler).toHaveBeenCalledWith(
-        expect.any(RequestValidationError),
+        expect.anything(),
         expect.anything(),
         expect.anything(),
       );
+
+      const firstArg = errorHandler.mock.calls[0][0];
+
+      expect(firstArg).toBeInstanceOf(TsRestRequestValidationError);
     });
 
     it('does not throw with invalid query type', async () => {
@@ -419,9 +422,7 @@ describe('createNextRouter', () => {
 
       expect(errorHandler).not.toHaveBeenCalled();
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(
-        RequestValidationErrorSchema.safeParse(jsonMock.mock.calls[0][0]),
-      ).toStrictEqual({
+      expect(jsonMock.mock.calls[0][0]).toStrictEqual({
         data: expect.any(Object),
         success: true,
       });
@@ -492,7 +493,7 @@ describe('createNextRouter', () => {
       {
         responseValidation: true,
         errorHandler: (err: any, req, res) => {
-          if (err instanceof ResponseValidationError) {
+          if (err instanceof TsRestResponseValidationError) {
             res.status(500).send('Response validation failed');
             return;
           }

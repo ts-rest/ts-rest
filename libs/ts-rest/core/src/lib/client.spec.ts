@@ -3,7 +3,8 @@ import {
   FetchOptions,
   HTTPStatusCode,
   initContract,
-  OverrideableClientArgs,
+  OverridableClientArgs,
+  StandardSchemaError,
 } from '..';
 import { ApiFetcherArgs, initClient, getCompleteUrl } from './client';
 import { Equal, Expect } from './test-helpers';
@@ -32,9 +33,9 @@ const postsRouter = c.router({
   getPost: {
     method: 'GET',
     path: `/posts/:id`,
-    headers: z.object({
+    headers: {
       'x-api-key': z.string().optional(),
-    }),
+    },
     responses: {
       200: postSchema.nullable(),
     },
@@ -52,9 +53,9 @@ const postsRouter = c.router({
   getPosts: {
     method: 'GET',
     path: '/posts',
-    headers: z.object({
+    headers: {
       'x-pagination': z.coerce.number().optional(),
-    }),
+    },
     responses: {
       200: c.type<Post[]>(),
     },
@@ -124,9 +125,9 @@ const postsRouter = c.router({
     responses: {
       200: c.type<Post>(),
     },
-    headers: z.object({
+    headers: {
       'content-type': z.literal('application/merge-patch+json'),
-    }),
+    },
     body: z.object({}).passthrough(),
   },
   deletePost: {
@@ -177,11 +178,11 @@ export const router = c.router(
     },
   },
   {
-    baseHeaders: z.object({
+    baseHeaders: {
       'x-api-key': z.string(),
       'x-test': z.string().optional(),
       'base-header': z.string().optional(),
-    }),
+    },
   },
 );
 
@@ -225,10 +226,10 @@ type TestClientGetPostsWithBaseHeaders = Expect<
           order?: string;
         };
         headers?: {
-          'x-pagination'?: number;
-          'x-test'?: string;
-          'base-header'?: string;
-          'x-api-key'?: string;
+          'x-pagination'?: unknown;
+          'x-test'?: string | undefined;
+          'base-header'?: string | undefined;
+          'x-api-key'?: string | undefined;
         };
         extraHeaders?: {
           'x-pagination'?: undefined;
@@ -237,7 +238,7 @@ type TestClientGetPostsWithBaseHeaders = Expect<
           'x-api-key'?: undefined;
         } & Record<string, string>;
         fetchOptions?: FetchOptions;
-        overrideClientOptions?: Partial<OverrideableClientArgs>;
+        overrideClientOptions?: Partial<OverridableClientArgs>;
         cache?: FetchOptions['cache'];
       }
     | undefined
@@ -250,26 +251,30 @@ it('should require header when no base headers are provided', () => {
     Equal<
       Actual,
       {
-        query?: {
-          take?: number;
-          skip?: number;
-          order?: string;
-        };
         headers: {
-          'x-pagination'?: number;
-          'x-test'?: string;
-          'base-header'?: string;
           'x-api-key': string;
+          'x-pagination'?: unknown;
+          'x-test'?: string | undefined;
+          'base-header'?: string | undefined;
         };
-        extraHeaders?: {
-          'x-pagination'?: undefined;
-          'x-test'?: undefined;
-          'base-header'?: undefined;
-          'x-api-key'?: undefined;
-        } & Record<string, string>;
-        fetchOptions?: FetchOptions;
-        overrideClientOptions?: Partial<OverrideableClientArgs>;
-        cache?: FetchOptions['cache'];
+        cache?: RequestCache | undefined;
+        fetchOptions?: FetchOptions | undefined;
+        extraHeaders?:
+          | ({
+              'x-pagination'?: undefined;
+              'x-test'?: undefined;
+              'base-header'?: undefined;
+              'x-api-key'?: undefined;
+            } & Record<string, string>)
+          | undefined;
+        overrideClientOptions?: Partial<OverridableClientArgs> | undefined;
+        query?:
+          | {
+              take?: number | undefined;
+              skip?: number | undefined;
+              order?: string | undefined;
+            }
+          | undefined;
       }
     >
   >;
@@ -302,7 +307,7 @@ type TestClientGetPostWithParams = Expect<
         'x-api-key'?: never;
       } & Record<string, string>;
       fetchOptions?: FetchOptions;
-      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      overrideClientOptions?: Partial<OverridableClientArgs>;
       cache?: FetchOptions['cache'];
     }
   >
@@ -1180,7 +1185,7 @@ describe('custom api', () => {
 
     await expect(
       client.posts.getPost({ params: { id: '1' } }),
-    ).rejects.toThrowError(ZodError);
+    ).rejects.toThrowError(StandardSchemaError);
   });
 });
 

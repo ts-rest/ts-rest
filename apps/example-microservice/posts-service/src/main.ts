@@ -10,7 +10,7 @@ import * as swaggerUi from 'swagger-ui-express';
 import { postsApi } from '@ts-rest/example-microservice/util-posts-api';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
 import { userAdapter } from './app/userAdapter';
-import { generateOpenApi } from '@ts-rest/open-api';
+import { SchemaTransformerAsync, generateOpenApi } from '@ts-rest/open-api';
 
 const upload = multer();
 const s = initServer();
@@ -68,6 +68,17 @@ app.use(cors());
 
 createExpressEndpoints(postsApi, postsRouter, app);
 
+import convert from '@openapi-contrib/json-schema-to-openapi-schema';
+import z from 'zod';
+
+export const ZOD_4_ASYNC: SchemaTransformerAsync = async ({ schema }) => {
+  if (schema instanceof z.core.$ZodAny) {
+    const jsonSchema = z.toJSONSchema(schema);
+    return await convert(jsonSchema);
+  }
+  return null;
+};
+
 const openApiSchema = generateOpenApi(
   postsApi,
   {
@@ -77,6 +88,7 @@ const openApiSchema = generateOpenApi(
     },
   },
   {
+    schemaTransformer: ZOD_4_ASYNC,
     jsonQuery: true,
   },
 );

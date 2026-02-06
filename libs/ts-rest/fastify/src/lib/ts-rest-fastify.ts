@@ -11,24 +11,10 @@ import {
   ServerInferResponses,
   TsRestResponseError,
   validateResponse,
-  StandardSchemaError,
   validateMultiSchemaObject,
+  TsRestRequestValidationError,
 } from '@ts-rest/core';
 import * as fastify from 'fastify';
-import { type ZodError } from 'zod';
-
-export class RequestValidationError extends Error {
-  constructor(
-    public pathParams: ZodError | StandardSchemaError | null,
-    public headers: ZodError | StandardSchemaError | null,
-    public query: ZodError | StandardSchemaError | null,
-    public body: ZodError | StandardSchemaError | null,
-  ) {
-    super('[ts-rest] request validation failed');
-  }
-}
-
-export { RequestValidationErrorSchemaWithoutMessage as RequestValidationErrorSchema } from '@ts-rest/core';
 
 type FastifyContextConfig<T extends AppRouter | AppRoute> = {
   tsRestRoute: T extends AppRoute ? T : FlattenAppRouter<T>;
@@ -109,7 +95,7 @@ type BaseRegisterRouterOptions = {
   requestValidationErrorHandler?:
     | 'combined'
     | ((
-        err: RequestValidationError,
+        err: TsRestRequestValidationError,
         request: fastify.FastifyRequest,
         reply: fastify.FastifyReply,
       ) => void);
@@ -167,7 +153,7 @@ const validateRequest = (
     queryResult.error ||
     bodyResult.error
   ) {
-    throw new RequestValidationError(
+    throw new TsRestRequestValidationError(
       paramsResult.error || null,
       headersResult.error || null,
       queryResult.error || null,
@@ -289,7 +275,7 @@ const requestValidationErrorHandler = (
     request: fastify.FastifyRequest,
     reply: fastify.FastifyReply,
   ) => {
-    if (err instanceof RequestValidationError) {
+    if (err instanceof TsRestRequestValidationError) {
       if (handler === 'combined') {
         return reply.status(400).send({
           pathParameterErrors: err.pathParams,

@@ -29,12 +29,12 @@ describe('express 5', () => {
           {
             code: 'invalid_type',
             expected: 'number',
-            message: 'Expected number, received nan',
+            message: 'Invalid input: expected number, received NaN',
             path: ['id'],
-            received: 'nan',
+            received: 'NaN',
           },
         ],
-        name: 'ZodError',
+        name: 'ValidationError',
       },
     });
   });

@@ -85,11 +85,11 @@ const postsRouter = c.router({
     responses: {
       200: c.type<string>(),
     },
-    headers: z.object({
+    headers: {
       'x-client-id': z.string(),
       'x-api-key': z.string(),
       'x-tenant-id': z.string().optional(),
-    }),
+    },
     body: z.never(),
   },
 });

@@ -1,16 +1,10 @@
 import { Controller } from '@nestjs/common';
 import { apiBlog } from '@ts-rest/example-contracts';
-import {
-  TsRestRequest,
-  TsRest,
-  nestControllerContract,
-  NestControllerInterface,
-  NestRequestShapes,
-} from '@ts-rest/nest';
+import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { z } from 'zod';
 import { PostService } from './post.service';
 
-const c = nestControllerContract({
+const c = {
   getPosts: {
     ...apiBlog.getPosts,
     path: '/posts',
@@ -26,30 +20,31 @@ const c = nestControllerContract({
       }),
     },
   },
-});
-type RequestShapes = NestRequestShapes<typeof c>;
+};
 
-@TsRest({ jsonQuery: true, validateResponses: true })
 @Controller()
-export class PostValidateResponsesController
-  implements NestControllerInterface<typeof c>
-{
+export class PostValidateResponsesController {
   constructor(private readonly postService: PostService) {}
 
-  @TsRest(c.getPosts)
-  async getPosts(
-    @TsRestRequest()
-    { query: { take, skip, search } }: RequestShapes['getPosts'],
-  ) {
-    const { posts, totalPosts } = await this.postService.getPosts({
-      take,
-      skip,
-      search,
-    });
+  @TsRestHandler(c.getPosts, {
+    jsonQuery: true,
+    validateResponses: true,
+  })
+  async getPosts() {
+    return tsRestHandler(
+      c.getPosts,
+      async ({ query: { take, skip, search } }) => {
+        const { posts, totalPosts } = await this.postService.getPosts({
+          take,
+          skip,
+          search,
+        });
 
-    return {
-      status: 200 as const,
-      body: { posts, count: totalPosts, skip, take },
-    };
+        return {
+          status: 200 as const,
+          body: { posts, count: totalPosts, skip, take },
+        };
+      },
+    );
   }
 }

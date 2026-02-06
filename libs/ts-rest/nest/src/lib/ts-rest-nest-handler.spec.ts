@@ -1,15 +1,8 @@
+import { initContract, TsRestRequestValidationError } from '@ts-rest/core';
 import {
-  ContractAnyType,
-  initContract,
-  SchemaInputOrType,
-  StandardSchemaV1,
-} from '@ts-rest/core';
-import {
-  RequestValidationErrorSchema,
   TsRestException,
   tsRestHandler,
   TsRestHandler,
-  TsRestRequestValidationError,
 } from './ts-rest-nest-handler';
 import { z } from 'zod';
 import {
@@ -33,7 +26,6 @@ import {
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
-import { TsRest } from './ts-rest.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   FastifyAdapter,
@@ -192,9 +184,7 @@ describe('ts-rest-nest-handler', () => {
           queryResult: null,
           paramsResult: null,
         });
-        expect(
-          RequestValidationErrorSchema.safeParse(responsePost.body),
-        ).toStrictEqual({
+        expect(responsePost.body).toStrictEqual({
           data: expect.any(Object),
           success: true,
         });
@@ -355,9 +345,9 @@ describe('ts-rest-nest-handler', () => {
                 message: z.string(),
               }),
             },
-            headers: z.object({
+            headers: {
               some: z.string(),
-            }),
+            },
           },
         });
 
@@ -415,9 +405,9 @@ describe('ts-rest-nest-handler', () => {
                 message: z.string(),
               }),
             },
-            headers: z.object({
+            headers: {
               some: z.string(),
-            }),
+            },
           },
         });
 
@@ -1306,51 +1296,6 @@ describe('ts-rest-nest-handler', () => {
           message: 'valid string',
         },
       ]);
-    });
-
-    it("should be able to override the behaviour of the class's response validation", async () => {
-      const c = initContract();
-
-      const contract = c.router({
-        test: {
-          path: '/test',
-          method: 'GET',
-          responses: {
-            200: z.object({
-              message: z.string(),
-            }),
-          },
-        },
-      });
-
-      @Controller()
-      @TsRest({
-        validateResponses: true,
-      })
-      class SingleHandlerTestController {
-        @TsRestHandler(contract.test, {
-          validateResponses: false,
-        })
-        async postRequest() {
-          return tsRestHandler(contract.test, async () => ({
-            status: 200,
-            // shouldn't throw an error as we disabled it
-            body: { message: 123123 as unknown as string },
-          }));
-        }
-      }
-
-      const moduleRef = await Test.createTestingModule({
-        controllers: [SingleHandlerTestController],
-      }).compile();
-
-      const app = moduleRef.createNestApplication();
-      await app.init();
-
-      const response = await supertest(app.getHttpServer()).get('/test').send();
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({ message: 123123 });
     });
 
     it('should be able to throw a type-safe response', async () => {
@@ -2251,86 +2196,6 @@ describe('ts-rest-nest-handler', () => {
           },
         });
       });
-
-      it('class override', async () => {
-        @Controller()
-        @TsRest({ jsonQuery: false })
-        class TestController {
-          @TsRestHandler(contract)
-          async handler() {
-            return tsRestHandler(contract, {
-              getIndex: async ({ query }) => ({
-                status: 200,
-                body: query,
-              }),
-            });
-          }
-        }
-
-        const moduleRef = await Test.createTestingModule({
-          controllers: [TestController],
-          imports: [
-            TsRestModule.register({ validateResponses: true, jsonQuery: true }),
-          ],
-        }).compile();
-
-        const app = moduleRef.createNestApplication();
-        await app.init();
-
-        const server = app.getHttpServer();
-
-        const response = await supertest(server).get('/?foo=true');
-        expect(response.status).toEqual(400);
-        expect(response.body).toEqual({
-          bodyResult: null,
-          headersResult: null,
-          paramsResult: null,
-          queryResult: {
-            issues: [
-              {
-                code: 'invalid_type',
-                expected: 'boolean',
-                message: 'Expected boolean, received string',
-                path: ['foo'],
-                received: 'string',
-              },
-            ],
-            name: 'ZodError',
-          },
-        });
-      });
-
-      it('method overriding class', async () => {
-        @Controller()
-        @TsRest({ jsonQuery: false })
-        class TestController {
-          @TsRestHandler(contract, { jsonQuery: true })
-          async handler() {
-            return tsRestHandler(contract, {
-              getIndex: async ({ query }) => ({
-                status: 200,
-                body: query,
-              }),
-            });
-          }
-        }
-
-        const moduleRef = await Test.createTestingModule({
-          controllers: [TestController],
-          imports: [
-            TsRestModule.register({ validateResponses: true, jsonQuery: true }),
-          ],
-        }).compile();
-
-        const app = moduleRef.createNestApplication();
-        await app.init();
-
-        const server = app.getHttpServer();
-
-        const response = await supertest(server).get('/?foo=true');
-        expect(response.status).toEqual(200);
-        expect(response.body).toEqual({ foo: true });
-      });
     });
   });
 
@@ -2442,6 +2307,8 @@ describe('ts-rest-nest-handler', () => {
               pathParameterErrors: exception.pathParams?.issues?.length || 0,
               queryParameterErrors: exception.query?.issues?.length || 0,
             });
+          } else {
+            return res.status(500).send('something went wrong');
           }
         }
       }

@@ -61,14 +61,14 @@ export type FetchOptions = typeof globalThis extends {
     >
   : never;
 
-export interface OverrideableClientArgs {
+export interface OverridableClientArgs {
   baseUrl: string;
   credentials?: FetchOptions['credentials'];
   jsonQuery?: boolean;
   validateResponse?: boolean;
 }
 
-export interface ClientArgs extends OverrideableClientArgs {
+export interface ClientArgs extends OverridableClientArgs {
   baseHeaders?: Record<string, string | ((options: FetchApiOptions) => string)>;
   api?: ApiFetcher;
 }

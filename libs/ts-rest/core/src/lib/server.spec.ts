@@ -1,4 +1,8 @@
-import { initContract, ResponseValidationError, validateResponse } from '..';
+import {
+  initContract,
+  TsRestResponseValidationError,
+  validateResponse,
+} from '..';
 import { z } from 'zod';
 
 const c = initContract();
@@ -100,7 +104,7 @@ describe('server', () => {
           body: { bar: 'foo' },
         },
       });
-    }).toThrow(ResponseValidationError);
+    }).toThrow(TsRestResponseValidationError);
   });
 
   it('succeeds validation on zod common response', () => {
@@ -127,7 +131,7 @@ describe('server', () => {
           body: { message: 'not bad request' },
         },
       });
-    }).toThrow(ResponseValidationError);
+    }).toThrow(TsRestResponseValidationError);
   });
 
   it('succeeds validation on overridden zod common response', () => {
@@ -154,6 +158,6 @@ describe('server', () => {
           body: { message: 'Bad Request' },
         },
       });
-    }).toThrow(ResponseValidationError);
+    }).toThrow(TsRestResponseValidationError);
   });
 });

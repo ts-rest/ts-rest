@@ -71,9 +71,9 @@ describe('/posts', () => {
       {
         code: 'invalid_type',
         expected: 'number',
-        message: 'Expected number, received nan',
+        message: 'Invalid input: expected number, received NaN',
         path: ['x-pagination'],
-        received: 'nan',
+        received: 'NaN',
       },
     ]);
   });
@@ -124,12 +124,12 @@ describe('/posts', () => {
         {
           code: 'invalid_type',
           expected: 'string',
-          message: 'Required',
+          message: 'Invalid input: expected string, received undefined',
           path: ['content'],
           received: 'undefined',
         },
       ],
-      name: 'ZodError',
+      name: 'ValidationError',
     });
   });
 });

@@ -27,7 +27,7 @@ import {
 import {
   ApiFetcher,
   ClientArgs,
-  OverrideableClientArgs,
+  OverridableClientArgs,
   FetchOptions,
 } from './client';
 import { ParamsFromUrl } from './paths';
@@ -245,7 +245,7 @@ type ClientInferRequestBase<
             [K in keyof RequiredKeys<InferHeadersInput<T>>]?: never;
           } & Record<string, string>;
       fetchOptions?: FetchOptions;
-      overrideClientOptions?: Partial<OverrideableClientArgs>;
+      overrideClientOptions?: Partial<OverridableClientArgs>;
 
       /**
        * @deprecated Use `fetchOptions.cache` instead
