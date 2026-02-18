@@ -42,7 +42,7 @@ ts-rest offers a simple way to define a contract for your API, which can be both
 - Full optional OpenAPI integration 📝
 
 <div align="center">
-  <h3>👉 Start reading the official <a href="https://ts-rest.com/docs/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a> 👈</h3>
+  <h3>👉 Start reading the official <a href="https://ts-rest.com/quickstart?utm_source=github&utm_medium=documentation&utm_campaign=readme">Quickstart Guide</a> 👈</h3>
 </div>
 
 ### Super Simple Example
