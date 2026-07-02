@@ -906,6 +906,42 @@ describe('ts-rest-open-api', () => {
       );
     });
 
+    it('preserves optional security alternatives from operationMapper', async () => {
+      const optionalSecurity: SecurityRequirementObject[] = [
+        {},
+        {
+          BasicAuth: [],
+        },
+      ];
+
+      const apiDoc = generateOpenApi(
+        router,
+        {
+          info: { title: 'Blog API', version: '0.1' },
+          components: {
+            securitySchemes: {
+              BasicAuth: {
+                type: 'http',
+                scheme: 'basic',
+              },
+            },
+          },
+        },
+        {
+          operationMapper: (operation, appRoute) => ({
+            ...operation,
+            ...(appRoute.path === '/health'
+              ? {
+                  security: optionalSecurity,
+                }
+              : {}),
+          }),
+        },
+      );
+
+      expect(apiDoc.paths['/health'].get.security).toEqual(optionalSecurity);
+    });
+
     it('works with zod refine', () => {
       const routerWithRefine = c.router({
         endpointWithZodRefine: {
