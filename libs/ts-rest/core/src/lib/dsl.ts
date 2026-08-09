@@ -232,9 +232,6 @@ export type InferHeadersInput<
   : // if empty object
   IsEmptyObject<THeaders> extends true
   ? {}
-  : // if Zod
-  THeaders extends z.AnyZodObject
-  ? LowercaseKeys<z.input<THeaders>>
   : // if modern object-based headers
   THeaders extends Record<string, ContractAnyType>
   ? LowercaseKeys<
@@ -244,6 +241,9 @@ export type InferHeadersInput<
           : never;
       }>
     >
+  : // if legacy Zod object
+  THeaders extends z.AnyZodObject
+  ? LowercaseKeys<z.input<THeaders>>
   : // else
     undefined;
 
@@ -278,16 +278,16 @@ export type InferHeadersOutput<
   : // if empty object
   IsEmptyObject<THeaders> extends true
   ? {}
-  : // if Zod
-  THeaders extends z.AnyZodObject
-  ? LowercaseKeys<z.output<THeaders>>
   : // if modern object-based headers
   THeaders extends Record<string, ContractAnyType>
-  ? {
+  ? LowercaseKeys<{
       [K in keyof THeaders]: THeaders[K] extends ContractAnyType
-        ? LowercaseKeys<SchemaOutputOrType<THeaders[K]>>
+        ? SchemaOutputOrType<THeaders[K]>
         : never;
-    }
+    }>
+  : // if legacy Zod object
+  THeaders extends z.AnyZodObject
+  ? LowercaseKeys<z.output<THeaders>>
   : '3';
 
 type ApplyOptions<
