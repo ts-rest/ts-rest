@@ -98,5 +98,52 @@ describe('utils', () => {
         },
       ]);
     });
+
+    it('should flatten a discriminatedUnion (oneOf of objects) into the union of its branches properties', () => {
+      const schema = generateSchema(
+        z.discriminatedUnion('type', [
+          z.object({ type: z.literal('a'), fieldA: z.string() }),
+          z.object({ type: z.literal('b'), fieldB: z.string() }),
+        ]),
+      );
+
+      const parameters = schemaObjectToParameters(schema, 'query');
+
+      expect(parameters).toEqual([
+        {
+          name: 'type',
+          in: 'query',
+          required: true,
+          schema: {
+            oneOf: [
+              { type: 'string', enum: ['a'] },
+              { type: 'string', enum: ['b'] },
+            ],
+          },
+        },
+        {
+          name: 'fieldA',
+          in: 'query',
+          schema: { type: 'string' },
+        },
+        {
+          name: 'fieldB',
+          in: 'query',
+          schema: { type: 'string' },
+        },
+      ]);
+    });
+
+    it('should return an empty array for a oneOf where not every branch is an object', () => {
+      const schema: SchemaObject = {
+        oneOf: [
+          { type: 'object', properties: { a: { type: 'string' } } },
+          { type: 'string' },
+        ],
+      };
+
+      const parameters = schemaObjectToParameters(schema, 'query');
+      expect(parameters).toEqual([]);
+    });
   });
 });

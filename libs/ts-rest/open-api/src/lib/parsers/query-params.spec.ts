@@ -126,6 +126,58 @@ describe('query-params', () => {
         },
       ]);
     });
+
+    it('sync - discriminatedUnion query schema (issue #800)', () => {
+      const res = getQueryParameterSchema.sync({
+        transformSchema: ZOD_SYNC,
+        appRoute: {
+          method: 'GET',
+          path: '/',
+          query: z.discriminatedUnion('type', [
+            z.object({ type: z.literal('a'), fieldA: z.string() }),
+            z.object({ type: z.literal('b'), fieldB: z.string() }),
+          ]),
+          responses: {
+            200: z.object({}),
+          },
+        },
+        id: 'testFunc',
+        concatenatedPath: 'testFunc',
+      });
+
+      expect(res.map((param) => param.name).sort()).toEqual([
+        'fieldA',
+        'fieldB',
+        'type',
+      ]);
+      expect(res).not.toEqual([]);
+    });
+
+    it('sync - plain union query schema (issue #800 comment)', () => {
+      const res = getQueryParameterSchema.sync({
+        transformSchema: ZOD_SYNC,
+        appRoute: {
+          method: 'GET',
+          path: '/',
+          query: z.union([
+            z.object({ type: z.literal('a'), fieldA: z.string() }),
+            z.object({ type: z.literal('b'), fieldB: z.string() }),
+          ]),
+          responses: {
+            200: z.object({}),
+          },
+        },
+        id: 'testFunc',
+        concatenatedPath: 'testFunc',
+      });
+
+      expect(res.map((param) => param.name).sort()).toEqual([
+        'fieldA',
+        'fieldB',
+        'type',
+      ]);
+      expect(res).not.toEqual([]);
+    });
   });
 
   describe('valibot', () => {

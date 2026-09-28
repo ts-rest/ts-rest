@@ -76,6 +76,42 @@ export const schemaObjectToParameters = (
         schemaToParameter(value, where, requiredSet.has(key), key, jsonQuery),
       );
     }
+  } else if (
+    schema.oneOf?.every(
+      (branch): branch is SchemaObject =>
+        'type' in branch && branch.type === 'object',
+    )
+  ) {
+    // A top-level union/discriminatedUnion of objects (e.g. z.union/z.discriminatedUnion
+    // used as the whole query/headers schema): flatten to the union of every branch's
+    // properties, since OpenAPI's flat `parameters` array has no way to represent
+    // "these params only apply for variant X". A property is only marked required if
+    // every branch has it as required.
+    const branches = schema.oneOf as SchemaObject[];
+    const propertySchemasByKey = new Map<string, SchemaObject[]>();
+
+    for (const branch of branches) {
+      for (const [key, value] of Object.entries(branch.properties ?? {})) {
+        const existing = propertySchemasByKey.get(key) ?? [];
+        existing.push(value as SchemaObject);
+        propertySchemasByKey.set(key, existing);
+      }
+    }
+
+    for (const [key, propertySchemas] of propertySchemasByKey) {
+      const isRequired = branches.every(
+        (branch) => branch.required?.includes(key),
+      );
+
+      const propertySchema =
+        propertySchemas.length === 1
+          ? propertySchemas[0]
+          : { oneOf: propertySchemas };
+
+      parameters.push(
+        schemaToParameter(propertySchema, where, isRequired, key, jsonQuery),
+      );
+    }
   }
 
   return parameters;
