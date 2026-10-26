@@ -21,7 +21,7 @@
     "fumadocs-typescript": "^4.0.5",
     "fumadocs-ui": "15.4.2",
     "lucide-react": "^0.511.0",
-    "next": "15.3.2",
+    "next": "15.3.8",
     "posthog-js": "^1.249.0",
     "posthog-node": "^4.18.0",
     "react": "^19.1.0",

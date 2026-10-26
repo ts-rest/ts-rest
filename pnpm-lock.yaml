@@ -152,8 +152,8 @@ importers:
         specifier: 1.4.5-lts.1
         version: 1.4.5-lts.1
       next:
-        specifier: 13.5.6
-        version: 13.5.6(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0)
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0)
       openapi3-ts:
         specifier: ^2.0.2
         version: 2.0.2
@@ -274,7 +274,7 @@ importers:
         version: 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(chokidar@3.5.3)(eslint@8.53.0)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2))(typescript@5.2.2)
       '@nx/next':
         specifier: 17.1.1
-        version: 17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@13.5.6(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
+        version: 17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
       '@nx/node':
         specifier: 17.1.1
         version: 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(ts-node@10.9.1(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(typescript@5.2.2))(typescript@5.2.2)
@@ -2378,11 +2378,20 @@ packages:
   '@next/env@13.5.6':
     resolution: {integrity: sha512-Yac/bV5sBGkkEXmAX5FWPS9Mmo2rthrOPRQQNfycJPkjUAUclomCPH7QFVCDQ4Mp2k2K1SSM6m0zrxYrOwtFQw==}
 
+  '@next/env@14.2.35':
+    resolution: {integrity: sha512-DuhvCtj4t9Gwrx80dmz2F4t/zKQ4ktN8WrMwOuVzkJfBilwAwGr6v16M5eI8yCuZ63H9TTuEU09Iu2HqkzFPVQ==}
+
   '@next/eslint-plugin-next@13.1.1':
     resolution: {integrity: sha512-SBrOFS8PC3nQ5aeZmawJkjKkWjwK9RoxvBSv/86nZp0ubdoVQoko8r8htALd9ufp16NhacCdqhu9bzZLDWtALQ==}
 
   '@next/swc-darwin-arm64@13.5.6':
     resolution: {integrity: sha512-5nvXMzKtZfvcu4BhtV0KH1oGv4XEW+B+jOfmBdpFI3C7FrB/MfujRpWYSBBO64+qbW8pkZiSyQv9eiwnn5VIQA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@next/swc-darwin-arm64@14.2.33':
+    resolution: {integrity: sha512-HqYnb6pxlsshoSTubdXKu15g3iivcbsMXg4bYpjL2iS/V6aQot+iyF4BUc2qA/J/n55YtvE4PHMKWBKGCF/+wA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -2393,8 +2402,20 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@next/swc-darwin-x64@14.2.33':
+    resolution: {integrity: sha512-8HGBeAE5rX3jzKvF593XTTFg3gxeU4f+UWnswa6JPhzaR6+zblO5+fjltJWIZc4aUalqTclvN2QtTC37LxvZAA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
   '@next/swc-linux-arm64-gnu@13.5.6':
     resolution: {integrity: sha512-txagBbj1e1w47YQjcKgSU4rRVQ7uF29YpnlHV5xuVUsgCUf2FmyfJ3CPjZUvpIeXCJAoMCFAoGnbtX86BK7+sg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@next/swc-linux-arm64-gnu@14.2.33':
+    resolution: {integrity: sha512-JXMBka6lNNmqbkvcTtaX8Gu5by9547bukHQvPoLe9VRBx1gHwzf5tdt4AaezW85HAB3pikcvyqBToRTDA4DeLw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -2405,8 +2426,20 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@next/swc-linux-arm64-musl@14.2.33':
+    resolution: {integrity: sha512-Bm+QulsAItD/x6Ih8wGIMfRJy4G73tu1HJsrccPW6AfqdZd0Sfm5Imhgkgq2+kly065rYMnCOxTBvmvFY1BKfg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
   '@next/swc-linux-x64-gnu@13.5.6':
     resolution: {integrity: sha512-Mc2b4xiIWKXIhBy2NBTwOxGD3nHLmq4keFk+d4/WL5fMsB8XdJRdtUlL87SqVCTSaf1BRuQQf1HvXZcy+rq3Nw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@next/swc-linux-x64-gnu@14.2.33':
+    resolution: {integrity: sha512-FnFn+ZBgsVMbGDsTqo8zsnRzydvsGV8vfiWwUo1LD8FTmPTdV+otGSWKc4LJec0oSexFnCYVO4hX8P8qQKaSlg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -2417,8 +2450,20 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@next/swc-linux-x64-musl@14.2.33':
+    resolution: {integrity: sha512-345tsIWMzoXaQndUTDv1qypDRiebFxGYx9pYkhwY4hBRaOLt8UGfiWKr9FSSHs25dFIf8ZqIFaPdy5MljdoawA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
   '@next/swc-win32-arm64-msvc@13.5.6':
     resolution: {integrity: sha512-aFv1ejfkbS7PUa1qVPwzDHjQWQtknzAZWGTKYIAaS4NMtBlk3VyA6AYn593pqNanlicewqyl2jUhQAaFV/qXsg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@next/swc-win32-arm64-msvc@14.2.33':
+    resolution: {integrity: sha512-nscpt0G6UCTkrT2ppnJnFsYbPDQwmum4GNXYTeoTIdsmMydSKFz9Iny2jpaRupTb+Wl298+Rh82WKzt9LCcqSQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
@@ -2429,8 +2474,20 @@ packages:
     cpu: [ia32]
     os: [win32]
 
+  '@next/swc-win32-ia32-msvc@14.2.33':
+    resolution: {integrity: sha512-pc9LpGNKhJ0dXQhZ5QMmYxtARwwmWLpeocFmVG5Z0DzWq5Uf0izcI8tLc+qOpqxO1PWqZ5A7J1blrUIKrIFc7Q==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
   '@next/swc-win32-x64-msvc@13.5.6':
     resolution: {integrity: sha512-Cqfe1YmOS7k+5mGu92nl5ULkzpKuxJrP3+4AEuPmrpFZ3BHxTY3TnHmU1On3bFmFFs6FbTcdF58CCUProGpIGQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@next/swc-win32-x64-msvc@14.2.33':
+    resolution: {integrity: sha512-nOjfZMy8B94MdisuzZo9/57xuFVLHJaDj5e/xrduJp9CV2/HrfxTRH2fbyLe+K9QT41WBLUd4iXX3R7jBp0EUg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -3078,11 +3135,17 @@ packages:
   '@swc/counter@0.1.2':
     resolution: {integrity: sha512-9F4ys4C74eSTEUNndnER3VJ15oru2NumfQxS8geE+f3eB5xvfxpWyqE5XlVnxb/R14uoXi6SLbBwwiDSkv+XEw==}
 
+  '@swc/counter@0.1.3':
+    resolution: {integrity: sha512-e2BR4lsJkkRlKZ/qCHPw9ZaSxc0MVUd7gtbtaB7aMvHeJVYe8sOB8DBZkP2DtISHGSku9sCK6T6cnY0CtXrOCQ==}
+
   '@swc/helpers@0.5.2':
     resolution: {integrity: sha512-E4KcWTpoLHqwPHLxidpOqQbcrZVgi0rsmmZXUle1jXmJfuIf/UWpczUJ7MZZ5tlxytgJXyp0w4PGkkeLiuIdZw==}
 
   '@swc/helpers@0.5.3':
     resolution: {integrity: sha512-FaruWX6KdudYloq1AHD/4nU+UsMTdNE8CKyrseXWEcgjDAbvkwJg2QGPAnfIJLIWsjZOSPLOAykK6fuYp4vp4A==}
+
+  '@swc/helpers@0.5.5':
+    resolution: {integrity: sha512-KGYxvIOXcceOAbEk4bi/dVLEK9z8sZ0uBB3Il5b1rhfClSpcX0yfRO0KmTkqR2cnQDymwLB+25ZyMzICg/cm/A==}
 
   '@swc/jest@0.2.29':
     resolution: {integrity: sha512-8reh5RvHBsSikDC3WGCd5ZTd2BXKkyOdK7QwynrCH58jk2cQFhhHhFBg/jvnWZehUQe/EoOImLENc9/DwbBFow==}
@@ -3657,6 +3720,7 @@ packages:
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@valibot/to-json-schema@1.2.0':
     resolution: {integrity: sha512-vNPg/esuEAUFaJoyNdnKLEIIRL0LndRyFD3eJR2itwLGr3hH3X8q17Yo84dkyDfZBR8WetHto/5K2OYlyQUUYQ==}
@@ -3747,6 +3811,7 @@ packages:
 
   '@wanews/nx-vite@0.11.0':
     resolution: {integrity: sha512-SR8MQif6L8VF714qovI+UnWVMmunu44lOmCilZzZ6c2J6newQDFDaiMArALfyd3il8h4+96QFKp6euwleq/btw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       '@nrwl/devkit': '>14.5.0'
       nx: '>14.5.0'
@@ -3843,6 +3908,7 @@ packages:
 
   acorn-import-assertions@1.8.0:
     resolution: {integrity: sha512-m7VZ3jwz4eK6A4Vtt8Ew1/mNbP24u0FhdyfA7fSvnJR6LMdfOYnmuIrrJAgrYfYJ10F/otaHTtrtrtmHdMNzEw==}
+    deprecated: package has been renamed to acorn-import-attributes
     peerDependencies:
       acorn: ^8
 
@@ -4419,6 +4485,9 @@ packages:
 
   caniuse-lite@1.0.30001517:
     resolution: {integrity: sha512-Vdhm5S11DaFVLlyiKu4hiUTkpZu+y1KA/rZZqVQfOD5YdDT/eQKlkt7NaE0WGOFgX32diqt9MiP9CAiFeRklaA==}
+
+  caniuse-lite@1.0.30001819:
+    resolution: {integrity: sha512-LFUqIIAwpzsIuevnKnsR9qnStBcgzPShTX61lBwN9uFkkf8o8zLiebEjbW8AYtZiF+1YKDWfdt/pWDtMuG8Xwg==}
 
   capnp-ts@0.7.0:
     resolution: {integrity: sha512-XKxXAC3HVPv7r674zP0VC3RTXz+/JKhfyw94ljvF80yynK6VkTnqE3jMuN8b3dUVmmc43TjyxjW4KTsmB3c86g==}
@@ -5554,6 +5623,7 @@ packages:
   eslint@8.53.0:
     resolution: {integrity: sha512-N4VuiPjXDUa4xVeV/GC/RV3hQW9Nw+Y463lkWaKKXKYMvmRiRDAtfpuPFLN+E1/6ZhyR8J2ig+eVREnYgUsiag==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@9.6.1:
@@ -5771,6 +5841,7 @@ packages:
   fetch-mock-jest@1.5.1:
     resolution: {integrity: sha512-+utwzP8C+Pax1GSka3nFXILWMY3Er2L+s090FOgqVNrNCPp0fDqgXnAHAJf12PLHi0z4PhcTaZNTz8e7K3fjqQ==}
     engines: {node: '>=8.0.0'}
+    deprecated: 'Use https://www.npmjs.com/package/@fetch-mock/jest instead. The underlying version of fetch-mock will also need upgrading: see https://www.wheresrhys.co.uk/fetch-mock/docs/Usage/upgrade-guide'
     peerDependencies:
       node-fetch: '*'
     peerDependenciesMeta:
@@ -5932,6 +6003,7 @@ packages:
 
   formidable@2.0.1:
     resolution: {integrity: sha512-rjTMNbp2BpfQShhFbR3Ruk3qk2y9jKpvMW78nJgx8QKtxjDVrwbZG+wvDOmVbifHyOUOQJXxqEy6r0faRrPzTQ==}
+    deprecated: 'ACTION REQUIRED: SWITCH TO v3 - v1 and v2 are VULNERABLE! v1 is DEPRECATED FOR OVER 2 YEARS! Use formidable@latest or try formidable-mini for fresh projects'
 
   forwarded@0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
@@ -6082,28 +6154,29 @@ packages:
 
   glob@6.0.4:
     resolution: {integrity: sha512-MKZeRNyYZAVVVG1oZeLaWie1uweH40m9AZwIwxyPbTSX4hHrVYSzLg0Ro5Z5R7XKkIX+Cc6oD1rqeDJnwsB8/A==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@7.1.4:
     resolution: {integrity: sha512-hkLPepehmnKk41pUGm3sYxoFs/umurYfYJCerbXEyFIWcAzvpipAgVkBqqT9RBKMGjnq6kMuyYwha6csxbiM1A==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@7.1.7:
     resolution: {integrity: sha512-OvD9ENzPLbegENnYP5UUfJIirTg4+XwMWGaQfQTY0JenxNvvIKP3U3/tAQSPIu/lHxXYSZmpXlUHeqAIdKzBLQ==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@9.3.5:
     resolution: {integrity: sha512-e1LleDykUz2Iu+MTYdkSsuWX8lvAjAcs0Xef0lNIu0S2wOAzuTxCJtcd9S3cijlwYF18EsU3rzb8jPVobxDh9Q==}
     engines: {node: '>=16 || 14 >=14.17'}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-dirs@3.0.0:
     resolution: {integrity: sha512-v8ho2DS5RiCjftj1nD9NmnfaOzTdud7RRnVd9kFNOjqZbISlx5DQ+OrTkywgd0dIt7oFCvKetZSHoHcP3sDdiA==}
@@ -6174,6 +6247,9 @@ packages:
 
   graceful-fs@4.2.10:
     resolution: {integrity: sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==}
+
+  graceful-fs@4.2.11:
+    resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
   grapheme-splitter@1.0.4:
     resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
@@ -7296,9 +7372,11 @@ packages:
 
   lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
+    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
 
   lodash.isequal@4.5.0:
     resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+    deprecated: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
 
   lodash.isplainobject@4.0.6:
     resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==}
@@ -7670,10 +7748,12 @@ packages:
   multer@1.4.4-lts.1:
     resolution: {integrity: sha512-WeSGziVj6+Z2/MwQo3GvqzgR+9Uc+qt8SwHKh3gvNPiISKfsMfG4SvCOFYlxxgkXt7yIV2i1yczehm0EOKIxIg==}
     engines: {node: '>= 6.0.0'}
+    deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
 
   multer@1.4.5-lts.1:
     resolution: {integrity: sha512-ywPWvcDMeH+z9gQq5qYHCCy+ethsk4goepZ45GLD63fOu0YcNecQxi64nDs3qluZB+murG3/D4dJ7+dGctcCQQ==}
     engines: {node: '>= 6.0.0'}
+    deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
 
   multi-sort-stream@1.0.4:
     resolution: {integrity: sha512-hAZ8JOEQFbgdLe8HWZbb7gdZg0/yAIHF00Qfo3kd0rXFv96nXe+/bPTrKHZ2QMHugGX4FiAyET1Lt+jiB+7Qlg==}
@@ -7727,6 +7807,7 @@ packages:
   next@13.5.6:
     resolution: {integrity: sha512-Y2wTcTbO4WwEsVb4A8VSnOsG1I9ok+h74q0ZdxkwM3EODqrs4pasq7O0iUxbcS9VtWMicG7f3+HAj0r1+NtKSw==}
     engines: {node: '>=16.14.0'}
+    deprecated: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
     hasBin: true
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
@@ -7735,6 +7816,24 @@ packages:
       sass: ^1.3.0
     peerDependenciesMeta:
       '@opentelemetry/api':
+        optional: true
+      sass:
+        optional: true
+
+  next@14.2.35:
+    resolution: {integrity: sha512-KhYd2Hjt/O1/1aZVX3dCwGXM1QmOV4eNM2UTacK5gipDdPN/oHHK/4oVGy7X8GMfPMsUTUEmGlsy0EY1YGAkig==}
+    engines: {node: '>=18.17.0'}
+    hasBin: true
+    peerDependencies:
+      '@opentelemetry/api': ^1.1.0
+      '@playwright/test': ^1.41.2
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      sass: ^1.3.0
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@playwright/test':
         optional: true
       sass:
         optional: true
@@ -9853,11 +9952,12 @@ packages:
   superagent@8.0.0:
     resolution: {integrity: sha512-iudipXEel+SzlP9y29UBWGDjB+Zzag+eeA1iLosaR2YHBRr1Q1kC29iBrF2zIVD9fqVbpZnXkN/VJmwFMVyNWg==}
     engines: {node: '>=6.4.0 <13 || >=14'}
-    deprecated: Please upgrade to v9.0.0+ as we have fixed a public vulnerability with formidable dependency. Note that v9.0.0+ requires Node.js v14.18.0+. See https://github.com/ladjs/superagent/pull/1800 for insight. This project is supported and maintained by the team at Forward Email @ https://forwardemail.net
+    deprecated: Please upgrade to superagent v10.2.2+, see release notes at https://github.com/forwardemail/superagent/releases/tag/v10.2.2 - maintenance is supported by Forward Email @ https://forwardemail.net
 
   supertest@6.2.4:
     resolution: {integrity: sha512-M8xVnCNv+q2T2WXVzxDECvL2695Uv2uUj2O0utxsld/HRyJvOU8W9f1gvsYxSNU4wmIe0/L/ItnpU4iKq0emDA==}
     engines: {node: '>=6.4.0'}
+    deprecated: Please upgrade to supertest v7.1.3+, see release notes at https://github.com/forwardemail/supertest/releases/tag/v7.1.3 - maintenance is supported by Forward Email @ https://forwardemail.net
 
   supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
@@ -10153,6 +10253,7 @@ packages:
   tsconfck@2.1.1:
     resolution: {integrity: sha512-ZPCkJBKASZBmBUNqGHmRhdhM8pJYDdOXp4nRgj/O0JwUwsMq50lCDRQP/M5GBNAA0elPrq4gAeu4dkaVCuKWww==}
     engines: {node: ^14.13.1 || ^16 || >=18}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^4.3.5 || ^5.0.0
@@ -10307,6 +10408,7 @@ packages:
 
   ua-parser-js@0.7.31:
     resolution: {integrity: sha512-qLK/Xe9E2uzmYI3qLeOmI0tEOt+TBBQyUIAh4aAgU05FVYzeZrKUdkAZfBNVGRaHVgV0TDkdEngJSw/SyQchkQ==}
+    deprecated: You are using an outdated version of ua-parser-js. Please update to ua-parser-js v0.7.33 / v1.0.33 / v2.0.0 (or later) to avoid ReDoS vulnerability [CVE-2022-25927](https://github.com/advisories/GHSA-fhg7-m89q-25r3)
 
   ufo@1.1.2:
     resolution: {integrity: sha512-TrY6DsjTQQgyS3E3dBaOXf0TpPD8u9FVrVYmKVegJuFw51n/YB9XPt+U6ydzFG5ZIN7+DIjPbNmXoBj9esYhgQ==}
@@ -10489,11 +10591,12 @@ packages:
 
   uuid@3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
-    deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -10778,6 +10881,7 @@ packages:
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -13586,6 +13690,8 @@ snapshots:
 
   '@next/env@13.5.6': {}
 
+  '@next/env@14.2.35': {}
+
   '@next/eslint-plugin-next@13.1.1':
     dependencies:
       glob: 7.1.7
@@ -13593,28 +13699,55 @@ snapshots:
   '@next/swc-darwin-arm64@13.5.6':
     optional: true
 
+  '@next/swc-darwin-arm64@14.2.33':
+    optional: true
+
   '@next/swc-darwin-x64@13.5.6':
+    optional: true
+
+  '@next/swc-darwin-x64@14.2.33':
     optional: true
 
   '@next/swc-linux-arm64-gnu@13.5.6':
     optional: true
 
+  '@next/swc-linux-arm64-gnu@14.2.33':
+    optional: true
+
   '@next/swc-linux-arm64-musl@13.5.6':
+    optional: true
+
+  '@next/swc-linux-arm64-musl@14.2.33':
     optional: true
 
   '@next/swc-linux-x64-gnu@13.5.6':
     optional: true
 
+  '@next/swc-linux-x64-gnu@14.2.33':
+    optional: true
+
   '@next/swc-linux-x64-musl@13.5.6':
+    optional: true
+
+  '@next/swc-linux-x64-musl@14.2.33':
     optional: true
 
   '@next/swc-win32-arm64-msvc@13.5.6':
     optional: true
 
+  '@next/swc-win32-arm64-msvc@14.2.33':
+    optional: true
+
   '@next/swc-win32-ia32-msvc@13.5.6':
     optional: true
 
+  '@next/swc-win32-ia32-msvc@14.2.33':
+    optional: true
+
   '@next/swc-win32-x64-msvc@13.5.6':
+    optional: true
+
+  '@next/swc-win32-x64-msvc@14.2.33':
     optional: true
 
   '@nodelib/fs.scandir@2.1.5':
@@ -13753,9 +13886,9 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nrwl/next@17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@13.5.6(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))':
+  '@nrwl/next@17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))':
     dependencies:
-      '@nx/next': 17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@13.5.6(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
+      '@nx/next': 17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
     transitivePeerDependencies:
       - '@babel/core'
       - '@babel/traverse'
@@ -14142,10 +14275,10 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nx/next@17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@13.5.6(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))':
+  '@nx/next@17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))':
     dependencies:
       '@babel/plugin-proposal-decorators': 7.22.10(@babel/core@7.22.9)
-      '@nrwl/next': 17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@13.5.6(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
+      '@nrwl/next': 17.1.1(@babel/core@7.22.9)(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(next@14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0))(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
       '@nx/devkit': 17.1.1(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))
       '@nx/eslint': 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(eslint@8.53.0)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))
       '@nx/js': 17.1.1(@babel/traverse@7.22.8)(@swc/core@1.3.96(@swc/helpers@0.5.3))(@types/node@20.16.1)(nx@17.1.1(@swc/core@1.3.96(@swc/helpers@0.5.3)))(typescript@5.2.2)
@@ -14157,7 +14290,7 @@ snapshots:
       copy-webpack-plugin: 10.2.4(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
       fs-extra: 11.2.0
       ignore: 5.2.4
-      next: 13.5.6(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0)
+      next: 14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0)
       semver: 7.5.3
       tslib: 2.6.3
       url-loader: 4.1.1(file-loader@6.2.0(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19)))(webpack@5.82.0(@swc/core@1.3.96(@swc/helpers@0.5.3))(esbuild@0.17.19))
@@ -14854,12 +14987,19 @@ snapshots:
 
   '@swc/counter@0.1.2': {}
 
+  '@swc/counter@0.1.3': {}
+
   '@swc/helpers@0.5.2':
     dependencies:
       tslib: 2.6.3
 
   '@swc/helpers@0.5.3':
     dependencies:
+      tslib: 2.6.3
+
+  '@swc/helpers@0.5.5':
+    dependencies:
+      '@swc/counter': 0.1.3
       tslib: 2.6.3
 
   '@swc/jest@0.2.29(@swc/core@1.3.96(@swc/helpers@0.5.3))':
@@ -16532,6 +16672,8 @@ snapshots:
       lodash.uniq: 4.5.0
 
   caniuse-lite@1.0.30001517: {}
+
+  caniuse-lite@1.0.30001819: {}
 
   capnp-ts@0.7.0:
     dependencies:
@@ -18792,6 +18934,8 @@ snapshots:
 
   graceful-fs@4.2.10: {}
 
+  graceful-fs@4.2.11: {}
+
   grapheme-splitter@1.0.4: {}
 
   graphemer@1.4.0: {}
@@ -20699,6 +20843,32 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 13.5.6
       '@next/swc-win32-ia32-msvc': 13.5.6
       '@next/swc-win32-x64-msvc': 13.5.6
+      sass: 1.55.0
+    transitivePeerDependencies:
+      - '@babel/core'
+      - babel-plugin-macros
+
+  next@14.2.35(@babel/core@7.22.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.55.0):
+    dependencies:
+      '@next/env': 14.2.35
+      '@swc/helpers': 0.5.5
+      busboy: 1.6.0
+      caniuse-lite: 1.0.30001819
+      graceful-fs: 4.2.11
+      postcss: 8.4.31
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      styled-jsx: 5.1.1(@babel/core@7.22.9)(react@18.3.1)
+    optionalDependencies:
+      '@next/swc-darwin-arm64': 14.2.33
+      '@next/swc-darwin-x64': 14.2.33
+      '@next/swc-linux-arm64-gnu': 14.2.33
+      '@next/swc-linux-arm64-musl': 14.2.33
+      '@next/swc-linux-x64-gnu': 14.2.33
+      '@next/swc-linux-x64-musl': 14.2.33
+      '@next/swc-win32-arm64-msvc': 14.2.33
+      '@next/swc-win32-ia32-msvc': 14.2.33
+      '@next/swc-win32-x64-msvc': 14.2.33
       sass: 1.55.0
     transitivePeerDependencies:
       - '@babel/core'
