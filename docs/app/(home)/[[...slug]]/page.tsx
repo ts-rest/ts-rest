@@ -17,14 +17,15 @@ export default async function Page(props: {
   if (!page) notFound();
 
   const MDXContent = page.data.body;
-
   const isHomePage = page.data.title === 'Intro';
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       {isHomePage ? (
-        <div className="flex w-full flex-col gap-4 items-center justify-center">
+        <DocsTitle className="flex justify-center">
           <svg
+            role="img"
+            aria-label="ts-rest"
             className="w-2/3 max-w-2xl dark:fill-white fill-black"
             viewBox="0 0 316 70"
             fill="none"
@@ -36,56 +37,7 @@ export default async function Page(props: {
               fill="inherit"
             ></path>
           </svg>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              margin: '0',
-              padding: '0',
-            }}
-          >
-            <a href="https://github.com/ts-rest/ts-rest">
-              <img
-                alt="GitHub Repo stars"
-                src="https://img.shields.io/github/stars/ts-rest/ts-rest"
-              />
-            </a>
-            <a href="https://www.npmjs.com/package/@ts-rest/core">
-              <img src="https://img.shields.io/npm/dm/%40ts-rest/core" />
-            </a>
-            <a
-              href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE"
-              className="hidden lg:block"
-            >
-              <img
-                alt="License"
-                src="https://img.shields.io/github/license/ts-rest/ts-rest"
-              />
-            </a>
-            <a
-              href="https://bundlephobia.com/package/@ts-rest/core"
-              className="hidden lg:block"
-            >
-              <img
-                alt="Bundle Size"
-                src="https://img.shields.io/bundlephobia/minzip/%40ts-rest%2Fcore"
-              />
-            </a>
-            <a href="https://www.npmjs.com/package/@ts-rest/core">
-              <img
-                alt="NPM Version"
-                src="https://img.shields.io/npm/v/%40ts-rest%2Fcore"
-              />
-            </a>
-            <a href="https://discord.com/invite/2Megk85k5a">
-              <img
-                alt="NPM Version"
-                src="https://img.shields.io/discord/1055855205960392724"
-              />
-            </a>
-          </div>
-        </div>
+        </DocsTitle>
       ) : (
         <>
           <DocsTitle>{page.data.title}</DocsTitle>

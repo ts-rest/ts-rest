@@ -1,6 +1,8 @@
 # Contributing
 
-Thanks for wanting to contribute to the project! Below is some guidance for helping you get started.
+ts-rest is no longer maintained or accepting upstream contributions. Independent forks are welcome under the [MIT licence](LICENCE), including forks of individual adapters. See the [maintenance notice](README.md#maintenance-status).
+
+The development guidance below is retained as a reference for forks.
 
 ## Development workflow
 

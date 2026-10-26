@@ -1,12 +1,7 @@
 # Security Policy
 
-## Supported Versions
+ts-rest is no longer maintained. No versions receive security updates.
 
-| Version  | Supported          |
-| -------- | ------------------ |
-| >= 3.x.x | :white_check_mark: |
-| < 2.0    | :x:                |
+Security reports are not actively monitored, and no response or remediation is promised. Do not rely on the original maintainers to investigate or fix vulnerabilities.
 
-## Reporting a Vulnerability
-
-DM [Oliver Butler](https://twitter.com/_oliverbutler) on Twitter or email at dev@oliverbutler.uk
+Existing releases are available as-is. Independent forks should publish their own security policies and reporting channels. See the [maintenance notice](README.md#maintenance-status).

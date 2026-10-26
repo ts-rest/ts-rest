@@ -1,5 +1,15 @@
 # ts-rest
 
+## Maintenance status
+
+**ts-rest is no longer maintained.** There are no planned releases, including V4, bug fixes, security updates, or support.
+
+I no longer have the time or capacity to maintain the project or run its community. I'm sorry for the long silence, and grateful to everyone who used or contributed to ts-rest, and to everyone who sponsored my work.
+
+Existing releases, source code, and documentation are available as-is. **Independent forks are welcome**, including forks of individual adapters, under the existing [MIT licence](LICENCE). You do not need approval from the original maintainers to continue the project independently.
+
+The unfinished [V4 work](https://github.com/ts-rest/ts-rest/pull/863) is available for forks to build on, but is not a supported release.
+
 <p align="center">
  <img src="https://avatars.githubusercontent.com/u/109956939?s=400&u=8bf67b1281da46d64eab85f48255cd1892bf0885&v=4" height="150"></img>
 </p>
@@ -13,20 +23,13 @@
   <a href="https://www.npmjs.com/package/@ts-rest/core">
     <img src="https://img.shields.io/npm/dm/%40ts-rest/core"/>
   </a>
-  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENSE">
+  <a href="https://github.com/ts-rest/ts-rest/blob/main/LICENCE">
     <img alt="License" src="https://img.shields.io/github/license/ts-rest/ts-rest"/>
   </a>
   <a href="https://bundlephobia.com/package/@ts-rest/core">
     <img alt="Bundle Size" src="https://img.shields.io/bundlephobia/minzip/@ts-rest/core?label=%40ts-rest%2Fcore"/>
   </a>
 </p>
-
-<div align="center">
-  <div>Join us on Discord for help, feedback, and discussions!</div><br></br>
-  <a href="https://discord.gg/2Megk85k5a">
-    <img src="https://discordapp.com/api/guilds/1055855205960392724/widget.png?style=banner2" alt="Discord Shield"/>
-  </a>
-</div>
 
 # Introduction
 
@@ -139,7 +142,7 @@ MASSIVE Thanks to all of these wonderful people ([emoji key](https://allcontribu
 
 ## Star History
 
-Since our first commit in 2022 we've been growing steadily. We're proud of our progress and we're excited about the future.
+Thank you to everyone who helped ts-rest grow since its first commit in 2022.
 
 <div align="center">
 <a href="https://star-history.com/#ts-rest/ts-rest&Timeline">
@@ -149,13 +152,6 @@ Since our first commit in 2022 we've been growing steadily. We're proud of our p
     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ts-rest/ts-rest&type=Timeline" />
   </picture>
 </a>
-</div>
-
-<div align="center" >
-  <div>Join us on Discord for help, feedback, and discussions!</div><br></br>
-  <a href="https://discord.gg/2Megk85k5a">
-    <img src="https://discordapp.com/api/guilds/1055855205960392724/widget.png?style=banner2" alt="Discord Shield"/>
-  </a>
 </div>
 
 <div  align="center">
