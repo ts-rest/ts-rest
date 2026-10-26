@@ -200,6 +200,58 @@ export type ServerInferRequest<
   ? { [TKey in keyof T]: ServerInferRequest<T[TKey], TServerHeaders> }
   : never;
 
+type BodyInputWithoutFileIfMultiPart<T extends AppRouteMutation> =
+  T['contentType'] extends 'multipart/form-data'
+    ? Without<SchemaInputOrType<T['body']>, File | File[]>
+    : SchemaInputOrType<T['body']>;
+
+/**
+ * The pre-validation counterpart of {@link ServerInferRequest}: `body`,
+ * `params` and `query` carry schema *input* (wire) types, matching what is
+ * actually present on the raw request object before request validation runs
+ * — server frameworks pass that object through unmodified and expose the
+ * validated values only on the handler's top-level arguments (see
+ * https://github.com/ts-rest/ts-rest/issues/716).
+ *
+ * `headers` intentionally keep output types for backwards compatibility.
+ */
+export type ServerInferWireRequest<
+  T extends AppRoute | AppRouter,
+  TServerHeaders = never,
+> = T extends AppRoute
+  ? Prettify<
+      Without<
+        {
+          params: [keyof PathParamsWithCustomValidators<T, 'client'>] extends [
+            never,
+          ]
+            ? never
+            : Prettify<PathParamsWithCustomValidators<T, 'client'>>;
+          body: T extends AppRouteMutation
+            ? BodyInputWithoutFileIfMultiPart<T>
+            : never;
+          query: 'query' extends keyof T
+            ? SchemaInputOrType<T['query']>
+            : never;
+          headers: 'headers' extends keyof T
+            ? Prettify<
+                InferHeadersOutput<T> &
+                  ([TServerHeaders] extends [never]
+                    ? {}
+                    : Omit<
+                        TServerHeaders,
+                        keyof LowercaseKeys<InferHeadersOutput<T>>
+                      >)
+              >
+            : TServerHeaders;
+        },
+        never
+      >
+    >
+  : T extends AppRouter
+  ? { [TKey in keyof T]: ServerInferWireRequest<T[TKey], TServerHeaders> }
+  : never;
+
 type ClientInferRequestBase<
   T extends AppRoute,
   TClientArgs extends Omit<ClientArgs, 'baseUrl'> = {},

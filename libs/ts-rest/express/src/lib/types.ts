@@ -8,6 +8,7 @@ import {
   ServerInferRequest,
   ServerInferResponseBody,
   ServerInferResponses,
+  ServerInferWireRequest,
 } from '@ts-rest/core';
 import { Express, NextFunction, Response, Request } from 'express';
 import { RequestValidationError } from './request-validation-error';
@@ -37,10 +38,17 @@ export type AppRouteImplementation<T extends AppRoute> =
     ? AppRouteQueryImplementation<T>
     : never;
 
+/**
+ * The raw express request as passed to handlers and middleware. Validation
+ * never mutates it, so `body`/`params`/`query` are typed with schema *input*
+ * (wire) types via {@link ServerInferWireRequest} — read the validated values
+ * from the handler's top-level arguments instead
+ * (https://github.com/ts-rest/ts-rest/issues/716).
+ */
 export type TsRestRequest<
   T extends AppRouter | AppRoute,
   F extends FlattenAppRouter<T> = FlattenAppRouter<T>,
-  S extends ServerInferRequest<F> = ServerInferRequest<F>,
+  S extends ServerInferWireRequest<F> = ServerInferWireRequest<F>,
 > = Request<
   'params' extends keyof S ? S['params'] : Express['request']['params'],
   ServerInferResponseBody<F>,
