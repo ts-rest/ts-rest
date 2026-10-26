@@ -5,7 +5,7 @@ description: Frequently Asked Questions
 
 ## Who uses ts-rest? 💚
 
-We (the core team) heavily dogfood ts-rest in production at our respective companies, myself ([@oliverbutler](https://github.com/oliverbutler)) uses `@ts-rest/react-query` and `@ts-rest/nest` extensively at [Onsi](https://onsi.com)
+ts-rest grew out of production use at the original maintainers' companies, including `@ts-rest/react-query` and `@ts-rest/nest` at [Onsi](https://onsi.com). This history does not imply ongoing maintenance or support.
 
 I founded `ts-rest` primarily to solve the problems we faced inhouse, the difficulty to introduce cross-stack type safety in an existing large codebase, incrementally.
 
@@ -30,13 +30,23 @@ I founded `ts-rest` primarily to solve the problems we faced inhouse, the diffic
 
 👆 Any by the looks of it, we're not alone!
 
-## Is this project actively maintained? ✅
+## Is this project actively maintained?
 
-Yes! There may be gaps from time to time, as we're all working full time, but we're actively working towards a 4.0 release, which should really just be to clean out old deprecated APIs which we've gathered over **50 minor versions** of 3.0.
+No. **ts-rest is no longer maintained.** There are no planned releases, bug fixes, security updates, or support. Existing releases, source code, and documentation are available as-is.
 
-## How can I contribute? 🤩
+I no longer have the time or capacity to maintain the project or run its community. I'm sorry for the long silence, and grateful to everyone who used or contributed to ts-rest, and to everyone who sponsored my work.
 
-Please feel free to open an issue or PR, we're always happy to help!
+## Will V4 be released?
+
+There is no planned V4 release. The [V4 branch](https://github.com/ts-rest/ts-rest/tree/v4) and [draft PR](https://github.com/ts-rest/ts-rest/pull/863) contain unfinished work that independent forks can build on. They are not a supported release.
+
+The last stable release is `3.52.1`. The `3.53.0-rc.1` prerelease was never promoted to a stable release and has known compatibility issues with stable Zod 4.
+
+## Can I fork or contribute?
+
+Yes. **Independent forks are welcome**, including forks of individual adapters, under the existing [MIT licence](https://github.com/ts-rest/ts-rest/blob/main/LICENCE). You do not need approval from the original maintainers to continue the project independently.
+
+The upstream project is no longer accepting contributions or providing support through GitHub or Discord. Please direct new work to your own fork or another independently maintained project.
 
 ## How does this compare to tRPC? 🤔
 
@@ -87,5 +97,5 @@ If you've correctly enabled `strict` and `strictNullChecks`, and you're still ex
 starts to feel fairly sluggish.
 
 1. **Try split up your clients/contracts** We've had some success with _splitting up our clients_ into different domains, for instance `postClient`, `userClient`, `authClient` etc. this splits up the client into smaller chunks, which can help with intellisense performance.
-2. **Move to a more tsc friendly validator** Zod 3 was fairly renowned for it's affect on intellisense in large codebases, [Zod 4](https://zod.dev/v4) improves greatly on this, and is supported from `ts-rest 3.53.0` with our acceptance of the Standard Schema spec.
+2. **Move to a more tsc friendly validator** Zod 3 was fairly renowned for it's affect on intellisense in large codebases, [Zod 4](https://zod.dev/v4) improves greatly on this, but ts-rest's Standard Schema support only shipped in the unfinished `3.53.0-rc.1` prerelease, which has known compatibility issues with stable Zod 4.
 3. **Utilise monorepo tooling** - NX (and probably others) offers some ways to pre-compile modules, emitting .d.ts files for your modules, this could be a good way to speed up intellisense.

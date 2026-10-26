@@ -20,9 +20,16 @@ export default function Layout({ children }: { children: any }) {
     <html lang="en" className={inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
         <PostHogProvider>
-          <Banner variant="rainbow" id="3-53-0-release">
-            Zod 4 (and all other Standard Schema support) is available as a
-            release candidate `3.53.0-rc.1`
+          <Banner id="maintenance-ended">
+            <span>
+              ts-rest is no longer maintained. Forks are welcome.{' '}
+              <a
+                href="/#maintenance-status"
+                className="underline underline-offset-4"
+              >
+                Read the notice.
+              </a>
+            </span>
           </Banner>
           <RootProvider>{children}</RootProvider>
           <CookieBanner />

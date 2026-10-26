@@ -1,5 +1,5 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: Ask a question
-    url: https://discord.gg/2Megk85k5a
-    about: Ask for help or discuss with community members
+  - name: Maintenance status
+    url: https://github.com/ts-rest/ts-rest#maintenance-status
+    about: ts-rest is no longer maintained. Independent forks are welcome.
